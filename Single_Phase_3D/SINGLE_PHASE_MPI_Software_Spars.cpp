@@ -21,7 +21,7 @@ struct mat{
 
 
 
-//D2Q9 STANDARD LATTICE MRT LATTICE BOLTZMANN METHOD
+//D3Q19 STANDARD LATTICE MRT LATTICE BOLTZMANN METHOD
 //UNIFORM MESH, LATTICE VELOCITY 1
 
 
@@ -302,18 +302,20 @@ if (Zoom>1)
 	int*  Sr;
 
 		
-	Solids = new int**[NX+1];
+	
 	Solid = new int**[nx_l];
 	Sl = new int[(NY+1)*(NZ+1)];
 	Sr = new int[(NY+1)*(NZ+1)];
 
-	for (int i=0;i<=NX;i++)
+	Solids = new int**[(NX+1)/Zoom];
+
+	for (int i=0;i<(NX+1)/Zoom;i++)
 		{		
-		Solids[i] = new int*[(NY+1)];
+		Solids[i] = new int*[(NY+1)/Zoom];
 	
-			for (int j=0;j<=NY;j++)
+			for (int j=0;j<(NY+1)/Zoom;j++)
 			{
-			Solids[i][j]= new int[NZ+1];
+			Solids[i][j]= new int[(NZ+1)/Zoom];
 			
 
 			}
@@ -333,28 +335,29 @@ if (Zoom>1)
 	
 	
 //	Count = new int[rank];
-	if (!(filename=="NOSOLID"))
+//	if (!(filename=="NOSOLID"))
 		Read_Rock(Solids,&porosity,filename);
-	else
-		{
-		for(int i=0;i<=NX;i++)	
-			for(int j=0;j<=NY;j++)
-				for(int k=0;k<=NZ;k++)
-				Solids[i][j][k]=0;
-		}
+//	else
+//		{
+//		for(int i=0;i<=NX;i++)	
+//			for(int j=0;j<=NY;j++)
+//				for(int k=0;k<=NZ;k++)
+//				Solids[i][j][k]=0;
+//		}
 
 	
+
 	init_Sparse(Solids,Solid,Sl,Sr);
 
-	for (int i=0;i<=NX;i++)
-		{	
-		for (int j=0;j<=NY;j++)
+	for (int i=0;i<(NX+1)/Zoom;i++)
+		{
+		for (int j=0;j<(NY+1)/Zoom;j++)
 			delete [] Solids[i][j];
 		delete [] Solids[i];
 		}
 	delete [] Solids;
 
-	
+
 	//***************************************************
 	//WARRING: SPARSE MATRIX STARTS FROM INDEX 1 NOT 0!!!
 	//***************************************************
@@ -384,6 +387,7 @@ if (Zoom>1)
 
 	MPI_Barrier(MPI_COMM_WORLD);
 	
+	
 	Geometry(Solid);
 
 	init(rho,u,f,forcex,forcey,forcez);
@@ -391,9 +395,26 @@ if (Zoom>1)
 if (rank==0)
 		cout<<"Porosity= "<<porosity<<endl;
 
+/*
 char FileName[128]="Results.txt";
 char FileName2[128]="Permeability.txt";
 char FileName3[128]="bodyforce.txt";
+*/
+
+
+
+
+//========================================================
+char FileName[128];strcpy(FileName,outputfile);
+char FileName2[128];strcpy(FileName2,outputfile);
+char FileName3[128];strcpy(FileName3,outputfile);
+
+strcat(FileName,"Results.txt");
+strcat(FileName2,"Permeability.txt");
+strcat(FileName3,"bodyforce.txt");
+//========================================================
+
+
 
 ofstream fins;	
 	fins.open(FileName,ios::trunc);
@@ -408,6 +429,8 @@ if (wr_per==1)
 
 	fins.open(FileName3,ios::out);
 	fins.close();
+
+
 
 
 	
@@ -661,12 +684,22 @@ int kk,ip,jp,kp,mean_l,mpi_test,s_c;
 
 	Count=1;
 
+//cout<<Solids[3][4][5]<<"      @@@@@@@@@@@@@@@@@@"<<endl;
+
+
+//for(int i=0;i<nx_l;i++)	
+//	for(int j=0;j<=NY;j++)
+//		for(int k=0;k<=NZ;k++)
+//		cout<<Solids[int((s_c+i-(s_c+i)%Zoom)/Zoom)][int((j-j%Zoom)/Zoom)][int((k-k%Zoom)/Zoom)]<<endl;
+
+
 for(int i=0;i<nx_l;i++)	
 	for(int j=0;j<=NY;j++)
 		for(int k=0;k<=NZ;k++)
 		{
-		
-			if (Solids[s_c+i][j][k]==0)
+			//cout<<(s_c+i-(s_c+i)%Zoom)/Zoom<<"   "<<(j-j%Zoom)/Zoom<<"  "<<(k-k%Zoom)/Zoom<<endl;
+
+			if (Solids[int((s_c+i-(s_c+i)%Zoom)/Zoom)][int((j-j%Zoom)/Zoom)][int((k-k%Zoom)/Zoom)]==0)
 				{
 			
 				Solid[i][j][k]=Count;
@@ -789,21 +822,6 @@ if (Zoom>1)
 	nz=(nz)/Zoom;	
 	}
 
-/*
-//*************THIN SOLID BOUNDARY MESH REFINEDMENT**************
-if (Zoom>1)
-	{
-	nx0=(nx0-1)/Zoom+1;
-	ny0=(ny0-1)/Zoom+1;
-	nz0=(nz0-1)/Zoom+1;
-
-	nx=(nx-1)/Zoom+1;
-	ny=(ny-1)/Zoom+1;
-	nz=(nz-1)/Zoom+1;	
-	}
-//****************************************************************
-*/
-
 
 
 if (mirX==1)
@@ -818,6 +836,10 @@ double pore;
 int i, j, k,ir,jr,kr;
 
 Solid_Int = new int[nx*ny*nz];
+
+
+
+	
 
 if (rank==0)
 {
@@ -917,22 +939,20 @@ FILE *ftest;
 	
 	cout<<"INPUT FILE READING COMPLETE.  THE POROSITY IS: "<<*porosity<<endl;
 
-	//cout<<NX<<"  "<<NY<<"  "<<NZ<<"  zoom"<<Zoom<<endl;
+	//cout<<nx<<"  "<<ny<<"  "<<nz<<"  zoom "<<Zoom<<endl;
 
-	for (i=0;i<=NX;i++)
-		for (j=0;j<(NY+1);j++)
-			for (k=0;k<(NZ+1);k++)
-			Solids[i][j][k]=0;
 	
-	if (Zoom<=1)
-	{
-	for (i=0;i<=NX;i++)
-		for (j=0;j<(NY+1);j++)
-			for (k=0;k<(NZ+1);k++)
-			Solids[i][j][k]=Solid_Int[i*(NY+1)*(NZ+1)+j*(NZ+1)+k];
-	}
-	else
-	{
+	for (i=0;i<nx;i++)
+		for (j=0;j<ny;j++)
+			for (k=0;k<nz;k++)
+			Solids[i][j][k]=Solid_Int[i*(ny)*(nz)+j*(nz)+k];
+
+//cout<<"asdfasdfasdfasdfa"<<endl;
+MPI_Barrier(MPI_COMM_WORLD);
+
+
+
+	
 /*
 //*************THIN SOLID BOUNDARY MESH REFINEDMENT**************
 	
@@ -983,7 +1003,7 @@ FILE *ftest;
 		}
 //******************************************************************************
 */
-
+/*
 	for (i=0;i<nx;i++)
 		for (j=0;j<(ny);j++)
 			for (k=0;k<(nz);k++)
@@ -996,7 +1016,7 @@ FILE *ftest;
 
 	}
 	
-
+*/
 	delete [] Solid_Int;
 
 
@@ -2500,7 +2520,7 @@ for(int i=1; i<Count; i++)
 }
 
 
-
+/*
 void Geometry(int*** Solid)	
 {	
 	int rank = MPI :: COMM_WORLD . Get_rank ();
@@ -2597,6 +2617,100 @@ for(int k=0;k<NZ0;k++)
 		
 }
 
+*/
+
+
+
+void Geometry(int*** Solid)	
+{	
+	int rank = MPI :: COMM_WORLD . Get_rank ();
+	int mpi_size=MPI :: COMM_WORLD . Get_size ();
+
+	const int root_rank=0;
+
+	
+	int nx_g[mpi_size];
+	int disp[mpi_size];
+
+	
+	MPI_Gather(&nx_l,1,MPI_INT,nx_g,1,MPI_INT,root_rank,MPI_COMM_WORLD);
+	
+	if (rank==root_rank)
+		{
+		disp[0]=0;
+	
+		for (int i=1;i<mpi_size;i++)
+			disp[i]=disp[i-1]+nx_g[i-1];
+		}
+
+	
+	MPI_Bcast(&disp,mpi_size,MPI_INT,0,MPI_COMM_WORLD);
+	
+	
+	
+	int NX0=NX+1;
+	int NY0=NY+1;
+	int NZ0=NZ+1;
+
+if (mir==0)
+	{	
+	if (mirX==1)
+		NX0=NX0/2;
+	if (mirY==1)
+		NY0=NY0/2;
+	if (mirZ==1)
+		NZ0=NZ0/2;
+	}
+
+
+	ostringstream name;
+	name<<outputfile<<"LBM_Geometry"<<".vtk";
+	if (rank==root_rank)
+	{
+
+	ofstream out;
+	out.open(name.str().c_str());
+	out<<"# vtk DataFile Version 2.0"<<endl;
+	out<<"J.Yang Lattice Boltzmann Simulation 3D Single Phase-Solid-Geometry"<<endl;
+	out<<"ASCII"<<endl;
+	out<<"DATASET STRUCTURED_POINTS"<<endl;
+	out<<"DIMENSIONS         "<<NZ0<<"         "<<NY0<<"         "<<NX0<<endl;
+	out<<"ORIGIN 0 0 0"<<endl;
+	out<<"SPACING 1 1 1"<<endl;
+	out<<"POINT_DATA     "<<NX0*NY0*NZ0<<endl;
+	out<<"SCALARS sample_scalars float"<<endl;
+	out<<"LOOKUP_TABLE default"<<endl;
+	out.close();
+	}
+	
+	
+
+
+	for (int processor=0;processor<mpi_size;processor++)
+	{
+		if (rank==processor) 
+		{
+		ofstream out(name.str().c_str(),ios::app);
+		for(int i=0;i<nx_l;i++)
+			if (i+disp[rank]<NX0)
+        		for(int j=0; j<NY0; j++)
+				for(int k=0;k<NZ0;k++)
+				//	out<<1<<endl;
+				if (Solid[i][j][k]<=0)
+					out<<1<<endl;
+				else
+					out<<0<<endl;
+		out.close();
+		}
+		MPI_Barrier(MPI_COMM_WORLD);
+	}
+	
+	
+		
+}
+
+
+
 
 void output_velocity(int m,double* rho,double** u,int MirX,int MirY,int MirZ,int mir,int*** Solid)	
 {
@@ -2605,8 +2719,8 @@ void output_velocity(int m,double* rho,double** u,int MirX,int MirY,int MirZ,int
 	const int mpi_size=MPI :: COMM_WORLD . Get_size ();
 	const int root_rank=0;
 	
-	int* nx_g = new int[mpi_size];
-	int* disp = new int[mpi_size];
+	int nx_g[mpi_size];
+	int disp[mpi_size];
 
 	
 	MPI_Gather(&nx_l,1,MPI_INT,nx_g,1,MPI_INT,root_rank,MPI_COMM_WORLD);
@@ -2615,43 +2729,13 @@ void output_velocity(int m,double* rho,double** u,int MirX,int MirY,int MirZ,int
 	if (rank==root_rank)
 		{
 		disp[0]=0;
-		for (int i=0;i<mpi_size;i++)
-			nx_g[i]*=(NY+1)*(NZ+1)*3;
 
 		for (int i=1;i<mpi_size;i++)
 			disp[i]=disp[i-1]+nx_g[i-1];
 		}
 	
 
-	double* rbuf_v;
-	double* v_storage = new double[nx_l*(NY+1)*(NZ+1)*3];
-
-
-	for (int i=0;i<nx_l;i++)
-		for (int j=0;j<=NY;j++)
-			for(int k=0;k<=NZ;k++)
-			{
-			if (Solid[i][j][k]>0)
-				{
-				v_storage[i*(NY+1)*(NZ+1)*3+j*(NZ+1)*3+k*3]=u[Solid[i][j][k]][0];
-				v_storage[i*(NY+1)*(NZ+1)*3+j*(NZ+1)*3+k*3+1]=u[Solid[i][j][k]][1];
-				v_storage[i*(NY+1)*(NZ+1)*3+j*(NZ+1)*3+k*3+2]=u[Solid[i][j][k]][2];
-				}				
-			else
-				{
-				v_storage[i*(NY+1)*(NZ+1)*3+j*(NZ+1)*3+k*3]=0;
-				v_storage[i*(NY+1)*(NZ+1)*3+j*(NZ+1)*3+k*3+1]=0;
-				v_storage[i*(NY+1)*(NZ+1)*3+j*(NZ+1)*3+k*3+2]=0;
-				}
-			}
-
-	if (rank==root_rank)
-		rbuf_v= new double[(NX+1)*(NY+1)*(NZ+1)*3];
-
-
-	//MPI_Barrier(MPI_COMM_WORLD);
-	MPI_Gatherv(v_storage,nx_l*(NY+1)*(NZ+1)*3,MPI_DOUBLE,rbuf_v,nx_g,disp,MPI_DOUBLE,root_rank,MPI_COMM_WORLD);
-
+	
 
 	int NX0=NX+1;
 	int NY0=NY+1;
@@ -2668,34 +2752,54 @@ if (mir==0)
 	}
 
 
-
-	if (rank==root_rank)
-	{
 	ostringstream name;
 	name<<outputfile<<"LBM_velocity_Vector_"<<m<<".vtk";
+	if (rank==root_rank)
+	{
+
 	ofstream out;
 	out.open(name.str().c_str());
 	out<<"# vtk DataFile Version 2.0"<<endl;
 	out<<"J.Yang Lattice Boltzmann Simulation 3D Single Phase-Velocity"<<endl;
 	out<<"ASCII"<<endl;
 	out<<"DATASET STRUCTURED_POINTS"<<endl;
-	out<<"DIMENSIONS         "<<NX0<<"         "<<NY0<<"         "<<NZ0<<endl;
+	out<<"DIMENSIONS         "<<NZ0<<"         "<<NY0<<"         "<<NX0<<endl;
 	out<<"ORIGIN 0 0 0"<<endl;
 	out<<"SPACING 1 1 1"<<endl;
 
 	out<<"POINT_DATA     "<<NX0*NY0*NZ0<<endl;
 	out<<"VECTORS sample_vectors double"<<endl;
 	out<<endl;
-	//out<<"LOOKUP_TABLE default"<<endl;
-	for(int k=0;k<NZ0;k++)
-      		for(int j=0; j<NY0; j++)
-			{
-			for(int i=0;i<NX0;i++)
-        		out<<rbuf_v[i*(NY+1)*(NZ+1)*3+j*(NZ+1)*3+k*3]<<" "<<rbuf_v[i*(NY+1)*(NZ+1)*3+j*(NZ+1)*3+k*3+1]<<" "<<rbuf_v[i*(NY+1)*(NZ+1)*3+j*(NZ+1)*3+k*3+2]<<" "<<endl;
-			//out<<endl;
-			}
-			
+
 	out.close();
+	}
+
+
+	
+			
+	
+	for (int processor=0;processor<mpi_size;processor++)
+	{
+		if (rank==processor) 
+		{
+		ofstream out(name.str().c_str(),ios::app);
+		for(int i=0;i<nx_l;i++)
+			if (i+disp[rank]<NX0)
+        		for(int j=0; j<NY0; j++)
+				for(int k=0;k<NZ0;k++)
+				if (Solid[i][j][k]>0)
+				out<<u[Solid[i][j][k]][2]<<" "<<u[Solid[i][j][k]][1]<<" "<<u[Solid[i][j][k]][0]<<endl;
+				else
+				out<<0.0<<" "<<0.0<<" "<<0.0<<endl;
+
+
+		out.close();
+		}
+		MPI_Barrier(MPI_COMM_WORLD);
+	}
+
+
+
 	
 /*	ostringstream name2;
 	name2<<"LBM_velocity_"<<m<<".out";
@@ -2709,15 +2813,8 @@ if (mir==0)
 		}
 */
 	
-	}
+	
 
-	if (rank==root_rank)
-		{		
-		delete [] rbuf_v;
-		}
-	delete [] nx_g;
-	delete [] disp;
-	delete [] v_storage;
 	
 
 		
@@ -2732,8 +2829,8 @@ void output_density(int m,double* rho,int MirX,int MirY,int MirZ,int mir,int*** 
 	const int root_rank=0;
 	
 
-	int* nx_g = new int[mpi_size];
-	int* disp = new int[mpi_size];
+	int nx_g[mpi_size];
+	int disp[mpi_size];
 
 	
 	MPI_Gather(&nx_l,1,MPI_INT,nx_g,1,MPI_INT,root_rank,MPI_COMM_WORLD);
@@ -2742,34 +2839,11 @@ void output_density(int m,double* rho,int MirX,int MirY,int MirZ,int mir,int*** 
 	if (rank==root_rank)
 		{
 		disp[0]=0;
-		for (int i=0;i<mpi_size;i++)
-			nx_g[i]*=(NY+1)*(NZ+1);
-
+	
 		for (int i=1;i<mpi_size;i++)
 			disp[i]=disp[i-1]+nx_g[i-1];
 		}
 	
-
-	double* rbuf_rho;
-	double* rho_storage = new double[nx_l*(NY+1)*(NZ+1)];
-
-
-	for (int i=0;i<nx_l;i++)
-		for (int j=0;j<=NY;j++)
-			for(int k=0;k<=NZ;k++)
-			{
-			if (Solid[i][j][k]>0)
-				rho_storage[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]=rho[Solid[i][j][k]];
-			else
-				rho_storage[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]=1.0;
-			}
-
-	if (rank==root_rank)
-		rbuf_rho= new double[(NX+1)*(NY+1)*(NZ+1)];
-
-	
-	//MPI_Barrier(MPI_COMM_WORLD);	
-	MPI_Gatherv(rho_storage,nx_l*(NY+1)*(NZ+1),MPI_DOUBLE,rbuf_rho,nx_g,disp,MPI_DOUBLE,root_rank,MPI_COMM_WORLD);
 
 	
 	int NX0=NX+1;
@@ -2786,47 +2860,47 @@ void output_density(int m,double* rho,int MirX,int MirY,int MirZ,int mir,int*** 
 		NZ0=NZ0/2;
 	}
 
-	if (rank==root_rank)
-	{
-	
 	ostringstream name;
 	name<<outputfile<<"LBM_Density_"<<m<<".vtk";
+	if (rank==root_rank)
+	{
 	ofstream out;
 	out.open(name.str().c_str());
 	out<<"# vtk DataFile Version 2.0"<<endl;
 	out<<"J.Yang Lattice Boltzmann Simulation 3D Single Phase-Solid-Density"<<endl;
 	out<<"ASCII"<<endl;
 	out<<"DATASET STRUCTURED_POINTS"<<endl;
-	out<<"DIMENSIONS         "<<NX0<<"         "<<NY0<<"         "<<NZ0<<endl;
+	out<<"DIMENSIONS         "<<NZ0<<"         "<<NY0<<"         "<<NX0<<endl;
 	out<<"ORIGIN 0 0 0"<<endl;
 	out<<"SPACING 1 1 1"<<endl;
 	out<<"POINT_DATA     "<<NX0*NY0*NZ0<<endl;
 	out<<"SCALARS sample_scalars float"<<endl;
 	out<<"LOOKUP_TABLE default"<<endl;
-
-        for(int k=0;k<NZ0;k++)
-      		for(int j=0; j<NY0; j++)
-			for(int i=0;i<NX0;i++)
-				out<<"		"<<rbuf_rho[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]<<endl;
-
 	out.close();
+
+	}
+        
+
 				
+	for (int processor=0;processor<mpi_size;processor++)
+	{
+		if (rank==processor) 
+		{
+		ofstream out(name.str().c_str(),ios::app);
+		for(int i=0;i<nx_l;i++)
+			if (i+disp[rank]<NX0)
+        		for(int j=0; j<NY0; j++)
+				for(int k=0;k<NZ0;k++)
+				if (Solid[i][j][k]>0)
+				out<<rho[Solid[i][j][k]]<<endl;
+				else
+				out<<1.0<<endl;
+		out.close();
+		}
+		MPI_Barrier(MPI_COMM_WORLD);
 	}
 	
-	//int lss=0;
-	//if (rank==0)	
-	//	for (int i=1;i<=SumCount;i++)
-//			lss+=rbuf_rho[i];
-//		cout<<lss<<endl;
-	//cout<<SumCount<<endl;
 	
-	if (rank==root_rank)
-		{		
-		delete [] rbuf_rho;
-		}
-	delete [] nx_g;
-	delete [] disp;
-	delete [] rho_storage;
 
 		
 }
