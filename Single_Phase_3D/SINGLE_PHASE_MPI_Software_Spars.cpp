@@ -2070,8 +2070,6 @@ void comput_macro_variables_IMR( double* rho,double** u,double** u0,double** f,d
 
 void comput_macro_variables( double* rho,double** u,double** u0,double** f,double** F,double* forcex, double* forcey, double* forcez,int* SupInv,int*** Solid)
 {
-//	int rank = MPI :: COMM_WORLD . Get_rank ();
-//	int mpi_size=MPI :: COMM_WORLD . Get_size ();
 	
 	
 
@@ -2097,25 +2095,11 @@ void comput_macro_variables( double* rho,double** u,double** u0,double** f,doubl
 					u[i][2]+=e[k][2]*f[i][k];
 					}
 				
-				//cout<<f[i][2]<<endl;
 
 				u[i][0]=(u[i][0]+dt*forcex[i]/2)/rho[i];
 				u[i][1]=(u[i][1]+dt*forcey[i]/2)/rho[i];
 				u[i][2]=(u[i][2]+dt*forcez[i]/2)/rho[i];
 				
-		//=============================DEBUG=======================================
-	/*
-				if ((n%10==0) and (n<=1000))
-					{
-					forcex[i]=gx*0.01*n/10;
-					forcey[i]=gy*0.01*n/10;
-					forcez[i]=gz*0.01*n/10;
-					
-					}
-*/
-
-		//===========================================================================
-
 
 		
 			}
@@ -2619,15 +2603,21 @@ for(int k=0;k<NZ0;k++)
 
 */
 
+//OUTPUT SUBROUTAINS:
+//ALL THE OUTPUTS ARE TRANSFERED TO PROCESSOR 0, AND EXPORT TO DAT FILE BY PROCESSOR 0
 
 
 void Geometry(int*** Solid)	
 {	
 	int rank = MPI :: COMM_WORLD . Get_rank ();
 	int mpi_size=MPI :: COMM_WORLD . Get_size ();
-
+	MPI_Status status;
+	MPI_Request request;
+	
 	const int root_rank=0;
 
+	int* send;
+	int* rece;
 	
 	int nx_g[mpi_size];
 	int disp[mpi_size];
@@ -2684,26 +2674,75 @@ if (mir==0)
 	}
 	
 	
-
-
-	for (int processor=0;processor<mpi_size;processor++)
+	send = new int[nx_l*NY0*NZ0];
+	for (int i=0;i<nx_l;i++)
+		for (int j=0;j<NY0;j++)
+			for (int k=0;k<NZ0;k++)
+			send[i*NY0*NZ0+j*NZ0+k]=Solid[i][j][k];
+		
+	
+	if (rank==0)
 	{
-		if (rank==processor) 
+	ofstream out(name.str().c_str(),ios::app);
+	for(int i=0;i<nx_l;i++)
+        	for(int j=0; j<NY0; j++)
+			for(int k=0;k<NZ0;k++)
+			if (Solid[i][j][k]<=0)
+				out<<1<<endl;
+			else
+				out<<0<<endl;
+	out.close();
+	}
+	
+	MPI_Barrier(MPI_COMM_WORLD);
+	
+	for (int processor=1;processor<mpi_size;processor++)
+	{	
+		
+		if (rank==0)
+			rece = new int[nx_g[processor]*NY0*NZ0];
+		
+		
+		MPI_Barrier(MPI_COMM_WORLD);
+		if (rank==processor)
+			MPI_Isend(send,nx_l*NY0*NZ0,MPI_INT,0,processor,MPI_COMM_WORLD,&request);
+			
+		
+		
+		if (rank==0)
+			MPI_Irecv(rece,nx_g[processor]*NY0*NZ0,MPI_INT,processor,processor,MPI_COMM_WORLD,&request);
+		
+		
+		if ((rank==0) or (rank==processor))
+			MPI_Wait(&request,&status);
+			
+		
+		if (rank==0)
 		{
 		ofstream out(name.str().c_str(),ios::app);
-		for(int i=0;i<nx_l;i++)
-			if (i+disp[rank]<NX0)
+		
+		for(int i=0;i<nx_g[processor];i++)
+			if (i+disp[processor]<NX0)
         		for(int j=0; j<NY0; j++)
 				for(int k=0;k<NZ0;k++)
-				//	out<<1<<endl;
-				if (Solid[i][j][k]<=0)
+
+				{
+				if (rece[i*NY0*NZ0+j*NZ0+k]<=0)
 					out<<1<<endl;
 				else
 					out<<0<<endl;
+				}
+	
 		out.close();
 		}
-		MPI_Barrier(MPI_COMM_WORLD);
+		
+		
+		if (rank==0)
+			delete [] rece;
+		
 	}
+
+	delete [] send;
 	
 	
 		
@@ -2721,7 +2760,13 @@ void output_velocity(int m,double* rho,double** u,int MirX,int MirY,int MirZ,int
 	
 	int nx_g[mpi_size];
 	int disp[mpi_size];
+	        
+	MPI_Status status;
+	MPI_Request request;
 
+	double* send;
+	double* rece;
+	
 	
 	MPI_Gather(&nx_l,1,MPI_INT,nx_g,1,MPI_INT,root_rank,MPI_COMM_WORLD);
 	
@@ -2775,30 +2820,89 @@ if (mir==0)
 	}
 
 
+	send = new double[nx_l*NY0*NZ0*3];
+	for (int i=0;i<nx_l;i++)
+		for (int j=0;j<NY0;j++)
+			for (int k=0;k<NZ0;k++)
+			if (Solid[i][j][k]>0)
+			{
+			send[i*NY0*NZ0*3+j*NZ0*3+k*3]=u[Solid[i][j][k]][0];
+			send[i*NY0*NZ0*3+j*NZ0*3+k*3+1]=u[Solid[i][j][k]][1];
+			send[i*NY0*NZ0*3+j*NZ0*3+k*3+2]=u[Solid[i][j][k]][2];
+			}
+			else
+			        {
+			        send[i*NY0*NZ0*3+j*NZ0*3+k*3]=0.0;
+			        send[i*NY0*NZ0*3+j*NZ0*3+k*3+1]=0.0;
+			        send[i*NY0*NZ0*3+j*NZ0*3+k*3+2]=0.0;        
+			        }
+			        
+			        
 	
-			
+			        
 	
-	for (int processor=0;processor<mpi_size;processor++)
+	if (rank==0)
 	{
-		if (rank==processor) 
+	ofstream out(name.str().c_str(),ios::app);
+	for(int i=0;i<nx_l;i++)
+        	for(int j=0; j<NY0; j++)
+			for(int k=0;k<NZ0;k++)
+			if (Solid[i][j][k]>0)
+				out<<u[Solid[i][j][k]][2]<<" "<<u[Solid[i][j][k]][1]<<" "<<u[Solid[i][j][k]][0]<<endl;
+			else
+				out<<0.0<<" "<<0.0<<" "<<0.0<<endl;
+			
+	out.close();
+	}
+	
+	MPI_Barrier(MPI_COMM_WORLD);
+	
+	for (int processor=1;processor<mpi_size;processor++)
+	{	
+		
+		if (rank==0)
+			rece = new double[nx_g[processor]*NY0*NZ0*3];
+		
+		
+		MPI_Barrier(MPI_COMM_WORLD);
+		if (rank==processor)
+			MPI_Isend(send,nx_l*NY0*NZ0*3,MPI_DOUBLE,0,processor,MPI_COMM_WORLD,&request);
+		
+		
+		
+		if (rank==0)
+		{
+		        
+			MPI_Irecv(rece,nx_g[processor]*NY0*NZ0*3,MPI_DOUBLE,processor,processor,MPI_COMM_WORLD,&request);
+		}
+		
+		if ((rank==0) or (rank==processor))
+			MPI_Wait(&request,&status);
+			
+		MPI_Barrier(MPI_COMM_WORLD);
+		
+		if (rank==0)
 		{
 		ofstream out(name.str().c_str(),ios::app);
-		for(int i=0;i<nx_l;i++)
-			if (i+disp[rank]<NX0)
+		
+		for(int i=0;i<nx_g[processor];i++)
+			if (i+disp[processor]<NX0)
         		for(int j=0; j<NY0; j++)
 				for(int k=0;k<NZ0;k++)
-				if (Solid[i][j][k]>0)
-				out<<u[Solid[i][j][k]][2]<<" "<<u[Solid[i][j][k]][1]<<" "<<u[Solid[i][j][k]][0]<<endl;
-				else
-				out<<0.0<<" "<<0.0<<" "<<0.0<<endl;
+				out<<rece[i*NY0*NZ0*3+j*NZ0*3+k*3+2]<<" "<<rece[i*NY0*NZ0*3+j*NZ0*3+k*3+1]<<" "<<rece[i*NY0*NZ0*3+j*NZ0*3+k*3]<<endl;	
 
-
+		
 		out.close();
 		}
-		MPI_Barrier(MPI_COMM_WORLD);
+		
+		
+		if (rank==0)
+			delete [] rece;
+		
 	}
 
-
+	delete [] send;
+	
 
 	
 /*	ostringstream name2;
@@ -2828,6 +2932,14 @@ void output_density(int m,double* rho,int MirX,int MirY,int MirZ,int mir,int*** 
 	const int mpi_size=MPI :: COMM_WORLD . Get_size ();
 	const int root_rank=0;
 	
+	double rho_0=1.0;
+	
+	
+	MPI_Status status;
+	MPI_Request request;
+
+	double* send;
+	double* rece;
 
 	int nx_g[mpi_size];
 	int disp[mpi_size];
@@ -2880,29 +2992,79 @@ void output_density(int m,double* rho,int MirX,int MirY,int MirZ,int mir,int*** 
 
 	}
         
-
-				
-	for (int processor=0;processor<mpi_size;processor++)
+	send = new double[nx_l*NY0*NZ0];
+	for (int i=0;i<nx_l;i++)
+		for (int j=0;j<NY0;j++)
+			for (int k=0;k<NZ0;k++)
+			if (Solid[i][j][k]>0)
+			send[i*NY0*NZ0+j*NZ0+k]=rho[Solid[i][j][k]];
+			else
+			send[i*NY0*NZ0+j*NZ0+k]=rho_0;
+		
+		
+		
+	if (rank==0)
 	{
-		if (rank==processor) 
-		{
-		ofstream out(name.str().c_str(),ios::app);
-		for(int i=0;i<nx_l;i++)
-			if (i+disp[rank]<NX0)
-        		for(int j=0; j<NY0; j++)
-				for(int k=0;k<NZ0;k++)
-				if (Solid[i][j][k]>0)
+	ofstream out(name.str().c_str(),ios::app);
+	for(int i=0;i<nx_l;i++)
+        	for(int j=0; j<NY0; j++)
+			for(int k=0;k<NZ0;k++)
+			if (Solid[i][j][k]>0)
 				out<<rho[Solid[i][j][k]]<<endl;
-				else
-				out<<1.0<<endl;
-		out.close();
-		}
-		MPI_Barrier(MPI_COMM_WORLD);
+			else
+				out<<rho_0<<endl;
+			
+	out.close();
 	}
 	
+	MPI_Barrier(MPI_COMM_WORLD);
 	
+	for (int processor=1;processor<mpi_size;processor++)
+	{	
+		
+		if (rank==0)
+			rece = new double[nx_g[processor]*NY0*NZ0];
+		
+		
+		MPI_Barrier(MPI_COMM_WORLD);
+		if (rank==processor)
+			MPI_Isend(send,nx_l*NY0*NZ0,MPI_DOUBLE,0,processor,MPI_COMM_WORLD,&request);
+		
+		
+		
+		if (rank==0)
+		{
+		        
+			MPI_Irecv(rece,nx_g[processor]*NY0*NZ0,MPI_DOUBLE,processor,processor,MPI_COMM_WORLD,&request);
+		}
+		
+		if ((rank==0) or (rank==processor))
+			MPI_Wait(&request,&status);
+			
+		MPI_Barrier(MPI_COMM_WORLD);
+		
+		if (rank==0)
+		{
+		ofstream out(name.str().c_str(),ios::app);
+		
+		for(int i=0;i<nx_g[processor];i++)
+			if (i+disp[processor]<NX0)
+        		for(int j=0; j<NY0; j++)
+				for(int k=0;k<NZ0;k++)
+				out<<rece[i*NY0*NZ0+j*NZ0+k]<<endl;	
 
 		
+		out.close();
+		}
+		
+		
+		if (rank==0)
+			delete [] rece;
+		
+	}
+
+	delete [] send;
+
 }
 
 
