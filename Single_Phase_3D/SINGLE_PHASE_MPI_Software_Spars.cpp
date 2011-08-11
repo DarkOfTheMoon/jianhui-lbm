@@ -2193,7 +2193,7 @@ for (int i=0;i<nx_l;i++)
 		                 F[Solid[i][NY][k]][ks]=feq(ks,1.0,u_yp);
 		if ((yn==1) && (Solid[i][0][k]>0))
 		        if (Solid[i][1][k]>0)
-		                 F[Solid[i][0][k]][ks]=feq(ks,rho[Solid[i][1][k]],u_yp);
+		                 F[Solid[i][0][k]][ks]=feq(ks,rho[Solid[i][1][k]],u_yn);
 		         else
 		                 F[Solid[i][0][k]][ks]=feq(ks,1.0,u_yn);      
 		}
@@ -2210,7 +2210,7 @@ for (int i=0;i<nx_l;i++)
 		                F[Solid[i][j][NZ]][ks]=feq(ks,1.0,u_zp); 
 		if ((zn==1) && (Solid[i][j][0]>0))
 		        if (Solid[i][j][1]>0)
-		                F[Solid[i][j][NZ]][ks]=feq(ks,rho[Solid[i][j][1]],u_zp);
+		                F[Solid[i][j][NZ]][ks]=feq(ks,rho[Solid[i][j][1]],u_zn);
 		        else
 		                F[Solid[i][j][0]][ks]=feq(ks,1.0,u_zn);
 		}
