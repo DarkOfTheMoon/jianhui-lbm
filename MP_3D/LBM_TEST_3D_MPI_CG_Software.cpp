@@ -5,7 +5,9 @@
 #include<fstream>
 #include<sstream>
 #include<string>
+#include<math.h>
 # include "mpi.h"
+
 
 
 #define MAXN 100
@@ -19,62 +21,19 @@ struct mat{
 
 
 
-//D2Q9 STANDARD LATTICE MRT LATTICE BOLTZMANN METHOD
+//D3Q19 STANDARD LATTICE MRT LATTICE BOLTZMANN METHOD
 //UNIFORM MESH, LATTICE VELOCITY 1
 
 
 using namespace std;        
-
-
-void init(double***, double****, double****,double***, double****, double[19],int[19][3],bool***, double***, double***, double***, double[19], int, int, int,double,double,double,double,int,int,int,double,double);
-
-void cylinder_creation(int, int, double);
-
-
-void collision(double***, double****, double****,double****, double***, double****, double****, double[19],int[19][3],double[19][19], double[19][19], double[19],double***, double***, double***, int, int, int,bool***,double,double,int);   
-
-
-void periodic_streaming(double***, double****, double****,double****, double***, double****, double****, double[19],int[19][3],double[19][19], double[19][19], double[19],double***, double***, double***, int, int, int,bool***,double,double,int);
-
-void comput_macro_variables(double***, double****,double****,double****,double****, double***, int[19][3],bool***, double***, double***, double***,int,int, int,double);
-
-void standard_bounceback_boundary(int,int,int, double****,double****);
-
-void evolution(double***, double****,double****,double****);
-
-double Error(double****,double****,int,int,int,double*,double*);
-
-void output_velocity(int, double****,int,int,int);
-
-void output_velocity_Vector(int, double****,int,int,int);
-
-void output_density(int, double***,int,int,int);
-
-void output_psi(int, double***,int,int,int,bool ***);
-
-void Read_Rock(bool*** ,int,int,int,int,int,int,double*, char[128]);
-
-void Read_psi(double***,int,int,int,int,int, int,char[128]);
-
-double S[19];
-
-void Comput_MI(double[19][19], double[19][19]);
-int inverse(mat &a);
-
-void Geometry(bool***, int,int,int );	
-
-double Comput_Perm(double***,double****,double*,double*,int,int,int,double,double ,double ,int );
-
-double Comput_Saturation(double*** ,bool*** ,int,int,int);
+const int Q=19;          
+int NX,NY,NZ;
 
 int mirX=0;
 int mirY=0;
 int mirZ=0;
 
-
-double ca=0.04;
-double kappa,CM;
-
+double CapA;
 int in_IMR,wr_per,pre_xp,pre_xn,pre_yp,pre_yn,pre_zp,pre_zn,Zoom;
 int vel_xp,vel_xn,vel_yp,vel_yn,vel_zp,vel_zn,freRe,freVe,freDe,frePsi,PerDir,mir;
 double in_vis,p_xp,p_xn,p_yp,p_yn,p_zp,p_zn,reso,porosity,Re_l,Re_g;
@@ -83,50 +42,30 @@ int vtk_time,n_max;
 int Par_Geo,Par_nx,Par_ny,Par_nz;
 double gx,gy,gz,niu_l,niu_g,ContactAngle_parameter,Permeability;
 
-char filename[128],filenamepsi[128],outputfile[128];
 
+double u_max;
 
-int main (int argc , char * argv [])
-{
-MPI :: Init (argc , argv );
-MPI_Status status ;
+char filename[128],filenamepsi[128];
 
-int rank = MPI :: COMM_WORLD . Get_rank ();
-int para_size=MPI :: COMM_WORLD . Get_size ();
+double tau_l;
+double tau_g;
 
+double rho_l=1.0;
+double rho_g=1.0;
 
-
-const int Q=19;          
-int NX,NY,NZ;		
+double a_l=0.6;
+double a_g=0.2;
 
 
 
-double s_v=1.0;
-double v_max,u_ave,error_Per;
-double Per_l[3],Per_g[3];
+//----------
+double s_e;
+double s_eps;
+double s_q;
+//----------
 
-/*
-double M[19][19]=
-{{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-{-30,-11,-11,-11,-11,-11,-11,8,8,8,8,8,8,8,8,8,8,8,8},
-{12,-4,-4,-4,-4,-4,-4,1,1,1,1,1,1,1,1,1,1,1,1},
-{0,1,-1,0,0,0,0,1,-1,1,-1,0,0,0,0,1,-1,1,-1},
-{0,-4,4,0,0,0,0,1,-1,1,-1,0,0,0,0,1,-1,1,-1},
-{0,0,0,1,-1,0,0,1,1,-1,-1,1,-1,1,-1,0,0,0,0},
-{0,0,0,-4,4,0,0,4,4,-4,-4,4,-4,4,-4,0,0,0,0},
-{0,0,0,0,0,1,-1,0,0,0,0,1,1,-1,-1,1,1,-1,-1},
-{0,0,0,0,0,-4,4,0,0,0,0,1,1,-1,-1,1,1,-1,-1},
-{0,2,2,-1,-1,-1,-1,1,1,1,1,-2,-2,-2,-2,1,1,1,1},
-{0,-4,-4,5,5,5,5,4,4,4,4,-2,-2,-2,-2,1,1,1,1},
-{0,0,0,1,1,-1,-1,1,1,1,1,0,0,0,0,-1,-1,-1,-1},
-{0,0,0,-2,-2,2,2,1,1,1,1,0,0,0,0,-1,-1,-1,-1},
-{0,0,0,0,0,0,0,1,-1,-1,1,0,0,0,0,0,0,0,0},
-{0,0,0,0,0,0,0,0,0,0,0,1,-1,-1,1,0,0,0,0},
-{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,-1,-1,1},
-{0,0,0,0,0,0,0,1,-1,1,-1,0,0,0,0,-1,1,-1,1},
-{0,0,0,0,0,0,0,-1,-1,1,1,1,-1,1,-1,0,0,0,0},
-{0,0,0,0,0,0,0,0,0,0,0,-1,-1,1,1,1,1,-1,-1}};
-*/
+double s_v;
+double eta;
 
 double M[19][19]=
 {{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
@@ -150,11 +89,87 @@ double M[19][19]=
 {0,0,0,0,0,0,0,0,0,0,0,-1,-1,1,1,1,1,-1,-1}};
 
 
+
+
 double MI[19][19];
-double S[19];
+
+
+
+
+
+
 
 double m[19];
 double meq[19];
+
+
+
+
+
+double uMax,c,Re,dx,dy,Lx,Ly,dt,rho0,P0,tau_f,niu,SFx,SFy;
+
+
+
+
+void init(double***, double***, double****, double****, double****, double***, double***, double***, bool***);
+
+void cylinder_creation(int, int, double);
+
+void collision(double*** ,double*** , double**** ,double**** ,double****,bool***,double***,double***,double*** );
+
+void Read_Rock(bool*** ,double* ,char[128]);
+
+void Read_psi(double*** ,char[128]);
+
+void periodic_streaming(double**** ,double**** , double**** , double**** );
+
+void comput_macro_variables(double***, double***, double****,double****,double****,double****,bool***,double***,double***,double***);
+
+void standard_bounceback_boundary(int,int,int, double****, double**** );
+
+void evolution(double***, double****,double****,double****);
+
+double Error(double****,double****,double*,double*);
+
+
+void output_velocity_Vector(int, double****);
+void output_density(int, double***);
+
+double feq(double[3],double, double,int);
+
+double S[19];
+
+void Comput_MI(double[19][19], double[19][19]);
+int inverse(mat &a);
+
+void Geometry(bool***);	
+
+void output_psi(int,double***,bool*** );
+
+double Comput_Perm(double***,double****,double*,double*,int,int,int,double,double ,double ,int );
+
+double Comput_Saturation(double*** ,bool*** ,int,int,int);
+
+int n;
+int e[19][3]=
+{{0,0,0},{1,0,0,},{-1,0,0},{0,1,0},{0,-1,0},{0,0,1},{0,0,-1},{1,1,0},{-1,1,0},{1,-1,0},{-1,-1,0},{0,1,1},
+{0,-1,1},{0,1,-1},{0,-1,-1},{1,0,1},{-1,0,1},{1,0,-1},{-1,0,-1}};
+double w[19]={1.0/3.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0};
+double error;
+
+int main(int argc , char * argv [])
+{	
+
+double v_max,u_ave;
+
+MPI :: Init (argc , argv );
+MPI_Status status ;
+
+int rank = MPI :: COMM_WORLD . Get_rank ();
+int para_size=MPI :: COMM_WORLD . Get_size ();
+
+double error_Per;
+double Per_l[3],Per_g[3];
 
 int NCHAR=128;
 
@@ -182,8 +197,7 @@ if (rank==0)
 	fin >> niu_l;					fin.getline(dummy, NCHAR);
 	fin >> niu_g;					fin.getline(dummy, NCHAR);
 	fin >> ContactAngle_parameter;			fin.getline(dummy, NCHAR);
-	fin >> kappa;					fin.getline(dummy, NCHAR);
-	fin >> CM;					fin.getline(dummy, NCHAR);
+	fin >> CapA;					fin.getline(dummy, NCHAR);
 	fin >> inivx >> inivy >> inivz;			fin.getline(dummy, NCHAR);
 	fin >> Permeability;				fin.getline(dummy, NCHAR);
 							fin.getline(dummy, NCHAR);
@@ -197,14 +211,12 @@ if (rank==0)
 							fin.getline(dummy, NCHAR);
 	fin >> Par_Geo >> Par_nx >> Par_ny >> Par_nz;	fin.getline(dummy, NCHAR);
 	fin >> Zoom;					fin.getline(dummy, NCHAR);
-	fin >> outputfile;				fin.getline(dummy, NCHAR);
-
+	
 	fin.close();
 	
 
 	NX=NX-1;NY=NY-1;NZ=NZ-1;
 	}
-
 
 	MPI_Bcast(&filename,128,MPI_CHAR,0,MPI_COMM_WORLD);MPI_Bcast(&filenamepsi,128,MPI_CHAR,0,MPI_COMM_WORLD);
 	MPI_Bcast(&mirX,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&NX,1,MPI_INT,0,MPI_COMM_WORLD);
@@ -233,9 +245,9 @@ if (rank==0)
 	MPI_Bcast(&freVe,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&freDe,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&mir,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&niu_l,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 	MPI_Bcast(&niu_g,1,MPI_DOUBLE,0,MPI_COMM_WORLD); MPI_Bcast(&ContactAngle_parameter,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
-	MPI_Bcast(&frePsi,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&kappa,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
-	MPI_Bcast(&CM,1,MPI_DOUBLE,0,MPI_COMM_WORLD);MPI_Bcast(&Permeability,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
-	MPI_Bcast(&Zoom,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&outputfile,128,MPI_CHAR,0,MPI_COMM_WORLD);
+	MPI_Bcast(&frePsi,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&CapA,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Bcast(&Permeability,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Bcast(&Zoom,1,MPI_INT,0,MPI_COMM_WORLD);
 
 
 
@@ -256,48 +268,40 @@ if (Zoom>1)
 	}
 
 
-int n;
-int e[19][3]=
-{{0,0,0},{1,0,0,},{-1,0,0},{0,1,0},{0,-1,0},{0,0,1},{0,0,-1},{1,1,0},{-1,1,0},{1,-1,0},{-1,-1,0},{0,1,1},
-{0,-1,1},{0,1,-1},{0,-1,-1},{1,0,1},{-1,0,1},{1,0,-1},{-1,0,-1}};
-double w[19]={1.0/3.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0};
 
-	double error;
+
+
+
+if ( (NX+1)%(MPI :: COMM_WORLD . Get_size ())!=0) exit (0);
+
+	inivx=0;inivy=0;inivz=0;
 
 	double ****u;
 	double ****u0;
 	double ****f;
 	double ***rho;
-	double ****F;
-	bool*** Solid;
-	double*** forcex;
-	double*** forcey;
-	double*** forcez;
-	double ****g;
-	double ****Fg;
 	double ***psi;
-
-
-if ( (NX+1)%(MPI :: COMM_WORLD . Get_size ())!=0) 
-        {      if (rank==0)
-                        cout<<"The computational domain cannot be divided by the given number of CPUs "<<endl;     
-                exit (0);
-        }
+	double ****g;
+	double ****F;
+	double ****Fg;
+	double ***forcex;
+	double ***forcey;
+	double ***forcez;
+	bool ***Solid;
 
   // Allocate memory
   	u = new double***[(NX+1)/para_size];
 	u0 = new double***[(NX+1)/para_size];
 	f = new double***[(NX+1)/para_size];
+	g = new double***[(NX+1)/para_size];
 	rho = new double**[(NX+1)/para_size];
+	psi = new double**[(NX+1)/para_size];
 	F = new double***[(NX+1)/para_size];
-	Solid = new bool**[(NX+1)/para_size];
+	Fg = new double***[(NX+1)/para_size];
 	forcex = new double**[(NX+1)/para_size];
 	forcey = new double**[(NX+1)/para_size];
 	forcez = new double**[(NX+1)/para_size];
-	psi = new double**[(NX+1)/para_size];
-	g = new double***[(NX+1)/para_size];
-	Fg =  new double***[(NX+1)/para_size];
-
+	Solid = new bool**[(NX+1)/para_size];
 
   for (int i = 0; i < (NX+1)/para_size; i++) 
 {
@@ -305,53 +309,52 @@ if ( (NX+1)%(MPI :: COMM_WORLD . Get_size ())!=0)
     	u[i] = new double**[NY+1];
 	u0[i] = new double**[NY+1];
 	f[i] = new double**[NY+1];
+	g[i] = new double**[NY+1];
 	F[i] = new double**[NY+1];
 	rho[i]=new double*[NY+1];
-	Solid[i]=new bool*[NY+1];
+	psi[i]=new double*[NY+1];
+	Fg[i] = new double**[NY+1];
 	forcex[i] = new double*[NY+1];
 	forcey[i] = new double*[NY+1];
 	forcez[i] = new double*[NY+1];
-	psi[i]=new double*[NY+1];
-	g[i]=new double**[NY+1];
-	Fg[i]=new double**[NY+1];
+	Solid[i] = new bool*[NY+1];
 
 
-	
     for (int j = 0; j < NY+1; j++)
 	{
       	u[i][j] = new double*[NZ+1];
 	u0[i][j] = new double*[NZ+1];
 	f[i][j] = new double*[NZ+1];
+	g[i][j] = new double*[NZ+1];
 	rho[i][j]= new double[NZ+1];
 	F[i][j] = new double*[NZ+1];
+	psi[i][j]= new double[NZ+1];
+	Fg[i][j] = new double*[NZ+1];
+	forcex[i][j] = new double[NZ+1];
+	forcey[i][j] = new double[NZ+1];
+	forcez[i][j] = new double[NZ+1];
 	Solid[i][j] = new bool[NZ+1];
-	forcex[i][j]= new double[NZ+1];
-	forcey[i][j]= new double[NZ+1];
-	forcez[i][j]= new double[NZ+1];
-	psi[i][j]=new double[NZ+1];
-	g[i][j]=new double*[NZ+1];
-	Fg[i][j]=new double*[NZ+1];
+
 
 	for (int k=0;k<NZ+1;k++)
 		{
 		u[i][j][k] = new double[3];
 		u0[i][j][k] = new double[3];
 		f[i][j][k] = new double[19];
-		F[i][j][k] = new double[19];
 		g[i][j][k] = new double[19];
-		Fg[i][j][k]= new double[19];
+		F[i][j][k] = new double[19];
+		Fg[i][j][k] = new double[19];
 		}
 	}
   }
 
 
 Comput_MI(M,MI);
-n=0;
+
 
 
 	using namespace std;
-	init(rho,u,f,psi,g,w,e,Solid,forcex,forcey,forcez,S,NX,NY,NZ,s_v,gx,gy,gz,mirX,mirY,mirZ,niu_l,niu_g);Geometry(Solid,NX,NY,NZ);
-
+	init(rho,psi,u,f,g,forcex,forcey,forcez,Solid);Geometry(Solid);
 
 char FileName[128]="Results.txt";
 char FileName2[128]="Permeability.txt";
@@ -371,21 +374,24 @@ if (wr_per==1)
 
 	fins.open(FileName3,ios::out);
 	fins.close();
+		
 	
-	
+
 	for(n=0;n<=n_max;n++)
 	{
 
-	collision(rho,u,f,g,psi,F,Fg,w,e,M,MI,S,forcex,forcey,forcez,NX,NY,NZ,Solid,niu_l,niu_g,n);
+
+	collision(rho,psi,u,f,g,Solid,forcex,forcey,forcez);
 	
-	periodic_streaming(rho,u,f,g,psi,F,Fg,w,e,M,MI,S,forcex,forcey,forcez,NX,NY,NZ,Solid,niu_l,niu_g,n);//cout<<"mark"<<endl;
 
+	periodic_streaming(f,F,g,Fg);
+													
+  	comput_macro_variables(rho,psi,u,u0,f,g,Solid,forcex,forcey,forcez); 
 
-  	comput_macro_variables(rho,u,u0,f,g,psi,e,Solid,forcex,forcey,forcez,NX,NY,NZ,ContactAngle_parameter); 
-
-		if(n%freRe==0)
+		
+	if(n%freRe==0)
 		{       
-			error=Error(u,u0,NX,NY,NZ,&v_max,&u_ave);
+			error=Error(u,u0,&v_max,&u_ave);
 			error_Per=Comput_Perm(psi,u,Per_l,Per_g,NX,NY,NZ,gx,gy,gz,PerDir);
 			S_l=Comput_Saturation(psi,Solid,NX,NY,NZ);
 			
@@ -454,19 +460,17 @@ if (wr_per==1)
 			if(n>=0)
 			{
 				if ((freDe>=0) and (n%freDe==0))
-						output_density(n,rho,NX,NY,NZ);
+						output_density(n,rho);
 				if ((frePsi>=0) and (n%frePsi==0))
-						output_psi(n,psi,NX,NY,NZ,Solid);
+						output_psi(n,psi,Solid);
 				if ((freVe>=0) and (n%freVe==0))
-						output_velocity_Vector(n,u,NX,NY,NZ);
+						output_velocity_Vector(n,u);
 					
-				if(error!=error) {cout<<"PROGRAM STOP"<<endl;break;};
+				//if(error!=error) {cout<<"PROGRAM STOP"<<endl;break;};
 			}
 
 		}
 	}
-
-
 
 
  for (int i = 0; i < (NX+1)/para_size; i++) 
@@ -479,8 +483,8 @@ if (wr_per==1)
 			delete [] u0[i][j][k];
 			delete [] f[i][j][k];
 			delete [] F[i][j][k];
-			delete [] Fg[i][j][k];
 			delete [] g[i][j][k];
+			delete [] Fg[i][j][k];
 			}
 
     		delete [] u[i][j];
@@ -488,14 +492,13 @@ if (wr_per==1)
 		delete [] f[i][j];
 		delete [] F[i][j];
 		delete [] rho[i][j];
-		delete [] Solid[i][j];
+		delete [] g[i][j];
+		delete [] Fg[i][j];
+		delete [] psi[i][j];
 		delete [] forcex[i][j];
 		delete [] forcey[i][j];
 		delete [] forcez[i][j];
-		delete [] Fg[i][j];
-		delete [] g[i][j];
-		delete [] psi[i][j];
-
+		delete [] Solid[i][j];
 
   		}
   	delete [] u[i];
@@ -503,16 +506,13 @@ if (wr_per==1)
 	delete [] f[i];
 	delete [] F[i];
 	delete [] rho[i];
-	delete [] Solid[i];
+	delete [] g[i];
+	delete [] Fg[i];
+	delete [] psi[i];
 	delete [] forcex[i];
 	delete [] forcey[i];
-	delete [] forcez[i];	
-	delete [] Fg[i];
-	delete [] g[i];
-	delete [] psi[i];
-
-
-
+	delete [] forcez[i];
+	delete [] Solid[i];
 
 	}
 
@@ -521,15 +521,14 @@ if (wr_per==1)
 	delete [] f;
 	delete [] F;
 	delete [] rho;
-	delete [] Solid;
+	delete [] g;
+	delete [] Fg;
+	delete [] psi;
 	delete [] forcex;
 	delete [] forcey;
-	delete [] forcez;	
-	delete [] Fg;
-	delete [] g;
-	delete [] psi;
+	delete [] forcez;
+	delete [] Solid;
 
-	
 	MPI :: Finalize ();
 }
 
@@ -600,65 +599,29 @@ mat a;
 }
 
 
+void init(double*** rho, double*** psi,double**** u, double**** f,double**** g, double*** forcex,double*** forcey,double*** forcez,bool*** Solid)
 
-
-void init(double*** rho, double**** u, double**** f,double*** psi, double**** g,double w[19], int e[19][3],bool*** Solid, double*** forcex, double*** forcey, double*** forcez, double S[19], int NX,int NY, int NZ, double s_v, double gx,double gy,double gz,int mirX,int mirY,int mirZ,double niu_l,double niu_g)
 {	
-        //=================
-        //double res[9][9];
-        //=================
+      
 	int rank = MPI :: COMM_WORLD . Get_rank ();
 	int mpi_size=MPI :: COMM_WORLD . Get_size ();
-
-	double Cylinder_r=7;
-	double usqr,vsqr;
-	double dx=1.0;
-	double dy=1.0;
-	double Lx=dx*double(NX);
-	double Ly=dy*double(NY);
-	double dt=1;//sqrt(3);
-	double c=dx/dt;
-	double rho0=1.0;
- 	double uMax=0.00;
-	double Re=100.0;
-	//forcex=gx;forcey=gy;
-	//niu=U*Lx/Re;
-	double niu=uMax*Cylinder_r*2/Re;
-	double tau_f=3.0*niu+0.5;
 	
-	double pr; //raduis of the obstacles
-        
-
-	
+ 
 
 	double u_tmp[3];
 
-	S[0]=0;
-	S[1]=1;
-	S[2]=1;
-	S[3]=0;
-	S[4]=1;
-	S[5]=0;
-	S[6]=1;
-	S[7]=0;
-	S[8]=1;
-	S[9]=s_v;
-	S[10]=1;
-	S[11]=s_v;
-	S[12]=1;
-	S[13]=s_v;
-	S[14]=s_v;
-	S[15]=s_v;
-	S[16]=1;
-	S[17]=1;
-	S[18]=1;
 
 
-	if (!(filename=="NOSOLID"))
+	tau_l=3.0*niu_l+0.5;
+	tau_g=3.0*niu_g+0.5;
+
+
+
+if (!(filename=="NOSOLID"))
 		
-		Read_Rock(Solid,NX,NY,NZ,mirX,mirY,mirZ,&porosity,filename);
-		
-	else
+	Read_Rock(Solid,&porosity,filename);
+
+else
 		{
 		for(int i=0;i<(NX+1)/mpi_size;i++)	
 			for(int j=0;j<=NY;j++)
@@ -666,26 +629,47 @@ void init(double*** rho, double**** u, double**** f,double*** psi, double**** g,
 				Solid[i][j][k]=0;
 		}
 
-	Read_psi(psi,NX,NY,NZ,mirX,mirY,mirZ,filenamepsi);
+	Read_psi(psi,filenamepsi);
 
 	
 for(int i=0;i<(NX+1)/mpi_size;i++)	
 	for(int j=0;j<=NY;j++)
 		for(int k=0;k<=NZ;k++)		
 		{    
-		
 
                         
 			u[i][j][k][0]=inivx;
 			u[i][j][k][1]=inivy;
 			u[i][j][k][2]=inivz;
+
 			u_tmp[0]=u[i][j][k][0];
 			u_tmp[1]=u[i][j][k][1];
 			u_tmp[2]=u[i][j][k][2];
 
-			rho[i][j][k]=1.0;
 			
 			
+			
+			if (psi[i][j][k]==1.0)
+				{
+				rho[i][j][k]=rho_l;
+				for (int m=0;m<19;m++)
+					{
+					f[i][j][k][m]=feq(u_tmp,rho_l,a_l,m);
+					g[i][j][k][m]=0.0;
+					}
+
+				}
+			else
+				
+				{
+				rho[i][j][k]=rho_g;
+				for (int m=0;m<19;m++)
+					{
+		
+					g[i][j][k][m]=feq(u_tmp,rho_g,a_g,m);
+					f[i][j][k][m]=0.0;
+					}
+				}
 			
 
 			//***********************************************************************
@@ -693,14 +677,8 @@ for(int i=0;i<(NX+1)/mpi_size;i++)
 			forcex[i][j][k]=gx;
 			forcey[i][j][k]=gy;
 			forcez[i][j][k]=gz;
-			
-			
 
-
-			s_v=niu_g+(psi[i][j][k]+1.0)/2.0*(niu_l-niu_g);
-			s_v=1.0/(3*s_v+0.5);
 			
-			S[9]=s_v;S[11]=s_v;S[13]=s_v;S[14]=s_v;S[15]=s_v;
 
 
 
@@ -708,531 +686,61 @@ for(int i=0;i<(NX+1)/mpi_size;i++)
 			//***********************************************************************
 
 
-		
+			//INITIALIZATION OF m and f
 
 		
+		if (Solid[i][j][k]==1)
+				{
+				rho[i][j][k]=rho_l*ContactAngle_parameter;
+				
+				for (int m=0;m<19;m++)
+				{
+				u_tmp[0]=0.0;u_tmp[1]=0.0;u_tmp[2]=0.0;
+				g[i][j][k][m]=0.0;
+				f[i][j][k][m]=feq(u_tmp,rho[i][j][k],a_l,m);
+
+				}
+
+				}
+                        
 		
 
 	}
 
-		
-		
 
 
 	 	
 }
 
 
-
-
-
-void periodic_streaming(double*** rho,double**** u,double**** f,double**** g, double*** psi,double**** F, double**** Fg,double w[19], int e[19][3],double M[19][19], double MI[19][19], double S[19],double*** forcex, double*** forcey, double*** forcez,int NX,int NY,int NZ,bool*** Solid,double niu_l,double niu_g,int n)
+double feq(double u_t[3],double rhos, double alfa,int ind)
 {
 
-	MPI_Status status[4] ;
-	MPI_Request request[4];
-
+double tmp,uu,eu;
 	
-	int rank = MPI :: COMM_WORLD . Get_rank ();
-	int mpi_size=MPI :: COMM_WORLD . Get_size ();
+	uu=u_t[0]*u_t[0]+u_t[1]*u_t[1]+u_t[2]*u_t[2];
+	eu=e[ind][0]*u_t[0]+e[ind][1]*u_t[1]+e[ind][2]*u_t[2];
 
-	int Buf_Size=(NY+1)*(NZ+1)*19;
-	
-	double* swapl= new double[Buf_Size];
-	double* swapr= new double[Buf_Size];
-	double* swapl_g= new double[Buf_Size];
-	double* swapr_g= new double[Buf_Size];
-	
-
-
-	
-for (int j=0;j<=NY;j++)
-	for(int k=0;k<=NZ;k++)
-		for(int l=0;l<19;l++)
-		{
-		swapl[j*(NZ+1)*19+k*19+l]=f[0][j][k][l];
-		swapr[j*(NZ+1)*19+k*19+l]=f[(NX+1)/mpi_size-1][j][k][l];
-		swapl_g[j*(NZ+1)*19+k*19+l]=g[0][j][k][l];
-		swapr_g[j*(NZ+1)*19+k*19+l]=g[(NX+1)/mpi_size-1][j][k][l];
-		}
-	
-
-
-if (rank==0)
-		{
-		MPI_Isend(swapr, (NY+1)*(NZ+1)*19, MPI_DOUBLE, rank+1, rank*2+1, MPI_COMM_WORLD,&request[0]);
-      		MPI_Isend(swapl, (NY+1)*(NZ+1)*19, MPI_DOUBLE, mpi_size-1, rank*2, MPI_COMM_WORLD,&request[1]);
-		MPI_Irecv(swapr , (NY+1)*(NZ+1)*19, MPI_DOUBLE, rank+1, (rank+1)*2, MPI_COMM_WORLD,&request[2]);		
-      		MPI_Irecv(swapl, (NY+1)*(NZ+1)*19, MPI_DOUBLE, mpi_size-1, (mpi_size-1)*2+1, MPI_COMM_WORLD,&request[3] );
-
-		}
+	tmp=0;
+	/*
+	if (ind==0)
+		tmp=rhos*(alfa-0.5*uu);
+	else
+		if ((ind>=1) and (ind <=6))
+			tmp=rhos*(1.0/18.0*(1-alfa)+1.0/6.0*eu+1.0/4.0*eu*eu-1.0/12.0*uu);
 		else
-		if (rank==mpi_size-1)
-			{
-			MPI_Isend(swapl, (NY+1)*(NZ+1)*19, MPI_DOUBLE, rank-1, rank*2, MPI_COMM_WORLD,&request[0]);
-      			MPI_Isend(swapr, (NY+1)*(NZ+1)*19, MPI_DOUBLE, 0, rank*2+1, MPI_COMM_WORLD,&request[1]);
-			MPI_Irecv(swapl, (NY+1)*(NZ+1)*19, MPI_DOUBLE, rank-1, (rank-1)*2+1, MPI_COMM_WORLD,&request[2] );
-      			MPI_Irecv(swapr, (NY+1)*(NZ+1)*19, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD,&request[3]);
-			
-			}
-			else
-			{
-			MPI_Isend(swapl, (NY+1)*(NZ+1)*19, MPI_DOUBLE, rank-1, rank*2, MPI_COMM_WORLD,&request[0]);
-      			MPI_Isend(swapr, (NY+1)*(NZ+1)*19, MPI_DOUBLE, rank+1, rank*2+1, MPI_COMM_WORLD,&request[1]);
-			MPI_Irecv(swapl, (NY+1)*(NZ+1)*19, MPI_DOUBLE, rank-1, (rank-1)*2+1, MPI_COMM_WORLD,&request[2]);
-      			MPI_Irecv(swapr, (NY+1)*(NZ+1)*19, MPI_DOUBLE, rank+1, (rank+1)*2, MPI_COMM_WORLD,&request[3]);
-			
-			};
-
+			tmp=rhos*(1.0/18.0*(1-alfa)+1.0/12.0*eu+1.0/8.0*eu*eu-1.0/24.0*uu);
+	*/
+	tmp=w[ind]*rhos*(1.0+3.0*eu+4.5*eu*eu-1.5*uu);
+	return(tmp);
 	
-	MPI_Waitall(4,request, status);
-
-
-
-if (rank==0)
-		{
-		MPI_Isend(swapr_g, (NY+1)*(NZ+1)*19, MPI_DOUBLE, rank+1, rank*2+1, MPI_COMM_WORLD,&request[0]);
-      		MPI_Isend(swapl_g, (NY+1)*(NZ+1)*19, MPI_DOUBLE, mpi_size-1, rank*2, MPI_COMM_WORLD,&request[1]);
-		MPI_Irecv(swapr_g, (NY+1)*(NZ+1)*19, MPI_DOUBLE, rank+1, (rank+1)*2, MPI_COMM_WORLD,&request[2]);		
-      		MPI_Irecv(swapl_g, (NY+1)*(NZ+1)*19, MPI_DOUBLE, mpi_size-1, (mpi_size-1)*2+1, MPI_COMM_WORLD,&request[3] );
-
-		}
-		else
-		if (rank==mpi_size-1)
-			{
-			MPI_Isend(swapl_g, (NY+1)*(NZ+1)*19, MPI_DOUBLE, rank-1, rank*2, MPI_COMM_WORLD,&request[0]);
-      			MPI_Isend(swapr_g, (NY+1)*(NZ+1)*19, MPI_DOUBLE, 0, rank*2+1, MPI_COMM_WORLD,&request[1]);
-			MPI_Irecv(swapl_g, (NY+1)*(NZ+1)*19, MPI_DOUBLE, rank-1, (rank-1)*2+1, MPI_COMM_WORLD,&request[2] );
-      			MPI_Irecv(swapr_g, (NY+1)*(NZ+1)*19, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD,&request[3]);
-			
-			}
-			else
-			{
-			MPI_Isend(swapl_g, (NY+1)*(NZ+1)*19, MPI_DOUBLE, rank-1, rank*2, MPI_COMM_WORLD,&request[0]);
-      			MPI_Isend(swapr_g, (NY+1)*(NZ+1)*19, MPI_DOUBLE, rank+1, rank*2+1, MPI_COMM_WORLD,&request[1]);
-			MPI_Irecv(swapl_g, (NY+1)*(NZ+1)*19, MPI_DOUBLE, rank-1, (rank-1)*2+1, MPI_COMM_WORLD,&request[2]);
-      			MPI_Irecv(swapr_g, (NY+1)*(NZ+1)*19, MPI_DOUBLE, rank+1, (rank+1)*2, MPI_COMM_WORLD,&request[3]);
-			
-			};
-
-	
-	MPI_Waitall(4,request, status);
-
-
-
-int ip,jp,kp;
-for(int i=0;i<(NX+1)/mpi_size;i++)	
-	for(int j=0;j<=NY;j++)
-		for(int k=0;k<=NZ;k++)
-			//if (!interior_node(i,j))
-                        for(int lm=0;lm<19;lm++)
-
-
-			{       
-
-				ip=i-e[lm][0];
-				jp=j-e[lm][1];if (jp<0) {jp=NY;}; if (jp>NY) {jp=0;};
-				kp=k-e[lm][2];if (kp<0) {kp=NZ;}; if (kp>NZ) {kp=0;};
-				if (ip<0)
-					{
-					F[i][j][k][lm]=swapl[jp*(NZ+1)*19+kp*19+lm];
-					Fg[i][j][k][lm]=swapl_g[jp*(NZ+1)*19+kp*19+lm];
-					}
-				if (ip>(NX+1)/mpi_size-1)
-					{
-					F[i][j][k][lm]=swapr[jp*(NZ+1)*19+kp*19+lm];
-					Fg[i][j][k][lm]=swapr_g[jp*(NZ+1)*19+kp*19+lm];
-					}
-				if ((ip>=0) and (ip<=(NX+1)/mpi_size-1))
-					{
-					F[i][j][k][lm]=f[ip][jp][kp][lm];
-					Fg[i][j][k][lm]=g[ip][jp][kp][lm];
-					}
-					
-			}
-			
-
-
-
-	for(int i=0;i<(NX+1)/mpi_size;i++)	
-		for(int j=0;j<=NY;j++)
-			for(int k=0;k<=NZ;k++)
-				for(int lm=0;lm<19;lm++)
-				{                		
-				f[i][j][k][lm]=F[i][j][k][lm];
-				g[i][j][k][lm]=Fg[i][j][k][lm];
-				}
-
-	delete [] swapl;
-	delete [] swapr;
-	delete [] swapl_g;
-	delete [] swapr_g;
-
-
 
 }
 
 
-void collision(double*** rho,double**** u,double**** f,double**** g, double*** psi,double**** F, double**** Fg,double w[19], int e[19][3],double M[19][19], double MI[19][19], double S[19],double*** forcex, double*** forcey, double*** forcez,int NX,int NY,int NZ,bool*** Solid,double niu_l,double niu_g,int n)
-{
 
-	MPI_Status status[4] ;
-	MPI_Request request[4];
 
-	
-	int rank = MPI :: COMM_WORLD . Get_rank ();
-	int mpi_size=MPI :: COMM_WORLD . Get_size ();
-
-	
-	
-	
-	double* swapl_r = new double[(NY+1)*(NZ+1)];
-	double* swapr_r = new double[(NY+1)*(NZ+1)];
-	double* swapl_psi = new double[(NY+1)*(NZ+1)];
-	double* swapr_psi = new double[(NY+1)*(NZ+1)];
-
-
-double lm0,lm1,s_v;
-double A,B,C,D,E;
-double F_hat[19],GuoF[19],f_eq[19];
-double m_l[19],meq[19];;
-double feq[19],feq_g[19],Fi[19];
-
-A=1.0/6.0;
-B=1.0/12.0;
-C=1.0/3.0;
-D=1.0/6.0;
-E=-6*C-12*D;
-
-//=========================CONSTANT DEFINITION FOR EQUILIBRIUM COMPUTING=====================================
-double px[19]={0.0,A,-A,0.0,0.0,0.0,0.0,B,-B,B,-B,0.0,0.0,0.0,0.0,B,-B,B,-B};
-double pz[19]={0.0,0.0,0.0,0.0,0.0,A,-A,0.0,0.0,0.0,0.0,B,B,-B,-B,B,B,-B,-B};
-double py[19]={0.0,0.0,0.0,A,-A,0.0,0.0,B,B,-B,-B,B,-B,B,-B,0.0,0.0,0.0,0.0};
-double lap[19]={E,C,C,C,C,C,C,D,D,D,D,D,D,D,D,D,D,D,D};
-double delta[3][3]={{1.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,1.0}};
-double ome[19][6]={{0.0,0.0,0.0,0.0,0.0,0.0},
-		{5.0/12.0,-1.0/3.0,-1.0/3.0,0.0,0.0,0.0},{5.0/12.0,-1.0/3.0,-1.0/3.0,0.0,0.0,0.0},
-		{-1.0/3.0,5.0/12.0,-1.0/3.0,0.0,0.0,0.0},{-1.0/3.0,5.0/12.0,-1.0/3.0,0.0,0.0,0.0},
-		{-1.0/3.0,-1.0/3.0,5.0/12.0,0.0,0.0,0.0},{-1.0/3.0,-1.0/3.0,5.0/12.0,0.0,0.0,0.0},
-		{-1.0/24.0,-1.0/24.0,1.0/12.0,1.0/4.0,0.0,0.0},{-1.0/24.0,-1.0/24.0,1.0/12.0,-1.0/4.0,0.0,0.0},
-		{-1.0/24.0,-1.0/24.0,1.0/12.0,-1.0/4.0,0.0,0.0},{-1.0/24.0,-1.0/24.0,1.0/12.0,1.0/4.0,0.0,0.0},
-		{1.0/12.0,-1.0/24.0,-1.0/24.0,0.0,1.0/4.0,0.0},{1.0/12.0,-1.0/24.0,-1.0/24.0,0.0,-1.0/4.0,0.0},
-		{1.0/12.0,-1.0/24.0,-1.0/24.0,0.0,-1.0/4.0,0.0},{1.0/12.0,-1.0/24.0,-1.0/24.0,0.0,1.0/4.0,0.0},
-		{-1.0/24.0,1.0/12.0,-1.0/24.0,0.0,0.0,1.0/4.0},{-1.0/24.0,1.0/12.0,-1.0/24.0,0.0,0.0,-1.0/4.0},
-		{-1.0/24.0,1.0/12.0,-1.0/24.0,0.0,0.0,-1.0/4.0},{-1.0/24.0,1.0/12.0,-1.0/24.0,0.0,0.0,1.0/4.0}};
-
-
-double p0;
-double T=0.56; 		//TEMPRETURE FOR NONIDEAL SYSTEM
-double a=9.0/49.0;  	//PARAMETER FOR DEFINITION OF EQUATION OF STATE
-double b=2.0/21.0;	//PARAMETER FOR DEFINITION OF EQUATION OF STATE
-double par[3],par_r[3],delxy,delxy_r;
-
-	
-for (int j=0;j<=NY;j++)
-	for(int k=0;k<=NZ;k++)
-		{
-		swapl_r[j*(NZ+1)+k]=rho[0][j][k];
-		swapr_r[j*(NZ+1)+k]=rho[(NX+1)/mpi_size-1][j][k];
-		swapl_psi[j*(NZ+1)+k]=psi[0][j][k];
-		swapr_psi[j*(NZ+1)+k]=psi[(NX+1)/mpi_size-1][j][k];
-		}
-
-
-if (rank==0)
-		{
-		MPI_Isend(swapr_r, (NY+1)*(NZ+1), MPI_DOUBLE, rank+1, rank*2+1, MPI_COMM_WORLD,&request[0]);
-      		MPI_Isend(swapl_r, (NY+1)*(NZ+1), MPI_DOUBLE, mpi_size-1, rank*2, MPI_COMM_WORLD,&request[1]);
-		MPI_Irecv(swapr_r , (NY+1)*(NZ+1), MPI_DOUBLE, rank+1, (rank+1)*2, MPI_COMM_WORLD,&request[2]);		
-      		MPI_Irecv(swapl_r, (NY+1)*(NZ+1), MPI_DOUBLE, mpi_size-1, (mpi_size-1)*2+1, MPI_COMM_WORLD,&request[3] );
-
-		}
-		else
-		if (rank==mpi_size-1)
-			{
-			MPI_Isend(swapl_r, (NY+1)*(NZ+1), MPI_DOUBLE, rank-1, rank*2, MPI_COMM_WORLD,&request[0]);
-      			MPI_Isend(swapr_r, (NY+1)*(NZ+1), MPI_DOUBLE, 0, rank*2+1, MPI_COMM_WORLD,&request[1]);
-			MPI_Irecv(swapl_r, (NY+1)*(NZ+1), MPI_DOUBLE, rank-1, (rank-1)*2+1, MPI_COMM_WORLD,&request[2] );
-      			MPI_Irecv(swapr_r, (NY+1)*(NZ+1), MPI_DOUBLE, 0, 0, MPI_COMM_WORLD,&request[3]);
-			
-			}
-			else
-			{
-			MPI_Isend(swapl_r, (NY+1)*(NZ+1), MPI_DOUBLE, rank-1, rank*2, MPI_COMM_WORLD,&request[0]);
-      			MPI_Isend(swapr_r, (NY+1)*(NZ+1), MPI_DOUBLE, rank+1, rank*2+1, MPI_COMM_WORLD,&request[1]);
-			MPI_Irecv(swapl_r, (NY+1)*(NZ+1), MPI_DOUBLE, rank-1, (rank-1)*2+1, MPI_COMM_WORLD,&request[2]);
-      			MPI_Irecv(swapr_r, (NY+1)*(NZ+1), MPI_DOUBLE, rank+1, (rank+1)*2, MPI_COMM_WORLD,&request[3]);
-			
-			};
-
-	
-	MPI_Waitall(4,request, status);
-
-if (rank==0)
-		{
-		MPI_Isend(swapr_psi, (NY+1)*(NZ+1), MPI_DOUBLE, rank+1, rank*2+1, MPI_COMM_WORLD,&request[0]);
-      		MPI_Isend(swapl_psi, (NY+1)*(NZ+1), MPI_DOUBLE, mpi_size-1, rank*2, MPI_COMM_WORLD,&request[1]);
-		MPI_Irecv(swapr_psi , (NY+1)*(NZ+1), MPI_DOUBLE, rank+1, (rank+1)*2, MPI_COMM_WORLD,&request[2]);		
-      		MPI_Irecv(swapl_psi, (NY+1)*(NZ+1), MPI_DOUBLE, mpi_size-1, (mpi_size-1)*2+1, MPI_COMM_WORLD,&request[3] );
-
-		}
-		else
-		if (rank==mpi_size-1)
-			{
-			MPI_Isend(swapl_psi, (NY+1)*(NZ+1), MPI_DOUBLE, rank-1, rank*2, MPI_COMM_WORLD,&request[0]);
-      			MPI_Isend(swapr_psi, (NY+1)*(NZ+1), MPI_DOUBLE, 0, rank*2+1, MPI_COMM_WORLD,&request[1]);
-			MPI_Irecv(swapl_psi, (NY+1)*(NZ+1), MPI_DOUBLE, rank-1, (rank-1)*2+1, MPI_COMM_WORLD,&request[2] );
-      			MPI_Irecv(swapr_psi, (NY+1)*(NZ+1), MPI_DOUBLE, 0, 0, MPI_COMM_WORLD,&request[3]);
-			
-			}
-			else
-			{
-			MPI_Isend(swapl_psi, (NY+1)*(NZ+1), MPI_DOUBLE, rank-1, rank*2, MPI_COMM_WORLD,&request[0]);
-      			MPI_Isend(swapr_psi, (NY+1)*(NZ+1), MPI_DOUBLE, rank+1, rank*2+1, MPI_COMM_WORLD,&request[1]);
-			MPI_Irecv(swapl_psi, (NY+1)*(NZ+1), MPI_DOUBLE, rank-1, (rank-1)*2+1, MPI_COMM_WORLD,&request[2]);
-      			MPI_Irecv(swapr_psi, (NY+1)*(NZ+1), MPI_DOUBLE, rank+1, (rank+1)*2, MPI_COMM_WORLD,&request[3]);
-			
-			};
-
-	
-	MPI_Waitall(4,request, status);
-
-
-
-double term1,term2,term3,tempvar;
-double lambda,miu,niu_temp;  	//NEED TO BE DETERMINED  *******
-int interi,interj,interk;
-
-	for(int i=0;i<(NX+1)/mpi_size;i++)	
-		for(int j=0;j<=NY;j++)
-			for(int m=0;m<=NZ;m++)
-			
-			if ((!Solid[i][j][m]) or (n==0))     // LIQUID PHASE SEPERATION
-                        //WARNNING:THE SOUND SPEED HERE IS sqrt(RT)=1/sqrt(3)
-
-			{
-			
-
-
-//=====================================BULK PRESSURE DEFINITION=====================================================
-
-//==============================NUMERICAL DERIVATIVES COMPUTING=(BINARY SYSTEM)============================
-		par[1]=0;par[0]=0;par[2]=0;delxy=0;par_r[1]=0;par_r[0]=0;par_r[2]=0;delxy_r=0;
-		for (int tmpi=0;tmpi<19;tmpi++)
-			{
-
-			//-------------------PERIODIC BOUNDARY CONDITION---------------------------
-			interi=i+e[tmpi][0];
-			interj=j+e[tmpi][1];if (interj<0) {interj=NY;}; if (interj>NY) {interj=0;};
-			interk=m+e[tmpi][2];if (interk<0) {interk=NZ;}; if (interk>NZ) {interk=0;};
-			//-------------------------------------------------------------------------
-			if (interi<0)
-			{
-			par_r[0]+=px[tmpi]*swapl_r[interj*(NZ+1)+interk];
-			par_r[1]+=py[tmpi]*swapl_r[interj*(NZ+1)+interk];
-			par_r[2]+=pz[tmpi]*swapl_r[interj*(NZ+1)+interk];
-
-			par[0]+=px[tmpi]*swapl_psi[interj*(NZ+1)+interk];
-			par[1]+=py[tmpi]*swapl_psi[interj*(NZ+1)+interk];
-			par[2]+=pz[tmpi]*swapl_psi[interj*(NZ+1)+interk];
-
-			delxy+=lap[tmpi]*swapl_psi[interj*(NZ+1)+interk];
-			delxy_r+=lap[tmpi]*swapl_r[interj*(NZ+1)+interk];
-			}
-
-			if (interi>(NX+1)/mpi_size-1)
-			{
-			par_r[0]+=px[tmpi]*swapr_r[interj*(NZ+1)+interk];
-			par_r[1]+=py[tmpi]*swapr_r[interj*(NZ+1)+interk];
-			par_r[2]+=pz[tmpi]*swapr_r[interj*(NZ+1)+interk];
-
-			par[0]+=px[tmpi]*swapr_psi[interj*(NZ+1)+interk];
-			par[1]+=py[tmpi]*swapr_psi[interj*(NZ+1)+interk];
-			par[2]+=pz[tmpi]*swapr_psi[interj*(NZ+1)+interk];
-
-			delxy+=lap[tmpi]*swapr_psi[interj*(NZ+1)+interk];
-			delxy_r+=lap[tmpi]*swapr_r[interj*(NZ+1)+interk];
-			}
-
-			if ((interi>=0) and (interi<=(NX+1)/mpi_size-1))
-			{
-			par_r[0]+=px[tmpi]*rho[interi][interj][interk];
-			par_r[1]+=py[tmpi]*rho[interi][interj][interk];
-			par_r[2]+=pz[tmpi]*rho[interi][interj][interk];
-
-			par[0]+=px[tmpi]*psi[interi][interj][interk];
-			par[1]+=py[tmpi]*psi[interi][interj][interk];
-			par[2]+=pz[tmpi]*psi[interi][interj][interk];
-
-			delxy+=lap[tmpi]*psi[interi][interj][interk];
-			delxy_r+=lap[tmpi]*rho[interi][interj][interk];
-			}
-			
-			
-			}
-
-	tempvar=psi[i][j][m]*psi[i][j][m];
-	p0=rho[i][j][m]/3.0+ca*(-0.5*tempvar+0.75*tempvar*tempvar);
-	lambda=0.0;
-	miu=ca*(-psi[i][j][m]+tempvar*psi[i][j][m])-kappa*delxy;
-
-//===========================================================================================================
-
-//==============================EQUILIBRIUM FUNCTION COMPUTING================================================
-
-
-
-
-	for (int k=1;k<19;k++)
-		{
-		feq[k]=0;feq_g[k]=0;
-		
-		feq[k]+=p0-kappa*psi[i][j][m]*delxy+(e[k][0]*u[i][j][m][0]+e[k][1]*u[i][j][m][1]+e[k][2]*u[i][j][m][2])*rho[i][j][m];
-		
-		term1=0;term2=0;term3=0;
-		
-		for(int ii=0;ii<=2;ii++)
-			for (int jj=0;jj<=2;jj++)
-			{
-		term1+=(e[k][ii]*e[k][jj]-(1.0/3.0)*(delta[ii][jj]))*(rho[i][j][m]*u[i][j][m][ii]*u[i][j][m][jj]+lambda*(u[i][j][m][ii]*par_r[jj]+u[i][j][m][jj]*par_r[ii]+delta[ii][jj]*(u[i][j][m][0]*par_r[0]+u[i][j][m][1]*par_r[1]+u[i][j][m][2]*par_r[2])));
-
-			term2+=1.5*(e[k][ii]*e[k][jj]-1.0/3.0*delta[ii][jj])*psi[i][j][m]*u[i][j][m][ii]*u[i][j][m][jj];
-		
-			}
-		feq_g[k]=w[k]*3.0*(2.0*CM*miu+e[k][0]*psi[i][j][m]*u[i][j][m][0]+e[k][1]*psi[i][j][m]*u[i][j][m][1]+e[k][2]*psi[i][j][m]*u[i][j][m][2]+term2);
-
-		term1*=3.0/2.0;
-		term2=kappa*(ome[k][0]*par[0]*par[0]+ome[k][1]*par[1]*par[1]+ome[k][2]*par[2]*par[2]+ome[k][3]*par[0]*par[1]+ome[k][4]*par[1]*par[2]+ome[k][5]*par[2]*par[0]);
-
-		
-		feq[k]=(term1+feq[k])*w[k]*3.0+term2;	
-		
-		}
-
-	feq[0]=rho[i][j][m]-(feq[1]+feq[2]+feq[3]+feq[4]+feq[5]+feq[6]+feq[7]+feq[8]+feq[9]+feq[10]+feq[11]+feq[12]+feq[13]+feq[14]+feq[15]+feq[16]+feq[17]+feq[18]);
-
-	feq_g[0]=psi[i][j][m]-(feq_g[1]+feq_g[2]+feq_g[3]+feq_g[4]+feq_g[5]+feq_g[6]+feq_g[7]+feq_g[8]+feq_g[9]+feq_g[10]+feq_g[11]+feq_g[12]+feq_g[13]+feq_g[14]+feq_g[15]+feq_g[16]+feq_g[17]+feq_g[18]);
-
-	
-
-	//=========================================================================================================
-
-//==========================================EQILIBRIUM FUNCTION COMPUTING FOR G FUNCTION===========================
-//***THIS PART IS FOR G FUNCTION RELAXATION TIME =1 , FOR OTHER RELAXATION TIME,MODIFICATION SHOULD BE INVOLVED****
-
-
-
-
-
-			//=================FORCE TERM_GUO=========================================
-			for (int k=0;k<19;k++)
-			{	
-			lm0=((e[k][0]-u[i][j][m][0])*forcex[i][j][m]+(e[k][1]-u[i][j][m][1])*forcey[i][j][m]+(e[k][2]-u[i][j][m][2])*forcez[i][j][m])*3;
-			lm1=(e[k][0]*u[i][j][m][0]+e[k][1]*u[i][j][m][1]+e[k][2]*u[i][j][m][2])*(e[k][0]*forcex[i][j][m]+e[k][1]*forcey[i][j][m]+e[k][2]*forcez[i][j][m])*9;
-			GuoF[k]=w[k]*(lm0+lm1);
-			//GuoF[k]=0.0;
-			}
-
-
-			
-			//=====================equilibrium of moment=================================
-			
-
-			
-			for (int l=0;l<19;l++)
-				{
-				meq[l]=0;
-				for(int lm=0;lm<19;lm++)
-				meq[l]+=M[l][lm]*feq[lm];				
-				}
-
-			//============================================================================
-
-			s_v=niu_g+(psi[i][j][m]+1.0)/2.0*(niu_l-niu_g);
-			s_v=1.0/(3*s_v+0.5);
-
-			S[9]=s_v;S[11]=s_v;S[13]=s_v;S[14]=s_v;S[15]=s_v;
-
-			// ==================   m=Mf matrix calculation  =============================
-			// ==================   F_hat=(I-.5*S)MGuoF =====================================
-				for (int mi=0; mi<19; mi++)
-					{m_l[mi]=0;F_hat[mi]=0;
-					for (int mj=0; mj<19; mj++)
-						{
-						m_l[mi]+=M[mi][mj]*f[i][j][m][mj];
-						F_hat[mi]+=M[mi][mj]*GuoF[mj];
-						}
-					F_hat[mi]*=(1-0.5*S[mi]);
-					}
-			//============================================================================
-
-
-
-				
-			
-				
-				for (int sk=0;sk<19;sk++)
-				//m[sk]=m[sk]-S[sk]*(m[sk]-meq[sk]);
-				//m[sk]=m[sk]-S[sk]*(m[sk]-meq[sk])+(1-S[sk]*F_hat[sk]/2);
-				m_l[sk]=m_l[sk]-S[sk]*(m_l[sk]-meq[sk])+F_hat[sk];
-
-			//}
-
-			// ==================   f=M_-1m matrix calculation  =============================
-				for (int mi=0; mi<19; mi++)
-					{f[i][j][m][mi]=0;
-					for (int mj=0; mj<19; mj++)
-						f[i][j][m][mi]+=MI[mi][mj]*m_l[mj];
-					}
-			//============================================================================
-
-
-			g[i][j][m][0]=feq_g[0];g[i][j][m][1]=feq_g[1];g[i][j][m][2]=feq_g[2];g[i][j][m][3]=feq_g[3];
-			g[i][j][m][4]=feq_g[4];g[i][j][m][5]=feq_g[5];g[i][j][m][6]=feq_g[6];g[i][j][m][7]=feq_g[7];
-			g[i][j][m][8]=feq_g[8];g[i][j][m][9]=feq_g[9];g[i][j][m][10]=feq_g[10];g[i][j][m][11]=feq_g[11];
-			g[i][j][m][12]=feq_g[12];g[i][j][m][13]=feq_g[13];g[i][j][m][14]=feq_g[14];g[i][j][m][15]=feq_g[15];
-			g[i][j][m][16]=feq_g[16];g[i][j][m][17]=feq_g[17];g[i][j][m][18]=feq_g[18];
-
-			if (n==0)
-			{
-			f[i][j][m][0]=feq[0];f[i][j][m][1]=feq[1];f[i][j][m][2]=feq[2];f[i][j][m][3]=feq[3];
-			f[i][j][m][4]=feq[4];f[i][j][m][5]=feq[5];f[i][j][m][6]=feq[6];f[i][j][m][7]=feq[7];
-			f[i][j][m][8]=feq[8];f[i][j][m][9]=feq[9];f[i][j][m][10]=feq[10];f[i][j][m][11]=feq[11];
-			f[i][j][m][12]=feq[12];f[i][j][m][13]=feq[13];f[i][j][m][14]=feq[14];f[i][j][m][15]=feq[15];
-			f[i][j][m][16]=feq[16];f[i][j][m][17]=feq[17];f[i][j][m][18]=feq[18];
-			}
-
-
-
-			}
-                        else    
-				
-                        		{
-					standard_bounceback_boundary(i,j,m,f,g);
-					};    //BOUNCEBACK BOUNDARY CONDITION
-
-
-
-
-
-
-
-
-
-	delete [] swapl_r;
-	delete [] swapr_r;
-	delete [] swapl_psi;
-	delete [] swapr_psi;
-
-
-
-
-
-
-
-}
-
-void Read_Rock(bool*** Solid,int NX,int NY,int NZ,int mirX,int mirY, int mirZ,double* porosity,char poreFileName[128])
+void Read_Rock(bool*** Solid,double* porosity,char poreFileName[128])
 {
 
 
@@ -1419,7 +927,7 @@ FILE *ftest;
 
 
 
-void Read_psi(double*** psi,int NX,int NY,int NZ,int mirX,int mirY, int mirZ,char poreFileName[128])
+void Read_psi(double*** psi,char poreFileName[128])
 {
 
 
@@ -1584,64 +1092,61 @@ FILE *ftest;
 
 }
 
-
-
-void comput_macro_variables( double*** rho,double**** u,double**** u0,double**** f,double**** g,double*** psi,int e[19][3],bool*** Solid, double*** forcex, double*** forcey, double*** forcez, int NX,int NY,int NZ,double ContactAngle_parameter)
+void periodic_streaming(double**** f,double**** F, double**** g, double**** Fg)
 {
+
 	MPI_Status status[4] ;
 	MPI_Request request[4];
-	int interi,interj,interk;
-	bool markmac;
+
+	
 	int rank = MPI :: COMM_WORLD . Get_rank ();
 	int mpi_size=MPI :: COMM_WORLD . Get_size ();
-	double rho0=1.0;
+
+	int Buf_Size=(NY+1)*(NZ+1)*19;
+	
+	double* swapl= new double[Buf_Size];
+	double* swapr= new double[Buf_Size];
+	double* swapl_g= new double[Buf_Size];
+	double* swapr_g= new double[Buf_Size];
+	
 
 
-	int* swapl= new int[(NY+1)*(NZ+1)];
-	int* swapr= new int[(NY+1)*(NZ+1)];
-	double* swapl_psi = new double[(NY+1)*(NZ+1)];
-	double* swapr_psi = new double[(NY+1)*(NZ+1)];
-
+	
 for (int j=0;j<=NY;j++)
 	for(int k=0;k<=NZ;k++)
+		for(int l=0;l<19;l++)
 		{
-		if (Solid[0][j][k]==1)
-		swapl[j*(NZ+1)+k]=1;
-		else
-		swapl[j*(NZ+1)+k]=0;
-		swapl_psi[j*(NZ+1)+k]=psi[0][j][k];
-
-		if (Solid[(NX+1)/mpi_size-1][j][k]==1)
-		swapr[j*(NZ+1)+k]=1;
-		else
-		swapl[j*(NZ+1)+k]=0;
-		swapr_psi[j*(NZ+1)+k]=psi[(NX+1)/mpi_size-1][j][k];
+		swapl[j*(NZ+1)*19+k*19+l]=f[0][j][k][l];
+		swapr[j*(NZ+1)*19+k*19+l]=f[(NX+1)/mpi_size-1][j][k][l];
+		swapl_g[j*(NZ+1)*19+k*19+l]=g[0][j][k][l];
+		swapr_g[j*(NZ+1)*19+k*19+l]=g[(NX+1)/mpi_size-1][j][k][l];
 		}
+	
 
 
 if (rank==0)
 		{
-		MPI_Isend(swapr, (NY+1)*(NZ+1), MPI_INT, rank+1, rank*2+1, MPI_COMM_WORLD,&request[0]);
-      		MPI_Isend(swapl, (NY+1)*(NZ+1), MPI_INT, mpi_size-1, rank*2, MPI_COMM_WORLD,&request[1]);
-		MPI_Irecv(swapr , (NY+1)*(NZ+1), MPI_INT, rank+1, (rank+1)*2, MPI_COMM_WORLD,&request[2]);		
-      		MPI_Irecv(swapl, (NY+1)*(NZ+1), MPI_INT, mpi_size-1, (mpi_size-1)*2+1, MPI_COMM_WORLD,&request[3] );
-		
+		MPI_Isend(swapr, (NY+1)*(NZ+1)*19, MPI_DOUBLE, rank+1, rank*2+1, MPI_COMM_WORLD,&request[0]);
+      		MPI_Isend(swapl, (NY+1)*(NZ+1)*19, MPI_DOUBLE, mpi_size-1, rank*2, MPI_COMM_WORLD,&request[1]);
+		MPI_Irecv(swapr , (NY+1)*(NZ+1)*19, MPI_DOUBLE, rank+1, (rank+1)*2, MPI_COMM_WORLD,&request[2]);		
+      		MPI_Irecv(swapl, (NY+1)*(NZ+1)*19, MPI_DOUBLE, mpi_size-1, (mpi_size-1)*2+1, MPI_COMM_WORLD,&request[3] );
+
 		}
 		else
 		if (rank==mpi_size-1)
 			{
-			MPI_Isend(swapl, (NY+1)*(NZ+1), MPI_INT, rank-1, rank*2, MPI_COMM_WORLD,&request[0]);
-      			MPI_Isend(swapr, (NY+1)*(NZ+1), MPI_INT, 0, rank*2+1, MPI_COMM_WORLD,&request[1]);
-			MPI_Irecv(swapl, (NY+1)*(NZ+1), MPI_INT, rank-1, (rank-1)*2+1, MPI_COMM_WORLD,&request[2] );
-      			MPI_Irecv(swapr, (NY+1)*(NZ+1), MPI_INT, 0, 0, MPI_COMM_WORLD,&request[3]);
+			MPI_Isend(swapl, (NY+1)*(NZ+1)*19, MPI_DOUBLE, rank-1, rank*2, MPI_COMM_WORLD,&request[0]);
+      			MPI_Isend(swapr, (NY+1)*(NZ+1)*19, MPI_DOUBLE, 0, rank*2+1, MPI_COMM_WORLD,&request[1]);
+			MPI_Irecv(swapl, (NY+1)*(NZ+1)*19, MPI_DOUBLE, rank-1, (rank-1)*2+1, MPI_COMM_WORLD,&request[2] );
+      			MPI_Irecv(swapr, (NY+1)*(NZ+1)*19, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD,&request[3]);
 			
 			}
 			else
 			{
-			MPI_Isend(swapl, (NY+1)*(NZ+1), MPI_INT, rank-1, rank*2, MPI_COMM_WORLD,&request[0]);
-      			MPI_Isend(swapr, (NY+1)*(NZ+1), MPI_INT, rank+1, rank*2+1, MPI_COMM_WORLD,&request[1]);
-			MPI_Irecv(swapl, (NY+1)*(NZ+1), MPI_INT, rank-1, (rank-1)*2+1, MPI_COMM_WORLD,&request[2]);
-      			MPI_Irecv(swapr, (NY+1)*(NZ+1), MPI_INT, rank+1, (rank+1)*2, MPI_COMM_WORLD,&request[3]);
+			MPI_Isend(swapl, (NY+1)*(NZ+1)*19, MPI_DOUBLE, rank-1, rank*2, MPI_COMM_WORLD,&request[0]);
+      			MPI_Isend(swapr, (NY+1)*(NZ+1)*19, MPI_DOUBLE, rank+1, rank*2+1, MPI_COMM_WORLD,&request[1]);
+			MPI_Irecv(swapl, (NY+1)*(NZ+1)*19, MPI_DOUBLE, rank-1, (rank-1)*2+1, MPI_COMM_WORLD,&request[2]);
+      			MPI_Irecv(swapr, (NY+1)*(NZ+1)*19, MPI_DOUBLE, rank+1, (rank+1)*2, MPI_COMM_WORLD,&request[3]);
 			
 			};
 
@@ -1649,13 +1154,164 @@ if (rank==0)
 	MPI_Waitall(4,request, status);
 
 
+
+if (rank==0)
+		{
+		MPI_Isend(swapr_g, (NY+1)*(NZ+1)*19, MPI_DOUBLE, rank+1, rank*2+1, MPI_COMM_WORLD,&request[0]);
+      		MPI_Isend(swapl_g, (NY+1)*(NZ+1)*19, MPI_DOUBLE, mpi_size-1, rank*2, MPI_COMM_WORLD,&request[1]);
+		MPI_Irecv(swapr_g, (NY+1)*(NZ+1)*19, MPI_DOUBLE, rank+1, (rank+1)*2, MPI_COMM_WORLD,&request[2]);		
+      		MPI_Irecv(swapl_g, (NY+1)*(NZ+1)*19, MPI_DOUBLE, mpi_size-1, (mpi_size-1)*2+1, MPI_COMM_WORLD,&request[3] );
+
+		}
+		else
+		if (rank==mpi_size-1)
+			{
+			MPI_Isend(swapl_g, (NY+1)*(NZ+1)*19, MPI_DOUBLE, rank-1, rank*2, MPI_COMM_WORLD,&request[0]);
+      			MPI_Isend(swapr_g, (NY+1)*(NZ+1)*19, MPI_DOUBLE, 0, rank*2+1, MPI_COMM_WORLD,&request[1]);
+			MPI_Irecv(swapl_g, (NY+1)*(NZ+1)*19, MPI_DOUBLE, rank-1, (rank-1)*2+1, MPI_COMM_WORLD,&request[2] );
+      			MPI_Irecv(swapr_g, (NY+1)*(NZ+1)*19, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD,&request[3]);
+			
+			}
+			else
+			{
+			MPI_Isend(swapl_g, (NY+1)*(NZ+1)*19, MPI_DOUBLE, rank-1, rank*2, MPI_COMM_WORLD,&request[0]);
+      			MPI_Isend(swapr_g, (NY+1)*(NZ+1)*19, MPI_DOUBLE, rank+1, rank*2+1, MPI_COMM_WORLD,&request[1]);
+			MPI_Irecv(swapl_g, (NY+1)*(NZ+1)*19, MPI_DOUBLE, rank-1, (rank-1)*2+1, MPI_COMM_WORLD,&request[2]);
+      			MPI_Irecv(swapr_g, (NY+1)*(NZ+1)*19, MPI_DOUBLE, rank+1, (rank+1)*2, MPI_COMM_WORLD,&request[3]);
+			
+			};
+
+	
+	MPI_Waitall(4,request, status);
+
+
+
+int ip,jp,kp;
+for(int i=0;i<(NX+1)/mpi_size;i++)	
+	for(int j=0;j<=NY;j++)
+		for(int k=0;k<=NZ;k++)
+			//if (!interior_node(i,j))
+                        for(int lm=0;lm<19;lm++)
+
+
+			{       
+
+				ip=i-e[lm][0];
+				jp=j-e[lm][1];if (jp<0) {jp=NY;}; if (jp>NY) {jp=0;};
+				kp=k-e[lm][2];if (kp<0) {kp=NZ;}; if (kp>NZ) {kp=0;};
+				if (ip<0)
+					{
+					F[i][j][k][lm]=swapl[jp*(NZ+1)*19+kp*19+lm];
+					Fg[i][j][k][lm]=swapl_g[jp*(NZ+1)*19+kp*19+lm];
+					}
+				if (ip>(NX+1)/mpi_size-1)
+					{
+					F[i][j][k][lm]=swapr[jp*(NZ+1)*19+kp*19+lm];
+					Fg[i][j][k][lm]=swapr_g[jp*(NZ+1)*19+kp*19+lm];
+
+					}
+				if ((ip>=0) and (ip<=(NX+1)/mpi_size-1))
+					{
+					F[i][j][k][lm]=f[ip][jp][kp][lm];
+					Fg[i][j][k][lm]=g[ip][jp][kp][lm];
+					}
+					
+			}
+			
+
+
+
+	for(int i=0;i<(NX+1)/mpi_size;i++)	
+		for(int j=0;j<=NY;j++)
+			for(int k=0;k<=NZ;k++)
+				for(int lm=0;lm<19;lm++)
+				{                		
+				f[i][j][k][lm]=F[i][j][k][lm];
+				g[i][j][k][lm]=Fg[i][j][k][lm];
+				}
+
+	delete [] swapl;
+	delete [] swapr;
+	delete [] swapl_g;
+	delete [] swapr_g;
+
+
+
+}
+
+
+
+void collision(double*** rho,double*** psi, double**** u,double**** f,double**** g, bool*** Solid,double*** forcex,double*** forcey,double*** forcez)
+{
+	MPI_Status status[4] ;
+	MPI_Request request[4];
+
+	
+	int rank = MPI :: COMM_WORLD . Get_rank ();
+	int mpi_size=MPI :: COMM_WORLD . Get_size ();
+	
+	double* swapl_r = new double[(NY+1)*(NZ+1)];
+	double* swapr_r = new double[(NY+1)*(NZ+1)];
+	double* swapl_psi = new double[(NY+1)*(NZ+1)];
+	double* swapr_psi = new double[(NY+1)*(NZ+1)];
+
+double lm0,lm1,eu,uv;
+double usqr,vsqr,rhor,rhob,ff,ef,ee,cospsi;
+double F_hat[19],GuoF_l[19],GuoF_g[19],feq_l[19],feq_g[19],u_tmp[3],Fterm[3],feqs[19];
+double m_l[19],fr[19],frb[19];
+int trans[19]={0,1,2,3,4,5,6,7,10,9,8,11,14,12,13,15,18,16,17};
+int ip,jp,kp;
+
+double tau;
+
+double tmps;
+
+for (int j=0;j<=NY;j++)
+	for(int k=0;k<=NZ;k++)
+		{
+		swapl_r[j*(NZ+1)+k]=rho[0][j][k];
+		swapr_r[j*(NZ+1)+k]=rho[(NX+1)/mpi_size-1][j][k];
+		swapl_psi[j*(NZ+1)+k]=psi[0][j][k];
+		swapr_psi[j*(NZ+1)+k]=psi[(NX+1)/mpi_size-1][j][k];
+		}
+
+
+if (rank==0)
+		{
+		MPI_Isend(swapr_r, (NY+1)*(NZ+1), MPI_DOUBLE, rank+1, rank*2+1, MPI_COMM_WORLD,&request[0]);
+      		MPI_Isend(swapl_r, (NY+1)*(NZ+1), MPI_DOUBLE, mpi_size-1, rank*2, MPI_COMM_WORLD,&request[1]);
+		MPI_Irecv(swapr_r , (NY+1)*(NZ+1), MPI_DOUBLE, rank+1, (rank+1)*2, MPI_COMM_WORLD,&request[2]);		
+      		MPI_Irecv(swapl_r, (NY+1)*(NZ+1), MPI_DOUBLE, mpi_size-1, (mpi_size-1)*2+1, MPI_COMM_WORLD,&request[3] );
+
+		}
+		else
+		if (rank==mpi_size-1)
+			{
+			MPI_Isend(swapl_r, (NY+1)*(NZ+1), MPI_DOUBLE, rank-1, rank*2, MPI_COMM_WORLD,&request[0]);
+      			MPI_Isend(swapr_r, (NY+1)*(NZ+1), MPI_DOUBLE, 0, rank*2+1, MPI_COMM_WORLD,&request[1]);
+			MPI_Irecv(swapl_r, (NY+1)*(NZ+1), MPI_DOUBLE, rank-1, (rank-1)*2+1, MPI_COMM_WORLD,&request[2] );
+      			MPI_Irecv(swapr_r, (NY+1)*(NZ+1), MPI_DOUBLE, 0, 0, MPI_COMM_WORLD,&request[3]);
+			
+			}
+			else
+			{
+			MPI_Isend(swapl_r, (NY+1)*(NZ+1), MPI_DOUBLE, rank-1, rank*2, MPI_COMM_WORLD,&request[0]);
+      			MPI_Isend(swapr_r, (NY+1)*(NZ+1), MPI_DOUBLE, rank+1, rank*2+1, MPI_COMM_WORLD,&request[1]);
+			MPI_Irecv(swapl_r, (NY+1)*(NZ+1), MPI_DOUBLE, rank-1, (rank-1)*2+1, MPI_COMM_WORLD,&request[2]);
+      			MPI_Irecv(swapr_r, (NY+1)*(NZ+1), MPI_DOUBLE, rank+1, (rank+1)*2, MPI_COMM_WORLD,&request[3]);
+			
+			};
+
+	
+	MPI_Waitall(4,request, status);
+
 if (rank==0)
 		{
 		MPI_Isend(swapr_psi, (NY+1)*(NZ+1), MPI_DOUBLE, rank+1, rank*2+1, MPI_COMM_WORLD,&request[0]);
       		MPI_Isend(swapl_psi, (NY+1)*(NZ+1), MPI_DOUBLE, mpi_size-1, rank*2, MPI_COMM_WORLD,&request[1]);
 		MPI_Irecv(swapr_psi , (NY+1)*(NZ+1), MPI_DOUBLE, rank+1, (rank+1)*2, MPI_COMM_WORLD,&request[2]);		
       		MPI_Irecv(swapl_psi, (NY+1)*(NZ+1), MPI_DOUBLE, mpi_size-1, (mpi_size-1)*2+1, MPI_COMM_WORLD,&request[3] );
-		
+
 		}
 		else
 		if (rank==mpi_size-1)
@@ -1671,13 +1327,197 @@ if (rank==0)
 			MPI_Isend(swapl_psi, (NY+1)*(NZ+1), MPI_DOUBLE, rank-1, rank*2, MPI_COMM_WORLD,&request[0]);
       			MPI_Isend(swapr_psi, (NY+1)*(NZ+1), MPI_DOUBLE, rank+1, rank*2+1, MPI_COMM_WORLD,&request[1]);
 			MPI_Irecv(swapl_psi, (NY+1)*(NZ+1), MPI_DOUBLE, rank-1, (rank-1)*2+1, MPI_COMM_WORLD,&request[2]);
-
       			MPI_Irecv(swapr_psi, (NY+1)*(NZ+1), MPI_DOUBLE, rank+1, (rank+1)*2, MPI_COMM_WORLD,&request[3]);
 			
 			};
 
 	
 	MPI_Waitall(4,request, status);
+
+
+
+
+
+	for(int i=0;i<(NX+1)/mpi_size;i++)	
+		for(int j=0;j<=NY;j++)
+			for(int m=0;m<=NZ;m++)
+			
+			if (!Solid[i][j][m])     // LIQUID PHASE SEPERATION
+                        //WARNNING:THE SOUND SPEED HERE IS sqrt(RT)=1/sqrt(3)
+
+			{
+			
+			u_tmp[0]=u[i][j][m][0];u_tmp[1]=u[i][j][m][1];u_tmp[2]=u[i][j][m][2];
+
+			Fterm[0]=0;Fterm[1]=0;Fterm[2]=0;
+			rhor=0;rhob=0;
+			
+			for (int k=0;k<19;k++)
+				{
+				rhor+=f[i][j][m][k];rhob+=g[i][j][m][k];
+				}
+                     for (int k=0;k<19;k++)
+			{
+			
+
+       			feq_l[k]=feq(u_tmp,rhor, a_l,k);
+			feq_g[k]=feq(u_tmp,rhob, a_g,k);
+			
+			
+				//&&&&&&&&&&&&&&&PERIODIC BOUNDARY&&&&&&&&&&&&&&&&&&&&&&&
+				ip=i+e[k][0];
+				jp=j+e[k][1];if (jp<0) {jp=NY;}; if (jp>NY) {jp=0;};
+				kp=m+e[k][2];if (kp<0) {kp=NZ;}; if (kp>NZ) {kp=0;};
+				//&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+				if (ip<0)
+					{
+					Fterm[0]+=e[k][0]*swapl_r[jp*(NZ+1)+kp]*swapl_psi[jp*(NZ+1)+kp];
+					Fterm[1]+=e[k][1]*swapl_r[jp*(NZ+1)+kp]*swapl_psi[jp*(NZ+1)+kp];
+					Fterm[2]+=e[k][2]*swapl_r[jp*(NZ+1)+kp]*swapl_psi[jp*(NZ+1)+kp];
+					}
+				if (ip>(NX+1)/mpi_size-1)
+					{
+					Fterm[0]+=e[k][0]*swapr_r[jp*(NZ+1)+kp]*swapr_psi[jp*(NZ+1)+kp];
+					Fterm[1]+=e[k][1]*swapr_r[jp*(NZ+1)+kp]*swapr_psi[jp*(NZ+1)+kp];
+					Fterm[2]+=e[k][2]*swapr_r[jp*(NZ+1)+kp]*swapr_psi[jp*(NZ+1)+kp];
+					}
+				if ((ip>=0) and (ip<=(NX+1)/mpi_size-1))
+					{
+					Fterm[0]+=e[k][0]*rho[ip][jp][kp]*psi[ip][jp][kp];
+					Fterm[1]+=e[k][1]*rho[ip][jp][kp]*psi[ip][jp][kp];
+					Fterm[2]+=e[k][2]*rho[ip][jp][kp]*psi[ip][jp][kp];
+					}
+					
+			
+			}
+
+
+
+			//=================FORCE TERM_GUO=========================================
+			for (int k=0;k<19;k++)
+			{	
+			lm0=((e[k][0]-u[i][j][m][0])*forcex[i][j][m]+(e[k][1]-u[i][j][m][1])*forcey[i][j][m]+(e[k][2]-u[i][j][m][2])*forcez[i][j][m])*3;
+			lm1=(e[k][0]*u[i][j][m][0]+e[k][1]*u[i][j][m][1]+e[k][2]*u[i][j][m][2])*(e[k][0]*forcex[i][j][m]+e[k][1]*forcey[i][j][m]+e[k][2]*forcez[i][j][m])*9;
+			GuoF_l[k]=w[k]*rhor*(lm0+lm1)*(1-1.0/(2*tau_l));
+			GuoF_g[k]=w[k]*rhob*(lm0+lm1)*(1-1.0/(2*tau_g));
+			//GuoF[k]=0.0;
+			}
+
+			
+			
+			//=====================equilibrium of moment=================================
+
+		//tau=0.5*(1+psi[i][j][m])*tau_l+0.5*(1-psi[i][j][m])*tau_g;
+
+			for (int l=0;l<19;l++)
+				{
+				f[i][j][m][l]=f[i][j][m][l]-1.0/tau_l*(f[i][j][m][l]-feq_l[l])+GuoF_l[l];
+				g[i][j][m][l]=g[i][j][m][l]-1.0/tau_g*(g[i][j][m][l]-feq_g[l])+GuoF_g[l];
+				//frb[l]=frb[l]-1.0/tau*(frb[l]-feqs[l]);
+				//fb[l]=f[i][j][m][l]-1.0/tau_l*(f[i][j][m][l]-feq_l[l]);
+				}
+
+			//============================================================================
+
+
+
+
+//	if ((i==0) and (j==0) and(m==0))
+//		{
+//		tmps=0;
+//		for(int lsi=0;lsi<19;lsi++)
+//			tmps+=g[i][j][m][lsi];
+//		cout<<"before "<<tmps<<endl;
+//		}
+
+
+
+			ff=Fterm[0]*Fterm[0]+Fterm[1]*Fterm[1]+Fterm[2]*Fterm[2];
+	
+	if (!(ff==0))
+		{
+		for(int k=1;k<19;k++)
+			{
+			ee=e[k][0]*e[k][0]+e[k][1]*e[k][1]+e[k][2]*e[k][2];
+			ef=e[k][0]*Fterm[0]+e[k][1]*Fterm[1]+e[k][2]*Fterm[2];
+			//frb[k]+=CapA*sqrt(ff)*((ef*ef)/ff-5.0/9.0);
+			f[i][j][m][k]+=CapA*sqrt(ff)*((ef*ef)/ff-5.0/9.0);
+			g[i][j][m][k]+=CapA*sqrt(ff)*((ef*ef)/ff-5.0/9.0);
+		
+			//f[i][j][m][k]=rhor/rho[i][j][m]*frb[k];
+			//g[i][j][m][k]=rhob/rho[i][j][m]*frb[k];
+			//f[i][j][m][k]+=CapA*sqrt(ff)*((ef*ef)/ff-0.5);
+			//g[i][j][m][k]+=CapA*sqrt(ff)*((ef*ef)/ff-0.5);
+			}
+		
+
+		for(int kk=1;kk<19;kk+=2)
+					{
+					ef=e[trans[kk]][0]*Fterm[0]+e[trans[kk]][1]*Fterm[1]+e[trans[kk]][2]*Fterm[2];
+					cospsi=f[i][j][m][trans[kk]]<f[i][j][m][trans[kk+1]]?f[i][j][m][trans[kk]]:f[i][j][m][trans[kk+1]];
+					cospsi=cospsi<g[i][j][m][trans[kk]]?cospsi:g[i][j][m][trans[kk]];
+					cospsi=cospsi<g[i][j][m][trans[kk+1]]?cospsi:g[i][j][m][trans[kk+1]];
+					cospsi*=ef/(sqrt(ff));
+
+					//f[i][j][kk]=rhor/rho[i][j]*frb[kk]+cospsi;
+					//f[i][j][kk+1]=rhor/rho[i][j]*frb[kk+1]-cospsi;
+					//g[i][j][kk]=rhob/rho[i][j]*frb[kk]-cospsi;
+					//g[i][j][kk+1]=rhob/rho[i][j]*frb[kk+1]+cospsi;
+
+					f[i][j][m][trans[kk]]+=cospsi;
+					f[i][j][m][trans[kk+1]]-=cospsi;
+					g[i][j][m][trans[kk]]-=cospsi;
+					g[i][j][m][trans[kk+1]]+=cospsi;
+					
+
+					/*
+
+					ef=e[trans[kk]][0]*Fterm[0]+e[trans[kk]][1]*Fterm[1]+e[trans[kk]][2]*Fterm[2];
+					cospsi=f[i][j][m][trans[kk]]<f[i][j][m][trans[kk+1]]?f[i][j][m][trans[kk]]:f[i][j][m][trans[kk+1]];
+					cospsi*=ef/(sqrt(ff));
+					f[i][j][m][trans[kk]]+=cospsi;
+					f[i][j][m][trans[kk+1]]-=cospsi;
+					cospsi=g[i][j][m][trans[kk]]<g[i][j][m][trans[kk+1]]?g[i][j][m][trans[kk]]:g[i][j][m][trans[kk+1]];
+					cospsi*=ef/(sqrt(ff));
+					g[i][j][m][trans[kk]]-=cospsi;
+					g[i][j][m][trans[kk+1]]+=cospsi;
+					*/
+					}
+
+		}		
+			
+					
+	
+			}
+                        else    
+				
+                        		{standard_bounceback_boundary(i,j,m,f,g);};    //BOUNCEBACK BOUNDARY CONDITION
+			
+	delete [] swapl_r;
+	delete [] swapr_r;
+	delete [] swapl_psi;
+	delete [] swapr_psi;	
+
+
+}
+
+
+
+
+
+
+
+
+
+void comput_macro_variables( double*** rho, double*** psi, double**** u,double**** u0,double**** f,double**** g,bool*** Solid,double*** forcex, double*** forcey,double*** forcez)
+{
+	
+	MPI_Status status[4] ;
+	MPI_Request request[4];
+
+	int rank = MPI :: COMM_WORLD . Get_rank ();
+	int mpi_size=MPI :: COMM_WORLD . Get_size ();
+
 
 	for(int i=0;i<(NX+1)/mpi_size;i++)	
 		for(int j=0;j<=NY;j++)
@@ -1692,7 +1532,8 @@ if (rank==0)
 				u0[i][j][m][0]=u[i][j][m][0];
 				u0[i][j][m][1]=u[i][j][m][1];
 				u0[i][j][m][2]=u[i][j][m][2];
-				rho[i][j][m]=0;psi[i][j][m]=0;
+				rho[i][j][m]=0;
+				psi[i][j][m]=0;
 				u[i][j][m][0]=0;
 				u[i][j][m][1]=0;
 				u[i][j][m][2]=0;
@@ -1700,11 +1541,11 @@ if (rank==0)
 				for(int k=0;k<19;k++)
 					{
 					//f[i][j][k]=F[i][j][k];
-					rho[i][j][m]+=f[i][j][m][k];
-					psi[i][j][m]+=g[i][j][m][k];
-					u[i][j][m][0]+=e[k][0]*f[i][j][m][k];
-					u[i][j][m][1]+=e[k][1]*f[i][j][m][k];
-					u[i][j][m][2]+=e[k][2]*f[i][j][m][k];
+					rho[i][j][m]+=(f[i][j][m][k]+g[i][j][m][k]);
+					psi[i][j][m]+=(f[i][j][m][k]-g[i][j][m][k]);
+					u[i][j][m][0]+=e[k][0]*(f[i][j][m][k]+g[i][j][m][k]);
+					u[i][j][m][1]+=e[k][1]*(f[i][j][m][k]+g[i][j][m][k]);
+					u[i][j][m][2]+=e[k][2]*(f[i][j][m][k]+g[i][j][m][k]);
 					}
 			
 
@@ -1714,63 +1555,24 @@ if (rank==0)
 				u[i][j][m][0]=(u[i][j][m][0]+forcex[i][j][m]/2)/rho[i][j][m];
 				u[i][j][m][1]=(u[i][j][m][1]+forcey[i][j][m]/2)/rho[i][j][m];
 				u[i][j][m][2]=(u[i][j][m][2]+forcez[i][j][m]/2)/rho[i][j][m];
-				
+				psi[i][j][m]/=rho[i][j][m];
 			}
 			else
 			{		u[i][j][m][0]=0; 
 					u[i][j][m][1]=0;
 					u[i][j][m][2]=0;
-					psi[i][j][m]=0;
-
-				markmac=0;
-						for (int k=1;k<18;k++)
-						{
-						interi=i+e[k][0];
-						interj=j+e[k][1];if (interj<0) {interj=NY;}; if (interj>NY) {interj=0;};
-						interk=m+e[k][2];if (interk<0) {interk=NZ;}; if (interk>NZ) {interk=0;};
-						
-							
-						if ((interi<0) && (swapl[interj*(NZ+1)+interk]==0) && (markmac==0))
-							{
-							
-							psi[i][j][m]=swapl_psi[interj*(NZ+1)+interk]-2*ContactAngle_parameter;	
-						
-							markmac=1;
-							}
-						if ((interi>(NX+1)/mpi_size-1) && (swapr[interj*(NZ+1)+interk]==0) && (markmac==0))
-							{
-							
-							psi[i][j][m]=swapr_psi[interj*(NZ+1)+interk]-2*ContactAngle_parameter;	
-						
-							markmac=1;
-							}
-						
-						if ((interi>=0) && (interi<=(NX+1)/mpi_size-1) && (Solid[interi][interj][interk]==0) && (markmac==0))
-							{
-							
-							psi[i][j][m]=psi[interi][interj][interk]-2*ContactAngle_parameter;	
-						
-							markmac=1;
-							}
-
-
-
-						}
+					psi[i][j][m]=1.0;
 			}
 
                         
 			}
-	delete [] swapl;
-	delete [] swapr;
-	delete [] swapl_psi;
-	delete [] swapr_psi;
 
 }
 
 
 
 
-void standard_bounceback_boundary(int it, int jt,int kt, double**** f, double**** g)
+void standard_bounceback_boundary(int it, int jt,int kt, double**** f,double**** g)
 {
 
 	double tmp;
@@ -1784,6 +1586,7 @@ void standard_bounceback_boundary(int it, int jt,int kt, double**** f, double***
 			tmp = f[it][jt][kt][15];f[it][jt][kt][15] = f[it][jt][kt][18];f[it][jt][kt][18] = tmp;
 			tmp = f[it][jt][kt][16];f[it][jt][kt][16] = f[it][jt][kt][17];f[it][jt][kt][17] = tmp;
 
+
 			tmp = g[it][jt][kt][1];g[it][jt][kt][1] = g[it][jt][kt][2];g[it][jt][kt][2] = tmp;
 			tmp = g[it][jt][kt][3];g[it][jt][kt][3] = g[it][jt][kt][4];g[it][jt][kt][4] = tmp;
                         tmp = g[it][jt][kt][5];g[it][jt][kt][5] = g[it][jt][kt][6];g[it][jt][kt][6] = tmp;
@@ -1793,14 +1596,15 @@ void standard_bounceback_boundary(int it, int jt,int kt, double**** f, double***
                         tmp = g[it][jt][kt][12];g[it][jt][kt][12] = g[it][jt][kt][13];g[it][jt][kt][13] = tmp;
 			tmp = g[it][jt][kt][15];g[it][jt][kt][15] = g[it][jt][kt][18];g[it][jt][kt][18] = tmp;
 			tmp = g[it][jt][kt][16];g[it][jt][kt][16] = g[it][jt][kt][17];g[it][jt][kt][17] = tmp;
-			
+
 
 }
 
 
 
 
-void output_velocity_Vector(int m,double**** u,int NX,int NY,int NZ)	
+void output_velocity_Vector(int m,double**** u)	
+
 {
 
 	int rank = MPI :: COMM_WORLD . Get_rank ();
@@ -1833,7 +1637,7 @@ void output_velocity_Vector(int m,double**** u,int NX,int NY,int NZ)
 	if (rank==root_rank)
 	{
 	ostringstream name;
-	name<<outputfile<<"LBM_velocity_Vector_"<<m<<".vtk";
+	name<<"LBM_velocity_Vector_"<<m<<".vtk";
 	ofstream out(name.str().c_str());
 	out<<"# vtk DataFile Version 2.0"<<endl;
 	out<<"J.Yang Lattice Boltzmann Simulation 3D Single Phase-Velocity"<<endl;
@@ -1867,8 +1671,7 @@ void output_velocity_Vector(int m,double**** u,int NX,int NY,int NZ)
 
 
 
-
-void Geometry(bool*** Solid,int NX,int NY,int NZ)	
+void Geometry(bool*** Solid)	
 {	
 	int rank = MPI :: COMM_WORLD . Get_rank ();
 	int mpi_size=MPI :: COMM_WORLD . Get_size ();
@@ -1895,7 +1698,7 @@ void Geometry(bool*** Solid,int NX,int NY,int NZ)
 	if (rank==root_rank)
 	{
 	ostringstream name;
-	name<<outputfile<<"LBM_Geometry"<<".vtk";
+	name<<"LBM_Geometry"<<".vtk";
 	ofstream out(name.str().c_str());
 	out<<"# vtk DataFile Version 2.0"<<endl;
 	out<<"J.Yang Lattice Boltzmann Simulation 3D Single Phase-Solid-Geometry"<<endl;
@@ -1923,7 +1726,7 @@ for(int k=0;k<=NZ;k++)
 
 
 
-void output_density(int m,double*** rho, int NX,int NY, int NZ)	
+void output_density(int m,double*** rho)	
 {
 
 	int rank = MPI :: COMM_WORLD . Get_rank ();
@@ -1935,6 +1738,8 @@ void output_density(int m,double*** rho, int NX,int NY, int NZ)
 	double* rbuf_rho;
 
 	double rho0=0.0;
+	double tmp=0;
+
 
 	if (rank==root_rank)
 		rbuf_rho= new double[(NX+1)*(NY+1)*(NZ+1)];
@@ -1955,7 +1760,7 @@ void output_density(int m,double*** rho, int NX,int NY, int NZ)
 	{
 	
 	ostringstream name;
-	name<<outputfile<<"LBM_Density_"<<m<<".vtk";
+	name<<"LBM_Density_"<<m<<".vtk";
 	ofstream out(name.str().c_str());
 	out<<"# vtk DataFile Version 2.0"<<endl;
 	out<<"J.Yang Lattice Boltzmann Simulation 3D Single Phase-Solid-Density"<<endl;
@@ -1971,7 +1776,11 @@ void output_density(int m,double*** rho, int NX,int NY, int NZ)
         for(int k=0;k<=NZ;k++)
       		for(int j=0; j<=NY; j++)
 			for(int i=0;i<=NX;i++)
+			{
 			out<<"		"<<rbuf_rho[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]<<endl;
+			tmp+=rbuf_rho[i*(NY+1)*(NZ+1)+j*(NZ+1)+k];
+			}
+	//cout<<"Density totle= "<<tmp<<endl;
 	}
 
 	
@@ -1985,9 +1794,8 @@ void output_density(int m,double*** rho, int NX,int NY, int NZ)
 }
 
 
+void output_psi(int m,double*** psi,bool*** Solid)	
 
-
-void output_psi(int m,double*** psi, int NX,int NY, int NZ,bool*** Solid)	
 {
 
 	int rank = MPI :: COMM_WORLD . Get_rank ();
@@ -2022,7 +1830,7 @@ void output_psi(int m,double*** psi, int NX,int NY, int NZ,bool*** Solid)
 	{
 	
 	ostringstream name;
-	name<<outputfile<<"LBM_psi_"<<m<<".vtk";
+	name<<"LBM_psi_"<<m<<".vtk";
 	ofstream out(name.str().c_str());
 	out<<"# vtk DataFile Version 2.0"<<endl;
 	out<<"J.Yang Lattice Boltzmann Simulation 3D Single Phase-Solid-Density"<<endl;
@@ -2052,7 +1860,7 @@ void output_psi(int m,double*** psi, int NX,int NY, int NZ,bool*** Solid)
 }
 
 
-double Error(double**** u,double**** u0,int NX,int NY,int NZ,double *v_max,double* u_average)
+double Error(double**** u,double**** u0,double *v_max,double* u_average)
 {	
 	int rank = MPI :: COMM_WORLD . Get_rank ();
 	int mpi_size=MPI :: COMM_WORLD . Get_size ();
@@ -2113,6 +1921,7 @@ for(int i=1; i<(NX+1)/mpi_size; i++)
 	return(error);
 
 }
+
 
 double Comput_Perm(double*** psi,double**** u,double* Per_l,double* Per_g,int NX,int NY,int NZ,double gx,double gy,double gz,int PerDIr)
 {
@@ -2261,4 +2070,6 @@ double *rbuf_l,*rbuf_g;
 			
 
 }
+
+
 
