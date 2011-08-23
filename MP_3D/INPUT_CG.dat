@@ -1,36 +1,36 @@
 =============INPUT FILE FOR 3D LATTICE BOLTZMANN MPI CODE--MULTI COMPONENT COLOR GRADIENT MODEL=======
-BC.dat              :Geometry filename
+BC.dat     	        :Geometry filename
 phase.dat       	:Initial components distribution
-60 60 3       	:nx ny nz
-900000000	:Maxmum time step
-0.001          	:dx (um) Resolution (for relative Permeability calculation)
+50 50 3    	   	:nx ny nz
+100000			:Maxmum time step
+0.001    	      	:dx (um) Resolution (for relative Permeability calculation)
 0	        	:Convergence accelerator (1=yes, 0=no)
-0 0 0                :mirroring option for x,y,z (1=yes, 0=no)
-0.0e-6 0.0 0.0  :body force for x,y,z
-0 0.0 0 0.0	:Pressure Boundary in X direction (Format detials can be found within this file)
-0 0.0 0 0.0	:Pressure Boundary in Y direction (Format detials can be found within this file)
-0 0.0 0 0.0	:Pressure Boundary in Z direction (Format detials can be found within this file)
-0 0.0 0 0.0	:Velocity Boundary in X direction (Format detials can be found within this file)
-0 0.0 0 0.0	:Velocity Boundary in Y direction (Format detials can be found within this file)
-0 0.0 0 0.0	:Velocity Boundary in Z direction (Format detials can be found within this file)
-0.02    		:Viscosity (Component A)
-0.1     		:Viscosity (Component B)
-0.5     		:Contact Angle Cos(Theta)
+0 0 0         	        :mirroring option for x,y,z (1=yes, 0=no)
+0 0 0.0 0.0 		:body force for x,y,z
+0 0.0 0 0.0		:Pressure Boundary in X direction (Format detials can be found within this file)
+0 0.0 0 0.0		:Pressure Boundary in Y direction (Format detials can be found within this file)
+0 0.0 0 0.0		:Pressure Boundary in Z direction (Format detials can be found within this file)
+0 0.0 0 0.0		:Velocity Boundary in X direction (Format detials can be found within this file)
+0 0.0 0 0.0		:Velocity Boundary in Y direction (Format detials can be found within this file)
+0 0.0 0 0.0		:Velocity Boundary in Z direction (Format detials can be found within this file)
+0.3    			:Viscosity (Component A)
+0.08     		:Viscosity (Component B)
+0.0     		:Contact Angle Cos(Theta)
 4e-5    		:Surface tension (Kappa)
-0.0 0.0 0.0	:initial velocity for x,y,z
+0.0 0.0 0.0		:initial velocity for x,y,z
 200	        	:Permeability (Single Phase mD)
 =========OUTPUT==CONTROL===================
-1		:Permeability writing (1=yes, 0=no)
-1               :Direction of Permeability Calculation (1=X, 2=Y, 3=Z)
-50		:Frequency of results writing (interval in time steps)
-100		:Frequency of velocity field writing (in vtk format, -1=no velocity writing)
-100		:Frequency of density field writing (in vtk format, -1=no density writing)
-100		:Frequency of concentration writing (in vtk format, -1=no density writing)
-0		:Mirroring part output (0=No,1=YES)
+1			:Permeability writing (1=yes, 0=no)
+1              		:Direction of Permeability Calculation (1=X, 2=Y, 3=Z)
+50			:Frequency of results writing (interval in time steps)
+1000			:Frequency of velocity field writing (in vtk format, -1=no velocity writing)
+1000			:Frequency of density field writing (in vtk format, -1=no density writing)
+1000			:Frequency of concentration writing (in vtk format, -1=no density writing)
+0			:Mirroring part output (0=No,1=YES)
 ==============ADVANCE==PARAMETER==========
-0 50 30 3 	:ONLY USE PART OF THE ORIGINAL GEOMETRY (1=YES,0=NO,NX,NY,NZ)
-1		:FACTOR OF MESHREFINEMENT (0,1=No mesh refinement, 1=1X,2=2X,3=3X)
-./		:OUTPUT PATH,DEFAULT: ./ (REMEMBER TO INCLUDE "/" AT THE END OF PATH)
+0 50 30 3 		:ONLY USE PART OF THE ORIGINAL GEOMETRY (1=YES,0=NO,NX,NY,NZ)
+1			:FACTOR OF MESHREFINEMENT (0,1=No mesh refinement, 1=1X,2=2X,3=3X)
+./			:OUTPUT PATH,DEFAULT: ./ (REMEMBER TO INCLUDE "/" AT THE END OF PATH)
 
 INSTRUCTIONS OF PARAMETER INPUT
 
