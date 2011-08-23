@@ -66,7 +66,7 @@ double s_q;
 
 double s_v;
 double eta;
-
+/*
 double M[19][19]=
 {{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
 {-30,-11,-11,-11,-11,-11,-11,8,8,8,8,8,8,8,8,8,8,8,8},
@@ -87,6 +87,29 @@ double M[19][19]=
 {0,0,0,0,0,0,0,1,-1,1,-1,0,0,0,0,-1,1,-1,1},
 {0,0,0,0,0,0,0,-1,-1,1,1,1,-1,1,-1,0,0,0,0},
 {0,0,0,0,0,0,0,0,0,0,0,-1,-1,1,1,1,1,-1,-1}};
+*/
+
+double M[19][19]=
+{{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+{-1,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1},
+{1,-2,-2,-2,-2,-2,-2,1,1,1,1,1,1,1,1,1,1,1,1},
+{0,1,-1,0,0,0,0,1,-1,1,-1,1,-1,1,-1,0,0,0,0},
+{0,-2,2,0,0,0,0,1,-1,1,-1,1,-1,1,-1,0,0,0,0},
+{0,0,0,1,-1,0,0,1,-1,-1,1,0,0,0,0,1,-1,1,-1},
+{0,0,0,-2,2,0,0,1,-1,-1,1,0,0,0,0,1,-1,1,-1},
+{0,0,0,0,0,1,-1,0,0,0,0,1,-1,-1,1,1,-1,-1,1},
+{0,0,0,0,0,-2,2,0,0,0,0,1,-1,-1,1,1,-1,-1,1},
+{0,2,2,-1,-1,-1,-1,1,1,1,1,1,1,1,1,-2,-2,-2,-2},
+{0,-2,-2,1,1,1,1,1,1,1,1,1,1,1,1,-2,-2,-2,-2},
+{0,0,0,1,1,-1,-1,1,1,1,1,-1,-1,-1,-1,0,0,0,0},
+{0,0,0,-1,-1,1,1,1,1,1,1,-1,-1,-1,-1,0,0,0,0},
+{0,0,0,0,0,0,0,1,1,-1,-1,0,0,0,0,0,0,0,0},
+{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,-1,-1},
+{0,0,0,0,0,0,0,0,0,0,0,1,1,-1,-1,0,0,0,0},
+{0,0,0,0,0,0,0,1,-1,1,-1,-1,1,-1,1,0,0,0,0},
+{0,0,0,0,0,0,0,-1,1,1,-1,0,0,0,0,1,-1,1,-1},
+{0,0,0,0,0,0,0,0,0,0,0,1,-1,-1,1,-1,1,1,-1}};
+
 
 
 
@@ -155,9 +178,16 @@ double Comput_Perm(double***,double****,double*,double*,int,int,int,double,doubl
 double Comput_Saturation(double*** ,bool*** ,int,int,int);
 
 int n;
+/*
 int e[19][3]=
 {{0,0,0},{1,0,0,},{-1,0,0},{0,1,0},{0,-1,0},{0,0,1},{0,0,-1},{1,1,0},{-1,1,0},{1,-1,0},{-1,-1,0},{0,1,1},
 {0,-1,1},{0,1,-1},{0,-1,-1},{1,0,1},{-1,0,1},{1,0,-1},{-1,0,-1}};
+*/
+
+int e[19][3]=
+{{0,0,0},{1,0,0},{-1,0,0},{0,1,0},{0,-1,0},{0,0,1},{0,0,-1},{1,1,0},{-1,-1,0},{1,-1,0},{-1,1,0},{1,0,1},
+{-1,0,-1},{1,0,-1},{-1,0,1},{0,1,1},{0,-1,-1},{0,1,-1},{0,-1,1}};
+
 double w[19]={1.0/3.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0};
 double error;
 
@@ -183,38 +213,38 @@ if (rank==0)
 	{
 	ifstream fin(argv[1]);
 	
-							fin.getline(dummy, NCHAR);
-	fin >> filename;				fin.getline(dummy, NCHAR);
-	fin >> filenamepsi;				fin.getline(dummy, NCHAR);
-	fin >> NX >> NY >> NZ;				fin.getline(dummy, NCHAR);
-	fin >> n_max;					fin.getline(dummy, NCHAR);
-	fin >> reso;					fin.getline(dummy, NCHAR);
-	fin >> in_IMR;					fin.getline(dummy, NCHAR);
-	fin >> mirX >> mirY >> mirZ;			fin.getline(dummy, NCHAR);
-	fin >> gx >> gy >> gz;				fin.getline(dummy, NCHAR);
+							                        fin.getline(dummy, NCHAR);
+	fin >> filename;				                fin.getline(dummy, NCHAR);
+	fin >> filenamepsi;				                fin.getline(dummy, NCHAR);
+	fin >> NX >> NY >> NZ;			                fin.getline(dummy, NCHAR);
+	fin >> n_max;					                fin.getline(dummy, NCHAR);
+	fin >> reso;					                fin.getline(dummy, NCHAR);
+	fin >> in_IMR;					                fin.getline(dummy, NCHAR);
+	fin >> mirX >> mirY >> mirZ;			        fin.getline(dummy, NCHAR);
+	fin >> gx >> gy >> gz;				        fin.getline(dummy, NCHAR);
 	fin >> pre_xp >> p_xp >> pre_xn >> p_xn;	fin.getline(dummy, NCHAR);
 	fin >> pre_yp >> p_yp >> pre_yn >> p_yn;	fin.getline(dummy, NCHAR);
 	fin >> pre_zp >> p_zp >> pre_zn >> p_zn;	fin.getline(dummy, NCHAR);
 	fin >> vel_xp >> v_xp >> vel_xn >> v_xn;	fin.getline(dummy, NCHAR);
 	fin >> vel_yp >> v_yp >> vel_yn >> v_yn;	fin.getline(dummy, NCHAR);
 	fin >> vel_zp >> v_zp >> vel_zn >> v_zn;	fin.getline(dummy, NCHAR);
-	fin >> niu_l;					fin.getline(dummy, NCHAR);
-	fin >> niu_g;					fin.getline(dummy, NCHAR);
+	fin >> niu_l;					                fin.getline(dummy, NCHAR);
+	fin >> niu_g;					                fin.getline(dummy, NCHAR);
 	fin >> ContactAngle_parameter;			fin.getline(dummy, NCHAR);
-	fin >> CapA;					fin.getline(dummy, NCHAR);
-	fin >> inivx >> inivy >> inivz;			fin.getline(dummy, NCHAR);
-	fin >> Permeability;				fin.getline(dummy, NCHAR);
-							fin.getline(dummy, NCHAR);
-	fin >> wr_per;					fin.getline(dummy, NCHAR);
-	fin >> PerDir;					fin.getline(dummy, NCHAR);
-	fin >> freRe;					fin.getline(dummy, NCHAR);
-	fin >> freVe;					fin.getline(dummy, NCHAR);
-	fin >> freDe;					fin.getline(dummy, NCHAR);
-	fin >> frePsi;					fin.getline(dummy, NCHAR);
-	fin >> mir;					fin.getline(dummy, NCHAR);
-							fin.getline(dummy, NCHAR);
+	fin >> CapA;					                fin.getline(dummy, NCHAR);
+	fin >> inivx >> inivy >> inivz;			        fin.getline(dummy, NCHAR);
+	fin >> Permeability;				                fin.getline(dummy, NCHAR);
+							                        fin.getline(dummy, NCHAR);
+	fin >> wr_per;					                fin.getline(dummy, NCHAR);
+	fin >> PerDir;					                fin.getline(dummy, NCHAR);
+	fin >> freRe;					                fin.getline(dummy, NCHAR);
+	fin >> freVe;					                fin.getline(dummy, NCHAR);
+	fin >> freDe;					                fin.getline(dummy, NCHAR);
+	fin >> frePsi;					                fin.getline(dummy, NCHAR);
+	fin >> mir;					                fin.getline(dummy, NCHAR);
+							                        fin.getline(dummy, NCHAR);
 	fin >> Par_Geo >> Par_nx >> Par_ny >> Par_nz;	fin.getline(dummy, NCHAR);
-	fin >> Zoom;					fin.getline(dummy, NCHAR);
+	fin >> Zoom;					                fin.getline(dummy, NCHAR);
 	
 	fin.close();
 	
