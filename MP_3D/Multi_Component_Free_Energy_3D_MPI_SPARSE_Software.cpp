@@ -652,6 +652,7 @@ if (wr_per==1)
 		delete [] F[i];
 		delete [] g[i];
 		delete [] Fg[i];
+		delete [] psi;
 		}
 		
 	delete [] g;
@@ -1247,7 +1248,7 @@ void init(double* rho, double** u, double** f,double** g, double* psi,  double* 
 
 
 			s_v=niu_g+(psi[i]+1.0)/2.0*(niu_l-niu_g);
-			s_v=1.0/(3*s_v+0.5);
+			s_v=1.0/(3*s_v/dt+0.5);
 			
 			S[9]=s_v;S[11]=s_v;S[13]=s_v;S[14]=s_v;S[15]=s_v;
 						
