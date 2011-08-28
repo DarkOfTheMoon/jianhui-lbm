@@ -3605,7 +3605,25 @@ double Comput_Perm(double* psi,double** u,double* Per_l,double* Per_g,int PerDIr
 	double Q_l[3]={0.0,0.0,0.0};
 	double Q_g[3]={0.0,0.0,0.0};
 
-	
+	double dp;
+	if (in_BC==0)
+	        dp=0;
+	else
+	switch(PerDIr)
+		{
+		case 1:
+			dp=abs(p_xp-p_xn);break;
+		case 2:
+			dp=abs(p_yp-p_yn);break;
+		case 3:
+			dp=abs(p_zp-p_zn);break;
+		default:
+			dp=abs(p_xp-p_xn);
+		}
+		
+		
+		
+		
 	for (int i=1;i<=Count;i++)
 	        if (psi[i]>0)
 		        {
@@ -3644,13 +3662,13 @@ double Comput_Perm(double* psi,double** u,double* Per_l,double* Per_g,int PerDIr
 			Q_l[2]+=rbuf_l[i*3+2];
 			}
 
-		Perm_l[0]=Q_l[0]/((NX+1)*(NY+1)*(NZ+1))*(niu_l)/gx;
-		Perm_l[1]=Q_l[1]/((NX+1)*(NY+1)*(NZ+1))*(niu_l)/gy;
-		Perm_l[2]=Q_l[2]/((NX+1)*(NY+1)*(NZ+1))*(niu_l)/gz;
+		Perm_l[0]=Q_l[0]/((NX+1)*(NY+1)*(NZ+1))*(niu_l)/(gx+dp);
+		Perm_l[1]=Q_l[1]/((NX+1)*(NY+1)*(NZ+1))*(niu_l)/(gy+dp);
+		Perm_l[2]=Q_l[2]/((NX+1)*(NY+1)*(NZ+1))*(niu_l)/(gz+dp);
 
-		Perm_g[0]=Q_g[0]/((NX+1)*(NY+1)*(NZ+1))*(niu_g)/gx;
-		Perm_g[1]=Q_g[1]/((NX+1)*(NY+1)*(NZ+1))*(niu_g)/gy;
-		Perm_g[2]=Q_g[2]/((NX+1)*(NY+1)*(NZ+1))*(niu_g)/gz;
+		Perm_g[0]=Q_g[0]/((NX+1)*(NY+1)*(NZ+1))*(niu_g)/(gx+dp);
+		Perm_g[1]=Q_g[1]/((NX+1)*(NY+1)*(NZ+1))*(niu_g)/(gy+dp);
+		Perm_g[2]=Q_g[2]/((NX+1)*(NY+1)*(NZ+1))*(niu_g)/(gz+dp);
 		
 		switch(PerDIr)
 		{

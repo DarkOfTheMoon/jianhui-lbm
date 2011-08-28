@@ -147,7 +147,7 @@ double w[19]={1.0/3.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/
 
 int LR[19]={0,2,1,4,3,6,5,10,9,8,7,14,13,12,11,18,17,16,15};
 
-int n,nx_l,n_max,in_IMR,PerDir,freRe,freDe,freVe,Par_Geo,Par_nx,Par_ny,Par_nz;
+int n,nx_l,n_max,in_BC,PerDir,freRe,freDe,freVe,Par_Geo,Par_nx,Par_ny,Par_nz;
 int Zoom;
 
 
@@ -188,7 +188,7 @@ int dif;
 	fin >> NX >> NY >> NZ;				fin.getline(dummy, NCHAR);
 	fin >> n_max;					fin.getline(dummy, NCHAR);
 	fin >> reso;					fin.getline(dummy, NCHAR);
-	fin >> in_IMR;					fin.getline(dummy, NCHAR);
+	fin >> in_BC;					fin.getline(dummy, NCHAR);
 	fin >> mirX >> mirY >> mirZ;			fin.getline(dummy, NCHAR);
 	fin >> gx >> gy >> gz;				fin.getline(dummy, NCHAR);
 	fin >> pre_xp >> p_xp >> pre_xn >> p_xn;	fin.getline(dummy, NCHAR);
@@ -225,7 +225,7 @@ int dif;
 	MPI_Bcast(&mirY,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&NY,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&mirZ,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&NZ,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&n_max,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&reso,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
-	MPI_Bcast(&in_IMR,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&gx,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Bcast(&in_BC,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&gx,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 	MPI_Bcast(&gy,1,MPI_DOUBLE,0,MPI_COMM_WORLD);MPI_Bcast(&gz,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 	MPI_Bcast(&pre_xp,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&p_xp,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 	MPI_Bcast(&pre_xn,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&p_xn,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
@@ -462,9 +462,9 @@ if (wr_per==1)
 	if ((1-vel_xp)*(1-vel_xn)*(1-vel_yp)*(1-vel_yn)*(1-vel_zp)*(1-vel_zn)==0)
 		boundary_velocity(vel_xp,v_xp,vel_xn,v_xn,vel_yp,v_yp,vel_yn,v_yn,vel_zp,v_zp,vel_zn,v_zn,f,F,rho,u,Solid);
 
-	if (in_IMR==1)
-		comput_macro_variables_IMR(rho,u,u0,f,F,SupInv,Solid,forcex,forcey,forcez,n,porosity,&gx,&gy,&gz);
-	else
+	//if (in_IMR==1)
+	//	comput_macro_variables_IMR(rho,u,u0,f,F,SupInv,Solid,forcex,forcey,forcez,n,porosity,&gx,&gy,&gz);
+	//else
   		comput_macro_variables(rho,u,u0,f,F,forcex,forcey,forcez,SupInv,Solid); 
 
 	//if ((1-pre_xp)*(1-pre_xn)*(1-pre_yp)*(1-pre_yn)*(1-pre_zp)*(1-pre_zn)==0)
@@ -3938,7 +3938,24 @@ double Comput_Perm(double** u,double* Permia,int PerDIr)
 	double error;
 	double Q[3]={0.0,0.0,0.0};
 
-	
+	double dp;
+	if (in_BC==0)
+	        dp=0;
+	else
+	switch(PerDIr)
+		{
+		case 1:
+			dp=abs(p_xp-p_xn);break;
+		case 2:
+			dp=abs(p_yp-p_yn);break;
+		case 3:
+			dp=abs(p_zp-p_zn);break;
+		default:
+			dp=abs(p_xp-p_xn);
+		}
+		
+		
+		
 	for (int i=1;i<=Count;i++)
 		{
 		Q[0]+=u[i][0];
@@ -3968,9 +3985,9 @@ double Comput_Perm(double** u,double* Permia,int PerDIr)
 		//Perm[1]=Q[1]*(1.0/Zoom)*(1.0/Zoom)/((NX+1)/Zoom*(NY+1)/Zoom*(NZ+1)/Zoom)*(in_vis)/gy;
 		//Perm[2]=Q[2]*(1.0/Zoom)*(1.0/Zoom)/((NX+1)/Zoom*(NY+1)/Zoom*(NZ+1)/Zoom)*(in_vis)/gz;
 
-		Perm[0]=Q[0]/((NX+1)*(NY+1)*(NZ+1))*(in_vis)/gx;
-		Perm[1]=Q[1]/((NX+1)*(NY+1)*(NZ+1))*(in_vis)/gy;
-		Perm[2]=Q[2]/((NX+1)*(NY+1)*(NZ+1))*(in_vis)/gz;
+		Perm[0]=Q[0]/((NX+1)*(NY+1)*(NZ+1))*(in_vis)/(gx+dp);
+		Perm[1]=Q[1]/((NX+1)*(NY+1)*(NZ+1))*(in_vis)/(gy+dp);
+		Perm[2]=Q[2]/((NX+1)*(NY+1)*(NZ+1))*(in_vis)/(gz+dp);
 		
 		switch(PerDIr)
 		{
