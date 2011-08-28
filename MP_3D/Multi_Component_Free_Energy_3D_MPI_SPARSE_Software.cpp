@@ -131,7 +131,6 @@ void Geometry_b(int*** );
 
 double Comput_Perm(double* ,double** ,double* ,double* ,int );
 
-
 double Comput_Saturation(double* ,int***);
 
 
@@ -613,6 +612,7 @@ if (wr_per==1)
 			cout<<"The relative permeability of component 2 is "<<Per_g[0]*reso*reso*1000/Permeability<<", "<<Per_g[1]*reso*reso*1000/Permeability<<", "<<Per_g[2]*reso*reso*1000/Permeability<<endl;
 			cout<<"Satuation of Component 1: "<<S_l<<", "<<"The satuation of Component 2: "<<1-S_l<<endl;
 			cout<<"The relative error of permiability computing is: "<<error_Per<<endl;
+			cout<<"Elapsed time is "<< finish-start <<" seconds"<<endl;
 			cout<<endl;
                         }
 
@@ -2258,7 +2258,8 @@ for (int j=0;j<=NY;j++)
                 if (lsi>0)
                         if (pre_xn==1)
                         {
-                                psi[lsi]=Psi_local[0][j][k];
+                                //psi[lsi]=Psi_local[0][j][k];
+                                psi[lsi]=psi[Solid[1][j][k]];
                                 rho[lsi]=p_xn;
                                 if (Solid[1][j][k]>0)
                                 {
@@ -2272,7 +2273,8 @@ for (int j=0;j<=NY;j++)
                         else
                         if (vel_xn==1)
                         {        
-                                psi[lsi]=Psi_local[0][j][k];
+                                //psi[lsi]=Psi_local[0][j][k];
+                                psi[lsi]=psi[Solid[1][j][k]];
                                 u[lsi][0]=v_xn;u[lsi][1]=0.0;u[lsi][2]=0.0;
                                 //if (Solid[1][j][k]>0)
                                 //        rho[lsi]=rho[Solid[1][j][k]];
@@ -2290,7 +2292,8 @@ for (int j=0;j<=NY;j++)
                 if (lsi>0)
                         if (pre_xp==1)
                         {
-                                psi[lsi]=Psi_local[nx_l-1][j][k];
+                                //psi[lsi]=Psi_local[nx_l-1][j][k];
+                                psi[lsi]=psi[Solid[nx_l-2][j][k]];
                                 rho[lsi]=p_xp;
                                 if (Solid[nx_l-2][j][k]>0)
                                 {
@@ -2304,7 +2307,8 @@ for (int j=0;j<=NY;j++)
                         else
                         if (vel_xp==1)
                         {        
-                                psi[lsi]=Psi_local[nx_l-1][j][k];
+                                //psi[lsi]=Psi_local[nx_l-1][j][k];
+                                psi[lsi]=psi[Solid[nx_l-2][j][k]];
                                 u[lsi][0]=v_xp;u[lsi][1]=0.0;u[lsi][2]=0.0;
                                // if (Solid[nx_l-2][j][k]>0)
                                //         rho[lsi]=rho[Solid[nx_l-1][j][k]];
@@ -2321,7 +2325,8 @@ for (int i=0;i<nx_l;i++)
                 if (lsi>0)
                         if (pre_yn==1)
                         {
-                                psi[lsi]=Psi_local[i][0][k];
+                                //psi[lsi]=Psi_local[i][0][k];
+                                psi[lsi]=psi[Solid[i][1][k]];
                                 rho[lsi]=p_yn;
                                 if (Solid[i][1][k]>0)
                                 {
@@ -2335,7 +2340,8 @@ for (int i=0;i<nx_l;i++)
                         else
                         if (vel_yn==1)
                         {        
-                                psi[lsi]=Psi_local[i][0][k];
+                                //psi[lsi]=Psi_local[i][0][k];
+                                psi[lsi]=psi[Solid[i][1][k]];
                                 u[lsi][0]=0.0;u[lsi][1]=v_yn;u[lsi][2]=0.0;
                                 //if (Solid[i][1][k]>0)
                                 //        rho[lsi]=rho[Solid[i][1][k]];
@@ -2353,7 +2359,8 @@ for (int i=0;i<nx_l;i++)
                 if (lsi>0)
                         if (pre_yp==1)
                         {
-                                psi[lsi]=Psi_local[i][NY][k];
+                                //psi[lsi]=Psi_local[i][NY][k];
+                                psi[lsi]=psi[Solid[i][NY-1][k]];
                                 rho[lsi]=p_yp;
                                 if (Solid[i][NY-1][k]>0)
                                 {
@@ -2367,7 +2374,8 @@ for (int i=0;i<nx_l;i++)
                         else
                         if (vel_yp==1)
                         {        
-                                psi[lsi]=Psi_local[i][NY][k];
+                                //psi[lsi]=Psi_local[i][NY][k];
+                                psi[lsi]=psi[Solid[i][NY-1][k]];
                                 u[lsi][0]=0.0;u[lsi][1]=v_yp;u[lsi][2]=0.0;
                                 //if (Solid[i][NY-1][k]>0)
                                 //        rho[lsi]=rho[Solid[i][NY-1][k]];
@@ -2385,7 +2393,8 @@ for (int i=0;i<nx_l;i++)
                 if (lsi>0)
                         if (pre_zn==1)
                         {
-                                psi[lsi]=Psi_local[i][j][0];
+                                //psi[lsi]=Psi_local[i][j][0];
+                                psi[lsi]=psi[Solid[i][j][1]];
                                 rho[lsi]=p_zn;
                                 if (Solid[i][j][1]>0)
                                 {
@@ -2399,7 +2408,8 @@ for (int i=0;i<nx_l;i++)
                         else
                         if (vel_zn==1)
                         {        
-                                psi[lsi]=Psi_local[i][j][0];
+                                //psi[lsi]=Psi_local[i][j][0];
+                                psi[lsi]=psi[Solid[i][j][1]];
                                 u[lsi][0]=0.0;u[lsi][1]=0.0;u[lsi][2]=v_zn;
                                 //if (Solid[i][j][1]>0)
                                 //        rho[lsi]=rho[Solid[i][j][1]];
@@ -2417,7 +2427,8 @@ for (int i=0;i<nx_l;i++)
                 if (lsi>0)
                         if (pre_zp==1)
                         {
-                                psi[lsi]=Psi_local[i][j][NZ];
+                                //psi[lsi]=Psi_local[i][j][NZ];
+                                psi[lsi]=psi[Solid[i][j][NZ-1]];
                                 rho[lsi]=p_zp;
                                 if (Solid[i][j][NZ-1]>0)
                                 {
@@ -2431,7 +2442,8 @@ for (int i=0;i<nx_l;i++)
                         else
                         if (vel_zp==1)
                         {        
-                                psi[lsi]=Psi_local[i][j][NZ];
+                                //psi[lsi]=Psi_local[i][j][NZ];
+                                psi[lsi]=psi[Solid[i][j][NZ-1]];
                                 u[lsi][0]=0.0;u[lsi][1]=0.0;u[lsi][2]=v_zp;
                                 //if (Solid[i][j][NZ-1]>0)
                                 //       rho[lsi]=rho[Solid[i][j][NZ-1]];
