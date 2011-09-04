@@ -106,7 +106,7 @@ void periodic_streaming_MR(double** ,double** ,int* ,int*** ,int* ,int* ,double*
 
 void standard_bounceback_boundary(int,double**);
 
-void collision(double*,double** ,double** ,double*, double* ,double* , int* ,int***);
+void collision(double*,double** ,double** ,double**, double*, double* ,double* , int* ,int***,int*, int*);
 
 void comput_macro_variables( double* ,double**,double** ,double** ,double** ,double* , double* , double* ,int* ,int***);
 
@@ -146,6 +146,11 @@ int e[19][3]=
 double w[19]={1.0/3.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0};
 
 int LR[19]={0,2,1,4,3,6,5,10,9,8,7,14,13,12,11,18,17,16,15};
+int FRP[19]={0,0,0,0,0,0,0,1,0,2,0,0,0,0,0,3,0,4,0};
+int FLN[19]={0,0,0,0,0,0,0,0,1,0,2,0,0,0,0,0,3,0,4};
+int RP[5]={1,7,9,15,17};
+int LN[5]={2,8,10,16,18};
+
 
 int n,nx_l,n_max,in_BC,PerDir,freRe,freDe,freVe,Par_Geo,Par_nx,Par_ny,Par_nz;
 int Zoom;
@@ -447,13 +452,13 @@ if (wr_per==1)
 	{
 	
 	//cout<<"@@@@@@@@@@@   "<<n<<endl;
-	collision(rho,u,f,forcex,forcey,forcez,SupInv,Solid);//cout<<"markcollision"<<endl;
+	collision(rho,u,f,F,forcex,forcey,forcez,SupInv,Solid,Sl,Sr);//cout<<"markcollision"<<endl;
 
 	
-	if (EI==0)
-		{periodic_streaming(f,F,SupInv,Solid,Sl,Sr,rho,u);}//cout<<"mark"<<endl;}
-	else
-		periodic_streaming_MR(f,F,SupInv,Solid,Sl,Sr,rho,u);
+	//if (EI==0)
+	//	{periodic_streaming(f,F,SupInv,Solid,Sl,Sr,rho,u);}//cout<<"mark"<<endl;}
+	//else
+	//	periodic_streaming_MR(f,F,SupInv,Solid,Sl,Sr,rho,u);
 	
 	if ((1-pre_xp)*(1-pre_xn)*(1-pre_yp)*(1-pre_yn)*(1-pre_zp)*(1-pre_zn)==0)
 		boundary_pressure(pre_xp,p_xp,pre_xn,p_xn,pre_yp,p_yp,pre_yn,p_yn,pre_zp,p_zp,pre_zn,p_zn,f,F,u,rho,Solid);
@@ -524,6 +529,8 @@ if (wr_per==1)
 		
 
 			cout<<"The"<<n<<"th computation result:"<<endl;
+			cout<<"The Density of point(NX/2,NY/2,NZ/2) is: "<<setprecision(6)
+				<<rho[Solid[((NX+1)/para_size/2)][NY/2][NZ/2]]<<endl;
 		//=============================================================================================
 			cout<<"The permiability is: "<<Permia[0]*reso*reso*1000<<", "<<Permia[1]*reso*reso*1000<<", "<<Permia[2]*reso*reso*1000<<endl;
 			cout<<"The relative error of permiability computing is: "<<error_perm<<endl;
@@ -1745,7 +1752,6 @@ void periodic_streaming(double** f,double** F,int* SupInv,int*** Solid,int* Sl,i
 			else
 			{
 			recvl = new double[Gcr[rank-1]*19];
-
 			recvr = new double[Gcl[rank+1]*19];
 			}
 
@@ -1854,30 +1860,101 @@ if (rank==0)
 }
 
 
-void collision(double* rho,double** u,double** f,double* forcex, double* forcey, double* forcez, int* SupInv,int*** Solid)
+void collision(double* rho,double** u,double** f,double** F,double* forcex, double* forcey, double* forcez, int* SupInv,int*** Solid, int* Sl, int* Sr)
 {
 
-double lm0,lm1;
+	MPI_Status status[4] ;
+	MPI_Request request[4];
+	int mpi_test;
+	
+	int rank = MPI :: COMM_WORLD . Get_rank ();
+	int mpi_size=MPI :: COMM_WORLD . Get_size ();
+
+	int* Gcl = new int[mpi_size];
+	int* Gcr = new int[mpi_size];
+
+	
+	MPI_Gather(&cl,1,MPI_INT,Gcl,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(Gcl,mpi_size,MPI_INT,0,MPI_COMM_WORLD);
+
+	MPI_Gather(&cr,1,MPI_INT,Gcr,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(Gcr,mpi_size,MPI_INT,0,MPI_COMM_WORLD);
+
+
+double lm0,lm1,sum;
 double usqr,vsqr;
 double F_hat[19],GuoF[19],f_eq[19],u_tmp[3];
 double m_l[19];
+int i,j,m,ip,jp,kp;
 
+	double* sendl;
+	double* sendr;
+
+	double* recvl= new double[Gcl[rank]*5];
+	double* recvr = new double[Gcr[rank]*5];
+
+	if (rank==0)
+		{
+		sendl = new double[Gcr[mpi_size-1]*5];
+		sendr = new double[Gcl[rank+1]*5];
+		
+		
+		for (int ka=0;ka<Gcr[mpi_size-1];ka++)
+		                sendl[ka]=0;
+		                
+		 for (int ka=0;ka<Gcl[rank+1];ka++)
+		                sendr[ka]=0;
+		                
+		      
+		
+		
+		}	
+		else
+		if (rank==mpi_size-1)
+			{
+			
+			sendl = new double[Gcr[rank-1]*5];
+			sendr = new double[Gcl[0]*5];
+			for (int ka=0;ka<Gcr[rank-1];ka++)
+		                sendl[ka]=0;
+		                
+		        for (int ka=0;ka<Gcl[0];ka++)
+		                sendr[ka]=0;
+
+			
+			}
+			else
+			{
 	
+			sendl = new double[Gcr[rank-1]*5];
+			sendr = new double[Gcl[rank+1]*5];
+			
+			for (int ka=0;ka<Gcr[rank-1];ka++)
+		                sendl[ka]=0;
+	
+		        for (int ka=0;ka<Gcl[rank+1];ka++)
+		                sendr[ka]=0;
+		
+
+			}
+			
 	
 
-	for(int i=1;i<=Count;i++)	
+	for(int ci=1;ci<=Count;ci++)	
 	
 
 		{	
 				
-			
+			i=(int)(SupInv[ci]/((NY+1)*(NZ+1)));
+			j=(int)((SupInv[ci]%((NY+1)*(NZ+1)))/(NZ+1));
+			m=(int)(SupInv[ci]%(NZ+1));  
 			
 
 			//=================FORCE TERM_GUO=========================================
 			for (int k=0;k<19;k++)
 			{	
-			lm0=((e[k][0]-u[i][0])*forcex[i]+(e[k][1]-u[i][1])*forcey[i]+(e[k][2]-u[i][2])*forcez[i])*3;
-			lm1=(e[k][0]*u[i][0]+e[k][1]*u[i][1]+e[k][2]*u[i][2])*(e[k][0]*forcex[i]+e[k][1]*forcey[i]+e[k][2]*forcez[i])*9;
+			lm0=((e[k][0]-u[ci][0])*forcex[ci]+(e[k][1]-u[ci][1])*forcey[ci]+(e[k][2]-u[ci][2])*forcez[ci])*3;
+			lm1=(e[k][0]*u[ci][0]+e[k][1]*u[ci][1]+e[k][2]*u[ci][2])*(e[k][0]*forcex[ci]+e[k][1]*forcey[ci]+e[k][2]*forcez[ci])*9;
 			GuoF[k]=w[k]*(lm0+lm1);
 			//GuoF[k]=0.0;
 			}
@@ -1885,20 +1962,21 @@ double m_l[19];
 
 			
 			//=====================equilibrium of moment=================================
-			u_tmp[0]=u[i][0];
-			u_tmp[1]=u[i][1];
-			u_tmp[2]=u[i][2];
+			u_tmp[0]=u[ci][0];
+			u_tmp[1]=u[ci][1];
+			u_tmp[2]=u[ci][2];
 
 			for(int k=0;k<19;k++)
 				{
-				f_eq[k]=feq(k,rho[i],u_tmp);
+				f_eq[k]=feq(k,rho[ci],u_tmp);
 				}
-			for (int l=0;l<19;l++)
-				{
-				meq[l]=0;
-				for(int lm=0;lm<19;lm++)
-				meq[l]+=M[l][lm]*f_eq[lm];				
-				}
+			
+			//for (int l=0;l<19;l++)
+			//	{
+			//	meq[l]=0;
+			//	for(int lm=0;lm<19;lm++)
+			//	meq[l]+=M[l][lm]*f_eq[lm];				
+			//	}
 
 			//============================================================================
 
@@ -1906,55 +1984,136 @@ double m_l[19];
 			// ==================   m=Mf matrix calculation  =============================
 			// ==================   F_hat=(I-.5*S)MGuoF =====================================
 				for (int mi=0; mi<19; mi++)
-					{m_l[mi]=0;F_hat[mi]=0;
+					{
+					m_l[mi]=0;F_hat[mi]=0;meq[mi]=0;
 					for (int mj=0; mj<19; mj++)
 						{
-						m_l[mi]+=M[mi][mj]*f[i][mj];
+						m_l[mi]+=M[mi][mj]*f[ci][mj];
 						F_hat[mi]+=M[mi][mj]*GuoF[mj];
+						meq[mi]+=M[mi][mj]*f_eq[mj];
 						}
 					F_hat[mi]*=(1-0.5*S[mi]);
+					m_l[mi]=m_l[mi]-S[mi]*(m_l[mi]-meq[mi])+dt*F_hat[mi];
 					}
 			//============================================================================
 
 
-//			if (i==20)
-//				{
-//				cout<<"Collison"<<endl;							
-//							for(int lm=0;lm<19;lm++)
-//									cout<<f[20][lm]<<", ";
-//							cout<<endl;
-//				}
-				
-			
-				
-				for (int sk=0;sk<19;sk++)
-				//m[sk]=m[sk]-S[sk]*(m[sk]-meq[sk]);
-				//m[sk]=m[sk]-S[sk]*(m[sk]-meq[sk])+(1-S[sk]*F_hat[sk]/2);
-				m_l[sk]=m_l[sk]-S[sk]*(m_l[sk]-meq[sk])+dt*F_hat[sk];
 
-			//}
 
-			// ==================   f=M_-1m matrix calculation  =============================
-				for (int mi=0; mi<19; mi++)
-					{f[i][mi]=0;
-					for (int mj=0; mj<19; mj++)
-						f[i][mi]+=MI[mi][mj]*m_l[mj];
-					}
+			// ==================   f=M_-1m matrix calculation and streaming =============================
+		for (int mi=0; mi<19; mi++)
+			{
+			sum=0;
+			for (int mj=0; mj<19; mj++)
+				sum+=MI[mi][mj]*m_l[mj];
+
+			//F[ci][mi]=0;
+			ip=i+e[mi][0];
+			jp=j+e[mi][1];if (jp<0) {jp=NY;}; if (jp>NY) {jp=0;};
+			kp=m+e[mi][2];if (kp<0) {kp=NZ;}; if (kp>NZ) {kp=0;};
+
+
+			if (ip<0) 
+				if (Sl[jp*(NZ+1)+kp]>0)
+				{
+				sendl[(Sl[jp*(NZ+1)+kp]-1)*5+FLN[mi]]=sum;
+				//sendl_rhob[Sl[jp*(NZ+1)+kp]-1]+=g_b[lm];
+				//cout<<g_r[lm]<<"    1"<<endl;
+				}
+				else
+				{
+				F[ci][LR[mi]]=sum;
+				}
+					
+						
+					
+					
+			if (ip>=nx_l)
+				if (Sr[jp*(NZ+1)+kp]>0)
+				{
+				sendr[(Sr[jp*(NZ+1)+kp]-1)*5+FRP[mi]]=sum;
+				//sendr_rhob[Sr[jp*(NZ+1)+kp]-1]+=g_b[lm];
+				//cout<<g_r[lm]<<"    2"<<endl;
+				}
+				else
+				{
+				F[ci][LR[mi]]=sum;
+				}
+
+			if ((ip>=0) and (ip<nx_l)) 
+				if (Solid[ip][jp][kp]>0)
+				{
+				F[Solid[ip][jp][kp]][mi]=sum;
+				
+				}
+				else
+				{
+				F[ci][LR[mi]]=sum;
+				}
+
+
+
+			//for (int mj=0; mj<19; mj++)
+			//	f[ci][mi]+=MI[mi][mj]*m_l[mj];
+			}
 			//============================================================================
 			
 			
 			}
-                        
-/*	
-	double sum=0;
-	for(int ci=1;ci<=Count;ci++)	
+	
+	
+	if (rank==0)
 		{
-		for(int lm=0;lm<19;lm++)
-                	{sum+=f[ci][lm];}
-		cout<<sum<<endl;sum=0;
+		
+		
+		MPI_Isend(sendr, Gcl[1]*5, MPI_DOUBLE, rank+1, rank*2+1, MPI_COMM_WORLD,&request[0]);
+      		MPI_Isend(sendl, Gcr[mpi_size-1]*5, MPI_DOUBLE, mpi_size-1, rank*2, MPI_COMM_WORLD,&request[1]);
+		MPI_Irecv(recvr, Gcr[0]*5, MPI_DOUBLE, rank+1, (rank+1)*2, MPI_COMM_WORLD,&request[2]);		
+      		MPI_Irecv(recvl, Gcl[0]*5, MPI_DOUBLE, mpi_size-1, (mpi_size-1)*2+1, MPI_COMM_WORLD,&request[3] );
 		}
+		else
+		if (rank==mpi_size-1)
+			{
+			MPI_Isend(sendl, Gcr[rank-1]*5, MPI_DOUBLE, rank-1, rank*2, MPI_COMM_WORLD,&request[0]);
+      			MPI_Isend(sendr, Gcl[0]*5,  MPI_DOUBLE, 0, rank*2+1, MPI_COMM_WORLD,&request[1]);
+			MPI_Irecv(recvl, Gcl[rank]*5, MPI_DOUBLE, rank-1, (rank-1)*2+1, MPI_COMM_WORLD,&request[2] );
+      			MPI_Irecv(recvr, Gcr[rank]*5, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD,&request[3]);
 			
-*/			
+			}
+			else
+			{
+
+      			MPI_Isend(sendl, Gcr[rank-1]*5, MPI_DOUBLE, rank-1, rank*2, MPI_COMM_WORLD,&request[0]);
+      			MPI_Isend(sendr, Gcl[rank+1]*5, MPI_DOUBLE, rank+1, rank*2+1, MPI_COMM_WORLD,&request[1]);
+			MPI_Irecv(recvl, Gcl[rank]*5, MPI_DOUBLE, rank-1, (rank-1)*2+1, MPI_COMM_WORLD,&request[2]);
+      			MPI_Irecv(recvr, Gcr[rank]*5, MPI_DOUBLE, rank+1, (rank+1)*2, MPI_COMM_WORLD,&request[3]);
+			
+			
+			};
+
+	
+	MPI_Waitall(4,request, status);
+
+	MPI_Testall(4,request,&mpi_test,status);	
+		
+			for(i=1;i<=Gcl[rank];i++)
+				for (int lm=0;lm<5;lm++)
+			        F[i][RP[lm]]=recvl[(i-1)*5+lm];
+			        
+			for(j=Count-Gcr[rank]+1;j<=Count;j++)
+				for (int lm=0;lm<5;lm++)
+			        F[j][LN[lm]]=recvr[(j-(Count-Gcr[rank]+1))*5+lm];
+			        
+			
+
+                        
+
+	delete [] Gcl;
+	delete [] Gcr;
+	delete [] sendl;
+	delete [] sendr;
+	delete [] recvl;
+	delete [] recvr;
 		
 
 }
