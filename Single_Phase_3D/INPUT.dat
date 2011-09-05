@@ -1,5 +1,5 @@
 BC.dat   :Geometry filenameEmily_Berea_y_614_764_7.dat
-150 50 3       :nx ny nz
+160 50 3       :nx ny nz
 5000000		 :Maxmum time step
 19.9997	          :dx (um) Resolution (for Permeability calculation)
 1	        	:Pressure/Velocity Boundary (1=Yes, 0=No)   Convergence accelerator (1=yes, 0=no)

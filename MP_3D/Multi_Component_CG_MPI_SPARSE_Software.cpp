@@ -122,7 +122,7 @@ void tests();
 
 void init_Sparse(int***,int***,double***, double***, int*, int*);
 
-void init(double*, double**, double**,double*, double*,double*, double*, double*, double*,double***,int*);
+void init(double*, double**, double**,double*, double*,double*, double*, double*, double*, double*, double*,double***,int*);
 
 void periodic_streaming(double** ,double** ,int* ,int***,int*, int*,double*, double**);
 
@@ -234,7 +234,7 @@ double v_max,error_Per;
 	if (rank==0)
 	{
 	ifstream fin(argv[1]);
-	                                                        fin.getline(dummy, NCHAR);
+	                                                fin.getline(dummy, NCHAR);
 	fin >> filename;				fin.getline(dummy, NCHAR);
 	fin >> filenamepsi;				fin.getline(dummy, NCHAR);
 	fin >> NX >> NY >> NZ;				fin.getline(dummy, NCHAR);
@@ -268,7 +268,7 @@ double v_max,error_Per;
 	fin >> Par_Geo >> Par_nx >> Par_ny >> Par_nz;	fin.getline(dummy, NCHAR);
 	fin >> Zoom;					fin.getline(dummy, NCHAR);
 	fin >> outputfile;				fin.getline(dummy, NCHAR);
-	fin >> Sub_BC;				fin.getline(dummy, NCHAR);
+	fin >> Sub_BC;					fin.getline(dummy, NCHAR);
 	fin >> EI;					fin.getline(dummy, NCHAR);
 	fin >> q_p;					fin.getline(dummy, NCHAR);
 	fin.close();
@@ -459,7 +459,7 @@ if (Zoom>1)
 	else
 		Geometry_b(Solid);
 
-	init(rho,u,f,psi,rho_r,rho_b,forcex,forcey,forcez,Psi_local,SupInv);
+	init(rho,u,f,psi,rho_r,rho_b,rhor, rhob, forcex,forcey,forcez,Psi_local,SupInv);
 
 if (rank==0)
 		cout<<"Porosity= "<<porosity<<endl;
@@ -1145,7 +1145,7 @@ MPI_Barrier(MPI_COMM_WORLD);
 
 
 
-void init(double* rho, double** u, double** f,double* psi,double* rho_r, double* rho_b, double* forcex,double* forcey, double* forcez,double*** Psi_local, int* SupInv)
+void init(double* rho, double** u, double** f,double* psi,double* rho_r, double* rho_b, double* rhor, double* rhob, double* forcex,double* forcey, double* forcez,double*** Psi_local, int* SupInv)
 {	
       
 
@@ -1211,6 +1211,8 @@ void init(double* rho, double** u, double** f,double* psi,double* rho_r, double*
 			rho[i]=1.0;
 			rho_r[i]=(psi[i]*rho[i]+rho[i])/2;
 			rho_b[i]=rho[i]-rho_r[i];
+			rhor[i]=0;
+			rhob[i]=0;
 			//cout<<rho_r[i]<<"      "<<rho_b[i]<<endl;
 			
 
@@ -1221,14 +1223,7 @@ void init(double* rho, double** u, double** f,double* psi,double* rho_r, double*
 			forcez[i]=gz;
 
 
-			//s_v=niu_g+(psi[i]+1.0)/2.0*(niu_l-niu_g);
-			//s_v=1.0/(3*s_v/dt+0.5);
-
-
-
-
-			//***********************************************************************
-
+			
 
 			//INITIALIZATION OF m and f
 
@@ -1557,12 +1552,15 @@ if (rank==0)
 		for (int ka=0;ka<Gcr[mpi_size-1];ka++)
 		        {
 		                sendl_rhor[ka]=0;sendl_rhob[ka]=0;
+				for (int kb=0;kb<5;kb++)
+				sendl[ka*5+kb]=0;
 		                
 		        }
 		 for (int ka=0;ka<Gcl[rank+1];ka++)
 		        {
 		                sendr_rhor[ka]=0;sendr_rhob[ka]=0;
-		                
+		                for (int kb=0;kb<5;kb++)
+				sendr[ka*5+kb]=0;
 		        }       
 		
 		
@@ -1583,11 +1581,15 @@ if (rank==0)
 			for (int ka=0;ka<Gcr[rank-1];ka++)
 		        {
 		                sendl_rhor[ka]=0;sendl_rhob[ka]=0;
+				for (int kb=0;kb<5;kb++)
+				sendl[ka*5+kb]=0;
 		                
 		        }
 		        for (int ka=0;ka<Gcl[0];ka++)
 		        {
 		                sendr_rhor[ka]=0;sendr_rhob[ka]=0;
+				for (int kb=0;kb<5;kb++)
+				sendr[ka*5+kb]=0;
 		                
 		        }       
 			
@@ -1607,11 +1609,15 @@ if (rank==0)
 			for (int ka=0;ka<Gcr[rank-1];ka++)
 		        {
 		                sendl_rhor[ka]=0;sendl_rhob[ka]=0;
+				for (int kb=0;kb<5;kb++)
+				sendl[ka*5+kb]=0;
 		                
 		        }
 		        for (int ka=0;ka<Gcl[rank+1];ka++)
 		        {
 		                sendr_rhor[ka]=0;sendr_rhob[ka]=0;
+				for (int kb=0;kb<5;kb++)
+				sendr[ka*5+kb]=0;
 			}
 			
 			}
@@ -1676,7 +1682,7 @@ if (rank==0)
 				j=(int)((SupInv[ci]%((NY+1)*(NZ+1)))/(NZ+1));
 				m=(int)(SupInv[ci]%(NZ+1));   
 
-			//cout<<i<<" "<<j<<" "<<m<<" / "<<rho_r[ci]<<endl;
+		//cout<<i<<" "<<j<<" "<<m<<" /before "<<rhor[ci]<<" nth= "<<n<<"  the ci= "<<ci<<"  rank=  "<<rank<<endl;
 
 
 			C[0]=0;C[1]=0;C[2]=0;
@@ -1854,25 +1860,6 @@ if (rank==0)
 			//============================================================================
 
 
-//			if (i==20)
-//				{
-//				cout<<"Collison"<<endl;							
-//							for(int lm=0;lm<19;lm++)
-//									cout<<f[20][lm]<<", ";
-//							cout<<endl;
-//				}
-				
-			
-				
-				//for (int sk=0;sk<19;sk++)
-				//m[sk]=m[sk]-S[sk]*(m[sk]-meq[sk]);
-				//m[sk]=m[sk]-S[sk]*(m[sk]-meq[sk])+(1-S[sk]*F_hat[sk]/2);
-				//cout<<"before "<<m_l[sk]<<"  ";
-				//m_l[sk]=m_l[sk]-S[sk]*(m_l[sk]-meq[sk])+dt*F_hat[sk];
-				//cout<<"after  "<<m_l[sk]<<" s "<<S[sk]<<"   meq  "<<meq[sk]<<"   "<<sk<<endl;
-				
-
-			//}
 		for (int mi=0; mi<19; mi++)
 			{
 			sum=0;
@@ -1925,7 +1912,7 @@ if (rank==0)
 		//=======================G streaming=================================================
 		//for(int lm=0;lm<19;lm++)
                 //{
-                eu=e[mi][0]*u[ci][0]+e[mi][1]*u[ci][1]+e[mi][2]*u[ci][2];
+                 eu=e[mi][0]*u[ci][0]+e[mi][1]*u[ci][1]+e[mi][2]*u[ci][2];
                  g_r[mi]=w[mi]*rho_r[ci]*(1+3*eu);
                  g_b[mi]=w[mi]*rho_b[ci]*(1+3*eu);
 		//	cout<<" "<<g_r[lm]<<" "<<g_b[lm]<<"  the number "<<n<<"  vector "<<lm<<endl;
@@ -1966,10 +1953,11 @@ if (rank==0)
                 g_r[kk+1]-=cospsi;
                 g_b[kk]-=cospsi;
                 g_b[kk+1]+=cospsi;
-		//if (n==0)
-                //cout<<"@@@@@@@@@     "<<g_r[kk]<<" "<<g_r[kk+1]<<"  the number "<<n<<"  vector "<<kk<<endl;
+		
                 }      
-				           
+			
+
+			   
 		       for(int lm=0;lm<19;lm++)
 
 
@@ -2022,11 +2010,9 @@ if (rank==0)
 						rhor[ci]+=g_r[lm];
 						rhob[ci]+=g_b[lm];
 						}
-					//cout<<"lm, g_r= "<<lm<<" "<<g_r[lm]<<"  "<<ip<<endl;
-			//cout<<rhor[ci]<<"   WWWWWWWWWW  "<<rhob[ci]<<endl;
+					
 					
 			}
-		
 		
 		
 			
@@ -2090,11 +2076,12 @@ if (rank==0)
 		
 			for(i=1;i<=Gcl[rank];i++)
 			        {
+			
 			        rhor[i]+=recvl_rhor[i-1];
 			        rhob[i]+=recvl_rhob[i-1];
-				//if (n==0)
-				//cout<<recvl_rhor[i]<<"  "<<recvl_rhob[i]<<"   "<<endl;
+				
 				for (int lm=0;lm<5;lm++)
+					if (recvl[(i-1)*5+lm]>0)
 				        F[i][RP[lm]]=recvl[(i-1)*5+lm];
 			        }
 			for(j=Count-Gcr[rank]+1;j<=Count;j++)
@@ -2102,6 +2089,7 @@ if (rank==0)
 				rhor[j]+=recvr_rhor[j-(Count-Gcr[rank]+1)];
 				rhob[j]+=recvr_rhob[j-(Count-Gcr[rank]+1)];
 				for (int lm=0;lm<5;lm++)
+					if (recvr[(j-(Count-Gcr[rank]+1))*5+lm]>0)
 			        	F[j][LN[lm]]=recvr[(j-(Count-Gcr[rank]+1))*5+lm];
 				}
 			
@@ -2191,12 +2179,12 @@ void comput_macro_variables( double* rho,double** u,double** u0,double** f,doubl
 				u[i][1]=(u[i][1]+dt*forcey[i]/2)/rho[i];
 				u[i][2]=(u[i][2]+dt*forcez[i]/2)/rho[i];
 				
-				psi[i]=(rho_r[i]-rho_b[i])/rho[i];
-				//if (n==0)
-				//cout<<rho_r[i]<<"      @@@@@@@@   "<<rho_b[i]<<"              "<<rho_r[i]+rho_b[i]<<endl;
+				
+				psi[i]=(rho_r[i]-rho_b[i])/(rho_r[i]+rho_b[i]);
+				
 			}
 			
-		//cout<<in_BC<<"       WWWWWWWWWWWW "<<endl;	
+		
 	if (in_BC==1)
                 {
                    if (((pre_xn==1) or (vel_xn==1)) and (rank==0))    
@@ -3862,8 +3850,8 @@ if (mir==0)
 			}
 			
 	out.close();
-	
-/*	ostringstream name2;
+//=======================================	
+	ostringstream name2;
 	name2<<"LBM_velocity_"<<m<<".out";
 	ofstream out2(name2.str().c_str());
 	for (int j=0;j<=NY;j++)
@@ -3873,7 +3861,7 @@ if (mir==0)
 		else
 			out2<<0.0<<endl;
 		}
-*/
+//===================================
 	
 	}
 

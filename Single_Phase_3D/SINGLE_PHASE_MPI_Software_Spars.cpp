@@ -446,7 +446,7 @@ if (wr_per==1)
 
 
 
-
+//cout<<Sr[1*(NZ+1)+0]<<"  RRRR   "<<rank<<endl;
 	
 	for(n=0;n<=n_max;n++)
 	{
@@ -789,6 +789,9 @@ if (rank==0)
 	MPI_Waitall(4,request, status);
 	MPI_Testall(4,request,&mpi_test,status);
 
+
+	
+
 	delete [] Sl_send;
 	delete [] Sr_send;	
 }
@@ -957,7 +960,7 @@ FILE *ftest;
 	
 	cout<<"INPUT FILE READING COMPLETE.  THE POROSITY IS: "<<*porosity<<endl;
 
-	//cout<<nx<<"  "<<ny<<"  "<<nz<<"  zoom "<<Zoom<<endl;
+	
 
 	
 	for (i=0;i<nx;i++)
@@ -965,7 +968,7 @@ FILE *ftest;
 			for (k=0;k<nz;k++)
 			Solids[i][j][k]=Solid_Int[i*(ny)*(nz)+j*(nz)+k];
 
-//cout<<"asdfasdfasdfasdfa"<<endl;
+
 MPI_Barrier(MPI_COMM_WORLD);
 
 
@@ -1899,10 +1902,10 @@ int i,j,m,ip,jp,kp;
 		sendr = new double[Gcl[rank+1]*5];
 		
 		
-		for (int ka=0;ka<Gcr[mpi_size-1];ka++)
+		for (int ka=0;ka<Gcr[mpi_size-1]*5;ka++)
 		                sendl[ka]=0;
 		                
-		 for (int ka=0;ka<Gcl[rank+1];ka++)
+		 for (int ka=0;ka<Gcl[rank+1]*5;ka++)
 		                sendr[ka]=0;
 		                
 		      
@@ -1915,10 +1918,10 @@ int i,j,m,ip,jp,kp;
 			
 			sendl = new double[Gcr[rank-1]*5];
 			sendr = new double[Gcl[0]*5];
-			for (int ka=0;ka<Gcr[rank-1];ka++)
+			for (int ka=0;ka<Gcr[rank-1]*5;ka++)
 		                sendl[ka]=0;
 		                
-		        for (int ka=0;ka<Gcl[0];ka++)
+		        for (int ka=0;ka<Gcl[0]*5;ka++)
 		                sendr[ka]=0;
 
 			
@@ -1929,10 +1932,10 @@ int i,j,m,ip,jp,kp;
 			sendl = new double[Gcr[rank-1]*5];
 			sendr = new double[Gcl[rank+1]*5];
 			
-			for (int ka=0;ka<Gcr[rank-1];ka++)
+			for (int ka=0;ka<Gcr[rank-1]*5;ka++)
 		                sendl[ka]=0;
 	
-		        for (int ka=0;ka<Gcl[rank+1];ka++)
+		        for (int ka=0;ka<Gcl[rank+1]*5;ka++)
 		                sendr[ka]=0;
 		
 
@@ -2003,7 +2006,7 @@ int i,j,m,ip,jp,kp;
 			// ==================   f=M_-1m matrix calculation and streaming =============================
 		for (int mi=0; mi<19; mi++)
 			{
-			sum=0;
+			sum=0;	
 			for (int mj=0; mj<19; mj++)
 				sum+=MI[mi][mj]*m_l[mj];
 
@@ -2012,32 +2015,33 @@ int i,j,m,ip,jp,kp;
 			jp=j+e[mi][1];if (jp<0) {jp=NY;}; if (jp>NY) {jp=0;};
 			kp=m+e[mi][2];if (kp<0) {kp=NZ;}; if (kp>NZ) {kp=0;};
 
+				
 
 			if (ip<0) 
 				if (Sl[jp*(NZ+1)+kp]>0)
 				{
 				sendl[(Sl[jp*(NZ+1)+kp]-1)*5+FLN[mi]]=sum;
-				//sendl_rhob[Sl[jp*(NZ+1)+kp]-1]+=g_b[lm];
-				//cout<<g_r[lm]<<"    1"<<endl;
+				
 				}
 				else
 				{
 				F[ci][LR[mi]]=sum;
+				
+				
 				}
 					
-						
-					
-					
+			
+		
 			if (ip>=nx_l)
 				if (Sr[jp*(NZ+1)+kp]>0)
 				{
 				sendr[(Sr[jp*(NZ+1)+kp]-1)*5+FRP[mi]]=sum;
-				//sendr_rhob[Sr[jp*(NZ+1)+kp]-1]+=g_b[lm];
-				//cout<<g_r[lm]<<"    2"<<endl;
+				
 				}
 				else
 				{
 				F[ci][LR[mi]]=sum;
+				
 				}
 
 			if ((ip>=0) and (ip<nx_l)) 
@@ -2053,15 +2057,18 @@ int i,j,m,ip,jp,kp;
 
 
 
-			//for (int mj=0; mj<19; mj++)
-			//	f[ci][mi]+=MI[mi][mj]*m_l[mj];
+			
 			}
 			//============================================================================
 			
 			
 			}
+
+
 	
 	
+
+
 	if (rank==0)
 		{
 		
@@ -2098,10 +2105,12 @@ int i,j,m,ip,jp,kp;
 		
 			for(i=1;i<=Gcl[rank];i++)
 				for (int lm=0;lm<5;lm++)
+				if (recvl[(i-1)*5+lm]>0)
 			        F[i][RP[lm]]=recvl[(i-1)*5+lm];
 			        
 			for(j=Count-Gcr[rank]+1;j<=Count;j++)
 				for (int lm=0;lm<5;lm++)
+				if (recvr[(j-(Count-Gcr[rank]+1))*5+lm]>0)
 			        F[j][LN[lm]]=recvr[(j-(Count-Gcr[rank]+1))*5+lm];
 			        
 			
@@ -2241,7 +2250,13 @@ void comput_macro_variables_IMR( double* rho,double** u,double** u0,double** f,d
 void comput_macro_variables( double* rho,double** u,double** u0,double** f,double** F,double* forcex, double* forcey, double* forcez,int* SupInv,int*** Solid)
 {
 	
-	
+	int rank = MPI :: COMM_WORLD . Get_rank ();
+	int mpi_size=MPI :: COMM_WORLD . Get_size ();
+
+
+
+
+
 
 	for(int i=1;i<=Count;i++)	
                    
@@ -2273,10 +2288,9 @@ void comput_macro_variables( double* rho,double** u,double** u0,double** f,doubl
 				
 		
 			}
-			
+
+
 	
-                     
-			
 	//MPI_Barrier(MPI_COMM_WORLD); 
 
 }
