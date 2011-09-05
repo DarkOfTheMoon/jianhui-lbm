@@ -2356,14 +2356,14 @@ for (int i=0;i<nx_l;i++)
 		for (int ks=0;ks<Q;ks++)
 		{
 		if ((yp==1)  && (Solid[i][NY][k]>0))
-		        if (Solid[i][NY-1][k]>0)
-		                 F[Solid[i][NY][k]][ks]=feq(ks,rho[Solid[i][NY-1][k]],u_yp);
-		         else
+		        //if (Solid[i][NY-1][k]>0)
+		         //        F[Solid[i][NY][k]][ks]=feq(ks,rho[Solid[i][NY-1][k]],u_yp);
+		         //else
 		                 F[Solid[i][NY][k]][ks]=feq(ks,1.0,u_yp);
 		if ((yn==1) && (Solid[i][0][k]>0))
-		        if (Solid[i][1][k]>0)
-		                 F[Solid[i][0][k]][ks]=feq(ks,rho[Solid[i][1][k]],u_yn);
-		         else
+		        //if (Solid[i][1][k]>0)
+		        //         F[Solid[i][0][k]][ks]=feq(ks,rho[Solid[i][1][k]],u_yn);
+		        // else
 		                 F[Solid[i][0][k]][ks]=feq(ks,1.0,u_yn);      
 		}
 
@@ -2373,14 +2373,14 @@ for (int i=0;i<nx_l;i++)
 		for (int ks=0;ks<Q;ks++)
 		{
 		if ((zp==1) && (Solid[i][j][NZ]>0)) 
-		        if (Solid[i][j][NZ-1]>0)
-		                F[Solid[i][j][NZ]][ks]=feq(ks,rho[Solid[i][j][NZ-1]],u_zp);
-		        else
+		       // if (Solid[i][j][NZ-1]>0)
+		        //        F[Solid[i][j][NZ]][ks]=feq(ks,rho[Solid[i][j][NZ-1]],u_zp);
+		        //else
 		                F[Solid[i][j][NZ]][ks]=feq(ks,1.0,u_zp); 
 		if ((zn==1) && (Solid[i][j][0]>0))
-		        if (Solid[i][j][1]>0)
-		                F[Solid[i][j][0]][ks]=feq(ks,rho[Solid[i][j][1]],u_zn);
-		        else
+		        //if (Solid[i][j][1]>0)
+		       //         F[Solid[i][j][0]][ks]=feq(ks,rho[Solid[i][j][1]],u_zn);
+		       // else
 		                F[Solid[i][j][0]][ks]=feq(ks,1.0,u_zn);
 		}
 
@@ -2389,9 +2389,9 @@ if ((xp==1) && (rank==mpi_size-1))
 for (int j=0;j<=NY;j++)
 	for (int k=0;k<=NZ;k++)
 		for (int ks=0;ks<Q;ks++)
-		        if (Solid[nx_l-2][j][k]>0)
-			        F[Solid[nx_l-1][j][k]][ks]=feq(ks,rho[Solid[nx_l-2][j][k]],u_xp);
-			else
+		        //if (Solid[nx_l-2][j][k]>0)
+			//        F[Solid[nx_l-1][j][k]][ks]=feq(ks,rho[Solid[nx_l-2][j][k]],u_xp);
+			//else
 			         F[Solid[nx_l-1][j][k]][ks]=feq(ks,1.0,u_xp);
 			
 
@@ -2401,9 +2401,9 @@ if ((xn==1) && (rank==0))
 for (int j=0;j<=NY;j++)
 	for(int k=0;k<=NZ;k++)
 		for (int ks=0;ks<Q;ks++)
-		        if (Solid[1][j][k]>0)
-		                F[Solid[0][j][k]][ks]=feq(ks,rho[Solid[1][j][k]],u_xn);
-		        else
+		        //if (Solid[1][j][k]>0)
+		        //        F[Solid[0][j][k]][ks]=feq(ks,rho[Solid[1][j][k]],u_xn);
+		        //else
 		                F[Solid[0][j][k]][ks]=feq(ks,1.0,u_xn);
 			
 	
@@ -2421,9 +2421,9 @@ for (int i=0;i<nx_l;i++)
 		for (int ks=0;ks<Q;ks++)
 		{
 		if (NY+e[ks][1]<NY)
-			if (Solid[i][NY-1][k]>0) 
-				F[Solid[i][NY][k]][ks]=feq(LR[ks],rho[Solid[i][NY-1][k]],u_yp)-F[Solid[i][NY][k]][LR[ks]]+feq(ks,rho[Solid[i][NY-1][k]],u_yp);
-			else
+			//if (Solid[i][NY-1][k]>0) 
+			//	F[Solid[i][NY][k]][ks]=feq(LR[ks],rho[Solid[i][NY-1][k]],u_yp)-F[Solid[i][NY][k]][LR[ks]]+feq(ks,rho[Solid[i][NY-1][k]],u_yp);
+			//else
 				F[Solid[i][NY][k]][ks]=feq(LR[ks],1.0,u_yp)-F[Solid[i][NY][k]][LR[ks]]-feq(ks,1.0,u_yp);
 
 			}
@@ -2436,9 +2436,9 @@ for (int i=0;i<nx_l;i++)
 		for (int ks=0;ks<Q;ks++)
 			{
 			if (e[ks][1]>0)
-				if (Solid[i][1][k]>0) 
-					F[Solid[i][0][k]][ks]=feq(LR[ks],rho[Solid[i][1][k]],u_yn)-F[Solid[i][0][k]][LR[ks]]+feq(ks,rho[Solid[i][1][k]],u_yn);
-				else
+				//if (Solid[i][1][k]>0) 
+				//	F[Solid[i][0][k]][ks]=feq(LR[ks],rho[Solid[i][1][k]],u_yn)-F[Solid[i][0][k]][LR[ks]]+feq(ks,rho[Solid[i][1][k]],u_yn);
+				//else
 					F[Solid[i][0][k]][ks]=feq(LR[ks],1.0,u_yn)-F[Solid[i][0][k]][LR[ks]]+feq(ks,1.0,u_yn);
 
 			}
@@ -2452,9 +2452,9 @@ for (int i=0;i<nx_l;i++)
 		for (int ks=0;ks<Q;ks++)
 			{
 			if (e[ks][2]<0)
-				if (Solid[i][j][NZ-1]>0) 
-					F[Solid[i][j][NZ]][ks]=feq(LR[ks],rho[Solid[i][j][NZ-1]],u_zp)-F[Solid[i][j][NZ]][LR[ks]]+feq(ks,rho[Solid[i][j][NZ-1]],u_zp);
-				else
+				//if (Solid[i][j][NZ-1]>0) 
+				//	F[Solid[i][j][NZ]][ks]=feq(LR[ks],rho[Solid[i][j][NZ-1]],u_zp)-F[Solid[i][j][NZ]][LR[ks]]+feq(ks,rho[Solid[i][j][NZ-1]],u_zp);
+				//else
 					F[Solid[i][j][NZ]][ks]=feq(LR[ks],1.0,u_zp)-F[Solid[i][j][NZ]][LR[ks]]+feq(ks,1.0,u_zp);
 		
 			}
@@ -2468,9 +2468,9 @@ for (int i=0;i<nx_l;i++)
 		for (int ks=0;ks<Q;ks++)
 			{
 			if (e[ks][2]>0)
-				if (Solid[i][j][1]>0) 
-					F[Solid[i][j][0]][ks]=feq(LR[ks],rho[Solid[i][j][1]],u_zn)-F[Solid[i][j][0]][LR[ks]]+feq(ks,rho[Solid[i][j][1]],u_zn);
-				else
+				//if (Solid[i][j][1]>0) 
+				//	F[Solid[i][j][0]][ks]=feq(LR[ks],rho[Solid[i][j][1]],u_zn)-F[Solid[i][j][0]][LR[ks]]+feq(ks,rho[Solid[i][j][1]],u_zn);
+				//else
 					F[Solid[i][j][0]][ks]=feq(LR[ks],1.0,u_zn)-F[Solid[i][j][0]][LR[ks]]+feq(ks,1.0,u_zn);
 	
 			}
@@ -2485,9 +2485,9 @@ for (int j=0;j<=NY;j++)
 		for (int ks=0;ks<Q;ks++)
 			{
 			if (e[ks][0]<0)
-				if (Solid[nx_l-2][j][k]>0) 
-					F[Solid[nx_l-1][j][k]][ks]=feq(LR[ks],rho[Solid[nx_l-2][j][k]],u_xp)-F[Solid[nx_l-1][j][k]][LR[ks]]+feq(ks,rho[Solid[nx_l-2][j][k]],u_xp);
-				else
+				//if (Solid[nx_l-2][j][k]>0) 
+				//	F[Solid[nx_l-1][j][k]][ks]=feq(LR[ks],rho[Solid[nx_l-2][j][k]],u_xp)-F[Solid[nx_l-1][j][k]][LR[ks]]+feq(ks,rho[Solid[nx_l-2][j][k]],u_xp);
+				//else
 					F[Solid[nx_l-1][j][k]][ks]=feq(LR[ks],1.0,u_xp)-F[Solid[nx_l-1][j][k]][LR[ks]]+feq(ks,1.0,u_xp);
 		
 			}
@@ -2501,9 +2501,9 @@ for (int j=0;j<=NY;j++)
 		for (int ks=0;ks<Q;ks++)
 			{
 			if (e[ks][0]>0)
-				if (Solid[1][j][k]>0) 
-					F[Solid[0][j][k]][ks]=feq(LR[ks],rho[Solid[1][j][k]],u_xn)-F[Solid[0][j][k]][LR[ks]]+feq(ks,rho[Solid[0][j][k]],u_xn);
-				else
+				//if (Solid[1][j][k]>0) 
+				//	F[Solid[0][j][k]][ks]=feq(LR[ks],rho[Solid[1][j][k]],u_xn)-F[Solid[0][j][k]][LR[ks]]+feq(ks,rho[Solid[0][j][k]],u_xn);
+				//else
 					F[Solid[0][j][k]][ks]=feq(LR[ks],1.0,u_xn)-F[Solid[0][j][k]][LR[ks]]+feq(ks,1.0,u_xn);
 		
 			}
@@ -2519,9 +2519,9 @@ for (int i=0;i<nx_l;i++)
 	if (Solid[i][NY][k]>0)
 		for (int ks=0;ks<Q;ks++)
 			{
-				if (Solid[i][NY-1][k]>0) 
-					F[Solid[i][NY][k]][ks]=feq(ks,rho[Solid[i][NY-1][k]],u_yp)+f[Solid[i][NY-1][k]][ks]-feq(ks,rho[Solid[i][NY-1][k]],u[Solid[i][NY-1][k]]);
-				else
+				//if (Solid[i][NY-1][k]>0) 
+				//	F[Solid[i][NY][k]][ks]=feq(ks,rho[Solid[i][NY-1][k]],u_yp)+f[Solid[i][NY-1][k]][ks]-feq(ks,rho[Solid[i][NY-1][k]],u[Solid[i][NY-1][k]]);
+				//else
 					F[Solid[i][NY][k]][ks]=feq(ks,rho[Solid[i][NY-1][k]],u_yp);
 
 			}
@@ -2533,9 +2533,9 @@ for (int i=0;i<nx_l;i++)
 	if (Solid[i][0][k]>0)
 		for (int ks=0;ks<Q;ks++)
 			{
-				if (Solid[i][1][k]>0) 
-					F[Solid[i][0][k]][ks]=feq(ks,rho[Solid[i][1][k]],u_yn)+f[Solid[i][1][k]][ks]-feq(ks,rho[Solid[i][1][k]],u[Solid[i][1][k]]);
-				else
+				//if (Solid[i][1][k]>0) 
+				//	F[Solid[i][0][k]][ks]=feq(ks,rho[Solid[i][1][k]],u_yn)+f[Solid[i][1][k]][ks]-feq(ks,rho[Solid[i][1][k]],u[Solid[i][1][k]]);
+				//else
 					F[Solid[i][0][k]][ks]=feq(ks,rho[Solid[i][1][k]],u_yn);
 
 			}
@@ -2548,9 +2548,9 @@ for (int i=0;i<nx_l;i++)
 	if (Solid[i][j][NZ]>0)
 		for (int ks=0;ks<Q;ks++)
 			{
-				if (Solid[i][j][NZ-1]>0) 
-					F[Solid[i][j][NZ]][ks]=feq(ks,rho[Solid[i][j][NZ-1]],u_zp)+f[Solid[i][j][NZ-1]][ks]-feq(ks,rho[Solid[i][j][NZ-1]],u[Solid[i][j][NZ-1]]);
-				else
+				//if (Solid[i][j][NZ-1]>0) 
+				//	F[Solid[i][j][NZ]][ks]=feq(ks,rho[Solid[i][j][NZ-1]],u_zp)+f[Solid[i][j][NZ-1]][ks]-feq(ks,rho[Solid[i][j][NZ-1]],u[Solid[i][j][NZ-1]]);
+				//else
 					F[Solid[i][j][NZ]][ks]=feq(ks,rho[Solid[i][j][NZ-1]],u_zp);
 		
 			}
@@ -2563,9 +2563,9 @@ for (int i=0;i<nx_l;i++)
 	if (Solid[i][j][0]>0)
 		for (int ks=0;ks<Q;ks++)
 			{
-				if (Solid[i][j][1]>0) 
-					F[Solid[i][j][0]][ks]=feq(ks,rho[Solid[i][j][1]],u_zn)+f[Solid[i][j][1]][ks]-feq(ks,rho[Solid[i][j][1]],u[Solid[i][j][1]]);
-				else
+				//if (Solid[i][j][1]>0) 
+				//	F[Solid[i][j][0]][ks]=feq(ks,rho[Solid[i][j][1]],u_zn)+f[Solid[i][j][1]][ks]-feq(ks,rho[Solid[i][j][1]],u[Solid[i][j][1]]);
+				//else
 					F[Solid[i][j][0]][ks]=feq(ks,rho[Solid[i][j][1]],u_zn);
 	
 			}
@@ -2579,9 +2579,9 @@ for (int j=0;j<=NY;j++)
 	if (Solid[nx_l-1][k][j]>0)
 		for (int ks=0;ks<Q;ks++)
 			{
-				if (Solid[nx_l-2][j][k]>0) 
-					F[Solid[nx_l-1][j][k]][ks]=feq(ks,rho[Solid[nx_l-2][j][k]],u_xp)+f[Solid[nx_l-2][j][k]][ks]-feq(ks,rho[Solid[nx_l-2][j][k]],u[Solid[nx_l-2][j][k]]);
-				else
+				//if (Solid[nx_l-2][j][k]>0) 
+				//	F[Solid[nx_l-1][j][k]][ks]=feq(ks,rho[Solid[nx_l-2][j][k]],u_xp)+f[Solid[nx_l-2][j][k]][ks]-feq(ks,rho[Solid[nx_l-2][j][k]],u[Solid[nx_l-2][j][k]]);
+				//else
 					F[Solid[nx_l-1][j][k]][ks]=feq(ks,rho[Solid[nx_l-2][j][k]],u_xp);
 		
 			}
@@ -2594,9 +2594,9 @@ for (int j=0;j<=NY;j++)
 	if (Solid[0][j][k]>0)
 		for (int ks=0;ks<Q;ks++)
 			{
-				if (Solid[1][j][k]>0) 
-					F[Solid[0][j][k]][ks]=feq(ks,rho[Solid[1][j][k]],u_xn)+f[Solid[1][j][k]][ks]-feq(ks,rho[Solid[1][j][k]],u[Solid[1][j][k]]);
-				else
+				//if (Solid[1][j][k]>0) 
+				//	F[Solid[0][j][k]][ks]=feq(ks,rho[Solid[1][j][k]],u_xn)+f[Solid[1][j][k]][ks]-feq(ks,rho[Solid[1][j][k]],u[Solid[1][j][k]]);
+				//else
 					F[Solid[0][j][k]][ks]=feq(ks,rho[Solid[1][j][k]],u_xn);
 		
 			}
