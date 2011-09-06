@@ -6,7 +6,7 @@ phase.dat       	:Initial components distribution
 0.001          	:dx (um) Resolution (for relative Permeability calculation)
 0		:Convergence accelerator (1=yes, 0=no)
 0 0 0           :mirroring option for x,y,z (1=yes, 0=no)
-1.0e-5 0.0 0.0  :body force for x,y,z
+0.0e-5 0.0 0.0  :body force for x,y,z
 0 0.0 0 0.0	:Pressure Boundary in X direction (Format detials can be found within this file)
 0 0.0 0 0.0	:Pressure Boundary in Y direction (Format detials can be found within this file)
 0 0.0 0 0.0	:Pressure Boundary in Z direction (Format detials can be found within this file)
@@ -30,7 +30,7 @@ phase.dat       	:Initial components distribution
 1		:Mirroring part output (0=No,1=YES)
 ==============ADVANCE==PARAMETER==========
 0 50 30 3 	:ONLY USE PART OF THE ORIGINAL GEOMETRY (1=YES,0=NO,NX,NY,NZ)
-1		:FACTOR OF MESHREFINEMENT (0,1=No mesh refinement, 1=1X,2=2X,3=3X)
+2		:FACTOR OF MESHREFINEMENT (0,1=No mesh refinement, 1=1X,2=2X,3=3X)
 ./		:OUTPUT PATH,DEFAULT: ./ (REMEMBER TO INCLUDE "/" AT THE END OF PATH)
 
 INSTRUCTIONS OF PARAMETER INPUT
