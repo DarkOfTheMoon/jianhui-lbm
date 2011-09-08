@@ -1,13 +1,13 @@
 =============INPUT FILE FOR 3D LATTICE BOLTZMANN MPI CODE--MULTI COMPONENT COLOR GRADIENT MODEL=======
 BC.dat                  	:Geometry filenameEmily_Berea_y_614_764_7.dat
 phase.dat       	    	:Initial components distribution
-40 50 3                 	:nx ny nz
-500000		     		:Maximum time step
+100 32 3                 	:nx ny nz
+1000		     		:Maximum time step
 19.9997	             		:dx (um) Resolution (for Permeability calculation)
-0	        	      	:Pressure Or Velocity Boundary (1=YES, 0=No)
+1	        	      	:Pressure Or Velocity Boundary (1=YES, 0=No)
 0 0 0                      	:mirroring option for x,y,z (1=yes, 0=no)
-1.0e-6 0.0 0.0	          	:body force for x,y,z
-0 1.0 0 1.0	    		:Pressure Boundary in X direction (Format detials can be found within this file)
+0.0e 0.0 0.0	          	:body force for x,y,z
+1 1.0 1 1.02	    		:Pressure Boundary in X direction (Format detials can be found within this file)
 0 1.0 0 1.0	    		:Pressure Boundary in Y direction (Format detials can be found within this file)
 0 1.0 0 1.0	    		:Pressure Boundary in Z direction (Format detials can be found within this file)
 0 0.0 0 0.0	   		:Velocity Boundary in X direction (Format detials can be found within this file)
@@ -16,17 +16,17 @@ phase.dat       	    	:Initial components distribution
 0.1    		       		:Viscosity (Component A, psi=1)
 0.01    		       	:Viscosity (Component B, psi=-1)
 0.0     		      	:Contact Angle Cos(Theta)
-7e-3    		      	:Surface tension (Kappa)
+6e-3    		      	:Surface tension (Kappa)
 0.0 0.0 0.0			:initial velocity for x,y,z
 200	        	       	:Permeability (Single Phase mD)
 =========OUTPUT==CONTROL===================
 1		         	:Permeability writing (1=yes, 0=no)
 1                       	:Direction of Permeability Calculation (1=X, 2=Y, 3=Z)
-20		         	:Frequency of results writing (interval in time steps)
+10		         	:Frequency of results writing (interval in time steps)
 0               		:Memory Saving mode for output subroutains (0=No, 1=Yes,for large outputs, x,z opposite)
-200				:Frequency of velocity field writing (in vtk format, -1=no velocity writing)
-200				:Frequency of density field writing (in vtk format, -1=no density writing)
-200				:Frequency of concentration writing (in vtk format, -1=no density writing)
+100				:Frequency of velocity field writing (in vtk format, -1=no velocity writing)
+100				:Frequency of density field writing (in vtk format, -1=no density writing)
+100				:Frequency of concentration writing (in vtk format, -1=no density writing)
 0				:Mirroring part output (0=No,1=YES)
 ==============ADVANCE==PARAMETER==========
 0 658 659 11 			:ONLY USE PART OF THE ORIGINAL GEOMETRY (1=YES,0=NO,NX,NY,NZ)

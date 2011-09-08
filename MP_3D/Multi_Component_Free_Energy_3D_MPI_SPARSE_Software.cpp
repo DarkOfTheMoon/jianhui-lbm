@@ -533,7 +533,8 @@ if (wr_per==1)
 	
 	
 	if(n%freRe==0)
-		{       
+		{      
+		        finish = MPI_Wtime(); 
 		        error=Error(u,u0,&v_max,&u_ave);
 			error_Per=Comput_Perm(psi,u,Per_l,Per_g,PerDir);
 			S_l=Comput_Saturation(psi,Solid);
@@ -2139,7 +2140,7 @@ int interi,interj,interk;
 			if (in_BC>0)
 			        {
 			        if ((((pre_xn-1)*(vel_xn-1)==0) and (rank==0) and (i==0)) or
-			                (((pre_xp-1)*(vel_xp-1)==0) and (rank==mpi_size-1) and (i==nx_l)) or
+			                (((pre_xp-1)*(vel_xp-1)==0) and (rank==mpi_size-1) and (i==nx_l-1)) or
 			                (((pre_yn-1)*(vel_yn-1)==0) and (j==0)) or
 			                (((pre_yp-1)*(vel_yp-1)==0) and (j==NY)) or
 			                (((pre_zn-1)*(vel_zn-1)==0) and (m==0)) or

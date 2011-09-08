@@ -178,12 +178,12 @@ int main(int argc , char *argv [])
 {	
 
 MPI :: Init (argc , argv );
-double start , finish;
+double start , finish,remain;
 
 int rank = MPI :: COMM_WORLD . Get_rank ();
 int para_size=MPI :: COMM_WORLD . Get_size ();
 
-int dif;
+int dif,tm,th,ts;
 double Per_l[3],Per_g[3];
 double v_max,error_Per;
 
@@ -198,15 +198,15 @@ double v_max,error_Per;
 	if (rank==0)
 	{
 	ifstream fin(argv[1]);
-                                                        fin.getline(dummy, NCHAR);
-	fin >> filename;				fin.getline(dummy, NCHAR);
-	fin >> filenamepsi;				fin.getline(dummy, NCHAR);
+                                                                               fin.getline(dummy, NCHAR);
+        fin >> filename;		                		        fin.getline(dummy, NCHAR);
+	fin >> filenamepsi;				        fin.getline(dummy, NCHAR);
 	fin >> NX >> NY >> NZ;				fin.getline(dummy, NCHAR);
-	fin >> n_max;					fin.getline(dummy, NCHAR);
-	fin >> reso;					fin.getline(dummy, NCHAR);
-	fin >> in_BC;					fin.getline(dummy, NCHAR);
-	fin >> mirX >> mirY >> mirZ;			fin.getline(dummy, NCHAR);
-	fin >> gx >> gy >> gz;				fin.getline(dummy, NCHAR);
+	fin >> n_max;			        		fin.getline(dummy, NCHAR);
+	fin >> reso;				        	fin.getline(dummy, NCHAR);
+	fin >> in_BC;					        fin.getline(dummy, NCHAR);
+	fin >> mirX >> mirY >> mirZ;			        fin.getline(dummy, NCHAR);
+	fin >> gx >> gy >> gz;				        fin.getline(dummy, NCHAR);
 	fin >> pre_xp >> p_xp >> pre_xn >> p_xn;	fin.getline(dummy, NCHAR);
 	fin >> pre_yp >> p_yp >> pre_yn >> p_yn;	fin.getline(dummy, NCHAR);
 	fin >> pre_zp >> p_zp >> pre_zn >> p_zn;	fin.getline(dummy, NCHAR);
@@ -527,19 +527,25 @@ if (wr_per==1)
 			
 			if (rank==0)
 			{
-
+			finish = MPI_Wtime();
 			ofstream fin(FileName,ios::app);
 			fin<<"The"<<n<<"th computation result:"<<endl;
 		//=============================================================================================
 			//fin<<"The permiability is: "<<Permia[0]*reso*reso*100<<", "<<Permia[1]*reso*reso*100<<", "<<Permia[2]*reso*reso*100<<endl;
 			//fin<<"The relative error of permiability computing is: "<<error_perm<<endl;
 		//==============================================================================================
-
+		     
 		//==============================================================================================
 			//cout<<"The Density of point(NX/2,NY/2,NZ/2) is: "<<setprecision(6)
 			//	<<rho[int((NX+1)/para_size/2)][NY/2][NZ/2]<<endl;
 			Re_l=u_ave*(NY+1)/niu_l;Re_g=u_ave*(NY+1)/niu_g;
 			fin<<"The Maximum velocity is: "<<setprecision(6)<<v_max<<"   Re_l="<<Re_l<<"   Re_g="<<Re_g<<endl;
+			
+			remain=(n_max-n)*((finish-start)/n);
+			//cout<<remain<<"   "<<finish-start<<endl;
+			th=int(remain/3600);
+			tm=int((remain-th*3600)/60);
+			ts=int(remain-(th*3600+tm*60));
 			
 		//===============================================================================================
 			fin<<"The max relative error of velocity is: "
@@ -549,6 +555,7 @@ if (wr_per==1)
 			fin<<"Satuation of Component 1: "<<S_l<<", "<<"The satuation of Component 2: "<<1-S_l<<endl;
 			fin<<"The relative error of permiability computing is: "<<error_Per<<endl;
 			fin<<"Elapsed time is "<< finish-start <<" seconds"<<endl;
+			fin<<"The expected completion time is "<<th<<"h"<<tm<<"m"<<ts<<"s"<<endl;
 			fin<<endl;
 			fin.close();
 
@@ -600,6 +607,7 @@ if (wr_per==1)
 			cout<<"Satuation of Component 1: "<<S_l<<", "<<"The satuation of Component 2: "<<1-S_l<<endl;
 			cout<<"The relative error of permiability computing is: "<<error_Per<<endl;
 			cout<<"Elapsed time is "<< finish-start <<" seconds"<<endl;
+			cout<<"The expected completion time is "<<th<<"h"<<tm<<"m"<<ts<<"s"<<endl;
 			cout<<endl;
                         }
 
@@ -2166,25 +2174,30 @@ int interi,interj,interk;
 			for (int mj=0; mj<19; mj++)
 				sum+=MI[mi][mj]*m_l[mj];
 			}
-			
+		
+				
 			if (in_BC>0)
 			        {
 			        if ((((pre_xn-1)*(vel_xn-1)==0) and (rank==0) and (i==0)) or
-			                (((pre_xp-1)*(vel_xp-1)==0) and (rank==mpi_size-1) and (i==nx_l)) or
+			                (((pre_xp-1)*(vel_xp-1)==0) and (rank==mpi_size-1) and (i==nx_l-1)) or
 			                (((pre_yn-1)*(vel_yn-1)==0) and (j==0)) or
 			                (((pre_yp-1)*(vel_yp-1)==0) and (j==NY)) or
 			                (((pre_zn-1)*(vel_zn-1)==0) and (m==0)) or
 			                (((pre_zp-1)*(vel_zp-1)==0) and (m==NZ))) 
-						sum=feq[mi];
-				else
-			            	{
-					sum=0;	
-					for (int mj=0; mj<19; mj++)
-					sum+=MI[mi][mj]*m_l[mj];
-					} 
+			                sum=feq[mi];
+//				else
+//			            	{//cout<<i<<"  "<<rank<<endl;
+//					sum=0;	
+//					for (int mj=0; mj<19; mj++)
+//					        sum+=MI[mi][mj]*m_l[mj];
+//					} 
 			  		        
 			        
 			        }
+			        
+			
+			        
+			        
 
 			//F[ci][mi]=0;
 			ip=i+e[mi][0];
