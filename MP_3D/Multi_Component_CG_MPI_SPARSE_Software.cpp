@@ -122,15 +122,15 @@ void tests();
 
 void init_Sparse(int***,int***,double***, double***, int*, int*);
 
-void init(double*, double**, double**,double*, double*,double*, double*, double*, double*, double*, double*,double***,int*);
+void init(double*, double**, double**,double*, double*,double*, double*, double*,double***,int*);
 
 void periodic_streaming(double** ,double** ,int* ,int***,int*, int*,double*, double**);
 
 void standard_bounceback_boundary(int,double**);
 
-void collision(double*,double** ,double** ,double**, double*, double*, double*, double*, double*, double*, double* ,double* , int* ,int***,int* ,int*);
+void collision(double*,double** ,double** ,double**, double*, double*, double*, double* ,double* , int* ,int***,int* ,int*);
 
-void comput_macro_variables( double* ,double**,double** ,double** ,double** ,double*, double*, double*, double*, double*, double* , double* , double* ,int* ,int***,double***);
+void comput_macro_variables( double* ,double**,double** ,double** ,double** ,double*, double*, double*, double*, double* ,int* ,int***,double***);
 
 double Error(double** ,double** ,double*, double*);
 
@@ -197,11 +197,11 @@ int n,nx_l,n_max,in_BC,PerDir,freRe,freDe,freVe,frePsi,Par_Geo,Par_nx,Par_ny,Par
 int Zoom;
 
 
-int wr_per,pre_xp,pre_xn,pre_yp,pre_yn,pre_zp,pre_zn;
+int wr_per,pre_xp,pre_xn,pre_yp,pre_yn,pre_zp,pre_zn,stab,stab_time;
 int vel_xp,vel_xn,vel_yp,vel_yn,vel_zp,vel_zn,Sub_BC,Out_Mode;
 double in_vis,p_xp,p_xn,p_yp,p_yn,p_zp,p_zn,niu_l,niu_g,ContactAngle_parameter,CapA;
 double inivx,inivy,inivz,v_xp,v_xn,v_yp,v_yn,v_zp,v_zn,Re_l,Re_g;
-double error_Per,Permeability,psi_solid,S_l;
+double error_Per,Permeability,psi_solid,S_l,gxs,gys,gzs;
 
 
 char outputfile[128]="./";
@@ -269,6 +269,7 @@ double v_max,error_Per;
 	fin >> Zoom;					fin.getline(dummy, NCHAR);
 	fin >> outputfile;				fin.getline(dummy, NCHAR);
 	fin >> Sub_BC;					fin.getline(dummy, NCHAR);
+	fin >> stab >> stab_time;			fin.getline(dummy, NCHAR);
 	fin >> EI;					fin.getline(dummy, NCHAR);
 	fin >> q_p;					fin.getline(dummy, NCHAR);
 	fin.close();
@@ -309,7 +310,7 @@ double v_max,error_Per;
 	MPI_Bcast(&niu_l,1,MPI_DOUBLE,0,MPI_COMM_WORLD);MPI_Bcast(&niu_g,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
       	MPI_Bcast(&ContactAngle_parameter,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 	MPI_Bcast(&Permeability,1,MPI_DOUBLE,0,MPI_COMM_WORLD);MPI_Bcast(&frePsi,1,MPI_INT,0,MPI_COMM_WORLD);
-
+	MPI_Bcast(&stab,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&stab_time,1,MPI_INT,0,MPI_COMM_WORLD);
 		
 int U_max_ref=0;
 
@@ -354,9 +355,9 @@ if (Zoom>1)
 	double**F;
 	double**u0;
 	int* SupInv;
-	double* forcex;
-	double* forcey;
-	double* forcez;
+	//double* forcex;
+	//double* forcey;
+	//double* forcez;
 	
 	double* psi;
 	double*** Psi_local;
@@ -431,9 +432,9 @@ if (Zoom>1)
 	rhor = new double[Count+1];
 	rhob = new double[Count+1];
 	psi = new double[Count+1];
-	forcex = new double[Count+1];
-	forcey = new double[Count+1];
-	forcez = new double[Count+1];
+	//forcex = new double[Count+1];
+	//forcey = new double[Count+1];
+	//forcez = new double[Count+1];
 	u = new double*[Count+1];
 	f = new double*[Count+1];
 	F = new double*[Count+1];
@@ -459,7 +460,9 @@ if (Zoom>1)
 	else
 		Geometry_b(Solid);
 
-	init(rho,u,f,psi,rho_r,rho_b,rhor, rhob, forcex,forcey,forcez,Psi_local,SupInv);
+	//init(rho,u,f,psi,rho_r,rho_b,rhor, rhob, forcex,forcey,forcez,Psi_local,SupInv);
+	init(rho,u,f,psi,rho_r,rho_b,rhor, rhob, Psi_local,SupInv);
+
 
 if (rank==0)
 		cout<<"Porosity= "<<porosity<<endl;
@@ -495,16 +498,16 @@ if (wr_per==1)
 	fins.open(FileName3,ios::out);
 	fins.close();
 
-
-
-
+	
 	
 	for(n=0;n<=n_max;n++)
 	{
 	
-	//cout<<"@@@@@@@@@@@   "<<n<<endl;
-	
-	collision(rho,u,f,F,psi,rho_r,rho_b,rhor,rhob,forcex,forcey,forcez,SupInv,Solid,Sl,Sr);//cout<<"markcollision"<<endl;
+	if ((stab==1) and (n==stab_time))
+		{gxs=gx;gys=gy;gzs=gz;}
+			
+
+	collision(rho,u,f,F,psi,rho_r,rho_b,rhor,rhob,SupInv,Solid,Sl,Sr);
 
 	//periodic_streaming(f,F,SupInv,Solid,Sl,Sr,rho,u);	
 	
@@ -515,7 +518,9 @@ if (wr_per==1)
 	if ((1-vel_xp)*(1-vel_xn)*(1-vel_yp)*(1-vel_yn)*(1-vel_zp)*(1-vel_zn)==0)
 		boundary_velocity(vel_xp,v_xp,vel_xn,v_xn,vel_yp,v_yp,vel_yn,v_yn,vel_zp,v_zp,vel_zn,v_zn,f,F,rho,u,Solid);
 
-  		comput_macro_variables(rho,u,u0,f,F,rho_r,rho_b,rhor,rhob,psi,forcex,forcey,forcez,SupInv,Solid,Psi_local); 
+  		 
+		comput_macro_variables(rho,u,u0,f,F,rho_r,rho_b,rhor,rhob,psi,SupInv,Solid,Psi_local);
+
 
 	//if ((1-pre_xp)*(1-pre_xn)*(1-pre_yp)*(1-pre_yn)*(1-pre_zp)*(1-pre_zn)==0)
 	//	boundary_pressure(pre_xp,p_xp,pre_xn,p_xn,pre_yp,p_yp,pre_yn,p_yn,pre_zp,p_zp,pre_zn,p_zn,f,u,rho,Solid);
@@ -549,6 +554,7 @@ if (wr_per==1)
 			fin<<"The relative permeability of component 2 is "<<Per_g[0]*reso*reso*1000/Permeability<<", "<<Per_g[1]*reso*reso*1000/Permeability<<", "<<Per_g[2]*reso*reso*1000/Permeability<<endl;
 			fin<<"Satuation of Component 1: "<<S_l<<", "<<"The satuation of Component 2: "<<1-S_l<<endl;
 			fin<<"The relative error of permiability computing is: "<<error_Per<<endl;
+			fin<<"Elapsed time is "<< finish-start <<" seconds"<<endl;
 			fin<<endl;
 			fin.close();
 		//==============================================================================================
@@ -639,7 +645,7 @@ if (wr_per==1)
 	}
 
 
-	
+	MPI_Barrier(MPI_COMM_WORLD);
 
 	for (int i=0;i<=Count;i++)
 		{
@@ -657,10 +663,11 @@ if (wr_per==1)
 	delete [] rho;
 	delete [] rho_r;
 	delete [] rho_b;
-	delete [] psi;
-	delete [] forcex;
-	delete [] forcey;
-	delete [] forcez;
+	delete [] rhor;
+	delete [] rhob;
+	//delete [] forcex;
+	//delete [] forcey;
+	//delete [] forcez;
 	delete [] SupInv;
 
 	delete [] Sl;
@@ -668,6 +675,8 @@ if (wr_per==1)
 
 	delete [] Permia;
 //	delete [] Count;
+
+
 	finish = MPI_Wtime();
 
 	MPI_Barrier(MPI_COMM_WORLD);
@@ -1145,7 +1154,7 @@ MPI_Barrier(MPI_COMM_WORLD);
 
 
 
-void init(double* rho, double** u, double** f,double* psi,double* rho_r, double* rho_b, double* rhor, double* rhob, double* forcex,double* forcey, double* forcez,double*** Psi_local, int* SupInv)
+void init(double* rho, double** u, double** f,double* psi,double* rho_r, double* rho_b, double* rhor, double* rhob,double*** Psi_local, int* SupInv)
 {	
       
 
@@ -1218,10 +1227,13 @@ void init(double* rho, double** u, double** f,double* psi,double* rho_r, double*
 
 			//***********************************************************************
 
-			forcex[i]=gx;
-			forcey[i]=gy;
-			forcez[i]=gz;
-
+			//forcex[i]=gx;
+			//forcey[i]=gy;
+			//forcez[i]=gz;
+			if (stab==1)
+				{gxs=0;gys=0;gzs=0;}
+			else
+				{gxs=gx;gys=gy;gzs=gz;}
 
 			
 
@@ -1479,7 +1491,7 @@ if (rank==0)
 
 
 
-void collision(double* rho,double** u,double** f,double** F,double* psi, double* rho_r, double* rho_b, double* rhor, double* rhob, double* forcex, double* forcey, double* forcez, int* SupInv,int*** Solid,int* Sl, int* Sr)
+void collision(double* rho,double** u,double** f,double** F,double* psi, double* rho_r, double* rho_b, double* rhor, double* rhob, int* SupInv,int*** Solid,int* Sl, int* Sr)
 {
 
 	MPI_Status status[4] ;
@@ -1801,8 +1813,8 @@ if (rank==0)
 			//=================FORCE TERM_GUO=========================================
 			for (int k=0;k<19;k++)
 			{	
-			lm0=((e[k][0]-u[ci][0])*forcex[ci]+(e[k][1]-u[ci][1])*forcey[ci]+(e[k][2]-u[ci][2])*forcez[ci])*3;
-			lm1=(e[k][0]*u[ci][0]+e[k][1]*u[ci][1]+e[k][2]*u[ci][2])*(e[k][0]*forcex[ci]+e[k][1]*forcey[ci]+e[k][2]*forcez[ci])*9;
+			lm0=((e[k][0]-u[ci][0])*gxs+(e[k][1]-u[ci][1])*gys+(e[k][2]-u[ci][2])*gzs)*3;
+			lm1=(e[k][0]*u[ci][0]+e[k][1]*u[ci][1]+e[k][2]*u[ci][2])*(e[k][0]*gxs+e[k][1]*gys+e[k][2]*gzs)*9;
 			GuoF[k]=w[k]*(lm0+lm1);
 			//GuoF[k]=0.0;
 			}
@@ -2143,7 +2155,7 @@ void standard_bounceback_boundary(int it,double** f)
 
 
 
-void comput_macro_variables( double* rho,double** u,double** u0,double** f,double** F,double* rho_r, double* rho_b, double* rhor, double* rhob, double* psi,double* forcex, double* forcey, double* forcez,int* SupInv,int*** Solid,double*** Psi_local)
+void comput_macro_variables( double* rho,double** u,double** u0,double** f,double** F,double* rho_r, double* rho_b, double* rhor, double* rhob, double* psi,int* SupInv,int*** Solid,double*** Psi_local)
 {
 	
 	int rank = MPI :: COMM_WORLD . Get_rank ();
@@ -2175,9 +2187,9 @@ void comput_macro_variables( double* rho,double** u,double** u0,double** f,doubl
 				rho_b[i]=rhob[i];
 				rhor[i]=0;
 				rhob[i]=0;
-				u[i][0]=(u[i][0]+dt*forcex[i]/2)/rho[i];
-				u[i][1]=(u[i][1]+dt*forcey[i]/2)/rho[i];
-				u[i][2]=(u[i][2]+dt*forcez[i]/2)/rho[i];
+				u[i][0]=(u[i][0]+dt*gxs)/rho[i];
+				u[i][1]=(u[i][1]+dt*gys)/rho[i];
+				u[i][2]=(u[i][2]+dt*gzs)/rho[i];
 				
 				
 				psi[i]=(rho_r[i]-rho_b[i])/(rho_r[i]+rho_b[i]);
