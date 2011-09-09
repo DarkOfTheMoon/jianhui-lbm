@@ -98,7 +98,7 @@ void tests();
 
 void init_Sparse(int***,int***,int*, int*);
 
-void init(double*, double**, double**,double*, double*, double*);
+void init(double*, double**, double**);
 
 void periodic_streaming(double** ,double** ,int* ,int***,int*, int*,double*, double**);
 
@@ -106,11 +106,11 @@ void periodic_streaming_MR(double** ,double** ,int* ,int*** ,int* ,int* ,double*
 
 void standard_bounceback_boundary(int,double**);
 
-void collision(double*,double** ,double** ,double**, double*, double* ,double* , int* ,int***,int*, int*);
+void collision(double*,double** ,double** ,double** , int* ,int***,int*, int*);
 
-void comput_macro_variables( double* ,double**,double** ,double** ,double** ,double* , double* , double* ,int* ,int***);
+void comput_macro_variables( double* ,double**,double** ,double** ,double**  ,int* ,int***);
 
-void comput_macro_variables_IMR( double* ,double** ,double** ,double**,double** ,int*,int*** , double* , double*, double*, int ,double ,double* ,double* , double* );
+//void comput_macro_variables_IMR( double* ,double** ,double** ,double**,double** ,int*,int*** , double* , double*, double*, int ,double ,double* ,double* , double* );
 
 double Error(double** ,double** ,double*, double*);
 
@@ -305,9 +305,9 @@ if (Zoom>1)
 	double**F;
 	double**u0;
 	int* SupInv;
-	double* forcex;
-	double* forcey;
-	double* forcez;
+	//double* forcex;
+	//double* forcey;
+	//double* forcez;
 
 	int*** Solids;
 	int*** Solid;
@@ -376,9 +376,9 @@ if (Zoom>1)
 
 	Permia = new double[3];
 	rho = new double[Count+1];
-	forcex = new double[Count+1];
-	forcey = new double[Count+1];
-	forcez = new double[Count+1];
+	//forcex = new double[Count+1];
+	//forcey = new double[Count+1];
+	//forcez = new double[Count+1];
 	u = new double*[Count+1];
 	f = new double*[Count+1];
 	F = new double*[Count+1];
@@ -404,7 +404,7 @@ if (Zoom>1)
 	else
 		Geometry_b(Solid);
 
-	init(rho,u,f,forcex,forcey,forcez);
+	init(rho,u,f);
 
 if (rank==0)
 		cout<<"Porosity= "<<porosity<<endl;
@@ -452,7 +452,7 @@ if (wr_per==1)
 	{
 	
 	//cout<<"@@@@@@@@@@@   "<<n<<endl;
-	collision(rho,u,f,F,forcex,forcey,forcez,SupInv,Solid,Sl,Sr);//cout<<"markcollision"<<endl;
+	collision(rho,u,f,F,SupInv,Solid,Sl,Sr);//cout<<"markcollision"<<endl;
 
 	
 	//if (EI==0)
@@ -470,7 +470,7 @@ if (wr_per==1)
 	//if (in_IMR==1)
 	//	comput_macro_variables_IMR(rho,u,u0,f,F,SupInv,Solid,forcex,forcey,forcez,n,porosity,&gx,&gy,&gz);
 	//else
-  		comput_macro_variables(rho,u,u0,f,F,forcex,forcey,forcez,SupInv,Solid); 
+  		comput_macro_variables(rho,u,u0,f,F,SupInv,Solid); 
 
 	//if ((1-pre_xp)*(1-pre_xn)*(1-pre_yp)*(1-pre_yn)*(1-pre_zp)*(1-pre_zn)==0)
 	//	boundary_pressure(pre_xp,p_xp,pre_xn,p_xn,pre_yp,p_yp,pre_yn,p_yn,pre_zp,p_zp,pre_zn,p_zn,f,u,rho,Solid);
@@ -590,9 +590,9 @@ if (wr_per==1)
 	delete [] F;
 	delete [] u0;
 	delete [] rho;
-	delete [] forcex;
-	delete [] forcey;
-	delete [] forcez;
+	//delete [] forcex;
+	//delete [] forcey;
+	//delete [] forcez;
 	delete [] SupInv;
 
 	delete [] Sl;
@@ -1055,7 +1055,7 @@ MPI_Barrier(MPI_COMM_WORLD);
 
 
 
-void init(double* rho, double** u, double** f,double* forcex,double* forcey, double* forcez)
+void init(double* rho, double** u, double** f)
 {	
       
 
@@ -1154,9 +1154,9 @@ void init(double* rho, double** u, double** f,double* forcex,double* forcey, dou
 
 			//***********************************************************************
 
-			forcex[i]=gx;
-			forcey[i]=gy;
-			forcez[i]=gz;
+			//forcex[i]=gx;
+			//forcey[i]=gy;
+			//forcez[i]=gz;
 
 
 
@@ -1872,7 +1872,7 @@ if (rank==0)
 }
 
 
-void collision(double* rho,double** u,double** f,double** F,double* forcex, double* forcey, double* forcez, int* SupInv,int*** Solid, int* Sl, int* Sr)
+void collision(double* rho,double** u,double** f,double** F,int* SupInv,int*** Solid, int* Sl, int* Sr)
 {
 
 	MPI_Status status[4] ;
@@ -1965,8 +1965,8 @@ int i,j,m,ip,jp,kp;
 			//=================FORCE TERM_GUO=========================================
 			for (int k=0;k<19;k++)
 			{	
-			lm0=((e[k][0]-u[ci][0])*forcex[ci]+(e[k][1]-u[ci][1])*forcey[ci]+(e[k][2]-u[ci][2])*forcez[ci])*3;
-			lm1=(e[k][0]*u[ci][0]+e[k][1]*u[ci][1]+e[k][2]*u[ci][2])*(e[k][0]*forcex[ci]+e[k][1]*forcey[ci]+e[k][2]*forcez[ci])*9;
+			lm0=((e[k][0]-u[ci][0])*gx+(e[k][1]-u[ci][1])*gy+(e[k][2]-u[ci][2])*gz)*3;
+			lm1=(e[k][0]*u[ci][0]+e[k][1]*u[ci][1]+e[k][2]*u[ci][2])*(e[k][0]*gx+e[k][1]*gy+e[k][2]*gz)*9;
 			GuoF[k]=w[k]*(lm0+lm1);
 			//GuoF[k]=0.0;
 			}
@@ -2157,8 +2157,8 @@ void standard_bounceback_boundary(int it,double** f)
 }
 
 
-
-void comput_macro_variables_IMR( double* rho,double** u,double** u0,double** f,double** F,int* SupInv,int*** Solid, double* forcex, double* forcey, double* forcez, int n,double porosity,double* gx,double* gy, double* gz)
+/*
+void comput_macro_variables_IMR( double* rho,double** u,double** u0,double** f,double** F,int* SupInv,int*** Solid,  int n,double porosity,double* gx,double* gy, double* gz)
 {
 	
 	int rank = MPI :: COMM_WORLD . Get_rank ();
@@ -2192,9 +2192,9 @@ void comput_macro_variables_IMR( double* rho,double** u,double** u0,double** f,d
 					}
 			
 
-				u[i][0]=(u[i][0]+dt*forcex[i]/2)/rho[i];
-				u[i][1]=(u[i][1]+dt*forcey[i]/2)/rho[i];
-				u[i][2]=(u[i][2]+dt*forcez[i]/2)/rho[i];
+				u[i][0]=(u[i][0]+dt*gx/2)/rho[i];
+				u[i][1]=(u[i][1]+dt*gy/2)/rho[i];
+				u[i][2]=(u[i][2]+dt*gz/2)/rho[i];
 					
 
 			
@@ -2254,9 +2254,9 @@ void comput_macro_variables_IMR( double* rho,double** u,double** u0,double** f,d
 	delete [] rbuf;
 
 }
+*/
 
-
-void comput_macro_variables( double* rho,double** u,double** u0,double** f,double** F,double* forcex, double* forcey, double* forcez,int* SupInv,int*** Solid)
+void comput_macro_variables( double* rho,double** u,double** u0,double** f,double** F,int* SupInv,int*** Solid)
 {
 	
 	int rank = MPI :: COMM_WORLD . Get_rank ();
@@ -2290,9 +2290,9 @@ void comput_macro_variables( double* rho,double** u,double** u0,double** f,doubl
 					}
 				
 
-				u[i][0]=(u[i][0]+dt*forcex[i]/2)/rho[i];
-				u[i][1]=(u[i][1]+dt*forcey[i]/2)/rho[i];
-				u[i][2]=(u[i][2]+dt*forcez[i]/2)/rho[i];
+				u[i][0]=(u[i][0]+dt*gx/2)/rho[i];
+				u[i][1]=(u[i][1]+dt*gy/2)/rho[i];
+				u[i][2]=(u[i][2]+dt*gz/2)/rho[i];
 				
 				
 		
