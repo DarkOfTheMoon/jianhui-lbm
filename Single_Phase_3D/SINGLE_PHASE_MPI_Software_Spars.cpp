@@ -399,10 +399,14 @@ if (Zoom>1)
 
 	MPI_Barrier(MPI_COMM_WORLD);
 	
+	if ((freVe>0) or (freDe>0))
+	{
 	if (Out_Mode==1)
 		Geometry(Solid);
 	else
 		Geometry_b(Solid);
+	}
+
 
 	init(rho,u,f);
 
@@ -598,7 +602,7 @@ if (wr_per==1)
 	delete [] Sl;
 	delete [] Sr;
 
-	delete [] Permia;
+//	delete [] Permia;
 //	delete [] Count;
 	finish = MPI_Wtime();
 
@@ -612,6 +616,20 @@ if (wr_per==1)
 			fin<<"Accuracy: "<<MPI_Wtick()<<" Second"<<endl;
 			}
 
+
+	//==========FOR===SCRIPT==RUN=====================
+	char FileNameG[128];strcpy(FileNameG,outputfile);
+	strcat(FileNameG,"General_Results.txt");
+	if (rank==0)
+	{
+	ofstream fin(FileNameG,ios::app);
+	fin<<filename<<"  "<<Permia[0]*reso*reso*1000<<" "<<Permia[1]*reso*reso*1000<<" "<<Permia[2]*reso*reso*1000<<endl;
+	fin<<endl;
+	fin.close();
+	}
+	//==============================================
+
+	delete [] Permia;
 	MPI :: Finalize ();
 
 	
