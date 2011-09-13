@@ -98,11 +98,11 @@ void tests();
 
 void init_Sparse(int***,int***,double***, double***, int*, int*);
 
-void init(double*, double**, double**,double*, double*,double***,int*);
+void init(double*, double**, double**,double**, double*, double*,double***,int*);
 
-void collision(double*,double** ,double** ,double**,  double* ,double* , int* ,int***,int* ,int*);
+void collision(double*,double** ,double** ,double**,double**,double**,  double* ,double* , int* ,int***,int* ,int*);
 
-void comput_macro_variables(double* ,double**,double** ,double** ,double** ,double*, double* ,int* ,int***,double***);
+void comput_macro_variables(double* ,double**,double** ,double** ,double** ,double**, double**, double*, double* ,int* ,int***,double***);
 
 double Error(double** ,double** ,double*, double*);
 
@@ -310,7 +310,9 @@ if (Zoom>1)
 	double* rhor;
 	double** u;
 	double**f;
+	double**fg;
 	double**F;
+	double**Fg;
 	double**u0;
 	int* SupInv;
 	//double* forcex;
@@ -394,6 +396,8 @@ if (Zoom>1)
 	u = new double*[Count+1];
 	f = new double*[Count+1];
 	F = new double*[Count+1];
+	fg = new double*[Count+1];
+	Fg = new double*[Count+1];
 	u0 = new double*[Count+1];
 	SupInv = new int[Count+1];
 
@@ -403,6 +407,8 @@ if (Zoom>1)
 		f[i] = new double[19];
 		u0[i] = new double[3];
 		F[i] = new double[19];
+		fg[i] = new double[19];
+		Fg[i] = new double[19];
 		}
 
 	Comput_MI(M,MI);
@@ -417,7 +423,7 @@ if (Zoom>1)
 		Geometry_b(Solid);
 
 	
-	init(rho,u,f,rho_r,rhor,Psi_local,SupInv);
+	init(rho,u,f,fg,rho_r,rhor,Psi_local,SupInv);
 
 
 if (rank==0)
@@ -461,7 +467,7 @@ if (wr_per==1)
 	
 	
 
-	collision(rho,u,f,F,rho_r,rhor,SupInv,Solid,Sl,Sr);
+	collision(rho,u,f,F,fg,Fg,rho_r,rhor,SupInv,Solid,Sl,Sr);
 
 	
 	if ((1-pre_xp)*(1-pre_xn)*(1-pre_yp)*(1-pre_yn)*(1-pre_zp)*(1-pre_zn)==0)
@@ -472,7 +478,7 @@ if (wr_per==1)
 		boundary_velocity(vel_xp,v_xp,vel_xn,v_xn,vel_yp,v_yp,vel_yn,v_yn,vel_zp,v_zp,vel_zn,v_zn,f,F,rho,u,Solid);
 
   		 
-		comput_macro_variables(rho,u,u0,f,F,rho_r,rhor,SupInv,Solid,Psi_local);
+		comput_macro_variables(rho,u,u0,f,F,fg,Fg,rho_r,rhor,SupInv,Solid,Psi_local);
 
 
 	//if ((1-pre_xp)*(1-pre_xn)*(1-pre_yp)*(1-pre_yn)*(1-pre_zp)*(1-pre_zn)==0)
@@ -486,8 +492,7 @@ if (wr_per==1)
 			
 			error=Error(u,u0,&u_max,&u_ave);
 			if (u_max>=10.0)	U_max_ref+=1;
-			//error_Per=Comput_Perm(psi,u,Per_l,Per_g,PerDir);
-			//S_l=Comput_Saturation(psi,Solid);
+			
 			error_perm=Comput_Perm(u,Permia,PerDir);
 			if (rank==0)
 			{
@@ -596,10 +601,13 @@ if (wr_per==1)
 		delete [] u0[i];
 		delete [] f[i];
 		delete [] F[i];
+		delete [] fg[i];
+		delete [] Fg[i];
 		}
 	
 	delete [] f;
-	
+	delete [] fg;
+	delete [] Fg;
 	delete [] u;
 	delete [] F;
 	delete [] u0;
@@ -1098,7 +1106,7 @@ MPI_Barrier(MPI_COMM_WORLD);
 
 
 
-void init(double* rho, double** u, double** f,double* rho_r, double* rhor, double*** Psi_local, int* SupInv)
+void init(double* rho, double** u, double** f,double** fg, double* rho_r, double* rhor, double*** Psi_local, int* SupInv)
 {	
       
 
@@ -1118,7 +1126,7 @@ void init(double* rho, double** u, double** f,double* rho_r, double* rhor, doubl
 
 	s_v=1/tau_f;
         
-	double pr; //raduis of the obstacles
+	double pr,eu; //raduis of the obstacles
        
 	double s_other=8*(2-s_v)/(8-s_v);
 	double u_tmp[3];
@@ -1144,7 +1152,7 @@ void init(double* rho, double** u, double** f,double* rho_r, double* rhor, doubl
 	S[18]=s_other;
 
 
-
+	
 
 	
 	for (int i=1;i<=Count;i++)	
@@ -1174,12 +1182,13 @@ void init(double* rho, double** u, double** f,double* rho_r, double* rhor, doubl
 
 			//INITIALIZATION OF m and f
 
-			for (int lm=0;lm<19;lm++)
-				//if (Solid[(int)(SupInv[i]/((NY+1)*(NZ+1)))][(int)((SupInv[i]%((NY+1)*(NZ+1)))/(NZ+1))][SupInv[i]%(NZ+1)]<0)
-				//	f[i][lm]=0.0;
-				//else
-					f[i][lm]=feq(lm,rho[i],u_tmp);
-				
+			for (int lm=0;lm<19;lm++)			{
+			f[i][lm]=feq(lm,rho[i],u_tmp);
+			eu=e[lm][0]*u[i][0]+e[lm][1]*u[i][1]+e[lm][2]*u[i][2];
+			fg[i][lm]=w[lm]*rho_r[i]*(1+3*eu);
+			}
+                	//g_r[mi]=w[mi]*rho_r[ci]*(1+3*eu);
+
 
 		
 		
@@ -1236,7 +1245,7 @@ double feq(int k,double rho, double u[3])
 
 
 
-void collision(double* rho,double** u,double** f,double** F,double* rho_r, double* rhor, int* SupInv,int*** Solid,int* Sl, int* Sr)
+void collision(double* rho,double** u,double** f,double** F, double** fg, double** Fg, double* rho_r, double* rhor, int* SupInv,int*** Solid,int* Sl, int* Sr)
 {
 
 	
@@ -1272,8 +1281,8 @@ int interi,interj,interk,ip,jp,kp;
 	MPI_Bcast(Gcr,mpi_size,MPI_INT,0,MPI_COMM_WORLD);
 
 	
-	double* sendl_rhor;
-	double* sendr_rhor;
+	double* sendl_s;
+	double* sendr_s;
 	
 	
 	double* sendl;
@@ -1284,33 +1293,27 @@ int interi,interj,interk,ip,jp,kp;
 
 
 	
-	double* recvl_rhor= new double[Gcl[rank]];
-	double* recvr_rhor = new double[Gcr[rank]];
+	double* recvl_s= new double[Gcl[rank]*5];
+	double* recvr_s = new double[Gcr[rank]*5];
 	
 
 if (rank==0)
 		{
 		
-		sendl_rhor = new double[Gcr[mpi_size-1]];
-		sendr_rhor = new double[Gcl[rank+1]];
+		sendl_s = new double[Gcr[mpi_size-1]*5];
+		sendr_s = new double[Gcl[rank+1]*5];
 
 		sendl = new double[Gcr[mpi_size-1]*5];
 		sendr = new double[Gcl[rank+1]*5];
 
 
 		for (int ka=0;ka<Gcr[mpi_size-1];ka++)
-		        {
-		                sendl_rhor[ka]=0;
 				for (int kb=0;kb<5;kb++)
-				sendl[ka*5+kb]=0;
+				{sendl[ka*5+kb]=0;sendl_s[ka*5+kb]=0;}
 		                
-		        }
 		 for (int ka=0;ka<Gcl[rank+1];ka++)
-		        {
-		                sendr_rhor[ka]=0;
 		                for (int kb=0;kb<5;kb++)
-				sendr[ka*5+kb]=0;
-		        }       
+				{sendl[ka*5+kb]=0;sendl_s[ka*5+kb]=0;}  
 		
 		
 		}	
@@ -1318,52 +1321,39 @@ if (rank==0)
 		if (rank==mpi_size-1)
 			{
 			
-			sendl_rhor = new double[Gcr[rank-1]];
-			sendr_rhor = new double[Gcl[0]];
+			sendl_s = new double[Gcr[rank-1]*5];
+			sendr_s = new double[Gcl[0]*5];
 			
 			sendl = new double[Gcr[rank-1]*5];
 			sendr = new double[Gcl[0]*5];
 
 
 			for (int ka=0;ka<Gcr[rank-1];ka++)
-		        {
-		                sendl_rhor[ka]=0;
 				for (int kb=0;kb<5;kb++)
-				sendl[ka*5+kb]=0;
-		                
-		        }
+				{sendl[ka*5+kb]=0;sendl_s[ka*5+kb]=0;}
+		                
 		        for (int ka=0;ka<Gcl[0];ka++)
-		        {
-		                sendr_rhor[ka]=0;
 				for (int kb=0;kb<5;kb++)
-				sendr[ka*5+kb]=0;
-		                
-		        }       
+			   	{sendl[ka*5+kb]=0;sendl_s[ka*5+kb]=0;}
 			
 			
 			}
 			else
 			{
 			
-			sendl_rhor = new double[Gcr[rank-1]];
-			sendr_rhor = new double[Gcl[rank+1]];
+			sendl_s = new double[Gcr[rank-1]*5];
+			sendr_s = new double[Gcl[rank+1]*5];
 			
 			sendl = new double[Gcr[rank-1]*5];
 			sendr = new double[Gcl[rank+1]*5];
 
 			for (int ka=0;ka<Gcr[rank-1];ka++)
-		        {
-		                sendl_rhor[ka]=0;
 				for (int kb=0;kb<5;kb++)
-				sendl[ka*5+kb]=0;
-		                
-		        }
+				{sendl[ka*5+kb]=0;sendl_s[ka*5+kb]=0;}
+
 		        for (int ka=0;ka<Gcl[rank+1];ka++)
-		        {
-		                sendr_rhor[ka]=0;
 				for (int kb=0;kb<5;kb++)
-				sendr[ka*5+kb]=0;
-			}
+				{sendl[ka*5+kb]=0;sendl_s[ka*5+kb]=0;}
 			
 			}
 			
@@ -1432,7 +1422,7 @@ MPI_Barrier(MPI_COMM_WORLD);
 					F_hat[mi]*=(1-0.5*S[mi]);
 					m_l[mi]=m_l[mi]-S[mi]*(m_l[mi]-meq[mi])+dt*F_hat[mi];
 				eu=e[mi][0]*u[ci][0]+e[mi][1]*u[ci][1]+e[mi][2]*u[ci][2];
-                		g_r[mi]=w[mi]*rho_r[ci]*(1+3*eu);
+                		g_r[mi]=fg[ci][mi]-(fg[ci][mi]-w[mi]*rho_r[ci]*(1+3*eu))/tau_s;
 
 					}
 			//============================================================================
@@ -1457,12 +1447,13 @@ MPI_Barrier(MPI_COMM_WORLD);
 				if (Sl[jp*(NZ+1)+kp]>0)
 				{
 				sendl[(Sl[jp*(NZ+1)+kp]-1)*5+FLN[mi]]=sum;
-				sendl_rhor[Sl[jp*(NZ+1)+kp]-1]+=g_r[mi];
+				sendl_s[(Sl[jp*(NZ+1)+kp]-1)*5+FLN[mi]]=g_r[mi];
 				}
 				else
 				{
 				F[ci][LR[mi]]=sum;
-				rhor[ci]+=g_r[mi];
+				Fg[ci][LR[mi]]=g_r[mi];
+				//rhor[ci]+=g_r[mi];
 				}
 					
 						
@@ -1472,23 +1463,27 @@ MPI_Barrier(MPI_COMM_WORLD);
 				if (Sr[jp*(NZ+1)+kp]>0)
 				{
 				sendr[(Sr[jp*(NZ+1)+kp]-1)*5+FRP[mi]]=sum;
-				sendr_rhor[Sr[jp*(NZ+1)+kp]-1]+=g_r[mi];
+				sendr_s[(Sr[jp*(NZ+1)+kp]-1)*5+FRP[mi]]=g_r[mi];
 				}
 				else
 				{
 				F[ci][LR[mi]]=sum;
-				rhor[ci]+=g_r[mi];
+				Fg[ci][LR[mi]]=g_r[mi];
+				//rhor[ci]+=g_r[mi];
 				}
 
 			if ((ip>=0) and (ip<nx_l)) 
 				if (Solid[ip][jp][kp]>0)
 				{
 				F[Solid[ip][jp][kp]][mi]=sum;
-				rhor[Solid[ip][jp][kp]]+=g_r[mi];
+				Fg[Solid[ip][jp][kp]][mi]=g_r[mi];
+				//rhor[Solid[ip][jp][kp]]+=g_r[mi];
 				}
 				else
 				{
-				F[ci][LR[mi]]=sum;rhor[ci]+=g_r[mi];
+				F[ci][LR[mi]]=sum;
+				Fg[ci][LR[mi]]=g_r[mi];
+				//rhor[ci]+=g_r[mi];
 				}
 		//=======================G streaming=================================================
 		
@@ -1561,10 +1556,10 @@ MPI_Barrier(MPI_COMM_WORLD);
 		{
 		
 		
-		MPI_Isend(sendr_rhor, Gcl[1], MPI_DOUBLE, rank+1, rank*2+1, MPI_COMM_WORLD,&request2[0]);
-      		MPI_Isend(sendl_rhor, Gcr[mpi_size-1], MPI_DOUBLE, mpi_size-1, rank*2, MPI_COMM_WORLD,&request2[1]);
-		MPI_Irecv(recvr_rhor, Gcr[0], MPI_DOUBLE, rank+1, (rank+1)*2, MPI_COMM_WORLD,&request2[2]);		
-      		MPI_Irecv(recvl_rhor, Gcl[0], MPI_DOUBLE, mpi_size-1, (mpi_size-1)*2+1, MPI_COMM_WORLD,&request2[3] );
+		MPI_Isend(sendr_s, Gcl[1]*5, MPI_DOUBLE, rank+1, rank*2+1, MPI_COMM_WORLD,&request2[0]);
+      		MPI_Isend(sendl_s, Gcr[mpi_size-1]*5, MPI_DOUBLE, mpi_size-1, rank*2, MPI_COMM_WORLD,&request2[1]);
+		MPI_Irecv(recvr_s, Gcr[0]*5, MPI_DOUBLE, rank+1, (rank+1)*2, MPI_COMM_WORLD,&request2[2]);		
+      		MPI_Irecv(recvl_s, Gcl[0]*5, MPI_DOUBLE, mpi_size-1, (mpi_size-1)*2+1, MPI_COMM_WORLD,&request2[3] );
 		
 		MPI_Isend(sendr, Gcl[1]*5, MPI_DOUBLE, rank+1, rank*2+1+20000, MPI_COMM_WORLD,&request2[4]);
       		MPI_Isend(sendl, Gcr[mpi_size-1]*5, MPI_DOUBLE, mpi_size-1, rank*2+20000, MPI_COMM_WORLD,&request2[5]);
@@ -1574,10 +1569,10 @@ MPI_Barrier(MPI_COMM_WORLD);
 		else
 		if (rank==mpi_size-1)
 			{
-			MPI_Isend(sendl_rhor, Gcr[rank-1], MPI_DOUBLE, rank-1, rank*2, MPI_COMM_WORLD,&request2[0]);
-      			MPI_Isend(sendr_rhor, Gcl[0],  MPI_DOUBLE, 0, rank*2+1, MPI_COMM_WORLD,&request2[1]);
-			MPI_Irecv(recvl_rhor, Gcl[rank], MPI_DOUBLE, rank-1, (rank-1)*2+1, MPI_COMM_WORLD,&request2[2] );
-      			MPI_Irecv(recvr_rhor, Gcr[rank], MPI_DOUBLE, 0, 0, MPI_COMM_WORLD,&request2[3]);
+			MPI_Isend(sendl_s, Gcr[rank-1]*5, MPI_DOUBLE, rank-1, rank*2, MPI_COMM_WORLD,&request2[0]);
+      			MPI_Isend(sendr_s, Gcl[0]*5,  MPI_DOUBLE, 0, rank*2+1, MPI_COMM_WORLD,&request2[1]);
+			MPI_Irecv(recvl_s, Gcl[rank]*5, MPI_DOUBLE, rank-1, (rank-1)*2+1, MPI_COMM_WORLD,&request2[2] );
+      			MPI_Irecv(recvr_s, Gcr[rank]*5, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD,&request2[3]);
 			
 			MPI_Isend(sendl, Gcr[rank-1]*5, MPI_DOUBLE, rank-1, rank*2+20000, MPI_COMM_WORLD,&request2[4]);
       			MPI_Isend(sendr, Gcl[0]*5,  MPI_DOUBLE, 0, rank*2+1+20000, MPI_COMM_WORLD,&request2[5]);
@@ -1587,10 +1582,10 @@ MPI_Barrier(MPI_COMM_WORLD);
 			else
 			{
 
-      			MPI_Isend(sendl_rhor, Gcr[rank-1], MPI_DOUBLE, rank-1, rank*2, MPI_COMM_WORLD,&request2[0]);
-      			MPI_Isend(sendr_rhor, Gcl[rank+1], MPI_DOUBLE, rank+1, rank*2+1, MPI_COMM_WORLD,&request2[1]);
-			MPI_Irecv(recvl_rhor, Gcl[rank], MPI_DOUBLE, rank-1, (rank-1)*2+1, MPI_COMM_WORLD,&request2[2]);
-      			MPI_Irecv(recvr_rhor, Gcr[rank], MPI_DOUBLE, rank+1, (rank+1)*2, MPI_COMM_WORLD,&request2[3]);
+      			MPI_Isend(sendl_s, Gcr[rank-1]*5, MPI_DOUBLE, rank-1, rank*2, MPI_COMM_WORLD,&request2[0]);
+      			MPI_Isend(sendr_s, Gcl[rank+1]*5, MPI_DOUBLE, rank+1, rank*2+1, MPI_COMM_WORLD,&request2[1]);
+			MPI_Irecv(recvl_s, Gcl[rank]*5, MPI_DOUBLE, rank-1, (rank-1)*2+1, MPI_COMM_WORLD,&request2[2]);
+      			MPI_Irecv(recvr_s, Gcr[rank]*5, MPI_DOUBLE, rank+1, (rank+1)*2, MPI_COMM_WORLD,&request2[3]);
 			
 			MPI_Isend(sendl, Gcr[rank-1]*5, MPI_DOUBLE, rank-1, rank*2+20000, MPI_COMM_WORLD,&request2[4]);
       			MPI_Isend(sendr, Gcl[rank+1]*5, MPI_DOUBLE, rank+1, rank*2+1+20000, MPI_COMM_WORLD,&request2[5]);
@@ -1604,23 +1599,19 @@ MPI_Barrier(MPI_COMM_WORLD);
 	MPI_Testall(8,request2,&mpi_test2,status2);	
 		
 			for(i=1;i<=Gcl[rank];i++)
-			        {
-			
-			        rhor[i]+=recvl_rhor[i-1];
-			      
-				
 				for (int lm=0;lm<5;lm++)
 					if (recvl[(i-1)*5+lm]>0)
-				        F[i][RP[lm]]=recvl[(i-1)*5+lm];
-			        }
+				        {
+					F[i][RP[lm]]=recvl[(i-1)*5+lm];
+					Fg[i][RP[lm]]=recvl_s[(i-1)*5+lm];
+			        	}
 			for(j=Count-Gcr[rank]+1;j<=Count;j++)
-			        {
-				rhor[j]+=recvr_rhor[j-(Count-Gcr[rank]+1)];
-				
 				for (int lm=0;lm<5;lm++)
 					if (recvr[(j-(Count-Gcr[rank]+1))*5+lm]>0)
+					{
+					Fg[j][LN[lm]]=recvr_s[(j-(Count-Gcr[rank]+1))*5+lm];
 			        	F[j][LN[lm]]=recvr[(j-(Count-Gcr[rank]+1))*5+lm];
-				}
+					}
 			
 			
 			
@@ -1629,10 +1620,10 @@ MPI_Barrier(MPI_COMM_WORLD);
 	
 	delete [] Gcl;
 	delete [] Gcr;
-	delete [] sendl_rhor;
-	delete [] sendr_rhor;
-	delete [] recvl_rhor;
-	delete [] recvr_rhor;		
+	delete [] sendl_s;
+	delete [] sendr_s;
+	delete [] recvl_s;
+	delete [] recvr_s;		
 	
 	delete [] sendl;
 	delete [] sendr;
@@ -1647,7 +1638,7 @@ MPI_Barrier(MPI_COMM_WORLD);
 
 
 
-void comput_macro_variables( double* rho,double** u,double** u0,double** f,double** F,double* rho_r, double* rhor ,int* SupInv,int*** Solid,double*** Psi_local)
+void comput_macro_variables( double* rho,double** u,double** u0,double** f,double** F,double** fg, double** Fg, double* rho_r, double* rhor ,int* SupInv,int*** Solid,double*** Psi_local)
 {
 	
 	int rank = MPI :: COMM_WORLD . Get_rank ();
@@ -1661,6 +1652,7 @@ void comput_macro_variables( double* rho,double** u,double** u0,double** f,doubl
 				u0[i][1]=u[i][1];
 				u0[i][2]=u[i][2];
 				rho[i]=0;
+				rho_r[i]=0;
 				u[i][0]=0;
 				u[i][1]=0;
 				u[i][2]=0;
@@ -1669,15 +1661,17 @@ void comput_macro_variables( double* rho,double** u,double** u0,double** f,doubl
 					{
 					
 					f[i][k]=F[i][k];
+					fg[i][k]=Fg[i][k];
 					rho[i]+=f[i][k];
+					rho_r[i]+=fg[i][k];
 					u[i][0]+=e[k][0]*f[i][k];
 					u[i][1]+=e[k][1]*f[i][k];
 					u[i][2]+=e[k][2]*f[i][k];
 					}
 				
-				rho_r[i]=rhor[i];
+				//rho_r[i]=rhor[i];
 				
-				rhor[i]=0;
+				//rhor[i]=0;
 				
 				u[i][0]=(u[i][0]+dt*gxs)/rho[i];
 				u[i][1]=(u[i][1]+dt*gys)/rho[i];
@@ -3579,15 +3573,29 @@ void output_psi_b(int m,double* psi,int MirX,int MirY,int MirZ,int mir,int*** So
 				out<<"		"<<rbuf_psi[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]<<endl;
 
 	out.close();
+
+	
+
+	/*
+	
+	ostringstream name2;
+	name2<<"LBM_psi_"<<m<<".out";
+	ofstream out2(name2.str().c_str());
+	for (int j=0;j<=NY;j++)
+		{
+		if (Solid[2][j][1]>0)
+			out2<<j<<" "<<rbuf_psi[2*(NY+1)*(NZ+1)+j*(NZ+1)+1]<<endl;
+		else
+			out2<<0.0<<endl;
+		}
+
+	*/
+	
 				
 	}
 	
-	//int lss=0;
-	//if (rank==0)	
-	//	for (int i=1;i<=SumCount;i++)
-//			lss+=rbuf_rho[i];
-//		cout<<lss<<endl;
-	//cout<<SumCount<<endl;
+	
+	
 	
 	if (rank==root_rank)
 		{		

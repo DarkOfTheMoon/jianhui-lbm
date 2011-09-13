@@ -2,7 +2,7 @@
 BC.dat                  	:Geometry filenameEmily_Berea_y_614_764_7.dat
 phase.dat       	    	:Initial components distribution
 60 60 3                 	:nx ny nz
-1000		     		:Maximum time step
+5000		     		:Maximum time step
 19.9997	             		:dx (um) Resolution (for Permeability calculation)
 0	        	      	:Pressure Or Velocity Boundary (1=YES, 0=No)
 0 0 0                      	:mirroring option for x,y,z (1=yes, 0=no)
@@ -14,7 +14,7 @@ phase.dat       	    	:Initial components distribution
 0 0.0 0 0.07	   		:Velocity Boundary in Y direction (Format detials can be found within this file)
 0 0.0 0 0.07	   		:Velocity Boundary in Z direction (Format detials can be found within this file)
 0.1    		       		:Viscosity
-0.1667    		       	:Diffusion coefficient
+0.2	    		       	:Diffusion coefficient
 0.0 0.0 0.0			:initial velocity for x,y,z
 =========OUTPUT==CONTROL===================
 1		         	:Permeability writing (1=yes, 0=no)
@@ -23,7 +23,7 @@ phase.dat       	    	:Initial components distribution
 0               		:Memory Saving mode for output subroutains (0=No, 1=Yes,for large outputs, x,z opposite)
 100				:Frequency of velocity field writing (in vtk format, -1=no velocity writing)
 100				:Frequency of density field writing (in vtk format, -1=no density writing)
-20				:Frequency of concentration writing (in vtk format, -1=no density writing)
+100				:Frequency of concentration writing (in vtk format, -1=no density writing)
 0				:Mirroring part output (0=No,1=YES)
 ==============ADVANCE==PARAMETER==========
 0 658 659 11 			:ONLY USE PART OF THE ORIGINAL GEOMETRY (1=YES,0=NO,NX,NY,NZ)
