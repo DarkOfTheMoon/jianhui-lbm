@@ -130,7 +130,7 @@ void output_density_b(int ,double* ,int ,int ,int ,int ,int*** );
 
 void Geometry_b(int*** );
 
-void Backup(int ,double* ,double**);
+void Backup(int ,double* ,double**, double**);
 
 double Comput_Perm(double** u,double*,int);
 
@@ -144,7 +144,7 @@ double feq(int,double, double[3]);
 
 void Suppliment(int*,int***);
 
-void Backup_init(double* rho, double** u, double** f, char[128], char[128]);
+void Backup_init(double* rho, double** u, double** f, char[128], char[128],char[128]);
 
 int e[19][3]=
 {{0,0,0},{1,0,0,},{-1,0,0},{0,1,0},{0,-1,0},{0,0,1},{0,0,-1},{1,1,0},{-1,1,0},{1,-1,0},{-1,-1,0},{0,1,1},
@@ -188,7 +188,7 @@ int dif,ts,th,tm;
 	start = MPI_Wtime();
 
 	int NCHAR=128;
-	char     filename[128], dummy[128+1], backup_rho[128], backup_velocity[128];
+	char     filename[128], dummy[128+1], backup_rho[128], backup_velocity[128],backup_f[128];
 	int      dummyInt;
 
 	if (rank==0)
@@ -227,6 +227,7 @@ int dif,ts,th,tm;
 	fin >>mode_backup_ini;                fin.getline(dummy, NCHAR);
 	fin >> backup_rho;                        fin.getline(dummy, NCHAR);
 	fin >> backup_velocity;                fin.getline(dummy, NCHAR);
+	fin >> backup_f;                        fin.getline(dummy, NCHAR);
 	
 	//fin >> EI;					fin.getline(dummy, NCHAR);
 	//fin >> q_p;					fin.getline(dummy, NCHAR);
@@ -267,7 +268,7 @@ int dif,ts,th,tm;
 	MPI_Bcast(&fre_backup,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&mode_backup_ini,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&Sub_BC,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&Out_Mode,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&backup_rho,128,MPI_CHAR,0,MPI_COMM_WORLD);MPI_Bcast(&backup_velocity,128,MPI_CHAR,0,MPI_COMM_WORLD);
-
+	MPI_Bcast(&backup_f,128,MPI_CHAR,0,MPI_COMM_WORLD);
       
 int U_max_ref=0;
 
@@ -423,7 +424,7 @@ if (Zoom>1)
 if (mode_backup_ini==0)
 	init(rho,u,f);
 else
-        Backup_init(rho,u,f,backup_rho,backup_velocity);
+        Backup_init(rho,u,f,backup_rho,backup_velocity,backup_f);
 
 if (rank==0)
 		cout<<"Porosity= "<<porosity<<endl;
@@ -589,7 +590,7 @@ if (wr_per==1)
 					output_velocity_b(n,rho,u,mirX,mirY,mirZ,mir,Solid);
 				
 			if ((fre_backup>=0) and (n%fre_backup==0))
-			        Backup(n,rho,u);
+			        Backup(n,rho,u,f);
 			        
 			if(error!=error) {cout<<"PROGRAM STOP"<<endl;break;};
 			if(U_max_ref>=5) {cout<<"PROGRAM STOP DUE TO HIGH VELOCITY"<<endl;break;}
@@ -597,7 +598,7 @@ if (wr_per==1)
 	}
 
 	if (fre_backup>=0)
-			        Backup(n_max,rho,u);
+			        Backup(n_max,rho,u,f);
 	
 
 	for (int i=0;i<=Count;i++)
@@ -1099,29 +1100,16 @@ void init(double* rho, double** u, double** f)
       
 
 
-	double Cylinder_r=7;
-	double usqr,vsqr;
+	
 
 	
 	rho0=1.0;dt=1.0/Zoom;dx=1.0/Zoom;
- 	uMax=0.0;
-	Re=50.0;
-	//forcex=gx;forcey=gy;
-	//niu=U*Lx/Re;
-	niu=uMax*Cylinder_r*2/Re;
+ 	
 	niu=in_vis;
 	tau_f=3.0*niu/dt+0.5;
-	//gx=3*uMax*niu/((NY/2)*(NY/2));
-	//tau_f=1.0;
+	
 	s_v=1/tau_f;
-        //tau_f=1.0;
-	//cout<<"tau_f= "<<tau_f<<endl;
-	double pr; //raduis of the obstacles
-        //if (Zoom>1)
-	//s_v=1.0/((1.0/s_v-0.5)/Zoom+0.5);
-
-	//srand(time(0));                        //RANDOM NUMBER GENERATION SEED
-	//cylinder_creation(50,103,Cylinder_r);
+      
 	double s_other=8*(2-s_v)/(8-s_v);
 	double u_tmp[3];
 /*
@@ -4142,140 +4130,54 @@ void output_density_b(int m,double* rho,int MirX,int MirY,int MirZ,int mir,int**
 }
 
 
-void Backup(int m,double* rho,double** u)
+void Backup(int m,double* rho,double** u, double** f)
 {
 
         int rank = MPI :: COMM_WORLD . Get_rank ();
-	const int mpi_size=MPI :: COMM_WORLD . Get_size ();
-	const int root_rank=0;
+	int mpi_size=MPI :: COMM_WORLD . Get_size ();
 	
-	int* c_l = new int[mpi_size];
-	int* disp = new int[mpi_size];
-
-	
-	MPI_Gather(&Count,1,MPI_INT,c_l,1,MPI_INT,root_rank,MPI_COMM_WORLD);
-	
-	
-	if (rank==root_rank)
-		{
-		disp[0]=0;
-		for (int i=0;i<mpi_size;i++)
-			c_l[i]*=3;
-
-		for (int i=1;i<mpi_size;i++)
-			disp[i]=disp[i-1]+c_l[i-1];
-		}
-	
-
-	double* rbuf_v;
-	double* v_storage = new double[Count*3];
-
-
-	
-	for (int i=1;i<=Count;i++)
-	{
-	        v_storage[(i-1)*3]=u[i][0];
-	        v_storage[(i-1)*3+1]=u[i][1];
-	        v_storage[(i-1)*3+2]=u[i][2];
-	}   
-	
-
-	if (rank==root_rank)
-		rbuf_v= new double[(disp[mpi_size-1]+c_l[mpi_size-1])*3];
-
-
-	//MPI_Barrier(MPI_COMM_WORLD);
-	MPI_Gatherv(v_storage,Count*3,MPI_DOUBLE,rbuf_v,c_l,disp,MPI_DOUBLE,root_rank,MPI_COMM_WORLD);
-
-
-
-
-	if (rank==root_rank)
-	{
 	ostringstream name;
-	name<<outputfile<<"LBM_Backup_Velocity_"<<m<<".input";
+	name<<outputfile<<"LBM_Backup_Velocity_"<<m<<"."<<rank<<".input";
 	ofstream out;
 	out.open(name.str().c_str());
-	
-	for (int i=0;i<(disp[mpi_size-1]+c_l[mpi_size-1])/3;i++)
-        		out<<rbuf_v[i*3]<<" "<<rbuf_v[i*3+1]<<" "<<rbuf_v[i*3+2]<<" "<<endl;
+	for (int i=1;i<=Count;i++)
+        		out<<u[i][0]<<" "<<u[i][1]<<" "<<u[i][2]<<" "<<endl;
 		
 			
 	out.close();
 	
 
 	
-	}
-
-	if (rank==root_rank)
-		{		
-		delete [] rbuf_v;
-		}
-	delete [] v_storage;
 	
-	
-	
-	
-	MPI_Gather(&Count,1,MPI_INT,c_l,1,MPI_INT,root_rank,MPI_COMM_WORLD);
-	
-	
-	if (rank==root_rank)
-		{
-		disp[0]=0;
-
-		for (int i=1;i<mpi_size;i++)
-			disp[i]=disp[i-1]+c_l[i-1];
-		}
-	
-
-	double* rbuf_rho;
-	double* rho_storage = new double[Count];
-
-
-	
-	for (int i=1;i<=Count;i++)
-	        rho_storage[i-1]=rho[i];
-	
-
-	if (rank==root_rank)
-		rbuf_rho= new double[disp[mpi_size-1]+c_l[mpi_size-1]];
-
-
-	//MPI_Barrier(MPI_COMM_WORLD);
-	MPI_Gatherv(rho_storage,Count,MPI_DOUBLE,rbuf_rho,c_l,disp,MPI_DOUBLE,root_rank,MPI_COMM_WORLD);
-
-
-
-
-	if (rank==root_rank)
-	{
 	ostringstream name2;
-	name2<<outputfile<<"LBM_Backup_Density_"<<m<<".input";
+	name2<<outputfile<<"LBM_Backup_Density_"<<m<<"."<<rank<<".input";
 	ofstream out2;
 	out2.open(name2.str().c_str());
 	
-	for (int i=0;i<disp[mpi_size-1]+c_l[mpi_size-1];i++)
-        		out2<<rbuf_rho[i]<<endl;
+	for (int i=1;i<=Count;i++)
+        		out2<<rho[i]<<endl;
 		
 			
 	out2.close();
 	
-
-	
-	}
-
-	if (rank==root_rank)
-		{		
-		delete [] rbuf_rho;
-		}
-	delete [] rho_storage;
 	
 	
-	delete [] c_l;
-	delete [] disp;
+	ostringstream name4;
+	name4<<outputfile<<"LBM_Backup_f_"<<m<<"."<<rank<<".input";
+	//ofstream out;
+	out.open(name4.str().c_str());
 	
-
-
+	for (int i=1;i<=Count;i++)
+	{
+	        for (int j=0;j<19;j++)
+        		out<<f[i][j];
+        out<<endl;
+        }
+                
+        out.close();
+        
+	
+	
 }
 
 double Comput_Perm(double** u,double* Permia,int PerDIr)
@@ -4368,38 +4270,14 @@ double Comput_Perm(double** u,double* Permia,int PerDIr)
 
 
 
-void Backup_init(double* rho, double** u, double** f, char backup_rho[128], char backup_velocity[128])
+void Backup_init(double* rho, double** u, double** f, char backup_rho[128], char backup_velocity[128], char backup_f[128])
 {	
       
         int rank = MPI :: COMM_WORLD . Get_rank ();
 	int mpi_size=MPI :: COMM_WORLD . Get_size ();
-	const int root_rank=0;
-	
-	int* c_l = new int[mpi_size];
-	int* disp = new int[mpi_size];
-	int index_total;
-	
-	MPI_Gather(&Count,1,MPI_INT,c_l,1,MPI_INT,root_rank,MPI_COMM_WORLD);
-	
-	
-	if (rank==root_rank)
-		{
-		disp[0]=0;
-		//for (int i=0;i<mpi_size;i++)
-		//	c_l[i]*=3;
-
-		for (int i=1;i<mpi_size;i++)
-			disp[i]=disp[i-1]+c_l[i-1];
-		}
-		
-		
-		
-	MPI_Bcast(c_l,mpi_size,MPI_INT,0,MPI_COMM_WORLD);
-	MPI_Bcast(disp,mpi_size,MPI_INT,0,MPI_COMM_WORLD);
 	
 	
 	
-	//double Cylinder_r=7;
 	double usqr,vsqr,ls_rho,ls_v0,ls_v1,ls_v2;
 
 	
@@ -4412,7 +4290,7 @@ void Backup_init(double* rho, double** u, double** f, char backup_rho[128], char
 	s_v=1/tau_f;
        
 	double s_other=8*(2-s_v)/(8-s_v);
-	double u_tmp[3];
+	
 
 	S[0]=0;
 	S[1]=s_v;
@@ -4434,80 +4312,41 @@ void Backup_init(double* rho, double** u, double** f, char backup_rho[128], char
 	S[17]=s_other;
 	S[18]=s_other;
 
-	double* u_input= new double[(disp[mpi_size-1]+c_l[mpi_size-1])*3];
-	double* rho_input =new double[disp[mpi_size-1]+c_l[mpi_size-1]];
-
-
-	if (rank==0)
-	{
-	        
+	ostringstream name4;
+	name4<<backup_f<<"."<<rank<<".input";
+	
+ 	ostringstream name2;
+	name2<<backup_velocity<<"."<<rank<<".input";
+	ostringstream name;
+	name<<backup_rho<<"."<<rank<<".input";
+	
+	 
 	ifstream fin;
-	fin.open(backup_rho);
+	fin.open(name.str().c_str());
 	
-        	for(int i=0;i<disp[mpi_size-1]+c_l[mpi_size-1];i++)
-        	{
-        	        fin >> rho_input[i];
-        	}
+        	for(int i=1;i<=Count;i++)
+        	        fin >> rho[i];
+  
        fin.close();
-        
        
-       fin.open(backup_velocity);
-       
-                for(int i=0;i<disp[mpi_size-1]+c_l[mpi_size-1];i++)
-        	{
-        	        fin >> u_input[i*3] >> u_input[i*3+1] >> u_input[i*3+2];
-        	}
-        fin.close();
-
-
+   
+	fin.open(name2.str().c_str());
 	
-        }
-        
-        
-        MPI_Barrier(MPI_COMM_WORLD);
+        	for(int i=1;i<=Count;i++)
+        	        fin >> u[i][0] >> u[i][1] >> u[i][2];
+  
+       fin.close();
+       
+      
+       fin.open(name4.str().c_str());
+	
+        	for(int i=1;i<=Count;i++)
+        	        fin >> f[i][0] >> f[i][1] >> f[i][2] >> f[i][3] >> f[i][4] >> f[i][5] >>f[i][6] >> f[i][7] >> f[i][8] >> f[i][9] >> f[i][10] >> f[i][11] >> f[i][12] >> f[i][13] >> f[i][14] >> f[i][15] >> f[i][16] >>f[i][17] >> f[i][18] ;
+  
+       fin.close();
+       
       
 	
-	MPI_Bcast(rho_input,disp[mpi_size-1]+c_l[mpi_size-1],MPI_DOUBLE,0,MPI_COMM_WORLD);
-	
-	MPI_Bcast(u_input,(disp[mpi_size-1]+c_l[mpi_size-1])*3,MPI_DOUBLE,0,MPI_COMM_WORLD);
-	
-	
-	
-	for (int i=1;i<=Count;i++)	
-			
-		{
-		        u[i][0]=u_input[(disp[rank]+i-1)*3];
-		        u[i][1]=u_input[(disp[rank]+i-1)*3+1];
-		        u[i][2]=u_input[(disp[rank]+i-1)*3+2];
-		        
-		        rho[i]=rho_input[disp[rank]+i-1];
-		        
-			u_tmp[0]=u[i][0];
-			u_tmp[1]=u[i][1];
-			u_tmp[2]=u[i][2];
-
-			//***********************************************************************
-
-			//forcex[i]=gx;
-			//forcey[i]=gy;
-			//forcez[i]=gz;
-
-
-
-			//***********************************************************************
-
-
-
-			for (int lm=0;lm<19;lm++)
-					f[i][lm]=feq(lm,rho[i],u_tmp);
-						
-
-	}
-
-	delete [] c_l;
-        delete [] disp;
-        delete [] rho_input;
-        delete [] u_input; 	
 
 	 	
 }

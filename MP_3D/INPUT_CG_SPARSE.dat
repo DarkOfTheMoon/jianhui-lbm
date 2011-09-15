@@ -35,11 +35,11 @@ phase.dat       	    	:Initial components distribution
 2              			:PRESSURE AND VELOCITY BOUNDARY CONDITION OPTIONS: 0,1,2,3: EBC_S,EBC_D,TOLKE_BC,NEBC_D
 0  500				:MULTI-COMPONENT STABALIZER: (a,b) a=0=OFF, a=1=ON, BODY FORCE WILL BE APPLIED AFTER b steps 
 -1		                   :BACKUP FREQUENCY (-1=NO BACKUP)
-1                              :INITIALIZATION WITH BACKUP DATA (0=OFF, 1=ON)
-LBM_Backup_Density_800.input            :BACKUP DATA FOR INTIALIZATION--DENSITY
-LBM_Backup_Velocity_800.input           :BACKUP DATA FOR INTIALIZATION--Velocity
-LBM_Backup_Concentration_800.input           :BACKUP DATA FOR INTIALIZATION--Velocity
-
+0                              :INITIALIZATION WITH BACKUP DATA (0=OFF, 1=ON)
+LBM_Backup_Density_200            :BACKUP DATA FOR INTIALIZATION--DENSITY
+LBM_Backup_Velocity_200           :BACKUP DATA FOR INTIALIZATION--Velocity
+LBM_Backup_Concentration_200           :BACKUP DATA FOR INTIALIZATION--Velocity
+LBM_Backup_f_200                        :BACKUP DATA FOR DISTRIBUTION FUNCTION F
 
 INSTRUCTIONS OF PARAMETER INPUT
 

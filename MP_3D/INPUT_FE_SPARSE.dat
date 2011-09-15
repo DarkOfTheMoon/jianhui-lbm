@@ -35,11 +35,12 @@ phase.dat       	:Initial components distribution
 ./			:OUTPUT PATH,DEFAULT: ./ (REMEMBER TO INCLUDE "/" AT THE END OF PATH)
 0  500				:MULTI-COMPONENT STABALIZER: (a,b) a=0=OFF, a=1=ON, BODY FORCE WILL BE APPLIED AFTER b steps 
 -1		                   :BACKUP FREQUENCY (-1=NO BACKUP)
-1                              :INITIALIZATION WITH BACKUP DATA (0=OFF, 1=ON)
-LBM_Backup_Density_200.input            :BACKUP DATA FOR INTIALIZATION--DENSITY
-LBM_Backup_Velocity_200.input           :BACKUP DATA FOR INTIALIZATION--Velocity
-LBM_Backup_Concentration_200.input           :BACKUP DATA FOR INTIALIZATION--Velocity
-
+0                              :INITIALIZATION WITH BACKUP DATA (0=OFF, 1=ON)
+LBM_Backup_Density_200            :BACKUP DATA FOR INTIALIZATION--DENSITY
+LBM_Backup_Velocity_200           :BACKUP DATA FOR INTIALIZATION--Velocity
+LBM_Backup_Concentration_200           :BACKUP DATA FOR INTIALIZATION--Velocity
+LBM_Backup_f_200            :BACKUP DATA FOR INTIALIZATION--DISTRIBUTION FUNCTION F
+LBM_Backup_g_200           :BACKUP DATA FOR INTIALIZATION--DISTRIBUTION FUNCTION G
 
 
 INSTRUCTIONS OF PARAMETER INPUT
