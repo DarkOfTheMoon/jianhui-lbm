@@ -4197,7 +4197,7 @@ void Backup(int m,double* rho,double** u)
 	ofstream out;
 	out.open(name.str().c_str());
 	
-	for (int i=0;i<disp[mpi_size-1]+c_l[mpi_size-1];i++)
+	for (int i=0;i<(disp[mpi_size-1]+c_l[mpi_size-1])/3;i++)
         		out<<rbuf_v[i*3]<<" "<<rbuf_v[i*3+1]<<" "<<rbuf_v[i*3+2]<<" "<<endl;
 		
 			
@@ -4434,8 +4434,8 @@ void Backup_init(double* rho, double** u, double** f, char backup_rho[128], char
 	S[17]=s_other;
 	S[18]=s_other;
 
-	double* u_input= new double[(disp[mpi_size-1]+c_l[mpi_size])*3];
-	double* rho_input =new double[disp[mpi_size-1]+c_l[mpi_size]];
+	double* u_input= new double[(disp[mpi_size-1]+c_l[mpi_size-1])*3];
+	double* rho_input =new double[disp[mpi_size-1]+c_l[mpi_size-1]];
 
 
 	if (rank==0)
