@@ -2,7 +2,7 @@
 BC.dat                  	:Geometry filenameEmily_Berea_y_614_764_7.dat
 phase.dat       	    	:Initial components distribution
 60 60 3                 	:nx ny nz
-5000		     		:Maximum time step
+1000		     		:Maximum time step
 19.9997	             		:dx (um) Resolution (for Permeability calculation)
 0	        	      	:Pressure Or Velocity Boundary (1=YES, 0=No)
 0 0 0                      	:mirroring option for x,y,z (1=yes, 0=no)
@@ -30,6 +30,11 @@ phase.dat       	    	:Initial components distribution
 1				:FACTOR OF MESHREFINEMENT (0,1=No mesh refinement, 1=1X,2=2X,3=3X)
 ./				:OUTPUT PATH,DEFAULT: ./ (REMEMBER TO INCLUDE "/" AT THE END OF PATH)
 2              			:PRESSURE AND VELOCITY BOUNDARY CONDITION OPTIONS: 0,1,2,3: EBC_S,EBC_D,TOLKE_BC,NEBC_D
+100		                   :BACKUP FREQUENCY (-1=NO BACKUP)
+0                               :INITIALIZATION WITH BACKUP DATA (0=OFF, 1=ON)
+LBM_Backup_Density_800.input            :BACKUP DATA FOR INTIALIZATION--DENSITY
+LBM_Backup_Velocity_800.input           :BACKUP DATA FOR INTIALIZATION--Velocity
+LBM_Backup_Concentration_800.input           :BACKUP DATA FOR INTIALIZATION--Velocity
 
 
 INSTRUCTIONS OF PARAMETER INPUT

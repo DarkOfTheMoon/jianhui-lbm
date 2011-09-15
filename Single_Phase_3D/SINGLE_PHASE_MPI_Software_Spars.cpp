@@ -596,7 +596,8 @@ if (wr_per==1)
 		}	
 	}
 
-
+	if (fre_backup>=0)
+			        Backup(n_max,rho,u);
 	
 
 	for (int i=0;i<=Count;i++)
@@ -623,6 +624,8 @@ if (wr_per==1)
 //	delete [] Permia;
 //	delete [] Count;
 	finish = MPI_Wtime();
+	
+	
 
 	MPI_Barrier(MPI_COMM_WORLD);
 	if(rank==0)
