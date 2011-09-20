@@ -135,7 +135,7 @@ double feq(int,double, double[3],double);
 
 void Suppliment(int*,int***);
 
-void Backup_init(double* rho, double** u, double** f, char[128], char[128],char[128]);
+void Backup_init(double* rho, double** u, double** f, double*, double*, double*, double*,double*, double*, double*,char[128], char[128],char[128],int*);
 
 int e[19][3]=
 {{0,0,0},{1,0,0,},{-1,0,0},{0,1,0},{0,-1,0},{0,0,1},{0,0,-1},{1,1,0},{-1,1,0},{1,-1,0},{-1,-1,0},{0,1,1},
@@ -414,7 +414,7 @@ if (Zoom>1)
 if (mode_backup_ini==0)
 	init(rho,u,f,PerC, PorC, Per_Int, Por_Int, forcex, forcey,forcez, SupInv);
 else
-        Backup_init(rho,u,f,backup_rho,backup_velocity,backup_f);
+        Backup_init(rho,u,f,PerC,PorC, Per_Int, Por_Int,forcex,forcey, forcez,backup_rho,backup_velocity,backup_f,SupInv);
 
 if (rank==0)
 		cout<<"Porosity= "<<porosity<<endl;
@@ -1329,8 +1329,8 @@ int i,j,m,ip,jp,kp;
 			//=================FORCE TERM_GUO=========================================
 			for (int k=0;k<19;k++)
 			{	
-			lm0=((e[k][0]-u[ci][0])*gx+(e[k][1]-u[ci][1])*gy+(e[k][2]-u[ci][2])*gz)*3;
-			lm1=(e[k][0]*u[ci][0]+e[k][1]*u[ci][1]+e[k][2]*u[ci][2])*(e[k][0]*gx+e[k][1]*gy+e[k][2]*gz)*9;
+			lm0=((e[k][0]-u[ci][0])*forcex[ci]+(e[k][1]-u[ci][1])*forcey[ci]+(e[k][2]-u[ci][2])*forcez[ci])*3;
+			lm1=(e[k][0]*u[ci][0]+e[k][1]*u[ci][1]+e[k][2]*u[ci][2])*(e[k][0]*forcex[ci]+e[k][1]*forcey[ci]+e[k][2]*forcez[ci])*9;
 			lm1/=PorC[ci];
 			GuoF[k]=w[k]*(lm0+lm1);
 			//GuoF[k]=0.0;
@@ -3313,13 +3313,30 @@ void Backup(int m,double* rho,double** u, double** f)
 
 
 
-void Backup_init(double* rho, double** u, double** f, char backup_rho[128], char backup_velocity[128], char backup_f[128])
+void Backup_init(double* rho, double** u, double** f, double* PerC, double* PorC, double* Per_Int, double* Por_Int, double* forcex, double* forcey, double* forcez, char backup_rho[128], char backup_velocity[128], char backup_f[128],int* SupInv)
 {	
       
-        int rank = MPI :: COMM_WORLD . Get_rank ();
+  
+	int rank = MPI :: COMM_WORLD . Get_rank ();
 	int mpi_size=MPI :: COMM_WORLD . Get_size ();
+
+	int* nx_g = new int[mpi_size];
+	int* disp = new int[mpi_size];
+	int ip,jp,kp,ijk;
 	
+	MPI_Gather(&nx_l,1,MPI_INT,nx_g,1,MPI_INT,0,MPI_COMM_WORLD);
 	
+	if (rank==0)
+	{
+		disp[0]=0;
+		
+
+		for (int i=1;i<mpi_size;i++)
+			disp[i]=disp[i-1]+nx_g[i-1];
+	}
+
+	MPI_Bcast(disp,mpi_size,MPI_INT,0,MPI_COMM_WORLD);
+
 	
 	double usqr,vsqr,ls_rho,ls_v0,ls_v1,ls_v2;
 
@@ -3333,7 +3350,8 @@ void Backup_init(double* rho, double** u, double** f, char backup_rho[128], char
 	s_v=1/tau_f;
        
 	double s_other=8*(2-s_v)/(8-s_v);
-	
+	double uu;
+
 
 	S[0]=0;
 	S[1]=s_v;
@@ -3389,7 +3407,60 @@ void Backup_init(double* rho, double** u, double** f, char backup_rho[128], char
        fin.close();
        
       
+			
+	for (int i=1;i<=Count;i++)	
+				
+		{ 	
+				
+			//cout<<i<<"    @@@@@@@@@@@@@@    "<<endl;
+
+			ip=(int)(SupInv[i]/((NY+1)*(NZ+1)))+disp[rank];
+			jp=(int)((SupInv[i]%((NY+1)*(NZ+1)))/(NZ+1));
+			kp=(int)(SupInv[i]%(NZ+1));
+
+			ip=(ip-ip%Zoom)/Zoom;
+			jp=(jp-jp%Zoom)/Zoom;
+			kp=(kp-kp%Zoom)/Zoom;
+ 			//cout<<ip<<"   "<<jp<<"  "<<kp<<"    "<<disp[rank]<<endl;
+
+
+			ijk=ip*((NY+1)/Zoom)*((NZ+1)/Zoom)+jp*((NZ+1)/Zoom)+kp;
+			//cout<<ijk<<"      @@@@@@@@      "<<Per_Int[10700]<<endl;
+
+
+			PerC[i]=Per_Int[ijk];
+			PorC[i]=Por_Int[ijk];
+			
+
+			
+			//***********************************************************************
+
+			
+			uu=sqrt(u[i][0]*u[i][0]+u[i][1]*u[i][1]+u[i][2]*u[i][2]);
+			forcex[i]=-PorC[i]*niu/PerC[i]*u[i][0]-PorC[i]*F_epsilon*u[i][0]*uu/(sqrt(PerC[i]))+PorC[i]*gx;
+			forcey[i]=-PorC[i]*niu/PerC[i]*u[i][1]-PorC[i]*F_epsilon*u[i][1]*uu/(sqrt(PerC[i]))+PorC[i]*gy;
+			forcez[i]=-PorC[i]*niu/PerC[i]*u[i][2]-PorC[i]*F_epsilon*u[i][2]*uu/(sqrt(PerC[i]))+PorC[i]*gz;
+
+
+
+
+
+
+
+			//***********************************************************************
+
+
+			
+				
+
+		
+		
+
+	}
+
 	
+	delete [] nx_g;
+	delete [] disp;
 
 	 	
 }

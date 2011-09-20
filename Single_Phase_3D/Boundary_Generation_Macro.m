@@ -1,26 +1,26 @@
 
 
 clear;
-lx=60;
+lx=200;
 ly=60;
 lz=3;
 
 A=zeros(lx,ly,lz);
 
-% for k=1:lz
-%     for j=1:ly
-%         for i=1:lx
-%            %if (((k==1) || (k==lz)) && (abs(i-lx/2)<=10) && (abs(j-ly/2)<=10)) 
-%            %if ((k==12) && (abs(i-lx/2)<=9) && (abs(j-ly/2)<=9))
-%             %if (sqrt((i-lx*0.3)*(i-lx*0.3)+(j-ly*0.5)*(j-ly*0.5)+(k-lz*0.5)*(k-lz*0.5))<=6)
-%            %if ((j==13) && (i>=5) && (i<=lx-5) && (k>=5) && (k<=lz-5))
-%            %if ((j==1) || (j==ly))
-%            if (j==1)
-%                 A(i,j,k)=1;
-%            end            
-%         end
-%     end
-% end
+for k=1:lz
+    for j=1:ly
+        for i=1:lx
+           %if (((k==1) || (k==lz)) && (abs(i-lx/2)<=10) && (abs(j-ly/2)<=10)) 
+           %if ((k==12) && (abs(i-lx/2)<=9) && (abs(j-ly/2)<=9))
+            %if (sqrt((i-lx*0.3)*(i-lx*0.3)+(j-ly*0.5)*(j-ly*0.5)+(k-lz*0.5)*(k-lz*0.5))<=6)
+           %if ((j==13) && (i>=5) && (i<=lx-5) && (k>=5) && (k<=lz-5))
+           if ((j==1) || (j==ly))
+           %if (j==1)
+                A(i,j,k)=1;
+           end            
+        end
+    end
+end
 
 fid = fopen('BC.dat','wt');
 
@@ -53,11 +53,13 @@ B=zeros(lx,ly,lz);
 % end
 
 
+%=======================A=Permeability,B=Porosity================
+
 for k=1:lz
     for j=1:ly
         for i=1:lx
            
-                A(i,j,k)=0.8;B(i,j,k)=0.03;
+                A(i,j,k)=1;B(i,j,k)=0.1;
          
             
         end
