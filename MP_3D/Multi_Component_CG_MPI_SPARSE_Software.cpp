@@ -658,7 +658,7 @@ if (wr_per==1)
 					output_psi_b(n,psi,mirX,mirY,mirZ,mir,Solid);
 			//===================================
 			
-			if ((fre_backup>=0) and (n%fre_backup==0))
+			if ((fre_backup>0) and (n%fre_backup==0))
 			        Backup(n,rho,psi,u,f);
 			
 			

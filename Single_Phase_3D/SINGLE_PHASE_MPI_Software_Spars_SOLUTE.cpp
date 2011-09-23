@@ -158,6 +158,12 @@ int FRP[19]={0,0,0,0,0,0,0,1,0,2,0,3,0,4,0,0,0,0,0};
 int FLN[19]={0,0,0,0,0,0,0,0,1,0,2,0,3,0,4,0,0,0,0};
 int RP[5]={1,7,9,11,13};
 int LN[5]={2,8,10,12,14};
+int SYP[5]={3,7,10,15,17};
+int SYN[5]={4,8,9,16,18};
+int SZP[5]={5,11,14,15,18};
+int SZN[5]={6,12,13,16,17};
+int SXP[5]={1,7,9,11,13};
+int SXN[5]={2,8,10,12,14};
 //=========================================
 
 
@@ -498,11 +504,7 @@ if (wr_per==1)
 		comput_macro_variables(rho,u,u0,f,F,fg,Fg,rho_r,rhor,forcex,forcey,forcez,SupInv,Solid,Psi_local);
 
 
-	//if ((1-pre_xp)*(1-pre_xn)*(1-pre_yp)*(1-pre_yn)*(1-pre_zp)*(1-pre_zn)==0)
-	//	boundary_pressure(pre_xp,p_xp,pre_xn,p_xn,pre_yp,p_yp,pre_yn,p_yn,pre_zp,p_zp,pre_zn,p_zn,f,u,rho,Solid);
-		
-	//if ((1-vel_xp)*(1-vel_xn)*(1-vel_yp)*(1-vel_yn)*(1-vel_zp)*(1-vel_zn)==0)
-	//        boundary_velocity(vel_xp,v_xp,vel_xn,v_xn,vel_yp,v_yp,vel_yn,v_yn,vel_zp,v_zp,vel_zn,v_zn,f,rho,u,Solid);
+	
 	
 	if(n%freRe==0)
 		{       
@@ -1520,10 +1522,7 @@ MPI_Barrier(MPI_COMM_WORLD);
 		
                  }
 
-			
-//	if ((n==0) and (rank==0))	
-//		cout<<sendr[1]<<"         lm=   "<<RP[1]<<endl;
-
+		
 
 		
 			
@@ -1665,7 +1664,78 @@ void comput_macro_variables( double* rho,double** u,double** u0,double** f,doubl
 
 }
 
+void Solute_Constant_BC(int sxp,double srho_xp,int sxn, double srho_xn,int syp,double srho_yp,int syn,double srho_yn,int szp,double srho_zp,int szn,double srho_zn,double** F,double* rho)
+{
+int Q=19;
+int rank = MPI :: COMM_WORLD . Get_rank ();
+int mpi_size=MPI :: COMM_WORLD . Get_size ();
+double rho_t,rho_p;
 
+
+if ((syp-1)*(syn-1)==0)
+for (int i=0;i<nx_l;i++)
+	for(int k=0;k<=NZ;k++)	
+	  	{
+		if (yp==1)
+			{
+			rho_t=0;
+			for (int ks=0;ks<19;ks++)
+				rho_t+=F[Solid[i][NY][k]][ks];
+
+			rho_t-=(F[Solid[i][NY][k]][SYP[0]]+F[Solid[i][NY][k]][SYP[1]]+F[Solid[i][NY][k]][SYP[2]]+F[Solid[i][NY][k]][SYP[3]]+F[Solid[i][NY][k]][SYP[4]]);
+			rho_p=(srho_syp-rho_t)/(1/6);
+			F[Solid[i][NY][k]][SYP[0]]=rho_p*/18;			
+			for (int ks=1;ks<=4;ks++)
+				F[Solid[i][NY][k]][SYP[ks]]=rho_p*/36;
+			}
+		        
+		if (yn==1)
+		        {
+			rho_t=0;
+			for (int ks=0;ks<19;ks++)
+				rho_t+=F[Solid[i][0][k]][ks];
+
+			rho_t-=(F[Solid[i][0][k]][SYN[0]]+F[Solid[i][0][k]][SYN[1]]+F[Solid[i][0][k]][SYN[2]]+F[Solid[i][0][k]][SYN[3]]+F[Solid[i][0][k]][SYN[4]]);
+			rho_p=(srho_syn-rho_t)/(1/6);
+			F[Solid[i][0][k]][SYN[0]]=rho_p*/18;			
+			for (int ks=1;ks<=4;ks++)
+				F[Solid[i][0][k]][SYN[ks]]=rho_p*/36;
+			}
+		
+		}
+	        
+if ((zp-1)*(zn-1)==0)
+for (int i=0;i<nx_l;i++)
+	for(int j=0;j<=NY;j++)
+		for (int ks=0;ks<Q;ks++)
+		{
+		if ((zp==1) && (Solid[i][j][NZ]>0))
+		        F[Solid[i][j][NZ]][ks]=feq(ks,rho_zp,u_ls);
+		if ((zn==1) && (Solid[i][j][0]>0))
+		        F[Solid[i][j][0]][ks]=feq(ks,rho_zn,u_ls);
+		}
+
+		
+if ((xp==1) && (rank==mpi_size-1))
+for (int j=0;j<=NY;j++)
+        for (int k=0;k<=NZ;k++)
+		for (int ks=0;ks<Q;ks++)
+		if (Solid[nx_l-1][j][k]>0)
+			F[Solid[nx_l-1][j][k]][ks]=feq(ks,rho_xp,u_ls);
+			
+
+if ((xn==1) && (rank==0))
+for (int j=0;j<=NY;j++)
+	for(int k=0;k<=NZ;k++)
+		for (int ks=0;ks<Q;ks++)		
+		if (Solid[0][j][k]>0)
+			F[Solid[0][j][k]][ks]=feq(ks,rho_xn,u_ls);
+
+       
+
+
+
+}
 
 void boundary_velocity(int xp,double v_xp,int xn, double v_xn,int yp,double v_yp,int yn,double v_yn,int zp,double v_zp,int zn,double v_zn,double** f,double** F,double* rho,double** u,int*** Solid)
 
