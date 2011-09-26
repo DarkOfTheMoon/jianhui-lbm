@@ -1540,7 +1540,7 @@ double ux,uy,uz,nx,ny,nz;
 double usqr,vsqr,eu,ef,cospsi,s_other;
 double F_hat[19],GuoF[19],f_eq[19],u_tmp[3];
 double m_l[19];
-int i,j,m;
+int i,j,m,ind_S;
 int interi,interj,interk,ip,jp,kp;
 
 
@@ -1724,7 +1724,7 @@ if (rank==0)
 		//cout<<i<<" "<<j<<" "<<m<<" /before "<<rhor[ci]<<" nth= "<<n<<"  the ci= "<<ci<<"  rank=  "<<rank<<endl;
 
 
-			C[0]=0;C[1]=0;C[2]=0;
+			C[0]=0;C[1]=0;C[2]=0;ind_S=0;
 	for (int tmpi=0;tmpi<19;tmpi++)
 		{
 		        //cout<<f[ci][tmpi]<<endl;
@@ -1781,7 +1781,7 @@ if (rank==0)
 					}
 				else
 			        	{
-	
+			        	ind_S=1;
 					C[0]+=3.0/dt*w[tmpi]*e[tmpi][0]*psi_solid;
 					C[1]+=3.0/dt*w[tmpi]*e[tmpi][1]*psi_solid;
 					C[2]+=3.0/dt*w[tmpi]*e[tmpi][2]*psi_solid;
@@ -1802,6 +1802,7 @@ if (rank==0)
 			        else
 			                
 			                {
+			                ind_S=1;
 					C[0]+=3.0/dt*w[tmpi]*e[tmpi][0]*psi_solid;
 					C[1]+=3.0/dt*w[tmpi]*e[tmpi][1]*psi_solid;
 					C[2]+=3.0/dt*w[tmpi]*e[tmpi][2]*psi_solid;
@@ -1820,6 +1821,7 @@ if (rank==0)
 			        	}        
 			        else
 			        	{
+                                        ind_S=1;
 			               	C[0]+=3.0/dt*w[tmpi]*e[tmpi][0]*psi_solid;
 					C[1]+=3.0/dt*w[tmpi]*e[tmpi][1]*psi_solid;
 					C[2]+=3.0/dt*w[tmpi]*e[tmpi][2]*psi_solid;
@@ -1831,7 +1833,7 @@ if (rank==0)
 
 		uu=u[ci][0]*u[ci][0]+u[ci][1]*u[ci][1]+u[ci][2]*u[ci][2];
 
-		if (sqrt((rho_r[ci]-rho_b[ci])*(rho_r[ci]-rho_b[ci]))>=0.9)
+		if ((sqrt((rho_r[ci]-rho_b[ci])*(rho_r[ci]-rho_b[ci]))>=0.9) and (ind_S=1))
 		{C[0]=0;C[1]=0;C[2]=0;}
 
 		//C[0]=0;C[1]=0;C[2]=0;

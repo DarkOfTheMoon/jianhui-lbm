@@ -206,8 +206,8 @@ double v_max,error_Per;
 	ifstream fin(argv[1]);
                                                                                fin.getline(dummy, NCHAR);
         fin >> filename;		                		        fin.getline(dummy, NCHAR);
-	fin >> filenamepsi;				        fin.getline(dummy, NCHAR);
-	fin >> NX >> NY >> NZ;				fin.getline(dummy, NCHAR);
+	fin >> filenamepsi;				        		fin.getline(dummy, NCHAR);
+	fin >> NX >> NY >> NZ;						fin.getline(dummy, NCHAR);
 	fin >> n_max;			        		fin.getline(dummy, NCHAR);
 	fin >> reso;				        	fin.getline(dummy, NCHAR);
 	fin >> in_BC;					        fin.getline(dummy, NCHAR);
@@ -305,17 +305,7 @@ if (mirZ==1)
 	NZ=NZ*2+1;
 
 
-//cout<<NX<<"    @@@@@@@@@@asdfa  "<<Zoom<<endl;
-/*
-//*************THIN SOLID BOUNDARY MESH REFINEDMENT**************
-if (Zoom>1)
-	{	
-	NX=(NX)*Zoom;
-	NY=(NY)*Zoom;
-	NZ=(NZ)*Zoom;
-	}
-//***************************************************************
-*/
+
 
 if (Zoom>1)
 	{	
@@ -643,7 +633,7 @@ if (wr_per==1)
 				else
 					output_velocity_b(n,rho,u,mirX,mirY,mirZ,mir,Solid);
 				
-			if ((freVe>=0) and (n%freVe==0))
+			if ((frePsi>=0) and (n%frePsi==0))
 			        if (Out_Mode==1)
 			                output_psi(n,psi,mirX,mirY,mirZ,mir,Solid);
 			        else
