@@ -1535,7 +1535,7 @@ void collision(double* rho,double** u,double** f,double** F,double* psi, double*
 double C[3];
 double g_r[19],g_b[19];
 double rho_0=1.0;
-double lm0,lm1,cc,sum;
+double lm0,lm1,cc,sum,uu;
 double ux,uy,uz,nx,ny,nz;
 double usqr,vsqr,eu,ef,cospsi,s_other;
 double F_hat[19],GuoF[19],f_eq[19],u_tmp[3];
@@ -1829,6 +1829,11 @@ if (rank==0)
 			}
 		}
 
+		uu=u[ci][0]*u[ci][0]+u[ci][1]*u[ci][1]+u[ci][2]*u[ci][2];
+
+		if (sqrt((rho_r[ci]-rho_b[ci])*(rho_r[ci]-rho_b[ci]))>=0.9)
+		{C[0]=0;C[1]=0;C[2]=0;}
+
 		//C[0]=0;C[1]=0;C[2]=0;
 			cc=sqrt(C[0]*C[0]+C[1]*C[1]+C[2]*C[2]);
 			if (cc>0)
@@ -1952,30 +1957,17 @@ if (rank==0)
 		//for(int lm=0;lm<19;lm++)
                 //{
                  eu=e[mi][0]*u[ci][0]+e[mi][1]*u[ci][1]+e[mi][2]*u[ci][2];
-                 g_r[mi]=w[mi]*rho_r[ci]*(1+3*eu);
-                 g_b[mi]=w[mi]*rho_b[ci]*(1+3*eu);
+                 //g_r[mi]=w[mi]*rho_r[ci]*(1+3*eu);
+                 //g_b[mi]=w[mi]*rho_b[ci]*(1+3*eu);
+
+		 g_r[mi]=w[mi]*rho_r[ci]*(1+3*eu+4.5*eu*eu-1.5*uu);
+                 g_b[mi]=w[mi]*rho_b[ci]*(1+3*eu+4.5*eu*eu-1.5*uu);
+		
+			
 		//	cout<<" "<<g_r[lm]<<" "<<g_b[lm]<<"  the number "<<n<<"  vector "<<lm<<endl;
                  }
 
-			
-			//}
-			// ==================   f=M_-1m matrix calculation  =============================
-			//	for (int mi=0; mi<19; mi++)
-			//		{f[ci][mi]=0;
-			//		for (int mj=0; mj<19; mj++)
-			//			f[ci][mi]+=MI[mi][mj]*m_l[mj];
-			//		}
-			//============================================================================
-
-
-		//=======================G streaming=================================================
-            //for(int lm=0;lm<19;lm++)
-             //   {
-             //   eu=e[lm][0]*u[ci][0]+e[lm][1]*u[ci][1]+e[lm][2]*u[ci][2];
-             //    g_r[lm]=w[lm]*rho_r[ci]*(1+3*eu);
-             //    g_b[lm]=w[lm]*rho_b[ci]*(1+3*eu);
-		//	cout<<" "<<g_r[lm]<<" "<<g_b[lm]<<"  the number "<<n<<"  vector "<<lm<<endl;
-             //    }
+		
                  
            if (cc>0)
            for(int kk=1;kk<19;kk+=2)
