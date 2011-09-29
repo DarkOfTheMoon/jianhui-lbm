@@ -3303,7 +3303,7 @@ for(int k=0;k<NZ0;k++)
         for(int j=0; j<NY0; j++)
 		for(int i=0;i<NX0;i++)
 			//for(int k=0;k<=NZ;k++)
-			out<<"		"<<rbuf[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]<<endl;
+			out<<rbuf[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]<<endl;
 	out.close();
 	
 	}
@@ -3528,7 +3528,7 @@ void output_density_b(int m,double* rho,int MirX,int MirY,int MirZ,int mir,int**
         for(int k=0;k<NZ0;k++)
       		for(int j=0; j<NY0; j++)
 			for(int i=0;i<NX0;i++)
-				out<<"		"<<rbuf_rho[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]<<endl;
+				out<<rbuf_rho[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]<<endl;
 
 	out.close();
 				
@@ -3637,7 +3637,7 @@ void output_psi_b(int m,double* psi,int MirX,int MirY,int MirZ,int mir,int*** So
         for(int k=0;k<NZ0;k++)
       		for(int j=0; j<NY0; j++)
 			for(int i=0;i<NX0;i++)
-				out<<"		"<<rbuf_psi[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]<<endl;
+				out<<rbuf_psi[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]<<endl;
 
 	out.close();
 				
@@ -4065,10 +4065,7 @@ void Backup_init(double* rho, double** u, double** f, double** g, double* psi,ch
 			else
 				{gxs=gx;gys=gy;gzs=gz;}
 			
-			//s_v=niu_g+(psi[i]+1.0)/2.0*(niu_l-niu_g);
-			//s_v=1.0/(3*s_v/dt+0.5);
 			
-			//S[9]=s_v;S[11]=s_v;S[13]=s_v;S[14]=s_v;S[15]=s_v;
 	 	
 }
 

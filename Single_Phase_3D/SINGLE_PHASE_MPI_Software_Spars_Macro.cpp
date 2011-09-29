@@ -3016,7 +3016,7 @@ for(int k=0;k<NZ0;k++)
         for(int j=0; j<NY0; j++)
 		for(int i=0;i<NX0;i++)
 			//for(int k=0;k<=NZ;k++)
-			out<<"		"<<rbuf[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]<<endl;
+			out<<rbuf[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]<<endl;
 	out.close();
 	
 	}
@@ -3241,7 +3241,7 @@ void output_density_b(int m,double* rho,int MirX,int MirY,int MirZ,int mir,int**
         for(int k=0;k<NZ0;k++)
       		for(int j=0; j<NY0; j++)
 			for(int i=0;i<NX0;i++)
-				out<<"		"<<rbuf_rho[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]<<endl;
+				out<<rbuf_rho[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]<<endl;
 
 	out.close();
 				

@@ -110,6 +110,10 @@ void boundary_velocity(int,double,int , double ,int ,double ,int ,double ,int ,d
 
 void boundary_pressure(int ,double ,int , double ,int ,double ,int ,double ,int ,double ,int ,double ,double** ,double**,double** ,double* ,int*** );
 
+void Solute_Constant_BC(int,double,int, double,int ,double ,int ,double ,int ,double ,int,double ,double**,int***);
+
+void Solute_ZeroFlux_BC(int,double, int,double,int,double,int,double,int,double,int,double,double**,int***);
+
 void output_velocity(int ,double* ,double** ,int ,int ,int ,int ,int*** );
 
 void output_density(int ,double* ,int ,int ,int ,int ,int*** );	
@@ -158,12 +162,13 @@ int FRP[19]={0,0,0,0,0,0,0,1,0,2,0,3,0,4,0,0,0,0,0};
 int FLN[19]={0,0,0,0,0,0,0,0,1,0,2,0,3,0,4,0,0,0,0};
 int RP[5]={1,7,9,11,13};
 int LN[5]={2,8,10,12,14};
-int SYP[5]={3,7,10,15,17};
-int SYN[5]={4,8,9,16,18};
-int SZP[5]={5,11,14,15,18};
-int SZN[5]={6,12,13,16,17};
-int SXP[5]={1,7,9,11,13};
-int SXN[5]={2,8,10,12,14};
+int SYN[5]={3,7,10,15,17};
+int SYP[5]={4,8,9,16,18};
+int SZN[5]={5,11,14,15,18};
+int SZP[5]={6,12,13,16,17};
+int SXN[5]={1,7,9,11,13};
+int SXP[5]={2,8,10,12,14};
+
 //=========================================
 
 
@@ -177,6 +182,14 @@ double in_vis,p_xp,p_xn,p_yp,p_yn,p_zp,p_zn,niu_l,niu_s,tau_s;
 double inivx,inivy,inivz,v_xp,v_xn,v_yp,v_yn,v_zp,v_zn;
 double error_perm,S_l,gxs,gys,gzs,Gravity;
 double Buoyancy_parameter=1.0;
+double ref_psi;
+
+int sol_c_xp,sol_c_xn,sol_c_yp,sol_c_yn,sol_c_zp,sol_c_zn;
+double c_xp,c_xn,c_yp,c_yn,c_zp,c_zn;
+
+int sol_zf_xp,sol_zf_xn,sol_zf_yp,sol_zf_yn,sol_zf_zp,sol_zf_zn;
+double zf_xp,zf_xn,zf_yp,zf_yn,zf_zp,zf_zn;
+
 
 char outputfile[128]="./";
 
@@ -215,7 +228,7 @@ double v_max;
 	fin >> n_max;					fin.getline(dummy, NCHAR);
 	fin >> reso;					fin.getline(dummy, NCHAR);
 	fin >> in_BC;					fin.getline(dummy, NCHAR);
-	fin >> Buoyancy_parameter;			fin.getline(dummy, NCHAR);
+	fin >> Buoyancy_parameter >>ref_psi;		fin.getline(dummy, NCHAR);
 	fin >> mirX >> mirY >> mirZ;			fin.getline(dummy, NCHAR);
 	fin >> Gravity;					fin.getline(dummy, NCHAR);
 	fin >> gx >> gy >> gz;				fin.getline(dummy, NCHAR);
@@ -225,6 +238,12 @@ double v_max;
 	fin >> vel_xp >> v_xp >> vel_xn >> v_xn;	fin.getline(dummy, NCHAR);
 	fin >> vel_yp >> v_yp >> vel_yn >> v_yn;	fin.getline(dummy, NCHAR);
 	fin >> vel_zp >> v_zp >> vel_zn >> v_zn;	fin.getline(dummy, NCHAR);
+	fin >> sol_c_xp >> c_xp >> sol_c_xn >> c_xn;	fin.getline(dummy, NCHAR);
+	fin >> sol_c_yp >> c_yp >> sol_c_yn >> c_yn;	fin.getline(dummy, NCHAR);
+	fin >> sol_c_zp >> c_zp >> sol_c_zn >> c_zn;	fin.getline(dummy, NCHAR);
+	fin >> sol_zf_xp >> zf_xp >> sol_zf_xn >> zf_xn;	fin.getline(dummy, NCHAR);
+	fin >> sol_zf_yp >> zf_yp >> sol_zf_yn >> zf_yn;	fin.getline(dummy, NCHAR);
+	fin >> sol_zf_zp >> zf_zp >> sol_zf_zn >> zf_zn;	fin.getline(dummy, NCHAR);
 	fin >> niu;					fin.getline(dummy, NCHAR);
 	fin >> niu_s;					fin.getline(dummy, NCHAR);
 	fin >> inivx >> inivy >> inivz;			fin.getline(dummy, NCHAR);
@@ -264,9 +283,11 @@ double v_max;
 	MPI_Bcast(&n_max,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&reso,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 	MPI_Bcast(&in_BC,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&gx,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 	MPI_Bcast(&gy,1,MPI_DOUBLE,0,MPI_COMM_WORLD);MPI_Bcast(&gz,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Bcast(&ref_psi,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+
+
 	MPI_Bcast(&pre_xp,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&p_xp,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 	MPI_Bcast(&pre_xn,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&p_xn,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
-
 	MPI_Bcast(&pre_yp,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&p_yp,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 	MPI_Bcast(&pre_yn,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&p_yn,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 	MPI_Bcast(&pre_zp,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&p_zp,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
@@ -293,7 +314,20 @@ double v_max;
 	MPI_Bcast(&mode_backup_ini,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&backup_psi,128,MPI_CHAR,0,MPI_COMM_WORLD);
 	MPI_Bcast(&backup_f,128,MPI_CHAR,0,MPI_COMM_WORLD);MPI_Bcast(&backup_g,128,MPI_CHAR,0,MPI_COMM_WORLD);
 
-		
+	MPI_Bcast(&sol_c_xp,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&c_xp,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Bcast(&sol_c_xn,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&c_xn,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Bcast(&sol_c_yp,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&c_yp,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Bcast(&sol_c_yn,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&c_yn,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Bcast(&sol_c_zp,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&c_zp,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Bcast(&sol_c_zn,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&c_zn,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Bcast(&sol_zf_xp,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&zf_xp,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Bcast(&sol_zf_xn,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&zf_xn,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Bcast(&sol_zf_yp,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&zf_yp,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Bcast(&sol_zf_yn,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&zf_yn,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Bcast(&sol_zf_zp,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&zf_zp,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Bcast(&sol_zf_zn,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&zf_zn,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+
+	
 int U_max_ref=0;
 
 
@@ -500,6 +534,11 @@ if (wr_per==1)
 	if ((1-vel_xp)*(1-vel_xn)*(1-vel_yp)*(1-vel_yn)*(1-vel_zp)*(1-vel_zn)==0)
 		boundary_velocity(vel_xp,v_xp,vel_xn,v_xn,vel_yp,v_yp,vel_yn,v_yn,vel_zp,v_zp,vel_zn,v_zn,f,F,rho,u,Solid);
 
+	if ((1-sol_c_xp)*(1-sol_c_xn)*(1-sol_c_yp)*(1-sol_c_yn)*(1-sol_c_zp)*(1-sol_c_zn)==0)
+	Solute_Constant_BC(sol_c_xp,c_xp,sol_c_xn,c_xn,sol_c_yp,c_yp,sol_c_yn,c_yn,sol_c_zp,c_zp,sol_c_zn,c_zn,Fg,Solid);
+	
+	if ((1-sol_zf_xp)*(1-sol_zf_xn)*(1-sol_zf_yp)*(1-sol_zf_yn)*(1-sol_zf_zp)*(1-sol_zf_zn)==0)
+	Solute_ZeroFlux_BC(sol_zf_xp,zf_xp,sol_zf_xn,zf_xn,sol_zf_yp,zf_yp,sol_zf_yn,zf_yn,sol_zf_zp,zf_zp,sol_zf_zn,zf_zn,Fg,Solid);
   		 
 		comput_macro_variables(rho,u,u0,f,F,fg,Fg,rho_r,rhor,forcex,forcey,forcez,SupInv,Solid,Psi_local);
 
@@ -1397,7 +1436,7 @@ MPI_Barrier(MPI_COMM_WORLD);
 				m=(int)(SupInv[ci]%(NZ+1));   
 
 			forcex[ci]=gx;
-			forcey[ci]=gy+Gravity*Buoyancy_parameter*rho_r[ci];
+			forcey[ci]=gy+Gravity*Buoyancy_parameter*(rho_r[ci]-ref_psi);
 			forcez[ci]=gz;
 		
 			//=================FORCE TERM_GUO=========================================
@@ -1452,9 +1491,9 @@ MPI_Barrier(MPI_COMM_WORLD);
 				eu=e[mi][0]*u[ci][0]+e[mi][1]*u[ci][1]+e[mi][2]*u[ci][2];
 
                 	//=========================EVOLUTION OF G FOR SIMPLE BOUNDARY========================
-               			g_r[mi]=fg[ci][mi]-(fg[ci][mi]-w[mi]*rho_r[ci]*(1+3*eu))/tau_s;
+               		//	g_r[mi]=fg[ci][mi]-(fg[ci][mi]-w[mi]*rho_r[ci]*(1+3*eu))/tau_s;
 			//=========================EVOLUTION OF G FOR COMPLEX BOUNDARY=======================
-                	//	g_r[mi]=fg[ci][mi]-(fg[ci][mi]-w[mi]*rho_r[ci]*(1+3*eu+4.5*eu*eu-1.5*uu))/tau_s;
+                		g_r[mi]=fg[ci][mi]-(fg[ci][mi]-w[mi]*rho_r[ci]*(1+3*eu+4.5*eu*eu-1.5*uu))/tau_s;
 			//===================================================================================
 
 					}
@@ -1664,7 +1703,11 @@ void comput_macro_variables( double* rho,double** u,double** u0,double** f,doubl
 
 }
 
-void Solute_Constant_BC(int sxp,double srho_xp,int sxn, double srho_xn,int syp,double srho_yp,int syn,double srho_yn,int szp,double srho_zp,int szn,double srho_zn,double** F,double* rho)
+
+
+
+
+void Solute_ZeroFlux_BC(int sxp,double df_sxp, int sxn,double df_sxn,int syp,double df_syp,int syn,double df_syn,int szp,double df_szp,int szn,double df_szn,double** Fg,int*** Solid)
 {
 int Q=19;
 int rank = MPI :: COMM_WORLD . Get_rank ();
@@ -1676,66 +1719,214 @@ if ((syp-1)*(syn-1)==0)
 for (int i=0;i<nx_l;i++)
 	for(int k=0;k<=NZ;k++)	
 	  	{
-		if (yp==1)
+		if (syp==1)
 			{
-			rho_t=0;
-			for (int ks=0;ks<19;ks++)
-				rho_t+=F[Solid[i][NY][k]][ks];
+			rho_t=df_syp;
+			for (int ks=0;ks<=4;ks++)
+				rho_t+=Fg[Solid[i][NY][k]][SYN[ks]];
 
-			rho_t-=(F[Solid[i][NY][k]][SYP[0]]+F[Solid[i][NY][k]][SYP[1]]+F[Solid[i][NY][k]][SYP[2]]+F[Solid[i][NY][k]][SYP[3]]+F[Solid[i][NY][k]][SYP[4]]);
-			rho_p=(srho_syp-rho_t)/(1/6);
-			F[Solid[i][NY][k]][SYP[0]]=rho_p*/18;			
+			rho_p=(rho_t)/(1.0/6.0);
+			Fg[Solid[i][NY][k]][SYP[0]]=rho_p/18.0;			
 			for (int ks=1;ks<=4;ks++)
-				F[Solid[i][NY][k]][SYP[ks]]=rho_p*/36;
+				Fg[Solid[i][NY][k]][SYP[ks]]=rho_p/36.0;
 			}
 		        
-		if (yn==1)
+		if (syn==1)
 		        {
-			rho_t=0;
-			for (int ks=0;ks<19;ks++)
-				rho_t+=F[Solid[i][0][k]][ks];
+			rho_t=df_syn;
+			for (int ks=0;ks<=4;ks++)
+				rho_t+=Fg[Solid[i][0][k]][SYP[ks]];
 
-			rho_t-=(F[Solid[i][0][k]][SYN[0]]+F[Solid[i][0][k]][SYN[1]]+F[Solid[i][0][k]][SYN[2]]+F[Solid[i][0][k]][SYN[3]]+F[Solid[i][0][k]][SYN[4]]);
-			rho_p=(srho_syn-rho_t)/(1/6);
-			F[Solid[i][0][k]][SYN[0]]=rho_p*/18;			
+			rho_p=(rho_t)/(1.0/6.0);
+			Fg[Solid[i][0][k]][SYN[0]]=rho_p/18.0;			
 			for (int ks=1;ks<=4;ks++)
-				F[Solid[i][0][k]][SYN[ks]]=rho_p*/36;
+				Fg[Solid[i][0][k]][SYN[ks]]=rho_p/36.0;
 			}
 		
 		}
 	        
-if ((zp-1)*(zn-1)==0)
+if ((szp-1)*(szn-1)==0)
 for (int i=0;i<nx_l;i++)
 	for(int j=0;j<=NY;j++)
-		for (int ks=0;ks<Q;ks++)
 		{
-		if ((zp==1) && (Solid[i][j][NZ]>0))
-		        F[Solid[i][j][NZ]][ks]=feq(ks,rho_zp,u_ls);
-		if ((zn==1) && (Solid[i][j][0]>0))
-		        F[Solid[i][j][0]][ks]=feq(ks,rho_zn,u_ls);
+		if (szp==1)
+			{
+			rho_t=df_szp;
+			for (int ks=0;ks<=4;ks++)
+				rho_t+=Fg[Solid[i][j][NZ]][SZN[ks]];//######
+
+			rho_p=(rho_t)/(1.0/6.0);//######
+			Fg[Solid[i][j][NZ]][SZP[0]]=rho_p/18.0;//######			
+			for (int ks=1;ks<=4;ks++)
+				Fg[Solid[i][j][NZ]][SZP[ks]]=rho_p/36.0;//######
+			}
+
+		if (szn==1)
+			{
+			rho_t=df_szn;
+			for (int ks=0;ks<=4;ks++)
+				rho_t+=Fg[Solid[i][j][0]][SZP[ks]];//######
+
+			rho_p=(rho_t)/(1.0/6.0);//######
+			Fg[Solid[i][j][0]][SZN[0]]=rho_p/18.0;//######			
+			for (int ks=1;ks<=4;ks++)
+				Fg[Solid[i][j][0]][SZN[ks]]=rho_p/36.0;//######
+			}
+		       
 		}
 
 		
-if ((xp==1) && (rank==mpi_size-1))
+if ((sxp==1) && (rank==mpi_size-1))
 for (int j=0;j<=NY;j++)
         for (int k=0;k<=NZ;k++)
-		for (int ks=0;ks<Q;ks++)
-		if (Solid[nx_l-1][j][k]>0)
-			F[Solid[nx_l-1][j][k]][ks]=feq(ks,rho_xp,u_ls);
+			{
+			rho_t=df_sxp;
+			for (int ks=0;ks<=4;ks++)
+				rho_t+=Fg[Solid[nx_l-1][j][k]][SXN[ks]];//######
+
+			rho_p=(rho_t)/(1.0/6.0);//######
+			Fg[Solid[nx_l-1][j][k]][SXP[0]]=rho_p/18.0;//######			
+			for (int ks=1;ks<=4;ks++)
+				Fg[Solid[nx_l-1][j][k]][SXP[ks]]=rho_p/36.0;//######
+			}
+		
 			
 
-if ((xn==1) && (rank==0))
+if ((sxn==1) && (rank==0))
 for (int j=0;j<=NY;j++)
 	for(int k=0;k<=NZ;k++)
-		for (int ks=0;ks<Q;ks++)		
-		if (Solid[0][j][k]>0)
-			F[Solid[0][j][k]][ks]=feq(ks,rho_xn,u_ls);
+			{
+			rho_t=df_sxn;
+			for (int ks=0;ks<=4;ks++)
+				rho_t+=Fg[Solid[0][j][k]][SXP[ks]];//######
 
+			rho_p=(rho_t)/(1.0/6.0);//######
+			Fg[Solid[0][j][k]][SXN[0]]=rho_p/18.0;//######			
+			for (int ks=1;ks<=4;ks++)
+				Fg[Solid[0][j][k]][SXN[ks]]=rho_p/36.0;//######
+
+			}
        
 
 
 
 }
+
+
+
+void Solute_Constant_BC(int sxp,double srho_sxp,int sxn, double srho_sxn,int syp,double srho_syp,int syn,double srho_syn,int szp,double srho_szp,int szn,double srho_szn,double** Fg,int*** Solid)
+{
+int Q=19;
+int rank = MPI :: COMM_WORLD . Get_rank ();
+int mpi_size=MPI :: COMM_WORLD . Get_size ();
+double rho_t,rho_p;
+
+
+if ((syp-1)*(syn-1)==0)
+for (int i=0;i<nx_l;i++)
+	for(int k=0;k<=NZ;k++)	
+	  	{
+		if (syp==1)
+			{
+			rho_t=0;
+			for (int ks=0;ks<19;ks++)
+				rho_t+=Fg[Solid[i][NY][k]][ks];
+
+			rho_t-=(Fg[Solid[i][NY][k]][SYP[0]]+Fg[Solid[i][NY][k]][SYP[1]]+Fg[Solid[i][NY][k]][SYP[2]]+Fg[Solid[i][NY][k]][SYP[3]]+Fg[Solid[i][NY][k]][SYP[4]]);
+			rho_p=(srho_syp-rho_t)/(1.0/6.0);
+			Fg[Solid[i][NY][k]][SYP[0]]=rho_p/18.0;			
+			for (int ks=1;ks<=4;ks++)
+				Fg[Solid[i][NY][k]][SYP[ks]]=rho_p/36.0;
+			}
+		        
+		if (syn==1)
+		        {
+			rho_t=0;
+			for (int ks=0;ks<19;ks++)
+				rho_t+=Fg[Solid[i][0][k]][ks];
+
+			rho_t-=(Fg[Solid[i][0][k]][SYN[0]]+Fg[Solid[i][0][k]][SYN[1]]+Fg[Solid[i][0][k]][SYN[2]]+Fg[Solid[i][0][k]][SYN[3]]+Fg[Solid[i][0][k]][SYN[4]]);
+			rho_p=(srho_syn-rho_t)/(1.0/6.0);
+			Fg[Solid[i][0][k]][SYN[0]]=rho_p/18.0;			
+			for (int ks=1;ks<=4;ks++)
+				Fg[Solid[i][0][k]][SYN[ks]]=rho_p/36.0;
+			}
+		
+		}
+	        
+if ((szp-1)*(szn-1)==0)
+for (int i=0;i<nx_l;i++)
+	for(int j=0;j<=NY;j++)
+		{
+		if (szp==1)
+			{
+			rho_t=0;
+			for (int ks=0;ks<19;ks++)
+				rho_t+=Fg[Solid[i][j][NZ]][ks];//######
+
+			rho_t-=(Fg[Solid[i][j][NZ]][SZP[0]]+Fg[Solid[i][j][NZ]][SZP[1]]+Fg[Solid[i][j][NZ]][SZP[2]]+Fg[Solid[i][j][NZ]][SZP[3]]+Fg[Solid[i][j][NZ]][SZP[4]]);//######
+			rho_p=(srho_szp-rho_t)/(1.0/6.0);//######
+			Fg[Solid[i][j][NZ]][SZP[0]]=rho_p/18.0;//######			
+			for (int ks=1;ks<=4;ks++)
+				Fg[Solid[i][j][NZ]][SZP[ks]]=rho_p/36.0;//######
+			}
+
+		if (szn==1)
+			{
+			rho_t=0;
+			for (int ks=0;ks<19;ks++)
+				rho_t+=Fg[Solid[i][j][0]][ks];//######
+
+			rho_t-=(Fg[Solid[i][j][0]][SZN[0]]+Fg[Solid[i][j][0]][SZN[1]]+Fg[Solid[i][j][0]][SZN[2]]+Fg[Solid[i][j][0]][SZN[3]]+Fg[Solid[i][j][0]][SZN[4]]);//######
+			rho_p=(srho_szn-rho_t)/(1.0/6.0);//######
+			Fg[Solid[i][j][0]][SZN[0]]=rho_p/18.0;//######			
+			for (int ks=1;ks<=4;ks++)
+				Fg[Solid[i][j][0]][SZN[ks]]=rho_p/36.0;//######
+			}
+		       
+		}
+
+		
+if ((sxp==1) && (rank==mpi_size-1))
+for (int j=0;j<=NY;j++)
+        for (int k=0;k<=NZ;k++)
+			{
+			rho_t=0;
+			for (int ks=0;ks<19;ks++)
+				rho_t+=Fg[Solid[nx_l-1][j][k]][ks];//######
+
+			rho_t-=(Fg[Solid[nx_l-1][j][k]][SXP[0]]+Fg[Solid[nx_l-1][j][k]][SXP[1]]+Fg[Solid[nx_l-1][j][k]][SXP[2]]+Fg[Solid[nx_l-1][j][k]][SXP[3]]+Fg[Solid[nx_l-1][j][k]][SXP[4]]);//######
+			rho_p=(srho_sxp-rho_t)/(1.0/6.0);//######
+			Fg[Solid[nx_l-1][j][k]][SXP[0]]=rho_p/18.0;//######			
+			for (int ks=1;ks<=4;ks++)
+				Fg[Solid[nx_l-1][j][k]][SXP[ks]]=rho_p/36.0;//######
+			}
+		
+			
+
+if ((sxn==1) && (rank==0))
+for (int j=0;j<=NY;j++)
+	for(int k=0;k<=NZ;k++)
+			{
+			rho_t=0;
+			for (int ks=0;ks<19;ks++)
+				rho_t+=Fg[Solid[0][j][k]][ks];//######
+
+			rho_t-=(Fg[Solid[0][j][k]][SXN[0]]+Fg[Solid[0][j][k]][SXN[1]]+Fg[Solid[0][j][k]][SXN[2]]+Fg[Solid[0][j][k]][SXN[3]]+Fg[Solid[0][j][k]][SXN[4]]);//######
+			rho_p=(srho_sxn-rho_t)/(1.0/6.0);//######
+			Fg[Solid[0][j][k]][SXN[0]]=rho_p/18.0;//######			
+			for (int ks=1;ks<=4;ks++)
+				Fg[Solid[0][j][k]][SXN[ks]]=rho_p/36.0;//######
+
+			}
+       
+
+
+
+}
+
+
+
 
 void boundary_velocity(int xp,double v_xp,int xn, double v_xn,int yp,double v_yp,int yn,double v_yn,int zp,double v_zp,int zn,double v_zn,double** f,double** F,double* rho,double** u,int*** Solid)
 
@@ -3185,11 +3376,11 @@ if (mir==0)
 	out<<"POINT_DATA     "<<NX0*NY0*NZ0<<endl;
 	out<<"SCALARS sample_scalars float"<<endl;
 	out<<"LOOKUP_TABLE default"<<endl;
-for(int k=0;k<NZ0;k++)
+for(int k=0;k<NZ0;k++) 
         for(int j=0; j<NY0; j++)
 		for(int i=0;i<NX0;i++)
 			//for(int k=0;k<=NZ;k++)
-			out<<"		"<<rbuf[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]<<endl;
+			out<<rbuf[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]<<endl;
 	out.close();
 	
 	}
@@ -3418,7 +3609,7 @@ void output_density_b(int m,double* rho,int MirX,int MirY,int MirZ,int mir,int**
         for(int k=0;k<NZ0;k++)
       		for(int j=0; j<NY0; j++)
 			for(int i=0;i<NX0;i++)
-				out<<"		"<<rbuf_rho[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]<<endl;
+				out<<rbuf_rho[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]<<endl;
 
 	out.close();
 				
@@ -3525,7 +3716,7 @@ void output_psi_b(int m,double* psi,int MirX,int MirY,int MirZ,int mir,int*** So
         for(int k=0;k<NZ0;k++)
       		for(int j=0; j<NY0; j++)
 			for(int i=0;i<NX0;i++)
-				out<<"		"<<rbuf_psi[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]<<endl;
+				out<<rbuf_psi[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]<<endl;
 
 	out.close();
 

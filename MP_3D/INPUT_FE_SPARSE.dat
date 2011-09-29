@@ -15,7 +15,7 @@ phase.dat       	:Initial components distribution
 0 0.0 0 0.0		:Velocity Boundary in Z direction (Format detials can be found within this file)
 0.1			:Viscosity (Component A 1)
 0.1			:Viscosity (Component B -1)
-0.3			:Contact Angle Cos(Theta)
+-0.4			:Contact Angle Cos(Theta)
 0.04			:Surface tension (Kappa)
 0.4			:Mobility
 0.0 0.0 0.0		:initial velocity for x,y,z
