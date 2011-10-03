@@ -1,7 +1,7 @@
 
 
 clear;
-lx=200;
+lx=30;
 ly=60;
 lz=3;
 
@@ -59,7 +59,7 @@ for k=1:lz
     for j=1:ly
         for i=1:lx
            
-                A(i,j,k)=1;B(i,j,k)=0.1;
+                A(i,j,k)=0.21;B(i,j,k)=0.1;
          
             
         end

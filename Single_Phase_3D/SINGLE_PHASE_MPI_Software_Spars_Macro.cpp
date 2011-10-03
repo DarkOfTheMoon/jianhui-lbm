@@ -140,6 +140,11 @@ void Backup_init(double* rho, double** u, double** f, double*, double*, double*,
 int e[19][3]=
 {{0,0,0},{1,0,0,},{-1,0,0},{0,1,0},{0,-1,0},{0,0,1},{0,0,-1},{1,1,0},{-1,1,0},{1,-1,0},{-1,-1,0},{0,1,1},
 {0,-1,1},{0,1,-1},{0,-1,-1},{1,0,1},{-1,0,1},{1,0,-1},{-1,0,-1}};
+
+double elat[19][3]=
+{{0,0,0},{1,0,0,},{-1,0,0},{0,1,0},{0,-1,0},{0,0,1},{0,0,-1},{1,1,0},{-1,1,0},{1,-1,0},{-1,-1,0},{0,1,1},
+{0,-1,1},{0,1,-1},{0,-1,-1},{1,0,1},{-1,0,1},{1,0,-1},{-1,0,-1}};
+
 double w[19]={1.0/3.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0};
 
 int LR[19]={0,2,1,4,3,6,5,10,9,8,7,14,13,12,11,18,17,16,15};
@@ -149,7 +154,8 @@ int RP[5]={1,7,9,15,17};
 int LN[5]={2,8,10,16,18};
 
 
-int n,nx_l,n_max,in_BC,freRe,freDe,freVe,Par_Geo,Par_nx,Par_ny,Par_nz;
+
+int n,nx_l,n_max,in_BC,freRe,freDe,freVe,Par_Geo,Par_nx,Par_ny,Par_nz,lattice_v;
 int Zoom;
 
 
@@ -157,7 +163,7 @@ int wr_per,pre_xp,pre_xn,pre_yp,pre_yn,pre_zp,pre_zn,fre_backup;
 int vel_xp,vel_xn,vel_yp,vel_yn,vel_zp,vel_zn,Sub_BC,Out_Mode,mode_backup_ini;
 double in_vis,p_xp,p_xn,p_yp,p_yn,p_zp,p_zn;
 double inivx,inivy,inivz,v_xp,v_xn,v_yp,v_yn,v_zp,v_zn;
-double error_perm,F_epsilon;
+double error_perm,F_epsilon,c_s,c_s2,dx_input,dt_input,lat_c;
 
 char outputfile[128]="./";
 
@@ -212,6 +218,7 @@ int dif,ts,th,tm;
 							fin.getline(dummy, NCHAR);
 	fin >> Par_Geo >> Par_nx >> Par_ny >> Par_nz;	fin.getline(dummy, NCHAR);
 	fin >> Zoom;					fin.getline(dummy, NCHAR);
+	fin >> lattice_v >> dx_input >> dt_input;	fin.getline(dummy, NCHAR);
 	fin >> outputfile;				fin.getline(dummy, NCHAR);
 	fin >> Sub_BC;					fin.getline(dummy, NCHAR);
 	fin >> fre_backup;                        	fin.getline(dummy, NCHAR);
@@ -263,7 +270,10 @@ int dif,ts,th,tm;
 	MPI_Bcast(&Sub_BC,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&Out_Mode,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&backup_rho,128,MPI_CHAR,0,MPI_COMM_WORLD);MPI_Bcast(&F_epsilon,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 	
-      
+      	MPI_Bcast(&lattice_v,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&dx_input,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Bcast(&dt_input,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+
+
 int U_max_ref=0;
 
 
@@ -542,7 +552,7 @@ if (wr_per==1)
 				else
 					output_velocity_b(n,rho,u,mirX,mirY,mirZ,mir,Solid);
 				
-			if ((fre_backup>=0) and (n%fre_backup==0))
+			if ((fre_backup>=0) and (n%fre_backup==0) and (n>0))
 			        Backup(n,rho,u,f);
 			        
 			if(error!=error) {cout<<"PROGRAM STOP"<<endl;break;};
@@ -1084,9 +1094,8 @@ double feq(int k,double rho,double u[3],double epsi)
 
 	double eu,uv,feq;
         double c2,c4;
-	double c=1;
-	c2=c*c;c4=c2*c2;
-	eu=(e[k][0]*u[0]+e[k][1]*u[1]+e[k][2]*u[2]);
+	c2=lat_c*lat_c;c4=c2*c2;
+	eu=(elat[k][0]*u[0]+elat[k][1]*u[1]+elat[k][2]*u[2]);
 	uv=(u[0]*u[0]+u[1]*u[1]+u[2]*u[2]);
 	feq=w[k]*rho*(1.0+3.0*eu/c2+4.5*eu*eu/(c4*epsi)-1.5*uv/(c2*epsi));
 	return feq;
@@ -1122,9 +1131,17 @@ void init(double* rho, double** u, double** f,double* PerC, double* PorC, double
 	
 			
 	rho0=1.0;dt=1.0/Zoom;dx=1.0/Zoom;
+
+	if (lattice_v==1)
+		{dx=dx_input;dt=dt_input;}
+
+	lat_c=dx/dt;
+	c_s=lat_c/sqrt(3);
+	c_s2=lat_c*lat_c/3;
  	
 	niu=in_vis;
-	tau_f=3.0*niu/dt+0.5;
+	tau_f=niu/(c_s2*dt)+0.5;
+	//tau_f=3.0*niu/dt+0.5;
 	
 	s_v=1/tau_f;
       
@@ -1152,7 +1169,10 @@ void init(double* rho, double** u, double** f,double* PerC, double* PorC, double
 	S[17]=s_other;
 	S[18]=s_other;
 
-
+	if (lattice_v==1)
+	for (int i=0;i<19;i++)
+		for (int j=0;j<3;j++)
+		elat[i][j]=e[i][j]*lat_c;
 
 			
 	for (int i=1;i<=Count;i++)	
@@ -1329,8 +1349,8 @@ int i,j,m,ip,jp,kp;
 			//=================FORCE TERM_GUO=========================================
 			for (int k=0;k<19;k++)
 			{	
-			lm0=((e[k][0]-u[ci][0])*forcex[ci]+(e[k][1]-u[ci][1])*forcey[ci]+(e[k][2]-u[ci][2])*forcez[ci])*3;
-			lm1=(e[k][0]*u[ci][0]+e[k][1]*u[ci][1]+e[k][2]*u[ci][2])*(e[k][0]*forcex[ci]+e[k][1]*forcey[ci]+e[k][2]*forcez[ci])*9;
+			lm0=((elat[k][0]-u[ci][0]/PorC[ci])*forcex[ci]+(elat[k][1]-u[ci][1]/PorC[ci])*forcey[ci]+(elat[k][2]-u[ci][2]/PorC[ci])*forcez[ci])/c_s2;
+			lm1=(elat[k][0]*u[ci][0]+elat[k][1]*u[ci][1]+elat[k][2]*u[ci][2])*(elat[k][0]*forcex[ci]+elat[k][1]*forcey[ci]+elat[k][2]*forcez[ci])/(c_s2*c_s2);
 			lm1/=PorC[ci];
 			GuoF[k]=w[k]*(lm0+lm1);
 			//GuoF[k]=0.0;
@@ -1532,15 +1552,15 @@ void comput_macro_variables( double* rho,double** u,double** u0,double** f,doubl
 					
 					f[i][k]=F[i][k];
 					rho[i]+=f[i][k];
-					u[i][0]+=e[k][0]*f[i][k];
-					u[i][1]+=e[k][1]*f[i][k];
-					u[i][2]+=e[k][2]*f[i][k];
+					u[i][0]+=elat[k][0]*f[i][k];
+					u[i][1]+=elat[k][1]*f[i][k];
+					u[i][2]+=elat[k][2]*f[i][k];
 					}
 				
 
-				u[i][0]=(u[i][0]+dt*rho[i]*gx/2)/rho[i];
-				u[i][1]=(u[i][1]+dt*rho[i]*gy/2)/rho[i];
-				u[i][2]=(u[i][2]+dt*rho[i]*gz/2)/rho[i];
+				u[i][0]=(u[i][0]+dt*PorC[i]*rho[i]*gx/2)/rho[i];
+				u[i][1]=(u[i][1]+dt*PorC[i]*rho[i]*gy/2)/rho[i];
+				u[i][2]=(u[i][2]+dt*PorC[i]*rho[i]*gz/2)/rho[i];
 
 				c0=0.5*(1+PorC[i]*dt/2*in_vis/PerC[i]);
 				c1=PorC[i]*dt/2*F_epsilon/(sqrt(PerC[i]));
@@ -3300,7 +3320,7 @@ void Backup(int m,double* rho,double** u, double** f)
 	for (int i=1;i<=Count;i++)
 	{
 	        for (int j=0;j<19;j++)
-        		out<<f[i][j];
+        		out<<f[i][j]<<" ";
         out<<endl;
         }
                 
@@ -3343,15 +3363,28 @@ void Backup_init(double* rho, double** u, double** f, double* PerC, double* PorC
 	
 	rho0=1.0;dt=1.0/Zoom;dx=1.0/Zoom;
  	uMax=0.0;
-	
+
+	if (lattice_v==1)
+		{dx=dx_input;dt=dt_input;}
+
+	lat_c=dx/dt;
+	c_s=lat_c/sqrt(3);
+	c_s2=lat_c*lat_c/3;
+
 	niu=in_vis;
-	tau_f=3.0*niu/dt+0.5;
+	tau_f=niu/(c_s2*dt)+0.5;
+	//tau_f=3.0*niu/dt+0.5;
 	
 	s_v=1/tau_f;
        
 	double s_other=8*(2-s_v)/(8-s_v);
 	double uu;
 
+
+	if (lattice_v==1)
+	for (int i=0;i<19;i++)
+		for (int j=0;j<3;j++)
+		elat[i][j]=e[i][j]*lat_c;
 
 	S[0]=0;
 	S[1]=s_v;
@@ -3378,6 +3411,7 @@ void Backup_init(double* rho, double** u, double** f, double* PerC, double* PorC
 	
  	ostringstream name2;
 	name2<<backup_velocity<<"."<<rank<<".input";
+
 	ostringstream name;
 	name<<backup_rho<<"."<<rank<<".input";
 	
@@ -3403,16 +3437,15 @@ void Backup_init(double* rho, double** u, double** f, double* PerC, double* PorC
 	
         	for(int i=1;i<=Count;i++)
         	        fin >> f[i][0] >> f[i][1] >> f[i][2] >> f[i][3] >> f[i][4] >> f[i][5] >>f[i][6] >> f[i][7] >> f[i][8] >> f[i][9] >> f[i][10] >> f[i][11] >> f[i][12] >> f[i][13] >> f[i][14] >> f[i][15] >> f[i][16] >>f[i][17] >> f[i][18] ;
-  
        fin.close();
        
-      
+     MPI_Barrier(MPI_COMM_WORLD);
 			
 	for (int i=1;i<=Count;i++)	
 				
 		{ 	
 				
-			//cout<<i<<"    @@@@@@@@@@@@@@    "<<endl;
+			
 
 			ip=(int)(SupInv[i]/((NY+1)*(NZ+1)))+disp[rank];
 			jp=(int)((SupInv[i]%((NY+1)*(NZ+1)))/(NZ+1));
@@ -3421,11 +3454,11 @@ void Backup_init(double* rho, double** u, double** f, double* PerC, double* PorC
 			ip=(ip-ip%Zoom)/Zoom;
 			jp=(jp-jp%Zoom)/Zoom;
 			kp=(kp-kp%Zoom)/Zoom;
- 			//cout<<ip<<"   "<<jp<<"  "<<kp<<"    "<<disp[rank]<<endl;
+ 			
 
 
 			ijk=ip*((NY+1)/Zoom)*((NZ+1)/Zoom)+jp*((NZ+1)/Zoom)+kp;
-			//cout<<ijk<<"      @@@@@@@@      "<<Per_Int[10700]<<endl;
+			
 
 
 			PerC[i]=Per_Int[ijk];

@@ -90,7 +90,7 @@ double meq[19];
 
 
 
-double uMax,c,Re,dx,dy,Lx,Ly,dt,rho0,P0,tau_f,niu,error,SFx,SFy,reso;
+double uMax,lat_c,c_s,c_s2,Re,dx,dy,Lx,Ly,dt,rho0,P0,tau_f,niu,error,SFx,SFy,reso;
 
 void Read_Rock(int***,double*,char[128]);
 
@@ -149,6 +149,11 @@ void Backup_init(double* rho, double** u, double** f, char[128], char[128],char[
 int e[19][3]=
 {{0,0,0},{1,0,0,},{-1,0,0},{0,1,0},{0,-1,0},{0,0,1},{0,0,-1},{1,1,0},{-1,1,0},{1,-1,0},{-1,-1,0},{0,1,1},
 {0,-1,1},{0,1,-1},{0,-1,-1},{1,0,1},{-1,0,1},{1,0,-1},{-1,0,-1}};
+
+double elat[19][3]=
+{{0,0,0},{1,0,0,},{-1,0,0},{0,1,0},{0,-1,0},{0,0,1},{0,0,-1},{1,1,0},{-1,1,0},{1,-1,0},{-1,-1,0},{0,1,1},
+{0,-1,1},{0,1,-1},{0,-1,-1},{1,0,1},{-1,0,1},{1,0,-1},{-1,0,-1}};
+
 double w[19]={1.0/3.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0};
 
 int LR[19]={0,2,1,4,3,6,5,10,9,8,7,14,13,12,11,18,17,16,15};
@@ -162,9 +167,9 @@ int n,nx_l,n_max,in_BC,PerDir,freRe,freDe,freVe,Par_Geo,Par_nx,Par_ny,Par_nz;
 int Zoom;
 
 
-int wr_per,pre_xp,pre_xn,pre_yp,pre_yn,pre_zp,pre_zn,fre_backup;
+int wr_per,pre_xp,pre_xn,pre_yp,pre_yn,pre_zp,pre_zn,fre_backup,lattice_v;
 int vel_xp,vel_xn,vel_yp,vel_yn,vel_zp,vel_zn,Sub_BC,Out_Mode,mode_backup_ini;
-double in_vis,p_xp,p_xn,p_yp,p_yn,p_zp,p_zn;
+double in_vis,p_xp,p_xn,p_yp,p_yn,p_zp,p_zn,dx_input,dt_input;
 double inivx,inivy,inivz,v_xp,v_xn,v_yp,v_yn,v_zp,v_zn;
 double error_perm;
 
@@ -221,13 +226,14 @@ int dif,ts,th,tm;
 							fin.getline(dummy, NCHAR);
 	fin >> Par_Geo >> Par_nx >> Par_ny >> Par_nz;	fin.getline(dummy, NCHAR);
 	fin >> Zoom;					fin.getline(dummy, NCHAR);
+	fin >> lattice_v >> dx_input >> dt_input;	fin.getline(dummy, NCHAR);
 	fin >> outputfile;				fin.getline(dummy, NCHAR);
-	fin >> Sub_BC;				fin.getline(dummy, NCHAR);
-	fin >> fre_backup;                        fin.getline(dummy, NCHAR);
-	fin >>mode_backup_ini;                fin.getline(dummy, NCHAR);
-	fin >> backup_rho;                        fin.getline(dummy, NCHAR);
-	fin >> backup_velocity;                fin.getline(dummy, NCHAR);
-	fin >> backup_f;                        fin.getline(dummy, NCHAR);
+	fin >> Sub_BC;					fin.getline(dummy, NCHAR);
+	fin >> fre_backup;                        	fin.getline(dummy, NCHAR);
+	fin >>mode_backup_ini;                		fin.getline(dummy, NCHAR);
+	fin >> backup_rho;                   		fin.getline(dummy, NCHAR);
+	fin >> backup_velocity;                		fin.getline(dummy, NCHAR);
+	fin >> backup_f;                        	fin.getline(dummy, NCHAR);
 	
 	//fin >> EI;					fin.getline(dummy, NCHAR);
 	//fin >> q_p;					fin.getline(dummy, NCHAR);
@@ -269,6 +275,11 @@ int dif,ts,th,tm;
 	MPI_Bcast(&Sub_BC,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&Out_Mode,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&backup_rho,128,MPI_CHAR,0,MPI_COMM_WORLD);MPI_Bcast(&backup_velocity,128,MPI_CHAR,0,MPI_COMM_WORLD);
 	MPI_Bcast(&backup_f,128,MPI_CHAR,0,MPI_COMM_WORLD);
+
+	MPI_Bcast(&lattice_v,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&dx_input,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Bcast(&dt_input,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	
+		
       
 int U_max_ref=0;
 
@@ -589,7 +600,7 @@ if (wr_per==1)
 				else
 					output_velocity_b(n,rho,u,mirX,mirY,mirZ,mir,Solid);
 				
-			if ((fre_backup>=0) and (n%fre_backup==0))
+			if ((fre_backup>=0) and (n%fre_backup==0) and (n>0))
 			        Backup(n,rho,u,f);
 			        
 			if(error!=error) {cout<<"PROGRAM STOP"<<endl;break;};
@@ -1104,9 +1115,18 @@ void init(double* rho, double** u, double** f)
 
 	
 	rho0=1.0;dt=1.0/Zoom;dx=1.0/Zoom;
+	
+	if (lattice_v==1)
+		{dx=dx_input;dt=dt_input;}
+
+	lat_c=dx/dt;
+	c_s=lat_c/sqrt(3);
+	c_s2=lat_c*lat_c/3;
+
  	
 	niu=in_vis;
-	tau_f=3.0*niu/dt+0.5;
+	tau_f=niu/(c_s2*dt)+0.5;
+	//tau_f=3.0*niu/dt+0.5;
 	
 	s_v=1/tau_f;
       
@@ -1155,6 +1175,10 @@ void init(double* rho, double** u, double** f)
 	S[17]=s_other;
 	S[18]=s_other;
 
+	if (lattice_v==1)
+	for (int i=0;i<19;i++)
+		for (int j=0;j<3;j++)
+		elat[i][j]=e[i][j]*lat_c;
 
 
 
@@ -1217,10 +1241,9 @@ void init(double* rho, double** u, double** f)
 double feq(int k,double rho, double u[3])
 {
 	double eu,uv,feq;
-        double c2,c4;
-	double c=1;
-	c2=c*c;c4=c2*c2;
-	eu=(e[k][0]*u[0]+e[k][1]*u[1]+e[k][2]*u[2]);
+        double c2,c4;
+	c2=lat_c*lat_c;c4=c2*c2;
+	eu=(elat[k][0]*u[0]+elat[k][1]*u[1]+elat[k][2]*u[2]);
 	uv=(u[0]*u[0]+u[1]*u[1]+u[2]*u[2]);// WITH FORCE TERM:GRAVITY IN X DIRECTION
 	feq=w[k]*rho*(1.0+3.0*eu/c2+4.5*eu*eu/c4-1.5*uv/c2);
 	return feq;
@@ -1992,8 +2015,8 @@ int i,j,m,ip,jp,kp;
 			//=================FORCE TERM_GUO=========================================
 			for (int k=0;k<19;k++)
 			{	
-			lm0=((e[k][0]-u[ci][0])*gx+(e[k][1]-u[ci][1])*gy+(e[k][2]-u[ci][2])*gz)*3;
-			lm1=(e[k][0]*u[ci][0]+e[k][1]*u[ci][1]+e[k][2]*u[ci][2])*(e[k][0]*gx+e[k][1]*gy+e[k][2]*gz)*9;
+			lm0=((elat[k][0]-u[ci][0])*gx+(elat[k][1]-u[ci][1])*gy+(elat[k][2]-u[ci][2])*gz)/c_s2;
+			lm1=(elat[k][0]*u[ci][0]+elat[k][1]*u[ci][1]+elat[k][2]*u[ci][2])*(elat[k][0]*gx+elat[k][1]*gy+elat[k][2]*gz)/(c_s2*c_s2);
 			GuoF[k]=w[k]*(lm0+lm1);
 			//GuoF[k]=0.0;
 			}
@@ -2311,9 +2334,9 @@ void comput_macro_variables( double* rho,double** u,double** u0,double** f,doubl
 					
 					f[i][k]=F[i][k];
 					rho[i]+=f[i][k];
-					u[i][0]+=e[k][0]*f[i][k];
-					u[i][1]+=e[k][1]*f[i][k];
-					u[i][2]+=e[k][2]*f[i][k];
+					u[i][0]+=elat[k][0]*f[i][k];
+					u[i][1]+=elat[k][1]*f[i][k];
+					u[i][2]+=elat[k][2]*f[i][k];
 					}
 				
 
@@ -4000,8 +4023,10 @@ if (mir==0)
 			}
 			
 	out.close();
-	
-/*	ostringstream name2;
+
+//===================================================================
+/*	
+	ostringstream name2;
 	name2<<"LBM_velocity_"<<m<<".out";
 	ofstream out2(name2.str().c_str());
 	for (int j=0;j<=NY;j++)
@@ -4011,9 +4036,12 @@ if (mir==0)
 		else
 			out2<<0.0<<endl;
 		}
+
 */
-	
+//=================================================================	
 	}
+
+
 
 	if (rank==root_rank)
 		{		
@@ -4170,7 +4198,7 @@ void Backup(int m,double* rho,double** u, double** f)
 	for (int i=1;i<=Count;i++)
 	{
 	        for (int j=0;j<19;j++)
-        		out<<f[i][j];
+        		out<<f[i][j]<<" ";
         out<<endl;
         }
                 
@@ -4283,14 +4311,26 @@ void Backup_init(double* rho, double** u, double** f, char backup_rho[128], char
 	
 	rho0=1.0;dt=1.0/Zoom;dx=1.0/Zoom;
  	uMax=0.0;
-	
+
+	if (lattice_v==1)
+		{dx=dx_input;dt=dt_input;}
+
+	lat_c=dx/dt;
+	c_s=lat_c/sqrt(3);
+	c_s2=lat_c*lat_c/3;
+
 	niu=in_vis;
-	tau_f=3.0*niu/dt+0.5;
+	tau_f=niu/(c_s2*dt)+0.5;
+	//tau_f=3.0*niu/dt+0.5;
 	
 	s_v=1/tau_f;
        
 	double s_other=8*(2-s_v)/(8-s_v);
 	
+	if (lattice_v==1)
+	for (int i=0;i<19;i++)
+		for (int j=0;j<3;j++)
+		elat[i][j]=e[i][j]*lat_c;
 
 	S[0]=0;
 	S[1]=s_v;
@@ -4341,7 +4381,7 @@ void Backup_init(double* rho, double** u, double** f, char backup_rho[128], char
        fin.open(name4.str().c_str());
 	
         	for(int i=1;i<=Count;i++)
-        	        fin >> f[i][0] >> f[i][1] >> f[i][2] >> f[i][3] >> f[i][4] >> f[i][5] >>f[i][6] >> f[i][7] >> f[i][8] >> f[i][9] >> f[i][10] >> f[i][11] >> f[i][12] >> f[i][13] >> f[i][14] >> f[i][15] >> f[i][16] >>f[i][17] >> f[i][18] ;
+        	        fin >> f[i][0] >> f[i][1] >> f[i][2] >> f[i][3] >> f[i][4] >> f[i][5] >>f[i][6] >> f[i][7] >> f[i][8] >> f[i][9] >> f[i][10] >> f[i][11] >> f[i][12] >> f[i][13] >> f[i][14] >> f[i][15] >> f[i][16] >>f[i][17] >> f[i][18];
   
        fin.close();
        
@@ -4350,3 +4390,4 @@ void Backup_init(double* rho, double** u, double** f, char backup_rho[128], char
 
 	 	
 }
+

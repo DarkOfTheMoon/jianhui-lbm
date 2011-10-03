@@ -101,6 +101,7 @@ double M[19][19]=
 
 double MI[19][19];
 
+double M_c[19];
 
 
 
@@ -173,13 +174,13 @@ void Backup_init(double* , double** , double** ,double* ,double* , double* , dou
 void Backup(int ,double*, double*, double**, double**);
 
 
-/*
-int e[19][3]=
-{{0,0,0},{1,0,0,},{-1,0,0},{0,1,0},{0,-1,0},{0,0,1},{0,0,-1},{1,1,0},{-1,1,0},{1,-1,0},{-1,-1,0},{0,1,1},
-{0,-1,1},{0,1,-1},{0,-1,-1},{1,0,1},{-1,0,1},{1,0,-1},{-1,0,-1}};
-*/
+
 
 int e[19][3]=
+{{0,0,0},{1,0,0},{-1,0,0},{0,1,0},{0,-1,0},{0,0,1},{0,0,-1},{1,1,0},{-1,-1,0},{1,-1,0},{-1,1,0},{1,0,1},
+{-1,0,-1},{1,0,-1},{-1,0,1},{0,1,1},{0,-1,-1},{0,1,-1},{0,-1,1}};
+
+double elat[19][3]=
 {{0,0,0},{1,0,0},{-1,0,0},{0,1,0},{0,-1,0},{0,0,1},{0,0,-1},{1,1,0},{-1,-1,0},{1,-1,0},{-1,1,0},{1,0,1},
 {-1,0,-1},{1,0,-1},{-1,0,1},{0,1,1},{0,-1,-1},{0,1,-1},{0,-1,1}};
 
@@ -198,14 +199,14 @@ int LN[5]={2,8,10,12,14};
 
 
 int n,nx_l,n_max,in_BC,PerDir,freRe,freDe,freVe,frePsi,Par_Geo,Par_nx,Par_ny,Par_nz;
-int Zoom;
+int Zoom,lattice_v;
 
 
 int wr_per,pre_xp,pre_xn,pre_yp,pre_yn,pre_zp,pre_zn,stab,stab_time,fre_backup;
 int vel_xp,vel_xn,vel_yp,vel_yn,vel_zp,vel_zn,Sub_BC,Out_Mode,mode_backup_ini;
 double in_vis,p_xp,p_xn,p_yp,p_yn,p_zp,p_zn,niu_l,niu_g,ContactAngle_parameter,CapA;
 double inivx,inivy,inivz,v_xp,v_xn,v_yp,v_yn,v_zp,v_zn,Re_l,Re_g;
-double error_Per,Permeability,psi_solid,S_l,gxs,gys,gzs;
+double error_Per,Permeability,psi_solid,S_l,gxs,gys,gzs,c_s,c_s2,dx_input,dt_input,lat_c;
 
 
 char outputfile[128]="./";
@@ -271,6 +272,7 @@ double v_max,error_Per;
 							fin.getline(dummy, NCHAR);
 	fin >> Par_Geo >> Par_nx >> Par_ny >> Par_nz;	fin.getline(dummy, NCHAR);
 	fin >> Zoom;					fin.getline(dummy, NCHAR);
+	fin >> lattice_v >> dx_input >> dt_input;	fin.getline(dummy, NCHAR);
 	fin >> outputfile;				fin.getline(dummy, NCHAR);
 	fin >> Sub_BC;					fin.getline(dummy, NCHAR);
 	fin >> stab >> stab_time;			fin.getline(dummy, NCHAR);
@@ -322,6 +324,10 @@ double v_max,error_Per;
 	MPI_Bcast(&backup_rho,128,MPI_CHAR,0,MPI_COMM_WORLD);MPI_Bcast(&backup_velocity,128,MPI_CHAR,0,MPI_COMM_WORLD);
 	MPI_Bcast(&mode_backup_ini,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&backup_psi,128,MPI_CHAR,0,MPI_COMM_WORLD);
 	MPI_Bcast(&backup_f,128,MPI_CHAR,0,MPI_COMM_WORLD);
+
+	MPI_Bcast(&lattice_v,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&dx_input,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Bcast(&dt_input,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+
 
 
 	
@@ -658,7 +664,7 @@ if (wr_per==1)
 					output_psi_b(n,psi,mirX,mirY,mirZ,mir,Solid);
 			//===================================
 			
-			if ((fre_backup>0) and (n%fre_backup==0))
+			if ((fre_backup>0) and (n%fre_backup==0)  and (n>0))
 			        Backup(n,rho,psi,u,f);
 			
 			
@@ -1188,16 +1194,24 @@ void init(double* rho, double** u, double** f,double* psi,double* rho_r, double*
 
 	
 	double usqr,vsqr;
-
+	double c2,c4;
 	
 	rho0=1.0;dt=1.0/Zoom;dx=1.0/Zoom;
  
-	
+	if (lattice_v==1)
+		{dx=dx_input;dt=dt_input;}
+
+	lat_c=dx/dt;
+	c_s=lat_c/sqrt(3);
+	c_s2=lat_c*lat_c/3;
+
+	c2=lat_c*lat_c;c4=c2*c2;
 	
 	
 	niu=in_vis;
-	tau_f=3.0*niu/dt+0.5;
-
+	
+	//tau_f=3.0*niu/dt+0.5;
+	tau_f=niu/(c_s2*dt)+0.5;
 	s_v=1/tau_f;
         
 	double pr; //raduis of the obstacles
@@ -1226,14 +1240,49 @@ void init(double* rho, double** u, double** f,double* psi,double* rho_r, double*
 	S[18]=s_other;
 
 
+	if (lattice_v==1)
+	{
+	
+	M_c[0]=1.0;
+	M_c[1]=lat_c*lat_c;
+	M_c[2]=lat_c*lat_c*lat_c*lat_c;
+	M_c[3]=lat_c;
+	M_c[4]=lat_c*lat_c*lat_c;
+	M_c[5]=lat_c;
+	M_c[6]=lat_c*lat_c*lat_c;
+	M_c[7]=lat_c;	
+	M_c[8]=lat_c*lat_c*lat_c;
+	M_c[9]=lat_c*lat_c;
+	M_c[10]=lat_c*lat_c*lat_c*lat_c;
+	M_c[11]=lat_c*lat_c;
+	M_c[12]=lat_c*lat_c*lat_c*lat_c;
+	M_c[13]=lat_c*lat_c;
+	M_c[14]=lat_c*lat_c;
+	M_c[15]=lat_c*lat_c;
+	M_c[16]=lat_c*lat_c*lat_c;
+	M_c[17]=lat_c*lat_c*lat_c;
+	M_c[18]=lat_c*lat_c*lat_c;
+
+
+
+	for (int i=0;i<19;i++)
+		for (int j=0;j<3;j++)
+		elat[i][j]=e[i][j]*lat_c;
+
+	for (int i=0;i<19;i++)
+		for (int j=0;j<19;j++)
+		M[i][j]*=M_c[i];
+
+	Comput_MI(M,MI);
+
+	}
+
+
+
 	psi_solid=ContactAngle_parameter;
 
-	// for(int i=0;i<=NX;i++)	
-	//	for(int j=0;j<=NY;j++)
-	//		for(int k=0;k<=NZ;k++)
-	//
-	//		Solid[i][j][k]=0;
 	
+
 	for (int i=1;i<=Count;i++)	
 			
 		{
@@ -1249,10 +1298,7 @@ void init(double* rho, double** u, double** f,double* psi,double* rho_r, double*
 			rho_b[i]=rho[i]-rho_r[i];
 			rhor[i]=0;
 			rhob[i]=0;
-			//cout<<rho_r[i]<<"      "<<rho_b[i]<<endl;
 			
-
-			//***********************************************************************
 
 			//forcex[i]=gx;
 			//forcey[i]=gy;
@@ -1290,11 +1336,11 @@ double feq(int k,double rho, double u[3])
 	double ux,uy,uz;
 	double eu,uv,feq;
         double c2,c4,ls;
-	double c=1;
+	
 	double rho_0=1.0;
 	
-	c2=c*c;c4=c2*c2;
-	eu=(e[k][0]*u[0]+e[k][1]*u[1]+e[k][2]*u[2]);
+	c2=lat_c*lat_c;c4=c2*c2;
+	eu=(elat[k][0]*u[0]+elat[k][1]*u[1]+elat[k][2]*u[2]);
 	uv=(u[0]*u[0]+u[1]*u[1]+u[2]*u[2]);// WITH FORCE TERM:GRAVITY IN X DIRECTION
 	feq=w[k]*rho*(1.0+3.0*eu/c2+4.5*eu*eu/c4-1.5*uv/c2);
 
@@ -1542,7 +1588,9 @@ double F_hat[19],GuoF[19],f_eq[19],u_tmp[3];
 double m_l[19];
 int i,j,m,ind_S;
 int interi,interj,interk,ip,jp,kp;
+double c2,c4;
 
+	c2=lat_c*lat_c;c4=c2*c2;
 
 
 	int* Gcl = new int[mpi_size];
@@ -1774,17 +1822,17 @@ if (rank==0)
 			{
 			        if (Sl[interj*(NZ+1)+interk]>0)
 					{
-					C[0]+=3.0/dt*w[tmpi]*e[tmpi][0]*recvl_psi[Sl[interj*(NZ+1)+interk]-1];
-					C[1]+=3.0/dt*w[tmpi]*e[tmpi][1]*recvl_psi[Sl[interj*(NZ+1)+interk]-1];
-					C[2]+=3.0/dt*w[tmpi]*e[tmpi][2]*recvl_psi[Sl[interj*(NZ+1)+interk]-1];
+					C[0]+=3.0/(lat_c*lat_c*dt)*w[tmpi]*elat[tmpi][0]*recvl_psi[Sl[interj*(NZ+1)+interk]-1];
+					C[1]+=3.0/(lat_c*lat_c*dt)*w[tmpi]*elat[tmpi][1]*recvl_psi[Sl[interj*(NZ+1)+interk]-1];
+					C[2]+=3.0/(lat_c*lat_c*dt)*w[tmpi]*elat[tmpi][2]*recvl_psi[Sl[interj*(NZ+1)+interk]-1];
 
 					}
 				else
 			        	{
 			        	ind_S=1;
-					C[0]+=3.0/dt*w[tmpi]*e[tmpi][0]*psi_solid;
-					C[1]+=3.0/dt*w[tmpi]*e[tmpi][1]*psi_solid;
-					C[2]+=3.0/dt*w[tmpi]*e[tmpi][2]*psi_solid;
+					C[0]+=3.0/(lat_c*lat_c*dt)*w[tmpi]*elat[tmpi][0]*psi_solid;
+					C[1]+=3.0/(lat_c*lat_c*dt)*w[tmpi]*elat[tmpi][1]*psi_solid;
+					C[2]+=3.0/(lat_c*lat_c*dt)*w[tmpi]*elat[tmpi][2]*psi_solid;
 			              
 			        	}
 			}
@@ -1794,18 +1842,18 @@ if (rank==0)
 			{
 			        if (Sr[interj*(NZ+1)+interk]>0)
 			        	{
-					C[0]+=3.0/dt*w[tmpi]*e[tmpi][0]*recvr_psi[Sr[interj*(NZ+1)+interk]-1];
-					C[1]+=3.0/dt*w[tmpi]*e[tmpi][1]*recvr_psi[Sr[interj*(NZ+1)+interk]-1];
-					C[2]+=3.0/dt*w[tmpi]*e[tmpi][2]*recvr_psi[Sr[interj*(NZ+1)+interk]-1];
+					C[0]+=3.0/(lat_c*lat_c*dt)*w[tmpi]*elat[tmpi][0]*recvr_psi[Sr[interj*(NZ+1)+interk]-1];
+					C[1]+=3.0/(lat_c*lat_c*dt)*w[tmpi]*elat[tmpi][1]*recvr_psi[Sr[interj*(NZ+1)+interk]-1];
+					C[2]+=3.0/(lat_c*lat_c*dt)*w[tmpi]*elat[tmpi][2]*recvr_psi[Sr[interj*(NZ+1)+interk]-1];
 
 			        	}
 			        else
 			                
 			                {
 			                ind_S=1;
-					C[0]+=3.0/dt*w[tmpi]*e[tmpi][0]*psi_solid;
-					C[1]+=3.0/dt*w[tmpi]*e[tmpi][1]*psi_solid;
-					C[2]+=3.0/dt*w[tmpi]*e[tmpi][2]*psi_solid;
+					C[0]+=3.0/(lat_c*lat_c*dt)*w[tmpi]*elat[tmpi][0]*psi_solid;
+					C[1]+=3.0/(lat_c*lat_c*dt)*w[tmpi]*elat[tmpi][1]*psi_solid;
+					C[2]+=3.0/(lat_c*lat_c*dt)*w[tmpi]*elat[tmpi][2]*psi_solid;
       			                }
       			}
       			
@@ -1815,16 +1863,16 @@ if (rank==0)
 			{
 			        if (Solid[interi][interj][interk]>0)
 			        	{
-					C[0]+=3.0/dt*w[tmpi]*e[tmpi][0]*psi[Solid[interi][interj][interk]];
-					C[1]+=3.0/dt*w[tmpi]*e[tmpi][1]*psi[Solid[interi][interj][interk]];
-					C[2]+=3.0/dt*w[tmpi]*e[tmpi][2]*psi[Solid[interi][interj][interk]];
+					C[0]+=3.0/(lat_c*lat_c*dt)*w[tmpi]*elat[tmpi][0]*psi[Solid[interi][interj][interk]];
+					C[1]+=3.0/(lat_c*lat_c*dt)*w[tmpi]*elat[tmpi][1]*psi[Solid[interi][interj][interk]];
+					C[2]+=3.0/(lat_c*lat_c*dt)*w[tmpi]*elat[tmpi][2]*psi[Solid[interi][interj][interk]];
 			        	}        
 			        else
 			        	{
                                         ind_S=1;
-			               	C[0]+=3.0/dt*w[tmpi]*e[tmpi][0]*psi_solid;
-					C[1]+=3.0/dt*w[tmpi]*e[tmpi][1]*psi_solid;
-					C[2]+=3.0/dt*w[tmpi]*e[tmpi][2]*psi_solid;
+			               	C[0]+=3.0/(lat_c*lat_c*dt)*w[tmpi]*elat[tmpi][0]*psi_solid;
+					C[1]+=3.0/(lat_c*lat_c*dt)*w[tmpi]*elat[tmpi][1]*psi_solid;
+					C[2]+=3.0/(lat_c*lat_c*dt)*w[tmpi]*elat[tmpi][2]*psi_solid;
 			        	}
 			
 			
@@ -1847,8 +1895,8 @@ if (rank==0)
 			//=================FORCE TERM_GUO=========================================
 			for (int k=0;k<19;k++)
 			{	
-			lm0=((e[k][0]-u[ci][0])*gxs+(e[k][1]-u[ci][1])*gys+(e[k][2]-u[ci][2])*gzs)*3;
-			lm1=(e[k][0]*u[ci][0]+e[k][1]*u[ci][1]+e[k][2]*u[ci][2])*(e[k][0]*gxs+e[k][1]*gys+e[k][2]*gzs)*9;
+			lm0=((elat[k][0]-u[ci][0])*gxs+(elat[k][1]-u[ci][1])*gys+(elat[k][2]-u[ci][2])*gzs)/c_s2;
+			lm1=(elat[k][0]*u[ci][0]+elat[k][1]*u[ci][1]+elat[k][2]*u[ci][2])*(elat[k][0]*gxs+elat[k][1]*gys+elat[k][2]*gzs)/(c_s2*c_s2);
 			GuoF[k]=w[k]*(lm0+lm1);
 			//GuoF[k]=0.0;
 			}
@@ -1875,7 +1923,7 @@ if (rank==0)
 			
 			
 			s_v=niu_g+(psi[ci]+1.0)/2.0*(niu_l-niu_g);
-			s_v=1.0/(3*s_v/dt+0.5);
+			s_v=1.0/(s_v/(c_s2*dt)+0.5);
 			s_other=8*(2-s_v)/(8-s_v);
 			
 	//cout<<"@@@@@@@@@   "<<s_v<<"  "<<C[0]<<"   "<<C[1]<<"  "<<C[2]<<endl;
@@ -1958,12 +2006,12 @@ if (rank==0)
 		//=======================G streaming=================================================
 		//for(int lm=0;lm<19;lm++)
                 //{
-                 eu=e[mi][0]*u[ci][0]+e[mi][1]*u[ci][1]+e[mi][2]*u[ci][2];
-                 //g_r[mi]=w[mi]*rho_r[ci]*(1+3*eu);
-                 //g_b[mi]=w[mi]*rho_b[ci]*(1+3*eu);
+                 eu=elat[mi][0]*u[ci][0]+elat[mi][1]*u[ci][1]+elat[mi][2]*u[ci][2];
+                 //g_r[mi]=w[mi]*rho_r[ci]*(1+3*eu/c2);
+                 //g_b[mi]=w[mi]*rho_b[ci]*(1+3*eu/c2);
 
-		 g_r[mi]=w[mi]*rho_r[ci]*(1+3*eu+4.5*eu*eu-1.5*uu);
-                 g_b[mi]=w[mi]*rho_b[ci]*(1+3*eu+4.5*eu*eu-1.5*uu);
+		 g_r[mi]=w[mi]*rho_r[ci]*(1+3*eu/c2+4.5*eu*eu/c4-1.5*uu/c2);
+                 g_b[mi]=w[mi]*rho_b[ci]*(1+3*eu/c2+4.5*eu*eu/c4-1.5*uu/c2);
 		
 			
 		//	cout<<" "<<g_r[lm]<<" "<<g_b[lm]<<"  the number "<<n<<"  vector "<<lm<<endl;
@@ -1974,7 +2022,7 @@ if (rank==0)
            if (cc>0)
            for(int kk=1;kk<19;kk+=2)
                 {
-                ef=e[kk][0]*C[0]+e[kk][1]*C[1]+e[kk][2]*C[2];
+                ef=elat[kk][0]*C[0]+elat[kk][1]*C[1]+elat[kk][2]*C[2];
                 cospsi=g_r[kk]<g_r[kk+1]?g_r[kk]:g_r[kk+1];
                 cospsi=cospsi<g_b[kk]?cospsi:g_b[kk];
                 cospsi=cospsi<g_b[kk+1]?cospsi:g_b[kk+1];
@@ -2199,9 +2247,9 @@ void comput_macro_variables( double* rho,double** u,double** u0,double** f,doubl
 					
 					f[i][k]=F[i][k];
 					rho[i]+=f[i][k];
-					u[i][0]+=e[k][0]*f[i][k];
-					u[i][1]+=e[k][1]*f[i][k];
-					u[i][2]+=e[k][2]*f[i][k];
+					u[i][0]+=elat[k][0]*f[i][k];
+					u[i][1]+=elat[k][1]*f[i][k];
+					u[i][2]+=elat[k][2]*f[i][k];
 					}
 				
 				rho_r[i]=rhor[i];
@@ -4448,13 +4496,23 @@ void Backup_init(double* rho, double** u, double** f,double* psi,double* rho_r, 
 	
 	
 	double usqr,vsqr,eu;
-
+	double c2,c4;
 	
 	rho0=1.0;dt=1.0/Zoom;dx=1.0/Zoom;
  	uMax=0.0;
-	
+
+	if (lattice_v==1)
+		{dx=dx_input;dt=dt_input;}
+
+	lat_c=dx/dt;
+	c_s=lat_c/sqrt(3);
+	c_s2=lat_c*lat_c/3;
+
+	c2=lat_c*lat_c;c4=c2*c2;
+
 	niu=in_vis;
-	tau_f=3.0*niu/dt+0.5;
+	tau_f=niu/(c_s2*dt)+0.5;
+	//tau_f=3.0*niu/dt+0.5;
 	
 	
 	s_v=1/tau_f;
@@ -4482,7 +4540,44 @@ void Backup_init(double* rho, double** u, double** f,double* psi,double* rho_r, 
 	S[17]=s_other;
 	S[18]=s_other;
 	
+	if (lattice_v==1)
+	{
 	
+	M_c[0]=1.0;
+	M_c[1]=lat_c*lat_c;
+	M_c[2]=lat_c*lat_c*lat_c*lat_c;
+	M_c[3]=lat_c;
+	M_c[4]=lat_c*lat_c*lat_c;
+	M_c[5]=lat_c;
+	M_c[6]=lat_c*lat_c*lat_c;
+	M_c[7]=lat_c;	
+	M_c[8]=lat_c*lat_c*lat_c;
+	M_c[9]=lat_c*lat_c;
+	M_c[10]=lat_c*lat_c*lat_c*lat_c;
+	M_c[11]=lat_c*lat_c;
+	M_c[12]=lat_c*lat_c*lat_c*lat_c;
+	M_c[13]=lat_c*lat_c;
+	M_c[14]=lat_c*lat_c;
+	M_c[15]=lat_c*lat_c;
+	M_c[16]=lat_c*lat_c*lat_c;
+	M_c[17]=lat_c*lat_c*lat_c;
+	M_c[18]=lat_c*lat_c*lat_c;
+
+
+
+	for (int i=0;i<19;i++)
+		for (int j=0;j<3;j++)
+		elat[i][j]=e[i][j]*lat_c;
+
+	for (int i=0;i<19;i++)
+		for (int j=0;j<19;j++)
+		M[i][j]*=M_c[i];
+
+	Comput_MI(M,MI);
+
+	}
+
+
 	psi_solid=ContactAngle_parameter;
 	
 	
