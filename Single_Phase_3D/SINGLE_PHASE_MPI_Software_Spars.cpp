@@ -181,12 +181,13 @@ int main(int argc , char *argv [])
 MPI :: Init (argc , argv );
 MPI_Status status ;
 
-double start , finish,remain;
+double start , finish,remain,elaps;
 
 int rank = MPI :: COMM_WORLD . Get_rank ();
 int para_size=MPI :: COMM_WORLD . Get_size ();
 
 int dif,ts,th,tm;
+int tse,the,tme;
  
 
 	MPI_Barrier(MPI_COMM_WORLD);
@@ -523,6 +524,12 @@ if (wr_per==1)
 			th=int(remain/3600);
 			tm=int((remain-th*3600)/60);
 			ts=int(remain-(th*3600+tm*60));
+
+			elaps=finish-start;
+			the=int(elaps/3600);
+			tme=int((elaps-the*3600)/60);
+			tse=int(elaps-(the*3600+tme*60));
+
 			
 			ofstream fin(FileName,ios::app);
 			fin<<"The"<<n<<"th computation result:"<<endl;
@@ -538,7 +545,7 @@ if (wr_per==1)
 		//===============================================================================================
 			fin<<"The max relative error of velocity is: "
 				<<setiosflags(ios::scientific)<<error<<endl;
-			fin<<"Elapsed time is "<< finish-start <<" seconds"<<endl;
+			fin<<"Elapsed time is "<< the<<"h"<<tme<<"m"<<tse<<"s"<<endl;
 			fin<<"The expected completion time is "<<th<<"h"<<tm<<"m"<<ts<<"s"<<endl;
 			fin<<endl;
 			fin.close();
@@ -583,7 +590,7 @@ if (wr_per==1)
 		//===============================================================================================
 			cout<<"The max relative error of uv is: "
 				<<setiosflags(ios::scientific)<<error<<endl;
-			cout<<"Elapsed time is "<< finish-start <<" seconds"<<endl;
+			cout<<"Elapsed time is "<<the<<"h"<<tme<<"m"<<tse<<"s"<<endl;
 			cout<<"The expected completion time is "<<th<<"h"<<tm<<"m"<<ts<<"s"<<endl;
 			cout<<endl;
 			}
@@ -642,10 +649,10 @@ if (wr_per==1)
 	MPI_Barrier(MPI_COMM_WORLD);
 	if(rank==0)
 			{
-    			cout<<"Elapsed time is "<< finish-start <<" seconds"<<endl;
+    			cout<<"Elapsed time is "<< the<<"h"<<tme<<"m"<<tse<<"s"<<endl;
     			cout<<"Accuracy: "<<MPI_Wtick()<<" Second"<<endl;
 			ofstream fin(FileName,ios::app);
-			fin<<"Elapsed time is "<< finish-start <<" seconds"<<endl;
+			fin<<"Elapsed time is "<< the<<"h"<<tme<<"m"<<tse<<"s"<<endl;
 			fin<<"Accuracy: "<<MPI_Wtick()<<" Second"<<endl;
 			}
 

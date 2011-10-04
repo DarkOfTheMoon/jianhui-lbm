@@ -209,6 +209,11 @@ int rank = MPI :: COMM_WORLD . Get_rank ();
 int para_size=MPI :: COMM_WORLD . Get_size ();
 
 int dif,th,tm,ts;
+
+int tse,the,tme;
+double elaps;
+
+
 double Per_l[3],Per_g[3];
 double v_max;
 
@@ -572,6 +577,11 @@ if (wr_per==1)
 			th=int(remain/3600);
 			tm=int((remain-th*3600)/60);
 			ts=int(remain-(th*3600+tm*60));
+
+			elaps=finish-start;
+			the=int(elaps/3600);
+			tme=int((elaps-the*3600)/60);
+			tse=int(elaps-(the*3600+tme*60));
 		//==============================================================================================
 		        fin<<"The Maximum velocity is: "<<setprecision(6)<<u_max<<"   Re="<<Re<<endl;
 			
@@ -580,7 +590,7 @@ if (wr_per==1)
 				<<setiosflags(ios::scientific)<<error<<endl;
 			fin<<"The permiability is: "<<Permia[0]*reso*reso*1000<<", "<<Permia[1]*reso*reso*1000<<", "<<Permia[2]*reso*reso*1000<<endl;
 			fin<<"The relative error of permiability computing is: "<<error_perm<<endl;
-			fin<<"Elapsed time is "<< finish-start <<" seconds"<<endl;
+			fin<<"Elapsed time is "<< the<<"h"<<tme<<"m"<<tse<<"s"<<endl;
 			fin<<"The expected completion time is "<<th<<"h"<<tm<<"m"<<ts<<"s"<<endl;
 			fin<<endl;
 			fin.close();
@@ -628,7 +638,7 @@ if (wr_per==1)
 				<<setiosflags(ios::scientific)<<error<<endl;
 			
 			cout<<"The relative error of permiability computing is: "<<error_perm<<endl;
-			cout<<"Elapsed time is "<< finish-start <<" seconds"<<endl;
+			cout<<"Elapsed time is "<< the<<"h"<<tme<<"m"<<tse<<"s"<<endl;
 			cout<<"The expected completion time is "<<th<<"h"<<tm<<"m"<<ts<<"s"<<endl;
 			cout<<endl;
 			}
@@ -708,10 +718,10 @@ if (wr_per==1)
 	MPI_Barrier(MPI_COMM_WORLD);
 	if(rank==0)
 			{
-    			cout<<"Elapsed time is "<< finish-start <<" seconds"<<endl;
+    			cout<<"Elapsed time is "<< the<<"h"<<tme<<"m"<<tse<<"s"<<endl;
     			cout<<"Accuracy: "<<MPI_Wtick()<<" Second"<<endl;
 			ofstream fin(FileName,ios::app);
-			fin<<"Elapsed time is "<< finish-start <<" seconds"<<endl;
+			fin<<"Elapsed time is "<< the<<"h"<<tme<<"m"<<tse<<"s"<<endl;
 			fin<<"Accuracy: "<<MPI_Wtick()<<" Second"<<endl;
 			}
 
