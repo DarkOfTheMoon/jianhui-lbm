@@ -583,7 +583,7 @@ if (wr_per==1)
 			tme=int((elaps-the*3600)/60);
 			tse=int(elaps-(the*3600+tme*60));
 		//==============================================================================================
-		        fin<<"The Maximum velocity is: "<<setprecision(6)<<u_max<<"   Re="<<Re<<endl;
+		        fin<<"The Maximum velocity is: "<<setprecision(6)<<u_max<<"   Re="<<Re<<"     Courant Number="<<u_max*dt/dx<<endl;
 			
 		//===============================================================================================
 			fin<<"The max relative error of velocity is: "
@@ -632,7 +632,7 @@ if (wr_per==1)
 			cout<<"The Density of point(NX/2,NY/2,NZ/2) is: "<<setprecision(6)
 				<<rho[Solid[((NX+1)/para_size/2)][NY/2][NZ/2]]<<endl;
 			cout<<"The permiability is: "<<Permia[0]*reso*reso*1000<<", "<<Permia[1]*reso*reso*1000<<", "<<Permia[2]*reso*reso*1000<<endl;
-			cout<<"The Maximum velocity is: "<<setprecision(6)<<u_max<<"   Re="<<Re<<endl;
+			cout<<"The Maximum velocity is: "<<setprecision(6)<<u_max<<"   Re="<<Re<<"     Courant Number="<<u_max*dt/dx<<endl;
 			
 			cout<<"The max relative error of uv is: "
 				<<setiosflags(ios::scientific)<<error<<endl;
@@ -3984,13 +3984,13 @@ double Comput_Perm(double** u,double* Permia,int PerDIr)
 	switch(PerDIr)
 		{
 		case 1:
-			dp=abs(p_xp-p_xn);break;
+			dp=abs(p_xp-p_xn)*c_s2/(NX+1)/dx;break;
 		case 2:
-			dp=abs(p_yp-p_yn);break;
+			dp=abs(p_yp-p_yn)*c_s2/(NY+1)/dx;break;
 		case 3:
-			dp=abs(p_zp-p_zn);break;
+			dp=abs(p_zp-p_zn)*c_s2/(NZ+1)/dx;break;
 		default:
-			dp=abs(p_xp-p_xn);
+			dp=abs(p_xp-p_xn)*c_s2/(NX+1)/dx;
 		}
 		
 		

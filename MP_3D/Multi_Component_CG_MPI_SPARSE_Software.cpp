@@ -579,7 +579,7 @@ if (wr_per==1)
 
 		//==============================================================================================
 		        fin<<"The Maximum velocity is: "<<setprecision(6)<<u_max<<"   Re_l="<<Re_l<<"   Re_g="<<Re_g<<endl;
-			
+			fin<<"     Courant Number="<<u_max*dt/dx<<endl;
 		//===============================================================================================
 			fin<<"The max relative error of velocity is: "
 				<<setiosflags(ios::scientific)<<error<<endl;
@@ -642,7 +642,7 @@ if (wr_per==1)
 				<<rho[Solid[((NX+1)/para_size/2)][NY/2][NZ/2]]<<endl;
 			
 			cout<<"The Maximum velocity is: "<<setprecision(6)<<u_max<<"   Re_l="<<Re_l<<"   Re_g="<<Re_g<<endl;
-			
+			cout<<"     Courant Number="<<u_max*dt/dx<<endl;
 			cout<<"The max relative error of uv is: "
 				<<setiosflags(ios::scientific)<<error<<endl;
 			cout<<"The relative permeability of component 1 is "<<Per_l[0]*reso*reso*1000/Permeability<<", "<<Per_l[1]*reso*reso*1000/Permeability<<", "<<Per_l[2]*reso*reso*1000/Permeability<<endl;
@@ -4354,13 +4354,13 @@ double Comput_Perm(double* psi,double** u,double* Per_l,double* Per_g,int PerDIr
 	switch(PerDIr)
 		{
 		case 1:
-			dp=abs(p_xp-p_xn);break;
+			dp=abs(p_xp-p_xn)*c_s2/(NX+1)/dx;break;
 		case 2:
-			dp=abs(p_yp-p_yn);break;
+			dp=abs(p_yp-p_yn)*c_s2/(NY+1)/dx;break;
 		case 3:
-			dp=abs(p_zp-p_zn);break;
+			dp=abs(p_zp-p_zn)*c_s2/(NZ+1)/dx;break;
 		default:
-			dp=abs(p_xp-p_xn);
+			dp=abs(p_xp-p_xn)*c_s2/(NX+1)/dx;
 		}
 		
 		

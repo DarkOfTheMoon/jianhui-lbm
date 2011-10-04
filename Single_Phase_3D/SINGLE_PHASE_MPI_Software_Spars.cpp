@@ -98,7 +98,7 @@ void tests();
 
 void init_Sparse(int***,int***,int*, int*);
 
-void init(double*, double**, double**);
+void init(double*, double**, double**, int***);
 
 void periodic_streaming(double** ,double** ,int* ,int***,int*, int*,double*, double**);
 
@@ -434,7 +434,7 @@ if (Zoom>1)
 	}
 
 if (mode_backup_ini==0)
-	init(rho,u,f);
+	init(rho,u,f,Solid);
 else
         Backup_init(rho,u,f,backup_rho,backup_velocity,backup_f);
 
@@ -498,17 +498,9 @@ if (wr_per==1)
 	
 	if ((1-vel_xp)*(1-vel_xn)*(1-vel_yp)*(1-vel_yn)*(1-vel_zp)*(1-vel_zn)==0)
 		boundary_velocity(vel_xp,v_xp,vel_xn,v_xn,vel_yp,v_yp,vel_yn,v_yn,vel_zp,v_zp,vel_zn,v_zn,f,F,rho,u,Solid);
-
-	//if (in_IMR==1)
-	//	comput_macro_variables_IMR(rho,u,u0,f,F,SupInv,Solid,forcex,forcey,forcez,n,porosity,&gx,&gy,&gz);
-	//else
+
   		comput_macro_variables(rho,u,u0,f,F,SupInv,Solid); 
-
-	//if ((1-pre_xp)*(1-pre_xn)*(1-pre_yp)*(1-pre_yn)*(1-pre_zp)*(1-pre_zn)==0)
-	//	boundary_pressure(pre_xp,p_xp,pre_xn,p_xn,pre_yp,p_yp,pre_yn,p_yn,pre_zp,p_zp,pre_zn,p_zn,f,u,rho,Solid);
-		
-	//if ((1-vel_xp)*(1-vel_xn)*(1-vel_yp)*(1-vel_yn)*(1-vel_zp)*(1-vel_zn)==0)
-	//        boundary_velocity(vel_xp,v_xp,vel_xn,v_xn,vel_yp,v_yp,vel_yn,v_yn,vel_zp,v_zp,vel_zn,v_zn,f,rho,u,Solid);
+
 	
 	if(n%freRe==0)
 		{       
@@ -540,7 +532,7 @@ if (wr_per==1)
 
 		//==============================================================================================
 			Re=u_ave*(NY+1)/(1.0/3.0*(1/s_v-0.5));
-			fin<<"The Maximum velocity is: "<<setprecision(6)<<u_max<<"   Re="<<Re<<endl;
+			fin<<"The Maximum velocity is: "<<setprecision(6)<<u_max<<"   Re="<<Re<<"     Courant Number="<<u_max*dt/dx<<endl;
 			
 		//===============================================================================================
 			fin<<"The max relative error of velocity is: "
@@ -585,7 +577,7 @@ if (wr_per==1)
 		//==============================================================================================
 			
 			Re=u_ave*(NY+1)/(1.0/3.0*(1/s_v-0.5));
-			cout<<"The Maximum velocity is: "<<setprecision(6)<<u_max<<"   Re="<<Re<<endl;
+			cout<<"The Maximum velocity is: "<<setprecision(6)<<u_max<<"   Re="<<Re<<"     Courant Number="<<u_max*dt/dx<<endl;
 			
 		//===============================================================================================
 			cout<<"The max relative error of uv is: "
@@ -1113,11 +1105,12 @@ MPI_Barrier(MPI_COMM_WORLD);
 
 
 
-void init(double* rho, double** u, double** f)
+void init(double* rho, double** u, double** f,int*** Solid)
 {	
       
 
-
+//	int rank = MPI :: COMM_WORLD . Get_rank ();
+//	int mpi_size=MPI :: COMM_WORLD . Get_size ();
 	
 
 	
@@ -1139,29 +1132,7 @@ void init(double* rho, double** u, double** f)
       
 	double s_other=8*(2-s_v)/(8-s_v);
 	double u_tmp[3];
-/*
-	S[0]=s_v;
-	S[1]=s_v;
-	S[2]=s_v;
-	S[3]=s_v;
-	S[4]=s_v;
-	S[5]=s_v;
-	S[6]=s_v;
-	S[7]=s_v;
-	S[8]=s_v;
-	S[9]=s_v;
-	S[10]=s_v;
-	S[11]=s_v;
-	S[12]=s_v;
-	S[13]=s_v;
-	S[14]=s_v;
-	S[15]=s_v;
 
-	S[16]=1;
-	S[17]=1;
-	S[18]=1;
-
-*/
 	S[0]=0;
 	S[1]=s_v;
 	S[2]=s_v;
@@ -1215,13 +1186,6 @@ void init(double* rho, double** u, double** f)
 			//forcex[i]=gx;
 			//forcey[i]=gy;
 			//forcez[i]=gz;
-
-
-
-
-
-
-
 			//***********************************************************************
 
 
@@ -1232,15 +1196,93 @@ void init(double* rho, double** u, double** f)
 				//	f[i][lm]=0.0;
 				//else
 					f[i][lm]=feq(lm,rho[i],u_tmp);
-				
-
-		
 		
 
 	}
 
+/*
+	if (Sub_BC==2)
+	{
+	if ((pre_yp-1)*(pre_yn-1)==0)
+	for (int i=0;i<nx_l;i++)
+		for (int k=0;k<=NZ;k++)
+		{
+		if (pre_yp==1)
+			{
+			rho[Solid[i][NY][k]]=p_yp;
+			u_tmp[0]=u[Solid[i][NY][k]][0];
+			u_tmp[1]=u[Solid[i][NY][k]][1];
+			u_tmp[2]=u[Solid[i][NY][k]][2];
+			for (int lm=0;lm<19;lm++)
+				f[Solid[i][NY][k]][lm]=feq(lm,p_yp,u_tmp);
+			}
+		if (pre_yn==1)
+			{
+			rho[Solid[i][0][k]]=p_yn;
+			u_tmp[0]=u[Solid[i][0][k]][0];
+			u_tmp[1]=u[Solid[i][0][k]][1];
+			u_tmp[2]=u[Solid[i][0][k]][2];
+			for (int lm=0;lm<19;lm++)
+				f[Solid[i][0][k]][lm]=feq(lm,p_yn,u_tmp);
+			}
+		}
 	
+	if ((pre_zp-1)*(pre_zn-1)==0)
+	for (int i=0;i<nx_l;i++)
+		for (int j=0;j<=NY;j++)
+		{
+		if (pre_zp==1)
+			{
+			rho[Solid[i][j][NZ]]=p_zp;
+			u_tmp[0]=u[Solid[i][j][NZ]][0];
+			u_tmp[1]=u[Solid[i][j][NZ]][1];
+			u_tmp[2]=u[Solid[i][j][NZ]][2];
+			for (int lm=0;lm<19;lm++)
+				f[Solid[i][j][NZ]][lm]=feq(lm,p_zp,u_tmp);
+			}
+		if (pre_zn==1)
+			{
+			rho[Solid[i][j][0]]=p_yn;
+			u_tmp[0]=u[Solid[i][j][0]][0];
+			u_tmp[1]=u[Solid[i][j][0]][1];
+			u_tmp[2]=u[Solid[i][j][0]][2];
+			for (int lm=0;lm<19;lm++)
+				f[Solid[i][j][0]][lm]=feq(lm,p_zn,u_tmp);
+			}
+		}
 
+
+	
+	if ((pre_xp-1)*(pre_xn-1)==0)
+	for (int j=0;j<=NY;j++)
+		for (int k=0;k<=NZ;k++)
+		{
+		if ((pre_xp==1) and (rank==mpi_size-1))
+			{
+			rho[Solid[nx_l-1][j][k]]=p_xp;
+			u_tmp[0]=u[Solid[nx_l-1][j][k]][0];
+			u_tmp[1]=u[Solid[nx_l-1][j][k]][1];
+			u_tmp[2]=u[Solid[nx_l-1][j][k]][2];
+			for (int lm=0;lm<19;lm++)
+				f[Solid[nx_l-1][j][k]][lm]=feq(lm,p_xp,u_tmp);
+			}
+		if ((pre_xn==1) and (rank==0))
+			{
+			rho[Solid[0][j][k]]=p_xn;
+			u_tmp[0]=u[Solid[0][j][k]][0];
+			u_tmp[1]=u[Solid[0][j][k]][1];
+			u_tmp[2]=u[Solid[0][j][k]][2];
+			for (int lm=0;lm<19;lm++)
+				f[Solid[0][j][k]][lm]=feq(lm,p_xn,u_tmp);
+			}
+		}
+
+
+
+
+
+	}
+*/
 	 	
 }
 
@@ -2356,7 +2398,54 @@ void comput_macro_variables( double* rho,double** u,double** u0,double** f,doubl
 			}
 
 
+/*
+	if (Sub_BC==2)
+	{
+	if ((pre_yp-1)*(pre_yn-1)==0)
+	for (int i=0;i<nx_l;i++)
+		for (int k=0;k<=NZ;k++)
+		{
+		if (pre_yp==1)
+			rho[Solid[i][NY][k]]=p_yp;
+		
+		if (pre_yn==1)
+			rho[Solid[i][0][k]]=p_yn;
+			
+		}
 	
+	if ((pre_zp-1)*(pre_zn-1)==0)
+	for (int i=0;i<nx_l;i++)
+		for (int j=0;j<=NY;j++)
+		{
+		if (pre_zp==1)
+			rho[Solid[i][j][NZ]]=p_zp;
+			
+		if (pre_zn==1)
+			rho[Solid[i][j][0]]=p_yn;
+			
+		}
+
+
+	
+	if ((pre_xp-1)*(pre_xn-1)==0)
+	for (int j=0;j<=NY;j++)
+		for (int k=0;k<=NZ;k++)
+		{
+		if ((pre_xp==1) and (rank==mpi_size-1))
+			rho[Solid[nx_l-1][j][k]]=p_xp;
+			
+		if ((pre_xn==1) and (rank==0))
+			rho[Solid[0][j][k]]=p_xn;
+			
+		}
+
+
+
+
+
+	}
+
+*/	
 	//MPI_Barrier(MPI_COMM_WORLD); 
 
 }
@@ -2469,7 +2558,7 @@ if ((xp==1) && (rank==mpi_size-1))
 for (int j=0;j<=NY;j++)
 	for (int k=0;k<=NZ;k++)
 		for (int ks=0;ks<Q;ks++)
-		        //if (Solid[nx_l-2][j][k]>0)
+		        if (Solid[nx_l-1][j][k]>0)
 			//        F[Solid[nx_l-1][j][k]][ks]=feq(ks,rho[Solid[nx_l-2][j][k]],u_xp);
 			//else
 			         F[Solid[nx_l-1][j][k]][ks]=feq(ks,1.0,u_xp);
@@ -2481,7 +2570,7 @@ if ((xn==1) && (rank==0))
 for (int j=0;j<=NY;j++)
 	for(int k=0;k<=NZ;k++)
 		for (int ks=0;ks<Q;ks++)
-		        //if (Solid[1][j][k]>0)
+		        if (Solid[0][j][k]>0)
 		        //        F[Solid[0][j][k]][ks]=feq(ks,rho[Solid[1][j][k]],u_xn);
 		        //else
 		                F[Solid[0][j][k]][ks]=feq(ks,1.0,u_xn);
@@ -4233,13 +4322,13 @@ double Comput_Perm(double** u,double* Permia,int PerDIr)
 	switch(PerDIr)
 		{
 		case 1:
-			dp=abs(p_xp-p_xn);break;
+			dp=abs(p_xp-p_xn)*c_s2/(NX+1)/dx;break;
 		case 2:
-			dp=abs(p_yp-p_yn);break;
+			dp=abs(p_yp-p_yn)*c_s2/(NY+1)/dx;break;
 		case 3:
-			dp=abs(p_zp-p_zn);break;
+			dp=abs(p_zp-p_zn)*c_s2/(NZ+1)/dx;break;
 		default:
-			dp=abs(p_xp-p_xn);
+			dp=abs(p_xp-p_xn)*c_s2/(NX+1)/dx;
 		}
 		
 		

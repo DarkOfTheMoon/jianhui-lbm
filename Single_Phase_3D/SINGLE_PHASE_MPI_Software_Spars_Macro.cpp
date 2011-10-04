@@ -512,7 +512,7 @@ if (wr_per==1)
 
 		//==============================================================================================
 			Re=u_ave*(NY+1)/(1.0/3.0*(1/s_v-0.5));
-			fin<<"The Maximum velocity is: "<<setprecision(6)<<u_max<<"   Re="<<Re<<endl;
+			fin<<"The Maximum velocity is: "<<setprecision(6)<<u_max<<"   Re="<<Re<<"     Courant Number="<<u_max*dt/dx<<endl;
 			
 		//===============================================================================================
 			fin<<"The max relative error of velocity is: "
@@ -539,7 +539,7 @@ if (wr_per==1)
 		//==============================================================================================
 			
 			Re=u_ave*(NY+1)/(1.0/3.0*(1/s_v-0.5));
-			cout<<"The Maximum velocity is: "<<setprecision(6)<<u_max<<"   Re="<<Re<<endl;
+			cout<<"The Maximum velocity is: "<<setprecision(6)<<u_max<<"   Re="<<Re<<"     Courant Number="<<u_max*dt/dx<<endl;
 			
 		//===============================================================================================
 			cout<<"The max relative error of uv is: "
