@@ -568,7 +568,18 @@ if (wr_per==1)
 			if (rank==0)
 			{
 			finish = MPI_Wtime();
-			ofstream fin(FileName,ios::app);
+			ofstream fin(FileName,ios::out);
+			
+			fin<<"The"<<n-freRe<<"th computation result:"<<endl;
+			fin<<"The Maximum velocity is: "<<setprecision(6)<<u_max<<"   Re="<<Re<<"     Courant Number="<<u_max*dt/dx<<endl;
+			fin<<"The max relative error of velocity is: "
+				<<setiosflags(ios::scientific)<<error<<endl;
+			fin<<"The permiability is: "<<Permia[0]*reso*reso*1000<<", "<<Permia[1]*reso*reso*1000<<", "<<Permia[2]*reso*reso*1000<<endl;
+			fin<<"The relative error of permiability computing is: "<<error_perm<<endl;
+			fin<<"Elapsed time is "<< the<<"h"<<tme<<"m"<<tse<<"s"<<endl;
+			fin<<"The expected completion time is "<<th<<"h"<<tm<<"m"<<ts<<"s"<<endl;
+			fin<<endl;
+			
 			fin<<"The"<<n<<"th computation result:"<<endl;
 
 			Re=u_ave*(NY+1)/(1.0/3.0*(1/s_v-0.5));
@@ -584,8 +595,6 @@ if (wr_per==1)
 			tse=int(elaps-(the*3600+tme*60));
 		//==============================================================================================
 		        fin<<"The Maximum velocity is: "<<setprecision(6)<<u_max<<"   Re="<<Re<<"     Courant Number="<<u_max*dt/dx<<endl;
-			
-		//===============================================================================================
 			fin<<"The max relative error of velocity is: "
 				<<setiosflags(ios::scientific)<<error<<endl;
 			fin<<"The permiability is: "<<Permia[0]*reso*reso*1000<<", "<<Permia[1]*reso*reso*1000<<", "<<Permia[2]*reso*reso*1000<<endl;

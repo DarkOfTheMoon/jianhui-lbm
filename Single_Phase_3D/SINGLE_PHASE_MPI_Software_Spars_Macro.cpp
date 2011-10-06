@@ -492,6 +492,16 @@ if (wr_per==1)
 
 			if (rank==0)
 			{
+			 ofstream fin(FileName,ios::out);       
+			 fin<<"The"<<n-freRe<<"th computation result:"<<endl;
+			Re=u_ave*(NY+1)/(1.0/3.0*(1/s_v-0.5));
+			fin<<"The Maximum velocity is: "<<setprecision(6)<<u_max<<"   Re="<<Re<<"     Courant Number="<<u_max*dt/dx<<endl;
+			fin<<"The max relative error of velocity is: "
+				<<setiosflags(ios::scientific)<<error<<endl;
+			fin<<"Elapsed time is "<< the<<"h"<<tme<<"m"<<tse<<"s"<<endl;
+			fin<<"The expected completion time is "<<th<<"h"<<tm<<"m"<<ts<<"s"<<endl;
+			fin<<endl;       
+			                
 			finish = MPI_Wtime();
 			
 			remain=(n_max-n)*((finish-start)/n);
@@ -505,7 +515,7 @@ if (wr_per==1)
 			tme=int((elaps-the*3600)/60);
 			tse=int(elaps-(the*3600+tme*60));
 			
-			ofstream fin(FileName,ios::app);
+			
 			fin<<"The"<<n<<"th computation result:"<<endl;
 		//============================================================================================
 		//==============================================================================================
@@ -596,7 +606,8 @@ if (wr_per==1)
 	delete [] SupInv;
 	delete [] Sl;
 	delete [] Sr;
-
+
+
 	finish = MPI_Wtime();
 	
 	
@@ -1182,7 +1193,8 @@ void init(double* rho, double** u, double** f,double* PerC, double* PorC, double
 	for (int i=0;i<19;i++)
 		for (int j=0;j<3;j++)
 		elat[i][j]=e[i][j]*lat_c;
-
+
+
 			
 	for (int i=1;i<=Count;i++)	
 				

@@ -498,9 +498,11 @@ if (wr_per==1)
 	
 	if ((1-vel_xp)*(1-vel_xn)*(1-vel_yp)*(1-vel_yn)*(1-vel_zp)*(1-vel_zn)==0)
 		boundary_velocity(vel_xp,v_xp,vel_xn,v_xn,vel_yp,v_yp,vel_yn,v_yn,vel_zp,v_zp,vel_zn,v_zn,f,F,rho,u,Solid);
-
+
+
   		comput_macro_variables(rho,u,u0,f,F,SupInv,Solid); 
-
+
+
 	
 	if(n%freRe==0)
 		{       
@@ -509,6 +511,19 @@ if (wr_per==1)
 			error_perm=Comput_Perm(u,Permia,PerDir);
 			if (rank==0)
 			{
+			        
+			 ofstream fin(FileName,ios::out);       
+			 fin<<"The"<<n-freRe<<"th computation result:"<<endl;
+			fin<<"The permiability is: "<<Permia[0]*reso*reso*1000<<", "<<Permia[1]*reso*reso*1000<<", "<<Permia[2]*reso*reso*1000<<endl;
+			fin<<"The relative error of permiability computing is: "<<error_perm<<endl;	
+			fin<<"The Maximum velocity is: "<<setprecision(6)<<u_max<<"   Re="<<Re<<"     Courant Number="<<u_max*dt/dx<<endl;
+			fin<<"The max relative error of velocity is: "
+				<<setiosflags(ios::scientific)<<error<<endl;
+			fin<<"Elapsed time is "<< the<<"h"<<tme<<"m"<<tse<<"s"<<endl;
+			fin<<"The expected completion time is "<<th<<"h"<<tm<<"m"<<ts<<"s"<<endl;
+			fin<<endl;       
+			        
+			           
 			finish = MPI_Wtime();
 			
 			remain=(n_max-n)*((finish-start)/n);
@@ -522,8 +537,7 @@ if (wr_per==1)
 			tme=int((elaps-the*3600)/60);
 			tse=int(elaps-(the*3600+tme*60));
 
-			
-			ofstream fin(FileName,ios::app);
+
 			fin<<"The"<<n<<"th computation result:"<<endl;
 		//=============================================================================================
 			fin<<"The permiability is: "<<Permia[0]*reso*reso*1000<<", "<<Permia[1]*reso*reso*1000<<", "<<Permia[2]*reso*reso*1000<<endl;
@@ -1290,7 +1304,8 @@ void init(double* rho, double** u, double** f,int*** Solid)
 double feq(int k,double rho, double u[3])
 {
 	double eu,uv,feq;
-        double c2,c4;
+        double c2,c4;
+
 	c2=lat_c*lat_c;c4=c2*c2;
 	eu=(elat[k][0]*u[0]+elat[k][1]*u[1]+elat[k][2]*u[2]);
 	uv=(u[0]*u[0]+u[1]*u[1]+u[2]*u[2]);// WITH FORCE TERM:GRAVITY IN X DIRECTION

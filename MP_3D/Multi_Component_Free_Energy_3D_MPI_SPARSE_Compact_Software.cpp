@@ -539,17 +539,22 @@ if (wr_per==1)
 			
 			if (rank==0)
 			{
+			ofstream fin(FileName,ios::out);    
+			 fin<<"The"<<n-freRe<<"th computation result:"<<endl;
+			Re_l=u_ave*(NY+1)/niu_l;Re_g=u_ave*(NY+1)/niu_g;
+			fin<<"The Maximum velocity is: "<<setprecision(6)<<v_max<<"   Re_l="<<Re_l<<"   Re_g="<<Re_g<<endl;
+			fin<<"The max relative error of velocity is: "
+				<<setiosflags(ios::scientific)<<error<<endl;
+			fin<<"The relative permeability of component 1 is "<<Per_l[0]*reso*reso*1000/Permeability<<", "<<Per_l[1]*reso*reso*1000/Permeability<<", "<<Per_l[2]*reso*reso*1000/Permeability<<endl;
+			fin<<"The relative permeability of component 2 is "<<Per_g[0]*reso*reso*1000/Permeability<<", "<<Per_g[1]*reso*reso*1000/Permeability<<", "<<Per_g[2]*reso*reso*1000/Permeability<<endl;
+			fin<<"Satuation of Component 1: "<<S_l<<", "<<"The satuation of Component 2: "<<1-S_l<<endl;
+			fin<<"The relative error of permiability computing is: "<<error_Per<<endl;
+			fin<<"Elapsed time is "<< the<<"h"<<tme<<"m"<<tse<<"s"<<endl;
+			fin<<"The expected completion time is "<<th<<"h"<<tm<<"m"<<ts<<"s"<<endl;
+			fin<<endl;       
+			        
 			finish = MPI_Wtime();
-			ofstream fin(FileName,ios::app);
 			fin<<"The"<<n<<"th computation result:"<<endl;
-		//=============================================================================================
-			//fin<<"The permiability is: "<<Permia[0]*reso*reso*100<<", "<<Permia[1]*reso*reso*100<<", "<<Permia[2]*reso*reso*100<<endl;
-			//fin<<"The relative error of permiability computing is: "<<error_perm<<endl;
-		//==============================================================================================
-		     
-		//==============================================================================================
-			//cout<<"The Density of point(NX/2,NY/2,NZ/2) is: "<<setprecision(6)
-			//	<<rho[int((NX+1)/para_size/2)][NY/2][NZ/2]<<endl;
 			Re_l=u_ave*(NY+1)/niu_l;Re_g=u_ave*(NY+1)/niu_g;
 			fin<<"The Maximum velocity is: "<<setprecision(6)<<v_max<<"   Re_l="<<Re_l<<"   Re_g="<<Re_g<<endl;
 			

@@ -554,15 +554,31 @@ if (wr_per==1)
 	
 	if(n%freRe==0)
 		{       
-			
 			error=Error(u,u0,&u_max,&u_ave);
 			if (u_max>=10.0)	U_max_ref+=1;
 			error_Per=Comput_Perm(psi,u,Per_l,Per_g,PerDir);
 			S_l=Comput_Saturation(psi,Solid);
 			if (rank==0)
 			{
+			ofstream fin(FileName,ios::out);
+			fin<<"The"<<n-freRe<<"th computation result:"<<endl;
+			Re_l=u_ave*(NY+1)/niu_l;Re_g=u_ave*(NY+1)/niu_g;
+		        fin<<"The Maximum velocity is: "<<setprecision(6)<<u_max<<"   Re_l="<<Re_l<<"   Re_g="<<Re_g<<endl;
+			fin<<"     Courant Number="<<u_max*dt/dx<<endl;
+			fin<<"The max relative error of velocity is: "
+				<<setiosflags(ios::scientific)<<error<<endl;
+			fin<<"The relative permeability of component 1 is "<<Per_l[0]*reso*reso*1000/Permeability<<", "<<Per_l[1]*reso*reso*1000/Permeability<<", "<<Per_l[2]*reso*reso*1000/Permeability<<endl;
+			fin<<"The relative permeability of component 2 is "<<Per_g[0]*reso*reso*1000/Permeability<<", "<<Per_g[1]*reso*reso*1000/Permeability<<", "<<Per_g[2]*reso*reso*1000/Permeability<<endl;
+			fin<<"Satuation of Component 1: "<<S_l<<", "<<"The satuation of Component 2: "<<1-S_l<<endl;
+			fin<<"The relative error of permiability computing is: "<<error_Per<<endl;
+			fin<<"Elapsed time is "<< the<<"h"<<tme<<"m"<<tse<<"s"<<endl;
+			fin<<"The expected completion time is "<<th<<"h"<<tm<<"m"<<ts<<"s"<<endl;
+			fin<<endl;
+			
+			
 			finish = MPI_Wtime();
-			ofstream fin(FileName,ios::app);
+
+			
 			fin<<"The"<<n<<"th computation result:"<<endl;
 
 			Re_l=u_ave*(NY+1)/niu_l;Re_g=u_ave*(NY+1)/niu_g;
