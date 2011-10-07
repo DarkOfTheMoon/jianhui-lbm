@@ -1,6 +1,6 @@
 Ma=0.1;                        %Mach number
 Pr=0.71;                        %Prandtl number
-H=100;                          %Scale of lattice
+H=64;                          %Scale of lattice
 Ra=100000;                        %Rayleigh number
 dt=1;
 
