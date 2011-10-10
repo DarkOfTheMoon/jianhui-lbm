@@ -40,7 +40,7 @@ double in_vis,p_xp,p_xn,p_yp,p_yn,p_zp,p_zn,reso,porosity,Re_l,Re_g;
 double inivx,inivy,inivz,v_xp,v_xn,v_yp,v_yn,v_zp,v_zn,S_l,S_g;
 int vtk_time,n_max;
 int Par_Geo,Par_nx,Par_ny,Par_nz;
-double gx,gy,gz,niu_l,niu_g,ContactAngle_parameter,Permeability;
+double gx,gy,gz,niu_l,niu_g,ContactAngle_parameter,Permeability,Capillary;
 
 
 double u_max;
@@ -1960,9 +1960,28 @@ double Comput_Perm(double*** psi,double**** u,double* Per_l,double* Per_g,int NX
 
 	double Perm_l[3];
 	double Perm_g[3];
-	double error;
+	double error,vxl,vyl,vzl;
 	double Q_l[3]={0.0,0.0,0.0};
 	double Q_g[3]={0.0,0.0,0.0};
+
+double dp;
+	if (in_BC==0)
+	        dp=0;
+	else
+	switch(PerDIr)
+		{
+		case 1:
+			dp=abs(p_xp-p_xn)*c_s2/(NX+1)/dx;break;
+		case 2:
+			dp=abs(p_yp-p_yn)*c_s2/(NY+1)/dx;break;
+		case 3:
+			dp=abs(p_zp-p_zn)*c_s2/(NZ+1)/dx;break;
+		default:
+			dp=abs(p_xp-p_xn)*c_s2/(NX+1)/dx;
+		}
+		
+
+
 
 for(int i=0; i<(NX+1)/mpi_size; i++)
 	for(int j=0;j<=NY;j++)
@@ -1999,13 +2018,19 @@ for(int i=0; i<(NX+1)/mpi_size; i++)
 			Q_l[2]+=rbuf_l[i*3+2];
 			}
 
-		Perm_l[0]=Q_l[0]/((NX+1)*(NY+1)*(NZ+1))*(niu_l)/gx;
-		Perm_l[1]=Q_l[1]/((NX+1)*(NY+1)*(NZ+1))*(niu_l)/gy;
-		Perm_l[2]=Q_l[2]/((NX+1)*(NY+1)*(NZ+1))*(niu_l)/gz;
+		Perm_l[0]=Q_l[0]/((NX+1)*(NY+1)*(NZ+1))*(niu_l)/(gx+dp);
+		Perm_l[1]=Q_l[1]/((NX+1)*(NY+1)*(NZ+1))*(niu_l)/(gy+dp);
+		Perm_l[2]=Q_l[2]/((NX+1)*(NY+1)*(NZ+1))*(niu_l)/(gz+dp);
 
-		Perm_g[0]=Q_g[0]/((NX+1)*(NY+1)*(NZ+1))*(niu_g)/gx;
-		Perm_g[1]=Q_g[1]/((NX+1)*(NY+1)*(NZ+1))*(niu_g)/gy;
-		Perm_g[2]=Q_g[2]/((NX+1)*(NY+1)*(NZ+1))*(niu_g)/gz;
+		Perm_g[0]=Q_g[0]/((NX+1)*(NY+1)*(NZ+1))*(niu_g)/(gx+dp);
+		Perm_g[1]=Q_g[1]/((NX+1)*(NY+1)*(NZ+1))*(niu_g)/(gy+dp);
+		Perm_g[2]=Q_g[2]/((NX+1)*(NY+1)*(NZ+1))*(niu_g)/(gz+dp);
+
+		vxl=(Q_l[0]+Q_g[0])/((NX+1)*(NY+1)*(NZ+1));
+		vyl=(Q_l[1]+Q_g[1])/((NX+1)*(NY+1)*(NZ+1));
+		vzl=(Q_l[2]+Q_g[2])/((NX+1)*(NY+1)*(NZ+1));
+		Capillary=sqrt(vxl*vxl+vyl*vyl+vzl*vzl)*niu_l/CapA;
+
 		
 		switch(PerDIr)
 		{

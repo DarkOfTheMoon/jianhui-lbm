@@ -171,7 +171,7 @@ int wr_per,pre_xp,pre_xn,pre_yp,pre_yn,pre_zp,pre_zn,stab,stab_time,fre_backup;
 int vel_xp,vel_xn,vel_yp,vel_yn,vel_zp,vel_zn,Sub_BC,Out_Mode,mode_backup_ini;
 double niu_l,niu_g,p_xp,p_xn,p_yp,p_yn,p_zp,p_zn,Re_l,Re_g,gxs,gys,gzs;
 double inivx,inivy,inivz,v_xp,v_xn,v_yp,v_yn,v_zp,v_zn,S_l,S_g,ContactAngle_parameter;
-double error_perm,Permeability;
+double error_perm,Permeability,Capillary;
 
 char outputfile[128]="./";
 
@@ -543,6 +543,7 @@ if (wr_per==1)
 			 fin<<"The"<<n-freRe<<"th computation result:"<<endl;
 			Re_l=u_ave*(NY+1)/niu_l;Re_g=u_ave*(NY+1)/niu_g;
 			fin<<"The Maximum velocity is: "<<setprecision(6)<<v_max<<"   Re_l="<<Re_l<<"   Re_g="<<Re_g<<endl;
+			fin<<"Courant Number="<<u_max*dt/dx<<"	 Capillary Num="<<Capillary<<endl;
 			fin<<"The max relative error of velocity is: "
 				<<setiosflags(ios::scientific)<<error<<endl;
 			fin<<"The relative permeability of component 1 is "<<Per_l[0]*reso*reso*1000/Permeability<<", "<<Per_l[1]*reso*reso*1000/Permeability<<", "<<Per_l[2]*reso*reso*1000/Permeability<<endl;
@@ -557,7 +558,7 @@ if (wr_per==1)
 			fin<<"The"<<n<<"th computation result:"<<endl;
 			Re_l=u_ave*(NY+1)/niu_l;Re_g=u_ave*(NY+1)/niu_g;
 			fin<<"The Maximum velocity is: "<<setprecision(6)<<v_max<<"   Re_l="<<Re_l<<"   Re_g="<<Re_g<<endl;
-			
+			fin<<"Courant Number="<<u_max*dt/dx<<"	 Capillary Num="<<Capillary<<endl;
 			remain=(n_max-n)*((finish-start)/n);
 			//cout<<remain<<"   "<<finish-start<<endl;
 			th=int(remain/3600);
@@ -621,7 +622,7 @@ if (wr_per==1)
 				<<rho[Solid[((NX+1)/para_size/2)][NY/2][NZ/2]]<<endl;
 			
 			cout<<"The Maximum velocity is: "<<setprecision(6)<<v_max<<"   Re_l="<<Re_l<<"   Re_g="<<Re_g<<endl;
-			
+			cout<<"Courant Number="<<u_max*dt/dx<<"	 Capillary Num="<<Capillary<<endl;
 			cout<<"The max relative error of uv is: "
 				<<setiosflags(ios::scientific)<<error<<endl;
 			cout<<"The relative permeability of component 1 is "<<Per_l[0]*reso*reso*1000/Permeability<<", "<<Per_l[1]*reso*reso*1000/Permeability<<", "<<Per_l[2]*reso*reso*1000/Permeability<<endl;
@@ -3833,7 +3834,7 @@ double Comput_Perm(double* psi,double** u,double* Per_l,double* Per_g,int PerDIr
 	
 	double Perm_l[3];
 	double Perm_g[3];
-	double error;
+	double error,vxl,vyl,vzl,sig;
 	double Q_l[3]={0.0,0.0,0.0};
 	double Q_g[3]={0.0,0.0,0.0};
 
@@ -3901,6 +3902,12 @@ double Comput_Perm(double* psi,double** u,double* Per_l,double* Per_g,int PerDIr
 		Perm_g[0]=Q_g[0]/((NX+1)*(NY+1)*(NZ+1))*(niu_g)/(gx+dp);
 		Perm_g[1]=Q_g[1]/((NX+1)*(NY+1)*(NZ+1))*(niu_g)/(gy+dp);
 		Perm_g[2]=Q_g[2]/((NX+1)*(NY+1)*(NZ+1))*(niu_g)/(gz+dp);
+
+		vxl=(Q_l[0]+Q_g[0])/((NX+1)*(NY+1)*(NZ+1));
+		vyl=(Q_l[1]+Q_g[1])/((NX+1)*(NY+1)*(NZ+1));
+		vzl=(Q_l[2]+Q_g[2])/((NX+1)*(NY+1)*(NZ+1));
+		Capillary=sqrt(vxl*vxl+vyl*vyl+vzl*vzl)*niu_l/(sqrt(8*kappa*0.04/9));
+
 		
 		switch(PerDIr)
 		{
