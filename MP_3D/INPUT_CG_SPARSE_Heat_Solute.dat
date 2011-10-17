@@ -8,7 +8,7 @@ phase2.dat			:Initial conditions of Heat/Solute
 1	        	      	:Pressure Or Velocity Boundary (1=YES, 0=No)
 -1.0 20				:Buoyancy Parameter (0= no buoyancy, reference_psi F=/rho*g+Bouyancy*(/psi-reference_psi)*g)
 0 0 0                      	:mirroring option for x,y,z (1=yes, 0=no)
--1.0e-6				:Gravity (Only for Buoyancy)
+-1.0e-6				:Gravity (Only for Buoyancy, gravity*thermal expansion)
 0.0 0.0 0.0	          	:body force for x,y,z
 0 1.0 0 1.0	    		:Pressure Boundary in X direction (Format detials can be found within this file)p=c_s^2*/rho
 0 1.0 0 1.0	    		:Pressure Boundary in Y direction (Format detials can be found within this file)
