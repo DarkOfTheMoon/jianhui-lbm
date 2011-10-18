@@ -574,7 +574,8 @@ if (wr_per==1)
 			ofstream fin(FileName,ios::out);
 			
 			fin<<"The"<<n-freRe<<"th computation result:"<<endl;
-			fin<<"The Maximum velocity is: "<<setprecision(6)<<u_max<<"   Re="<<Re<<"     Courant Number="<<u_max*dt/dx<<endl;
+			fin<<"The Maximum velocity is: "<<setprecision(6)<<u_max<<"   Re="<<Re<<endl;
+			fin<<"Peclet Number="<<u_max*dx/niu_s<<"     Courant Number="<<u_max*dt/dx<<endl;
 			fin<<"The max relative error of velocity is: "
 				<<setiosflags(ios::scientific)<<error<<endl;
 			fin<<"The permiability is: "<<Permia[0]*reso*reso*1000<<", "<<Permia[1]*reso*reso*1000<<", "<<Permia[2]*reso*reso*1000<<endl;
@@ -597,7 +598,8 @@ if (wr_per==1)
 			tme=int((elaps-the*3600)/60);
 			tse=int(elaps-(the*3600+tme*60));
 		//==============================================================================================
-		        fin<<"The Maximum velocity is: "<<setprecision(6)<<u_max<<"   Re="<<Re<<"     Courant Number="<<u_max*dt/dx<<endl;
+		        fin<<"The Maximum velocity is: "<<setprecision(6)<<u_max<<"   Re="<<Re<<endl;
+			fin<<"Peclet Number="<<u_max*dx/niu_s<<"     Courant Number="<<u_max*dt/dx<<endl;
 			fin<<"The max relative error of velocity is: "
 				<<setiosflags(ios::scientific)<<error<<endl;
 			fin<<"The permiability is: "<<Permia[0]*reso*reso*1000<<", "<<Permia[1]*reso*reso*1000<<", "<<Permia[2]*reso*reso*1000<<endl;
@@ -644,7 +646,8 @@ if (wr_per==1)
 			cout<<"The Density of point(NX/2,NY/2,NZ/2) is: "<<setprecision(6)
 				<<rho[Solid[((NX+1)/para_size/2)][NY/2][NZ/2]]<<endl;
 			cout<<"The permiability is: "<<Permia[0]*reso*reso*1000<<", "<<Permia[1]*reso*reso*1000<<", "<<Permia[2]*reso*reso*1000<<endl;
-			cout<<"The Maximum velocity is: "<<setprecision(6)<<u_max<<"   Re="<<Re<<"     Courant Number="<<u_max*dt/dx<<endl;
+			cout<<"The Maximum velocity is: "<<setprecision(6)<<u_max<<"   Re="<<Re<<endl;
+			cout<<"Peclet Number="<<u_max*dx/niu_s<<"     Courant Number="<<u_max*dt/dx<<endl;
 			
 			cout<<"The max relative error of uv is: "
 				<<setiosflags(ios::scientific)<<error<<endl;

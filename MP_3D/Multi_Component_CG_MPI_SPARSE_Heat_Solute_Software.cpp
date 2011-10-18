@@ -613,6 +613,7 @@ if (wr_per==1)
 			Re_l=u_ave*(NY+1)/niu_l;Re_g=u_ave*(NY+1)/niu_g;
 		        fin<<"The Maximum velocity is: "<<setprecision(6)<<u_max<<"   Re_l="<<Re_l<<"   Re_g="<<Re_g<<endl;
 			fin<<"Courant Number="<<u_max*dt/dx<<"	 Capillary Num="<<Capillary<<endl;
+			fin<<"Peclet Number="<<u_max*dx/niu_s2<<endl;
 			fin<<"The max relative error of velocity is: "
 				<<setiosflags(ios::scientific)<<error<<endl;
 			fin<<"The relative permeability of component 1 is "<<Per_l[0]*reso*reso*1000/Permeability<<", "<<Per_l[1]*reso*reso*1000/Permeability<<", "<<Per_l[2]*reso*reso*1000/Permeability<<endl;
@@ -644,6 +645,7 @@ if (wr_per==1)
 		//==============================================================================================
 		        fin<<"The Maximum velocity is: "<<setprecision(6)<<u_max<<"   Re_l="<<Re_l<<"   Re_g="<<Re_g<<endl;
 			fin<<"Courant Number="<<u_max*dt/dx<<"	 Capillary Num="<<Capillary<<endl;
+			fin<<"Peclet Number="<<u_max*dx/niu_s2<<endl;
 		//===============================================================================================
 			fin<<"The max relative error of velocity is: "
 				<<setiosflags(ios::scientific)<<error<<endl;
@@ -695,6 +697,7 @@ if (wr_per==1)
 			
 			cout<<"The Maximum velocity is: "<<setprecision(6)<<u_max<<"   Re_l="<<Re_l<<"   Re_g="<<Re_g<<endl;
 			cout<<"Courant Number="<<u_max*dt/dx<<"	 Capillary Num="<<Capillary<<endl;
+			cout<<"Peclet Number="<<u_max*dx/niu_s2<<endl;
 			cout<<"The max relative error of uv is: "
 				<<setiosflags(ios::scientific)<<error<<endl;
 			cout<<"The relative permeability of component 1 is "<<Per_l[0]*reso*reso*1000/Permeability<<", "<<Per_l[1]*reso*reso*1000/Permeability<<", "<<Per_l[2]*reso*reso*1000/Permeability<<endl;

@@ -21,8 +21,8 @@ phase.dat       	    	:Initial components distribution
 0 0.0 0 0.0			:Constant Diffusive Flux BC in X direction (p,n)
 0 0.0 0 0.0			:Constant Diffusive Flux BC in Y direction
 0 0.0 0 0.0			:Constant Diffusive Flux BC in Z direction
-0.0031	       		      :Viscosity
-0.0044	    		       	      :Diffusion coefficient
+0.0031	       		      	:Viscosity
+0.0044	    		        :Diffusion coefficient
 0.0 0.0 0.0			:initial velocity for x,y,z
 =========OUTPUT==CONTROL===================
 1		         	:Permeability writing (1=yes, 0=no)
