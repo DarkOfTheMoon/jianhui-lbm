@@ -137,6 +137,8 @@ double S[19];
 
 void Comput_MI(double[19][19], double[19][19]);
 
+void Statistical_psi(double*,int, int***);
+
 int inverse(mat &a);
 
 double feq(int,double, double[3]);
@@ -179,7 +181,7 @@ int SXP[5]={2,8,10,12,14};
 
 
 int n,nx_l,n_max,in_BC,PerDir,freRe,freDe,freVe,frePsi,Par_Geo,Par_nx,Par_ny,Par_nz;
-int Zoom,lattice_v,Sub_BC_psi;
+int Zoom,lattice_v,Sub_BC_psi,Sub_Dis,freDis;
 
 
 int wr_per,pre_xp,pre_xn,pre_yp,pre_yn,pre_zp,pre_zn,fre_backup;
@@ -258,7 +260,7 @@ double v_max;
 	fin >> niu;					fin.getline(dummy, NCHAR);
 	fin >> niu_s;					fin.getline(dummy, NCHAR);
 	fin >> inivx >> inivy >> inivz;			fin.getline(dummy, NCHAR);
-							fin.getline(dummy, NCHAR);
+							        fin.getline(dummy, NCHAR);
 	fin >> wr_per;					fin.getline(dummy, NCHAR);
 	fin >> PerDir;					fin.getline(dummy, NCHAR);
 	fin >> freRe;					fin.getline(dummy, NCHAR);
@@ -267,6 +269,7 @@ double v_max;
 	fin >> freDe;					fin.getline(dummy, NCHAR);
 	fin >> frePsi;					fin.getline(dummy, NCHAR);
 	fin >> mir;					fin.getline(dummy, NCHAR);
+	fin >> Sub_Dis >> freDis;                fin.getline(dummy, NCHAR);
 							fin.getline(dummy, NCHAR);
 	fin >> Par_Geo >> Par_nx >> Par_ny >> Par_nz;	fin.getline(dummy, NCHAR);
 	fin >> Zoom;					fin.getline(dummy, NCHAR);
@@ -285,7 +288,7 @@ double v_max;
 	
 	fin.close();
 	
-	//cout<<Sub_BC<<"    asdfa "<<endl;
+	//cout<<Sub_Dis<<"    asdfa "<<endl;
 	NX=NX-1;NY=NY-1;NZ=NZ-1;
 	}
 
@@ -342,7 +345,7 @@ double v_max;
 
 	MPI_Bcast(&lattice_v,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&dx_input,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 	MPI_Bcast(&dt_input,1,MPI_DOUBLE,0,MPI_COMM_WORLD);MPI_Bcast(&Sub_BC_psi,1,MPI_INT,0,MPI_COMM_WORLD);
-
+	MPI_Bcast(&Sub_Dis,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&freDis,1,MPI_INT,0,MPI_COMM_WORLD);
 
 int U_max_ref=0;
 
@@ -676,6 +679,10 @@ if (wr_per==1)
 					output_psi(n,rho_r,mirX,mirY,mirZ,mir,Solid);
 				else
 					output_psi_b(n,rho_r,mirX,mirY,mirZ,mir,Solid);
+				
+			if ((freDis>=0) and (n%freDis==0) and (Sub_Dis>0))	
+			                Statistical_psi(rho_r,n,Solid);
+				
 			//===================================
 			
 			
@@ -4363,6 +4370,169 @@ double Comput_Perm(double** u,double* Permia,int PerDIr)
 
 
 
+void Statistical_psi(double* psi,int m, int*** Solid)
+{
+        int rank = MPI :: COMM_WORLD . Get_rank ();
+	int mpi_size=MPI :: COMM_WORLD . Get_size ();
+	
+double* s_psi;
+double* rbuf;
+int * nx_g;
+int* disp;
+
+if (Sub_Dis==1)
+        {
+                nx_g = new int[mpi_size];
+                disp = new int[mpi_size];
+
+	
+	MPI_Gather(&nx_l,1,MPI_INT,nx_g,1,MPI_INT,0,MPI_COMM_WORLD);
+	
+	
+	if (rank==0)
+		{
+		disp[0]=0;
+		for (int i=0;i<mpi_size;i++)
+			nx_g[i]*=1;
+
+		for (int i=1;i<mpi_size;i++)
+			disp[i]=disp[i-1]+nx_g[i-1];
+		
+		 rbuf = new double[NX+1];
+		}
+		
+
+                s_psi = new double[nx_l];
+                for (int i=0;i<nx_l;i++)
+                        {
+                        s_psi[i]=0;
+                        for (int j=0;j<=NY;j++)
+                                for (int k=0;k<=NZ;k++)
+                                if (Solid[i][j][k]>0)
+                                        s_psi[i]+=psi[Solid[i][j][k]];
+                                                        
+                        }
+               
+           MPI_Gatherv(s_psi,nx_l,MPI_DOUBLE,rbuf,nx_g,disp,MPI_DOUBLE,0,MPI_COMM_WORLD);     
+       if (rank==0)
+	{
+        ostringstream name;
+	name<<outputfile<<"Statistical_data_concentration_X_"<<m<<".sta";
+	ofstream out;
+	out.open(name.str().c_str());
+	for (int i=0;i<=NX;i++)
+	        out<<rbuf[i]<<endl;
+	out.close();
+
+        
+                delete [] rbuf;
+        }
+	delete [] s_psi;
+	delete [] disp;
+	delete [] nx_g;
+	         
+                
+                
+        }
+        
+        
+        
+        
+if (Sub_Dis==2)
+        {
+               if (rank==0)
+                       rbuf = new double [(NY+1)*mpi_size];
+   
+               s_psi = new double[NY+1];
+                for (int j=0;j<=NY;j++)
+                {        
+                s_psi[j]=0;
+                for (int i=0;i<nx_l;i++)
+                        for (int k=0;k<=NZ;k++)
+                                if(Solid[i][j][k]>0)
+                                s_psi[j]+=psi[Solid[i][j][k]];
+                                     
+                
+                }
+
+            MPI_Barrier(MPI_COMM_WORLD);                    
+           MPI_Gather(s_psi,NY+1,MPI_DOUBLE,rbuf,NY+1,MPI_DOUBLE,0,MPI_COMM_WORLD);  
+            
+	if (rank==0)
+	{
+		 for (int j=0;j<=NY;j++)
+		 {
+		         s_psi[j]=0;
+		         for (int i=0;i<mpi_size;i++)
+		                 s_psi[j]+=rbuf[i*(NY+1)+j];
+				
+		 }
+       
+        ostringstream name;
+	name<<outputfile<<"Statistical_data_concentration_Y_"<<m<<".sta";
+	ofstream out;
+	out.open(name.str().c_str());
+	for (int j=0;j<=NY;j++)
+	        out<<s_psi[j]<<endl;
+	out.close();
+
+        
+                delete [] rbuf;
+        }
+	delete [] s_psi;
+	
+
+}
+
+if (Sub_Dis==3)
+        {
+               if (rank==0)
+                       rbuf = new double [(NZ+1)*mpi_size];
+   
+               s_psi = new double[NZ+1];
+                for (int k=0;k<=NZ;k++)
+                {        
+                s_psi[k]=0;
+                for (int i=0;i<nx_l;i++)
+                        for (int j=0;j<=NY;j++)
+                                if(Solid[i][j][k]>0)
+                                s_psi[k]+=psi[Solid[i][j][k]];
+                                     
+                
+                }
+
+            MPI_Barrier(MPI_COMM_WORLD);                    
+           MPI_Gather(s_psi,NZ+1,MPI_DOUBLE,rbuf,NZ+1,MPI_DOUBLE,0,MPI_COMM_WORLD);  
+            
+	if (rank==0)
+	{
+		 for (int k=0;k<=NZ;k++)
+		 {
+		         s_psi[k]=0;
+		         for (int i=0;i<mpi_size;i++)
+		                 s_psi[k]+=rbuf[i*(NZ+1)+k];
+				
+		 }
+       
+        ostringstream name;
+	name<<outputfile<<"Statistical_data_concentration_Z_"<<m<<".sta";
+	ofstream out;
+	out.open(name.str().c_str());
+	for (int k=0;k<=NZ;k++)
+	        out<<s_psi[k]<<endl;
+	out.close();
+
+        
+                delete [] rbuf;
+        }
+	delete [] s_psi;
+	
+
+}
+
+
+
+}
 
 void Backup_init(double* rho, double** u, double** f,double** fg, double* rho_r, double* rhor, double* forcex,double* forcey, double* forcez, char backup_rho[128], char backup_velocity[128], char backup_psi[128], char backup_f[128], char backup_g[128])
 {	

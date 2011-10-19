@@ -1,17 +1,17 @@
 BC.dat                  :Geometry filenameEmily_Berea_y_614_764_7.dat
-30 20 3                :nx ny nz
-1000	                 :Maxmum time step
-10.0	                :x=1 (um) Resolution (for Permeability calculation)
+100 30 3                :nx ny nz
+100000	                 :Maxmum time step
+40.0	                :x=1 (um) Resolution (for Permeability calculation, resolution/dx)
 1	        	       :Pressure/Velocity Boundary (1=Yes, 0=No)   Convergence accelerator (1=yes, 0=no)
 0 0 0                           :mirroring option for x,y,z (1=yes, 0=no)
-1.0e-5 0.0 0.0          :body force for x,y,z
-1 1.0 1 1.0001	:Pressure Boundary in X direction (Format detials can be found within this file)p=c_s^2*/rho
+0.0e-5 0.0 0.0          :body force for x,y,z
+1 1.0 1 1.003 	:Pressure Boundary in X direction (Format detials can be found within this file)p=c_s^2*/rho
 0 1.0 0 1.0	:Pressure Boundary in Y direction (Format detials can be found within this file)
 0 1.0 0 1.0	:Pressure Boundary in Z direction (Format detials can be found within this file)
 0 0.0 0 0.07	:Velocity Boundary in X direction (Format detials can be found within this file)
 0 0.0 0 0.07	:Velocity Boundary in Y direction (Format detials can be found within this file)
 0 0.0 0 0.07	:Velocity Boundary in Z direction (Format detials can be found within this file)
-0.1            	:Viscosity
+0.01            	:Viscosity
 0.0 0.0 0.0	:initial velocity for x,y,z
 =========OUTPUT==CONTROL===================
 1		:Permeability writing (1=yes, 0=no)
@@ -24,7 +24,7 @@ BC.dat                  :Geometry filenameEmily_Berea_y_614_764_7.dat
 ==============ADVANCE==PARAMETER==========
 0 30 32 3 	:ONLY USE PART OF THE ORIGINAL GEOMETRY (1=YES,0=NO,NX,NY,NZ)
 1		:FACTOR OF MESHREFINEMENT (0,1=No mesh refinement, 1=1X,2=2X,3=3X)
-0 1.0 4.0	:Self define lattice velocity: 0=DEFAULT, dx, dt ((u_x+u_y+u_z)*dt/dx<=1 Courant Number)
+1 1.0 1.0	:Self define lattice velocity: 0=DEFAULT, dx, dt ((u_x+u_y+u_z)*dt/dx<=1 Courant Number)
 ./		:OUTPUT PATH,DEFAULT: ./ (REMEMBER TO INCLUDE "/" AT THE END OF PATH)
 1              :PRESSURE AND VELOCITY BOUNDARY CONDITION OPTIONS: 0,1,2,3: EBC_S,EBC_D,TOLKE_BC,NEBC_D
 -1		:BACKUP FREQUENCY (-1=NO BACKUP)
