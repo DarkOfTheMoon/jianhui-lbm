@@ -99,7 +99,7 @@ void tests();
 
 void init_Sparse(int***,int***,double***, double***, int*, int*);
 
-void init(double*, double**, double**,double**, double*, double*,double*, double*, double*, double***,int*);
+void init(double*, double**, double**,double**, double**, double**, double*, double*,double*, double*, double*, double***,int*);
 
 void collision(double*,double** ,double** ,double**,double**,double**,  double* ,double* , double*, double*, double*, int* ,int***,int* ,int*);
 
@@ -151,14 +151,17 @@ void Backup(int ,double*, double*, double**, double**, double**);
 
 void Backup_init(double* , double** , double** ,double** , double* , double* ,double*, double*, double*, char[128], char[128], char[128], char[128], char[128]);
 
+void psi_reset(double**,double** , double* , double* , double*** , int* );
+
 
 int e[19][3]=
 {{0,0,0},{1,0,0},{-1,0,0},{0,1,0},{0,-1,0},{0,0,1},{0,0,-1},{1,1,0},{-1,-1,0},{1,-1,0},{-1,1,0},{1,0,1},
 {-1,0,-1},{1,0,-1},{-1,0,1},{0,1,1},{0,-1,-1},{0,1,-1},{0,-1,1}};
 
 double elat[19][3]=
-{{0,0,0},{1,0,0,},{-1,0,0},{0,1,0},{0,-1,0},{0,0,1},{0,0,-1},{1,1,0},{-1,1,0},{1,-1,0},{-1,-1,0},{0,1,1},
-{0,-1,1},{0,1,-1},{0,-1,-1},{1,0,1},{-1,0,1},{1,0,-1},{-1,0,-1}};
+{{0,0,0},{1,0,0},{-1,0,0},{0,1,0},{0,-1,0},{0,0,1},{0,0,-1},{1,1,0},{-1,-1,0},{1,-1,0},{-1,1,0},{1,0,1},
+{-1,0,-1},{1,0,-1},{-1,0,1},{0,1,1},{0,-1,-1},{0,1,-1},{0,-1,1}};
+
 
 double w[19]={1.0/3.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0};
 
@@ -181,7 +184,7 @@ int SXP[5]={2,8,10,12,14};
 
 
 int n,nx_l,n_max,in_BC,PerDir,freRe,freDe,freVe,frePsi,Par_Geo,Par_nx,Par_ny,Par_nz;
-int Zoom,lattice_v,Sub_BC_psi,Sub_Dis,freDis;
+int Zoom,lattice_v,Sub_BC_psi,Sub_Dis,freDis,ini_psi;
 
 
 int wr_per,pre_xp,pre_xn,pre_yp,pre_yn,pre_zp,pre_zn,fre_backup;
@@ -277,6 +280,8 @@ double v_max;
 	fin >> outputfile;				fin.getline(dummy, NCHAR);
 	fin >> Sub_BC;					fin.getline(dummy, NCHAR);
 	fin >> Sub_BC_psi;				fin.getline(dummy, NCHAR);
+	fin >> ini_psi;                                  fin.getline(dummy, NCHAR);
+	                                                        fin.getline(dummy, NCHAR);
 	fin >> fre_backup;                        	fin.getline(dummy, NCHAR);
 	fin >>mode_backup_ini;                		fin.getline(dummy, NCHAR);
 	fin >> backup_rho;                        	fin.getline(dummy, NCHAR);
@@ -288,7 +293,7 @@ double v_max;
 	
 	fin.close();
 	
-	//cout<<Sub_Dis<<"    asdfa "<<endl;
+	//cout<<inivy<<"    asdfa "<<endl;
 	NX=NX-1;NY=NY-1;NZ=NZ-1;
 	}
 
@@ -346,6 +351,10 @@ double v_max;
 	MPI_Bcast(&lattice_v,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&dx_input,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 	MPI_Bcast(&dt_input,1,MPI_DOUBLE,0,MPI_COMM_WORLD);MPI_Bcast(&Sub_BC_psi,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&Sub_Dis,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&freDis,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&ini_psi,1,MPI_INT,0,MPI_COMM_WORLD);
+
+
+
 
 int U_max_ref=0;
 
@@ -498,7 +507,7 @@ if (Zoom>1)
 		Geometry_b(Solid);
 
 	if (mode_backup_ini==0)
-	        init(rho,u,f,fg,rho_r,rhor,forcex,forcey,forcez,Psi_local,SupInv);
+	        init(rho,u,f,fg,F,Fg,rho_r,rhor,forcex,forcey,forcez,Psi_local,SupInv);
 	else
 	        Backup_init(rho, u, f,fg,rho_r, rhor, forcex,forcey,forcez,backup_rho, backup_velocity, backup_psi,backup_f,backup_g);
 
@@ -560,7 +569,9 @@ if (wr_per==1)
 	Solute_ZeroFlux_BC(sol_zf_xp,zf_xp,sol_zf_xn,zf_xn,sol_zf_yp,zf_yp,sol_zf_yn,zf_yn,sol_zf_zp,zf_zp,sol_zf_zn,zf_zn,Fg,Solid,rho_r,u,fg);
   		 
 		comput_macro_variables(rho,u,u0,f,F,fg,Fg,rho_r,rhor,forcex,forcey,forcez,SupInv,Solid,Psi_local);
-
+ 
+	if (n==ini_psi)
+	        psi_reset(u,fg,rho_r,rhor,Psi_local,SupInv);
 
 	
 	
@@ -1213,7 +1224,7 @@ MPI_Barrier(MPI_COMM_WORLD);
 
 
 
-void init(double* rho, double** u, double** f,double** fg, double* rho_r, double* rhor, double* forcex, double* forcey, double* forcez, double*** Psi_local, int* SupInv)
+void init(double* rho, double** u, double** f,double** fg, double** F, double** Fg, double* rho_r, double* rhor, double* forcex, double* forcey, double* forcez, double*** Psi_local, int* SupInv)
 {	
       
 
@@ -1246,7 +1257,8 @@ void init(double* rho, double** u, double** f,double** fg, double* rho_r, double
        
 	double s_other=8*(2-s_v)/(8-s_v);
 	double u_tmp[3];
-
+	
+        	
 	if (lattice_v==1)
 	{
 	
@@ -1270,12 +1282,10 @@ void init(double* rho, double** u, double** f,double** fg, double* rho_r, double
 	M_c[17]=lat_c*lat_c*lat_c;
 	M_c[18]=lat_c*lat_c*lat_c;
 
-
-
 	for (int i=0;i<19;i++)
 		for (int j=0;j<3;j++)
 		elat[i][j]=e[i][j]*lat_c;
-
+	
 	for (int i=0;i<19;i++)
 		for (int j=0;j<19;j++)
 		M[i][j]*=M_c[i];
@@ -1284,7 +1294,10 @@ void init(double* rho, double** u, double** f,double** fg, double* rho_r, double
 
 	}
 
-	
+//	for (int i=0;i<19;i++)
+//		for (int j=0;j<3;j++)
+//		elat[i][j]=e[i][j]*lat_c;
+        cout<<elat[13][0]<<" "<<elat[13][1]<<" "<<elat[13][2]<<endl;        
 
 	S[0]=0;
 	S[1]=s_v;
@@ -1325,7 +1338,7 @@ void init(double* rho, double** u, double** f,double** fg, double* rho_r, double
 			
 			rhor[i]=0;
 			
-			
+			//cout<<u[i][0]<<" "<<u[i][1]<<" "<<u[i][2]<<endl;
 
 			
 			forcex[i]=gx;
@@ -1339,11 +1352,12 @@ void init(double* rho, double** u, double** f,double** fg, double* rho_r, double
 			f[i][lm]=feq(lm,rho[i],u_tmp);
 			eu=elat[lm][0]*u[i][0]+elat[lm][1]*u[i][1]+elat[lm][2]*u[i][2];
 			fg[i][lm]=w[lm]*rho_r[i]*(1+3*eu/c2);
+			F[i][lm]=f[i][lm];Fg[i][lm]=fg[i][lm];
 			//fg[i][lm]=w[mi]*rho_r[ci]*(1+3*eu/c2+4.5*eu*eu/c4-1.5*uu/c2);
 			}
                 	
 
-
+			
 		
 		
 
@@ -1368,6 +1382,7 @@ double feq(int k,double rho, double u[3])
 	uv=(u[0]*u[0]+u[1]*u[1]+u[2]*u[2]);// WITH FORCE TERM:GRAVITY IN X DIRECTION
 	feq=w[k]*rho*(1.0+3.0*eu/c2+4.5*eu*eu/c4-1.5*uv/c2);
 
+	
 			ux=u[0];
 			uy=u[1];
 			uz=u[2];
@@ -1419,7 +1434,7 @@ void collision(double* rho,double** u,double** f,double** F, double** fg, double
 	int rank = MPI :: COMM_WORLD . Get_rank ();
 	int mpi_size=MPI :: COMM_WORLD . Get_size ();
 
-
+	
 
 double g_r[19];
 double rho_0=1.0;
@@ -1766,7 +1781,9 @@ void comput_macro_variables( double* rho,double** u,double** u0,double** f,doubl
 	for(int i=1;i<=Count;i++)	
                    
 			{
-			
+			        //if (n==1)
+			         //       cout<<u[i][0]<<" "<<u[i][1]<<" "<<u[i][2]<<endl;
+			        
 				u0[i][0]=u[i][0];
 				u0[i][1]=u[i][1];
 				u0[i][2]=u[i][2];
@@ -4611,11 +4628,6 @@ void Backup_init(double* rho, double** u, double** f,double** fg, double* rho_r,
 	M_c[18]=lat_c*lat_c*lat_c;
 
 
-
-	for (int i=0;i<19;i++)
-		for (int j=0;j<3;j++)
-		elat[i][j]=e[i][j]*lat_c;
-
 	for (int i=0;i<19;i++)
 		for (int j=0;j<19;j++)
 		M[i][j]*=M_c[i];
@@ -4624,6 +4636,10 @@ void Backup_init(double* rho, double** u, double** f,double** fg, double* rho_r,
 
 	}
 
+	for (int i=0;i<19;i++)
+		for (int j=0;j<3;j++)
+		elat[i][j]=e[i][j]*lat_c;
+	
 	
 	ostringstream name5;
 	name5<<backup_g<<"."<<rank<<".input";
@@ -4765,6 +4781,45 @@ void Backup(int m,double* rho,double* psi, double** u, double** f, double** g)
 
 
 
+void psi_reset(double** u,double** fg, double* rho_r, double* rhor, double*** Psi_local, int* SupInv)
+{	
+      
+        double eu;
+	double c2=lat_c*lat_c;
+	
+	for (int i=1;i<=Count;i++)	
+			
+		{
+			
+			rho_r[i]=Psi_local[(int)(SupInv[i]/((NY+1)*(NZ+1)))][(int)((SupInv[i]%((NY+1)*(NZ+1)))/(NZ+1))][SupInv[i]%(NZ+1)];
+			
+			rhor[i]=0;
+			
+			
+
+			
+			
+			//INITIALIZATION OF m and f
+
+			for (int lm=0;lm<19;lm++)
+			{
+			
+			eu=elat[lm][0]*u[i][0]+elat[lm][1]*u[i][1]+elat[lm][2]*u[i][2];
+			fg[i][lm]=w[lm]*rho_r[i]*(1+3*eu/c2);
+			//fg[i][lm]=w[mi]*rho_r[ci]*(1+3*eu/c2+4.5*eu*eu/c4-1.5*uu/c2);
+			}
+                	
+
+
+		
+		
+
+	}
+
+	
+
+	 	
+} 
 
 
 
