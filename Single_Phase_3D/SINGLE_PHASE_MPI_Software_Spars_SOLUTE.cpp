@@ -1297,7 +1297,7 @@ void init(double* rho, double** u, double** f,double** fg, double** F, double** 
 //	for (int i=0;i<19;i++)
 //		for (int j=0;j<3;j++)
 //		elat[i][j]=e[i][j]*lat_c;
-        cout<<elat[13][0]<<" "<<elat[13][1]<<" "<<elat[13][2]<<endl;        
+  //      cout<<elat[13][0]<<" "<<elat[13][1]<<" "<<elat[13][2]<<endl;        
 
 	S[0]=0;
 	S[1]=s_v;
