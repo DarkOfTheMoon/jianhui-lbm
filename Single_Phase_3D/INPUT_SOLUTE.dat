@@ -23,7 +23,7 @@ phase.dat       	    	:Initial components distribution
 0 0.0 0 0.0			:Constant Diffusive Flux BC in Z direction
 0.05	       		      	:Viscosity
 0.05	    		        :Diffusion coefficient
-5.0e-3 0.0 0.0			:initial velocity for x,y,z
+1.0e-3 0.0 0.0			:initial velocity for x,y,z
 =========OUTPUT==CONTROL===================
 1		         	:Permeability writing (1=yes, 0=no)
 1                       	:Direction of Permeability Calculation (1=X, 2=Y, 3=Z)
@@ -33,12 +33,12 @@ phase.dat       	    	:Initial components distribution
 200				:Frequency of density field writing (in vtk format, -1=no density writing)
 200				:Frequency of concentration writing (in vtk format, -1=no density writing)
 0				:Mirroring part output (0=No,1=YES)
-1 500                        :Dispersion statistics (0=No,1=X direction, 2=Y, 3=Z; Frequncy of writing)
+1 200                        :Dispersion statistics (0=No,1=X direction, 2=Y, 3=Z; Frequncy of writing)
 ==============ADVANCE==PARAMETER==========
 0 658 659 11 			:ONLY USE PART OF THE ORIGINAL GEOMETRY (1=YES,0=NO,NX,NY,NZ)
 1				:FACTOR OF MESHREFINEMENT (0,1=No mesh refinement, 1=1X,2=2X,3=3X)
 0 1.0 1.0	              :Self define lattice velocity: 0=DEFAULT, dx, dt ((u_x+u_y+u_z)*dt/dx<=1 Courant Number)
-./				:OUTPUT PATH,DEFAULT: ./ (REMEMBER TO INCLUDE "/" AT THE END OF PATH)
+./   				:OUTPUT PATH,DEFAULT: ./ (REMEMBER TO INCLUDE "/" AT THE END OF PATH)
 3              			:PRESSURE AND VELOCITY BOUNDARY CONDITION OPTIONS: 0,1,2,3: EBC_S,EBC_D,TOLKE_BC,NEBC_D
 1				:CONSTANT PSI AND FLUX BOUNDARY CONDITION OPTIONS: 0,1:Inamuro,GUO
 -1                              :Concentration initialization from the xth timesteps (-1=OFF)

@@ -1,5 +1,5 @@
-dat_general=[];str=[];xs=[];
-n=6;
+dat_general=[];str=[];xs=[];Disp=[];
+n=10;
 v=5e-3;
 dt=1;
 
@@ -32,9 +32,13 @@ xs=[xs,xx'];
 
 str=[str;Pic_Num];
 dat_general=[dat_general,dat];
-%bar(rand(3,5));    
-%plot(dat);
-%hold on
+
+dat=dat/(sum(dat));
+xx=0:nx-1;
+EX=xx*dat;
+DX=xx.^2*dat-EX^2;
+Disp=[Disp,DX*0.5/Pic_Num];
+
 end
 
 x=0:nx-1;

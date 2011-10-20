@@ -199,7 +199,7 @@ int sol_c_xp,sol_c_xn,sol_c_yp,sol_c_yn,sol_c_zp,sol_c_zn;
 double c_xp,c_xn,c_yp,c_yn,c_zp,c_zn;
 
 int sol_zf_xp,sol_zf_xn,sol_zf_yp,sol_zf_yn,sol_zf_zp,sol_zf_zn;
-double zf_xp,zf_xn,zf_yp,zf_yn,zf_zp,zf_zn;
+double zf_xp,zf_xn,zf_yp,zf_yn,zf_zp,zf_zn,psi_total;
 
 
 char outputfile[128]="./";
@@ -1191,6 +1191,7 @@ FILE *ftest2;
 	}
 
 
+
 }
 
 
@@ -1210,8 +1211,11 @@ FILE *ftest2;
 			Psis[i][j][k]=Psi_Int[i*(ny)*(nz)+j*(nz)+k];
 			}	
 		
-		
-		
+//	psi_total=0;	
+//	for(i=0 ; i<nx*ny*nz ; i++)
+//		psi_total+=Psi_Int[i];
+
+//	cout<<psi_total<<"     psi_total"<<endl;	
 
 //cout<<"asdfasdfasdfasdfa"<<endl;
 MPI_Barrier(MPI_COMM_WORLD);
@@ -4297,6 +4301,7 @@ void output_psi(int m,double* psi,int MirX,int MirY,int MirZ,int mir,int*** Soli
 
 
 
+
 double Comput_Perm(double** u,double* Permia,int PerDIr)
 {
 
@@ -4384,7 +4389,6 @@ double Comput_Perm(double** u,double* Permia,int PerDIr)
 	
 
 }
-
 
 
 void Statistical_psi(double* psi,int m, int*** Solid)
@@ -4820,7 +4824,6 @@ void psi_reset(double** u,double** fg, double* rho_r, double* rhor, double*** Ps
 
 	 	
 } 
-
 
 
 
