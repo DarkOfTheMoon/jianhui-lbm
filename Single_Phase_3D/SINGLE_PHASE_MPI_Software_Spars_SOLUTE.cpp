@@ -1226,6 +1226,7 @@ FILE *ftest2;
 		
 	psi_total=0;	
 	for(i=0 ; i<nx*ny*nz ; i++)
+	        if (Solid_Int[i]==0)
 		psi_total+=Psi_Int[i];
 
 //	cout<<psi_total<<"     psi_total"<<endl;	
@@ -4463,10 +4464,10 @@ if (Sub_Dis==1)
 		EX2+=(i*dx*i*dx)*rbuf[i]/psi_total;
 		}
 	out.close();
-
+	        
 		DX=EX2-EX*EX;
 		Dispersion=DX*0.5/(n*dt);
-        	//cout<<psi_total<<"    nis"<<endl;
+        	//cout<<EX<<"    nis   "<<psi_total<<endl;
                 delete [] rbuf;
 
 
@@ -4578,7 +4579,7 @@ if (Sub_Dis==3)
 		EX2+=(k*dx*k*dx)*s_psi[k]/psi_total;
 		}
 	out.close();
-DX=EX2-EX*EX;
+	        DX=EX2-EX*EX;
 		Dispersion=DX*0.5/(n*dt);
         	
                 delete [] rbuf;
