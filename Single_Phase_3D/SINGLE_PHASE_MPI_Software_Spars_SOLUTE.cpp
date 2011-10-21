@@ -194,6 +194,7 @@ double inivx,inivy,inivz,v_xp,v_xn,v_yp,v_yn,v_zp,v_zn;
 double error_perm,S_l,gxs,gys,gzs,Gravity;
 double Buoyancy_parameter=1.0;
 double ref_psi,c_s,c_s2,dx_input,dt_input,lat_c;
+double Dispersion=0;
 
 int sol_c_xp,sol_c_xn,sol_c_yp,sol_c_yn,sol_c_zp,sol_c_zn;
 double c_xp,c_xn,c_yp,c_yn,c_zp,c_zn;
@@ -694,8 +695,18 @@ if (wr_per==1)
 					output_psi_b(n,rho_r,mirX,mirY,mirZ,mir,Solid);
 				
 			if ((freDis>=0) and (n%freDis==0) and (Sub_Dis>0))	
-			                Statistical_psi(rho_r,n,Solid);
-				
+			                {
+					Statistical_psi(rho_r,n,Solid);
+					//==========for bodyforce output===========
+					if (rank==0)
+					{
+					ofstream finf3(FileName3,ios::app);
+					finf3<<Dispersion<<endl;
+					finf3.close();
+					}
+					//=========================================
+					}
+		
 			//===================================
 			
 			
@@ -1213,9 +1224,9 @@ FILE *ftest2;
 			Psis[i][j][k]=Psi_Int[i*(ny)*(nz)+j*(nz)+k];
 			}	
 		
-//	psi_total=0;	
-//	for(i=0 ; i<nx*ny*nz ; i++)
-//		psi_total+=Psi_Int[i];
+	psi_total=0;	
+	for(i=0 ; i<nx*ny*nz ; i++)
+		psi_total+=Psi_Int[i];
 
 //	cout<<psi_total<<"     psi_total"<<endl;	
 
@@ -4402,6 +4413,7 @@ double* s_psi;
 double* rbuf;
 int * nx_g;
 int* disp;
+double EX,DX,EX2;
 
 if (Sub_Dis==1)
         {
@@ -4443,12 +4455,23 @@ if (Sub_Dis==1)
 	name<<outputfile<<"Statistical_data_concentration_X_"<<m<<".sta";
 	ofstream out;
 	out.open(name.str().c_str());
+	EX=0;EX2=0;
 	for (int i=0;i<=NX;i++)
+		{
 	        out<<rbuf[i]<<endl;
+		EX+=i*dx*rbuf[i]/psi_total;
+		EX2+=(i*dx*i*dx)*rbuf[i]/psi_total;
+		}
 	out.close();
 
-        
+		DX=EX2-EX*EX;
+		Dispersion=DX*0.5/(n*dt);
+        	//cout<<psi_total<<"    nis"<<endl;
                 delete [] rbuf;
+
+
+
+
         }
 	delete [] s_psi;
 	delete [] disp;
@@ -4495,10 +4518,16 @@ if (Sub_Dis==2)
 	name<<outputfile<<"Statistical_data_concentration_Y_"<<m<<".sta";
 	ofstream out;
 	out.open(name.str().c_str());
+	EX=0;EX2=0;
 	for (int j=0;j<=NY;j++)
+		{
 	        out<<s_psi[j]<<endl;
+		EX+=j*dx*s_psi[j]/psi_total;
+		EX2+=(j*dx*j*dx)*s_psi[j]/psi_total;
+		}
 	out.close();
-
+		DX=EX2-EX*EX;
+		Dispersion=DX*0.5/(n*dt);	
         
                 delete [] rbuf;
         }
@@ -4540,12 +4569,18 @@ if (Sub_Dis==3)
         ostringstream name;
 	name<<outputfile<<"Statistical_data_concentration_Z_"<<m<<".sta";
 	ofstream out;
+	EX=0;EX2=0;
 	out.open(name.str().c_str());
 	for (int k=0;k<=NZ;k++)
+		{
 	        out<<s_psi[k]<<endl;
+		EX+=k*dx*s_psi[k]/psi_total;
+		EX2+=(k*dx*k*dx)*s_psi[k]/psi_total;
+		}
 	out.close();
-
-        
+DX=EX2-EX*EX;
+		Dispersion=DX*0.5/(n*dt);
+        	
                 delete [] rbuf;
         }
 	delete [] s_psi;

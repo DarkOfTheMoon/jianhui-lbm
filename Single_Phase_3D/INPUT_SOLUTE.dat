@@ -1,14 +1,14 @@
 =============INPUT FILE FOR 3D LATTICE BOLTZMANN MPI CODE--Solute and heat transfer=======
 BC.dat                  	:Geometry filenameEmily_Berea_y_614_764_7.dat
 phase.dat       	    	:Initial components distribution
-120 12 3                 	:nx ny nz
+560 15 1                 	:nx ny nz
 1000000		     		:Maximum time step
 19.9997	             		:dx (um) Resolution (for Permeability calculation)
 0 	        	      	:Pressure Or Velocity Boundary (1=YES, 0=No)
 0.0 20				:Buoyancy Parameter (0= no buoyancy, reference_psi F=/rho*g+Bouyancy*(/psi-reference_psi)*g)
 0 0 0                      	:mirroring option for x,y,z (1=yes, 0=no)
 0.0e-6				:Gravity (Only for Buoyancy, gravity*thermal expansion)
-2.5e-5 0.0 0.0	          	:body force for x,y,z
+2.0e-5 0.0 0.0	          	:body force for x,y,z
 0 1.0 0 1.0	    		:Pressure Boundary in X direction (Format detials can be found within this file)p=c_s^2*/rho
 0 1.0 0 1.0	    		:Pressure Boundary in Y direction (Format detials can be found within this file)
 0 1.0 0 1.0	    		:Pressure Boundary in Z direction (Format detials can be found within this file)
@@ -21,7 +21,7 @@ phase.dat       	    	:Initial components distribution
 0 0.0 0 0.0			:Constant Diffusive Flux BC in X direction (p,n)
 0 0.0 0 0.0			:Constant Diffusive Flux BC in Y direction
 0 0.0 0 0.0			:Constant Diffusive Flux BC in Z direction
-0.05	       		      	:Viscosity
+0.07	       		      	:Viscosity
 0.0013	    		        :Diffusion coefficient
 0.0 0.0 0.0			:initial velocity for x,y,z
 =========OUTPUT==CONTROL===================
@@ -33,7 +33,7 @@ phase.dat       	    	:Initial components distribution
 20000				:Frequency of density field writing (in vtk format, -1=no density writing)
 5000				:Frequency of concentration writing (in vtk format, -1=no density writing)
 0				:Mirroring part output (0=No,1=YES)
-1 5000                        :Dispersion statistics (0=No,1=X direction, 2=Y, 3=Z; Frequncy of writing)
+1 1000                        :Dispersion statistics (0=No,1=X direction, 2=Y, 3=Z; Frequncy of writing)
 ==============ADVANCE==PARAMETER==========
 0 658 659 11 			:ONLY USE PART OF THE ORIGINAL GEOMETRY (1=YES,0=NO,NX,NY,NZ)
 1				:FACTOR OF MESHREFINEMENT (0,1=No mesh refinement, 1=1X,2=2X,3=3X)
@@ -41,7 +41,7 @@ phase.dat       	    	:Initial components distribution
 ./   				:OUTPUT PATH,DEFAULT: ./ (REMEMBER TO INCLUDE "/" AT THE END OF PATH)
 3              			:PRESSURE AND VELOCITY BOUNDARY CONDITION OPTIONS: 0,1,2,3: EBC_S,EBC_D,TOLKE_BC,NEBC_D
 1				:CONSTANT PSI AND FLUX BOUNDARY CONDITION OPTIONS: 0,1:Inamuro,GUO
-3000                              :Concentration initialization from the xth timesteps (-1=OFF)
+-1                              :Concentration initialization from the xth timesteps (-1=OFF)
 ====================BACKUP=PARAMETERS==========================
 -1		                   :BACKUP FREQUENCY (-1=NO BACKUP)
 0                               :INITIALIZATION WITH BACKUP DATA (0=OFF, 1=ON)
