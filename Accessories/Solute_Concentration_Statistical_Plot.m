@@ -1,6 +1,7 @@
-dat_general=[];str=[];xs=[];Disp=[];
-n=40;
-v=2.105745e-03;
+dat_general=[];str=[];xs=[];Disp=[];EX_general=[];DX_general=[];
+dat_ori=[];
+n=460;
+v=2.4e-03;
 dt=1;
 
 
@@ -9,6 +10,7 @@ Pic_Num=5000*i;
     dat=load(strcat('Statistical_data_concentration_X_',int2str(Pic_Num),'.sta'));
     [nx,ny]=size(dat);
 dat1=dat;
+dat_ori=[dat_ori,dat];
 
 td=v*dt*Pic_Num;
 while td>nx-1
@@ -41,10 +43,10 @@ xs=[xs,xx'];
 str=[str;Pic_Num*dt];
 dat_general=[dat_general,dat];
 
-dat1=dat1/(sum(dat1));
-xx=0:nx-1;
-EX=xx*dat1;
-DX=xx.^2*dat1-EX^2;
+dat=dat/(sum(dat));
+xx=1:nx;
+EX=xx*dat;EX_general=[EX_general,EX];
+DX=xx.^2*dat-EX^2;DX_general=[DX_general,DX];
 Disp=[Disp,DX*0.5/(dt*Pic_Num)];
 
 end
