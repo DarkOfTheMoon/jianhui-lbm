@@ -1,67 +1,81 @@
-dat_general=[];str=[];xs=[];Disp=[];EX_general=[];DX_general=[];
-dat_ori=[];
-n=460;
-v=2.4e-03;
-dt=1;
 
-D_ana=0.0013+(6^2*v^2)/210/0.0013;
 
-for i=1:n
-Pic_Num=5000*i;
-    dat=load(strcat('Statistical_data_concentration_X_',int2str(Pic_Num),'.sta'));
-    [nx,ny]=size(dat);
-dat1=dat;
-dat_ori=[dat_ori,dat];
+clear;
+lx=200;
+ly=60;
+lz=3;
 
-td=v*dt*Pic_Num;
-while td>nx-1
-    td=td-(nx-1);
-end
+A=zeros(lx,ly,lz);
 
-xx=0:nx-1;
-    for j=1:nx
-        if xx(j)+td>nx-1
-                
-            xx(j)=(xx(j)+td)-(nx-1);
-            
-        else
-            xx(j)=xx(j)+td;
+for k=1:lz
+    for j=1:ly
+        for i=1:lx
+           %if (((k==1) || (k==lz)) && (abs(i-lx/2)<=10) && (abs(j-ly/2)<=10)) 
+           %if ((k==12) && (abs(i-lx/2)<=9) && (abs(j-ly/2)<=9))
+            %if (sqrt((i-lx*0.3)*(i-lx*0.3)+(j-ly*0.5)*(j-ly*0.5)+(k-lz*0.5)*(k-lz*0.5))<=6)
+           %if ((j==13) && (i>=5) && (i<=lx-5) && (k>=5) && (k<=lz-5))
+           if ((j==1) || (j==ly))
+           %if (j==1)
+                A(i,j,k)=1;
+           end            
         end
     end
-  
-   for j=1:nx
-      
-    
-        %if (xx(k)>xx(k+1))
-        %    t=xx(k);xx(k)=xx(k+1);xx(k+1)=t;
-        %    t=dat(k);dat(k)=dat(k+1);dat(k+1)=t;
-        %end
-        dat(j)=dat1(round(xx(j)));
-   end
-
-    
-xs=[xs,xx'];    
-
-str=[str;Pic_Num*dt];
-dat_general=[dat_general,dat];
-
-dat=dat/(sum(dat));
-xx=1:nx;
-EX=xx*dat;EX_general=[EX_general,EX];
-DX=xx.^2*dat-EX^2;DX_general=[DX_general,DX];
-Disp=[Disp,DX*0.5/(dt*Pic_Num)];
-
 end
 
-x=0:nx-1;
-str=num2str(str);
+fid = fopen('BC.dat','wt');
 
-%plot(dat_general);
-%legend(str);
+for k=1:lz
+    for j=1:ly
+        for i=1:lx
+        fprintf(fid,'%1d\n',A(i,j,k));
+        end
+    end
+end
+
+A=zeros(lx,ly,lz);
+B=zeros(lx,ly,lz);
+
+% for k=1:lz
+%     for j=1:ly
+%         for i=1:lx
+%             %if (sqrt((i-lx*0.15)*(i-lx*0.15)+(j-ly*0.5)*(j-ly*0.5)+(k-lz*0.5)*(k-lz*0.5))<=7)
+%              %if ((abs(i-lx/2)<=6) && (abs(j-ly/2)<=6))
+%              %if ((abs(i-lx/2)<=7) && (abs(j-ly/2)<=7) && (abs(k-lz/2)<=7))
+%              if (j>=5) && (j<=18)
+%              %if ((sqrt((i-40)*(i-40)+(j-8)*(j-8))<=7) ||(sqrt((i-56)*(i-56)+(j-8)*(j-8))<=7)) %100,60,3
+%                 A(i,j,k)=0.8;B(i,j,k)=0.03;
+%             else
+%                 A(i,j,k)=0.2;B(i,j,k)=0.01;
+%             end
+%             
+%         end
+%     end
+% end
 
 
- 
- 
+%=======================A=Permeability,B=Porosity================
+
+for k=1:lz
+    for j=1:ly
+        for i=1:lx
+           
+                A(i,j,k)=1;B(i,j,k)=0.1;
+         
+            
+        end
+    end
+end
 
 
 
+
+
+fid = fopen('perm.dat','wt');
+
+for k=1:lz
+    for j=1:ly
+        for i=1:lx
+        fprintf(fid,'%1d %1d\n',A(i,j,k),B(i,j,k));
+        end
+    end
+end
