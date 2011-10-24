@@ -1156,7 +1156,7 @@ FILE *ftest;
 	
 	MPI_Bcast(Solid_Int,nx*ny*nz,MPI_INT,0,MPI_COMM_WORLD);
 
-	
+if (rank==0)	
 	cout<<"INPUT FILE READING COMPLETE.  THE POROSITY IS: "<<*porosity<<endl;
 
 	//cout<<nx<<"  "<<ny<<"  "<<nz<<"  zoom "<<Zoom<<endl;
@@ -1239,7 +1239,7 @@ FILE *ftest2;
 	
 	MPI_Bcast(Psi_Int,nx*ny*nz,MPI_DOUBLE,0,MPI_COMM_WORLD);
 
-	
+if (rank==0)	
 	cout<<"Concentration FILE READING COMPLETE. "<<endl;
 
 	
@@ -1319,8 +1319,11 @@ FILE *ftest3;
 	
 	MPI_Bcast(Psi_Int2,nx*ny*nz,MPI_DOUBLE,0,MPI_COMM_WORLD);
 
-	
+if (rank==0)
+	{	
 	cout<<"Concentration FILE READING COMPLETE. "<<endl;
+	cout<<endl;
+	}
 
 	
 	for (i=0;i<nx;i++)

@@ -1030,9 +1030,11 @@ FILE *ftest;
 	
 	MPI_Bcast(Solid_Int,nx*ny*nz,MPI_INT,0,MPI_COMM_WORLD);
 
-	
+if (rank==0)
+	{	
 	cout<<"INPUT FILE READING COMPLETE.  THE POROSITY IS: "<<*porosity<<endl;
-
+	cout<<endl;
+	}
 	
 
 	

@@ -195,6 +195,7 @@ double error_perm,S_l,gxs,gys,gzs,Gravity;
 double Buoyancy_parameter=1.0;
 double ref_psi,c_s,c_s2,dx_input,dt_input,lat_c;
 double Dispersion=0;
+double disp_pre=0;
 
 int sol_c_xp,sol_c_xn,sol_c_yp,sol_c_yn,sol_c_zp,sol_c_zn;
 double c_xp,c_xn,c_yp,c_yn,c_zp,c_zn;
@@ -698,7 +699,7 @@ if (wr_per==1)
 			                {
 					Statistical_psi(rho_r,n,Solid);
 					//==========for bodyforce output===========
-					if (rank==0)
+					if ((rank==0) and (ini_psi>0) and (n>ini_psi))
 					{
 					ofstream finf3(FileName3,ios::app);
 					finf3<<Dispersion<<endl;
@@ -1126,7 +1127,7 @@ FILE *ftest;
 	
 	MPI_Bcast(Solid_Int,nx*ny*nz,MPI_INT,0,MPI_COMM_WORLD);
 
-	
+if (rank==0)		
 	cout<<"INPUT FILE READING COMPLETE.  THE POROSITY IS: "<<*porosity<<endl;
 
 	//cout<<nx<<"  "<<ny<<"  "<<nz<<"  zoom "<<Zoom<<endl;
@@ -1211,9 +1212,11 @@ FILE *ftest2;
 	
 	MPI_Bcast(Psi_Int,nx*ny*nz,MPI_DOUBLE,0,MPI_COMM_WORLD);
 
-	
+if (rank==0)
+	{	
 	cout<<"Concentration FILE READING COMPLETE. "<<endl;
-
+	cout<<endl;
+	}
 	
 	for (i=0;i<nx;i++)
 		for (j=0;j<ny;j++)
@@ -4466,7 +4469,8 @@ if (Sub_Dis==1)
 	out.close();
 	        
 		DX=EX2-EX*EX;
-		Dispersion=DX*0.5/(n*dt);
+		Dispersion=(DX-disp_pre)*0.5/(freDis*dt);
+		disp_pre=DX;
         	//cout<<EX<<"    nis   "<<psi_total<<endl;
                 delete [] rbuf;
 
@@ -4528,7 +4532,8 @@ if (Sub_Dis==2)
 		}
 	out.close();
 		DX=EX2-EX*EX;
-		Dispersion=DX*0.5/(n*dt);	
+		Dispersion=(DX-disp_pre)*0.5/(freDis*dt);	
+		disp_pre=DX;
         
                 delete [] rbuf;
         }
@@ -4580,7 +4585,8 @@ if (Sub_Dis==3)
 		}
 	out.close();
 	        DX=EX2-EX*EX;
-		Dispersion=DX*0.5/(n*dt);
+		Dispersion=(DX-disp_pre)*0.5/(freDis*dt);
+		disp_pre=DX;
         	
                 delete [] rbuf;
         }
