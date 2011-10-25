@@ -1617,6 +1617,7 @@ double m_l[19];
 int i,j,m,ind_S;
 int interi,interj,interk,ip,jp,kp;
 double c2,c4;
+double delta_rho=0.1;
 
 	c2=lat_c*lat_c;c4=c2*c2;
 
@@ -2050,7 +2051,8 @@ if (rank==0)
            if (cc>0)
            for(int kk=1;kk<19;kk+=2)
                 {
-                ef=elat[kk][0]*C[0]+elat[kk][1]*C[1]+elat[kk][2]*C[2];
+                //ef=elat[kk][0]*C[0]+elat[kk][1]*C[1]+elat[kk][2]*C[2];
+                ef=e[kk][0]*C[0]+e[kk][1]*C[1]+e[kk][2]*C[2];
                 cospsi=g_r[kk]<g_r[kk+1]?g_r[kk]:g_r[kk+1];
                 cospsi=cospsi<g_b[kk]?cospsi:g_b[kk];
                 cospsi=cospsi<g_b[kk+1]?cospsi:g_b[kk+1];

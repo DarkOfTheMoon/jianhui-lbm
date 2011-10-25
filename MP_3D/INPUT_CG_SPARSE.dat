@@ -1,7 +1,7 @@
 =============INPUT FILE FOR 3D LATTICE BOLTZMANN MPI CODE--MULTI COMPONENT COLOR GRADIENT MODEL=======
 BC.dat                  	:Geometry filenameEmily_Berea_y_614_764_7.dat
 phase.dat       	    	:Initial components distribution
-120 10 3                 	:nx ny nz
+60 60 1                 	:nx ny nz
 12000		     		:Maximum time step
 19.9997	             		:dx (um) Resolution (for Permeability calculation)
 0	        	      	:Pressure Or Velocity Boundary (1=YES, 0=No)
@@ -13,11 +13,11 @@ phase.dat       	    	:Initial components distribution
 0 0.0 0 0.0	   		:Velocity Boundary in X direction (Format detials can be found within this file)
 0 0.0 0 0.07	   		:Velocity Boundary in Y direction (Format detials can be found within this file)
 0 0.0 0 0.07	   		:Velocity Boundary in Z direction (Format detials can be found within this file)
-0.1    		       		:Viscosity (Component A, psi=1)
-0.1    		       		:Viscosity (Component B, psi=-1)
+0.03    		       		:Viscosity (Component A, psi=1)
+0.02    		       		:Viscosity (Component B, psi=-1)
 0.5     		      	:Contact Angle Cos(Theta)
 1e-2    		      	:Surface tension (Kappa)
-0.0 0.001 0.0			:initial velocity for x,y,z
+0.0 0.0 0.0			:initial velocity for x,y,z
 200	        	       	:Permeability (Single Phase mD)
 =========OUTPUT==CONTROL===================
 1		         	:Permeability writing (1=yes, 0=no)
@@ -31,7 +31,7 @@ phase.dat       	    	:Initial components distribution
 ==============ADVANCE==PARAMETER==========
 0 658 659 11 			:ONLY USE PART OF THE ORIGINAL GEOMETRY (1=YES,0=NO,NX,NY,NZ)
 1				:FACTOR OF MESHREFINEMENT (0,1=No mesh refinement, 1=1X,2=2X,3=3X)
-0 1.0 2.0	:Self define lattice velocity: 0=DEFAULT, dx, dt ((u_x+u_y+u_z)*dt/dx<=1 Courant Number)
+0 0.5 2.0	:Self define lattice velocity: 0=DEFAULT, dx, dt ((u_x+u_y+u_z)*dt/dx<=1 Courant Number)
 ./				:OUTPUT PATH,DEFAULT: ./ (REMEMBER TO INCLUDE "/" AT THE END OF PATH)
 2              			:PRESSURE AND VELOCITY BOUNDARY CONDITION OPTIONS: 0,1,2,3: EBC_S,EBC_D,TOLKE_BC,NEBC_D
 0  500				:MULTI-COMPONENT STABALIZER: (a,b) a=0=OFF, a=1=ON, BODY FORCE WILL BE APPLIED AFTER b steps 
@@ -43,4 +43,5 @@ LBM_Backup_Concentration_200           :BACKUP DATA FOR INTIALIZATION--Velocity
 LBM_Backup_f_200                        :BACKUP DATA FOR DISTRIBUTION FUNCTION F
 
 INSTRUCTIONS OF PARAMETER INPUT
+0.0556</frac{niu*dt}{dx^2}<0.25
 
