@@ -14,10 +14,17 @@ int main (int argc , char * argv [])
 int nx=128;
 int ny=128;
 int nz=128;
-int dir=0;
-int sym_x=1;
-int sym_y=0;
+int dir=1;
+int sym_x=0;
+int sym_y=1;
 int sym_z=0;
+int add_buf_x_n=0;
+int add_buf_y_n=5;
+int add_buf_z_n=0;
+
+int add_buf_x_p=0;
+int add_buf_y_p=0;
+int add_buf_z_p=0;
 
 int pls[4][3]={{0,2,2},{2,0,2},{2,2,0},{0,0,0}};
 
@@ -146,23 +153,28 @@ if (sym_z==1)
 	out<<"J.Yang Lattice Boltzmann Simulation 3D Single Phase-Solid-Density"<<endl;
 	out<<"ASCII"<<endl;
 	out<<"DATASET STRUCTURED_POINTS"<<endl;
-	out<<"DIMENSIONS         "<<(nx+pls[dir][0])*(sym_x+1)<<"         "<<(ny+pls[dir][1])*(sym_y+1)<<"         "<<(nz+pls[dir][2])*(sym_z+1)<<endl;       ///*********
+	out<<"DIMENSIONS         "<<(nx+pls[dir][0])*(sym_x+1)+add_buf_x_n+add_buf_x_p<<"         "<<(ny+pls[dir][1])*(sym_y+1)+add_buf_y_n+add_buf_y_p<<"         "<<(nz+pls[dir][2])*(sym_z+1)+add_buf_z_n+add_buf_z_p<<endl;       ///*********
 	out<<"ORIGIN 0 0 0"<<endl;
 	out<<"SPACING 1 1 1"<<endl;
-	out<<"POINT_DATA     "<<(nx+pls[dir][0])*(sym_x+1)*(ny+pls[dir][1])*(sym_y+1)*(nz+pls[dir][2])*(sym_z+1)<<endl;				///*********
+	out<<"POINT_DATA     "<<((nx+pls[dir][0])*(sym_x+1)+add_buf_x_n+add_buf_x_p)*((ny+pls[dir][1])*(sym_y+1)+add_buf_y_n+add_buf_y_p)*((nz+pls[dir][2])*(sym_z+1)+add_buf_z_n+add_buf_z_p)<<endl;				///*********
 	out<<"SCALARS sample_scalars float"<<endl;
 	out<<"LOOKUP_TABLE default"<<endl;
 	
 	
 	
-	for(k=0 ; k<(nz+pls[dir][2])*(sym_z+1) ; k++)						///*********
-		for(j=0 ; j<(ny+pls[dir][1])*(sym_y+1) ; j++)					///*********
-			for(i=0 ; i<(nx+pls[dir][0])*(sym_x+1) ; i++)				///*********
-			out<<Solid_Int[i][j][k]<<endl;
+	for(k=0 ; k<(nz+pls[dir][2])*(sym_z+1)+add_buf_z_n+add_buf_z_p ; k++)						///*********
+		for(j=0 ; j<(ny+pls[dir][1])*(sym_y+1)+add_buf_y_n+add_buf_y_p ; j++)					///*********
+			for(i=0 ; i<(nx+pls[dir][0])*(sym_x+1)+add_buf_x_n+add_buf_x_p ; i++)				///*********		
+			if ((i>=add_buf_x_n) and (i<(nx+pls[dir][0])*(sym_x+1)+add_buf_x_n) and (j>=add_buf_y_n) and (j<(ny+pls[dir][1])*(sym_y+1)+add_buf_y_n) and (k>=add_buf_z_n) and (k<(nz+pls[dir][2])*(sym_z+1)+add_buf_z_n))
+			out<<Solid_Int[i-add_buf_x_n][j-add_buf_y_n][k-add_buf_z_n]<<endl;
+			else
+			out<<0.0<<endl;
+
 
 
 	out.close();
-cout<<(nx+pls[dir][0])*(sym_x+1)<<"         "<<(ny+pls[dir][1])*(sym_y+1)<<"         "<<(nz+pls[dir][2])*(sym_z+1)<<endl;
+
+cout<<(nx+pls[dir][0])*(sym_x+1)+add_buf_x_n+add_buf_x_p<<"         "<<(ny+pls[dir][1])*(sym_y+1)+add_buf_y_n+add_buf_y_p<<"         "<<(nz+pls[dir][2])*(sym_z+1)+add_buf_z_n+add_buf_z_p<<endl;
 
 }
 
