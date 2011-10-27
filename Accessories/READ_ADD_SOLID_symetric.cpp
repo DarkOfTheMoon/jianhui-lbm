@@ -15,8 +15,8 @@ int nx=128;
 int ny=128;
 int nz=128;
 int dir=0;
-int sym_x=0;
-int sym_y=1;
+int sym_x=1;
+int sym_y=0;
 int sym_z=0;
 
 int pls[4][3]={{0,2,2},{2,0,2},{2,2,0},{0,0,0}};
