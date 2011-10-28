@@ -155,7 +155,7 @@ void output_density_b(int ,double* ,int ,int ,int ,int ,int*** );
 
 void Geometry_b(int*** );
 
-double Comput_Perm(double* ,double** ,double* ,double* ,int );
+double Comput_Perm(double* ,double** ,double* ,double* ,int,int* );
 
 double Comput_Saturation(double* ,int***);
 
@@ -575,7 +575,7 @@ if (wr_per==1)
 		{       
 			error=Error(u,u0,&u_max,&u_ave);
 			if (u_max>=10.0)	U_max_ref+=1;
-			error_Per=Comput_Perm(psi,u,Per_l,Per_g,PerDir);
+			error_Per=Comput_Perm(psi,u,Per_l,Per_g,PerDir,SupInv);
 			S_l=Comput_Saturation(psi,Solid);
 			if (rank==0)
 			{
@@ -1371,7 +1371,12 @@ void init(double* rho, double** u, double** f,double* psi,double* rho_r, double*
 
 	}
 	
-	//if (par_per_x==1)
+	if (par_per_x==0)
+		{per_xn=0;per_xp=NX;}
+	if (par_per_y==0)
+		{per_yn=0;per_yp=NY;}
+	if (par_per_z==0)
+		{per_zn=0;per_zp=NZ;}
 
 	
 
@@ -4440,11 +4445,39 @@ void output_psi(int m,double* psi,int MirX,int MirY,int MirZ,int mir,int*** Soli
 }
 
 
-double Comput_Perm(double* psi,double** u,double* Per_l,double* Per_g,int PerDIr)
+double Comput_Perm(double* psi,double** u,double* Per_l,double* Per_g,int PerDIr, int* SupInv)
 {
+
 
 	int rank = MPI :: COMM_WORLD . Get_rank ();
 	int mpi_size=MPI :: COMM_WORLD . Get_size ();
+
+	int nx_g[mpi_size];
+	int disp[mpi_size];
+	int si,sj,sm;
+	
+	MPI_Gather(&nx_l,1,MPI_INT,nx_g,1,MPI_INT,0,MPI_COMM_WORLD);
+	
+	
+	if (rank==0)
+		{
+		disp[0]=0;
+	
+		for (int i=1;i<mpi_size;i++)
+			disp[i]=disp[i-1]+nx_g[i-1];
+		
+		}
+
+	MPI_Bcast(disp,mpi_size,MPI_INT,0,MPI_COMM_WORLD);
+
+//	if (rank==2)
+//		for (int i=0;i<mpi_size;i++)
+//			cout<<disp[i]<<"   "<<i<<endl;
+
+
+//	if (rank==1)
+//		cout<<per_zp<<" "<<per_zn<<endl;
+
 	double *rbuf_l, *rbuf_g;
 	rbuf_l=new double[mpi_size*3];
 	rbuf_g=new double[mpi_size*3];
@@ -4473,7 +4506,37 @@ double Comput_Perm(double* psi,double** u,double* Per_l,double* Per_g,int PerDIr
 		}
 		
 		
-		
+	if ((par_per_x-1)*(par_per_y-1)*(par_per_z-1)==0)	
+	for (int i=1;i<=Count;i++)
+	{
+		si=(int)(SupInv[i]/((NY+1)*(NZ+1)));
+		sj=(int)((SupInv[i]%((NY+1)*(NZ+1)))/(NZ+1));
+		sm=(int)(SupInv[i]%(NZ+1)); 
+		si+=disp[rank];
+		//if (rank==1)
+		//cout<<rank<<"  "<<si<<" "<<sj<<" "<<sm<<endl;
+		//cout<<si<<"  "<<per_xn<<"  "<<per_xp<<endl;
+		if ((si>=per_xn) and (si<=per_xp) and (sj>=per_yn) and (sj<=per_yp) and (sm>=per_zn) and (sm<=per_zp))
+		{
+	        if (psi[i]>0)
+		        {
+		                Q_l[0]+=u[i][0];
+		                Q_l[1]+=u[i][1];
+		                Q_l[2]+=u[i][2];
+		        }
+		else
+		        {
+                                Q_g[0]+=u[i][0];
+                                Q_g[1]+=u[i][1];
+                                Q_g[2]+=u[i][2];
+		        
+		        
+		        }
+		}
+
+
+	}
+	else
 	for (int i=1;i<=Count;i++)
 	        if (psi[i]>0)
 		        {
@@ -4489,6 +4552,12 @@ double Comput_Perm(double* psi,double** u,double* Per_l,double* Per_g,int PerDIr
 		        
 		        
 		        }
+
+
+
+
+
+
 
 	MPI_Barrier(MPI_COMM_WORLD);
 

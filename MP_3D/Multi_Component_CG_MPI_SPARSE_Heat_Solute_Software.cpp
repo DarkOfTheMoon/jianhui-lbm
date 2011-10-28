@@ -135,7 +135,7 @@ void Solute_Constant_BC(int,double,int, double,int ,double ,int ,double ,int ,do
 void Solute_ZeroFlux_BC(int,double, int,double,int,double,int,double,int,double,int,double,double**,int***,double*,double**,double**);
 
 
-double Comput_Perm(double* ,double** ,double* ,double* ,int );
+double Comput_Perm(double* ,double** ,double* ,double* ,int ,int*);
 
 double Comput_Saturation(double* ,int***);
 
@@ -204,6 +204,7 @@ double c_xp,c_xn,c_yp,c_yn,c_zp,c_zn;
 int sol_zf_xp,sol_zf_xn,sol_zf_yp,sol_zf_yn,sol_zf_zp,sol_zf_zn;
 double zf_xp,zf_xn,zf_yp,zf_yn,zf_zp,zf_zn;
 
+int par_per_x,par_per_y,par_per_z,per_xp,per_xn,per_yp,per_yn,per_zp,per_zn;
 
 double** fg;
 double** Fg;
@@ -298,6 +299,10 @@ double v_max,error_Per;
 	fin >> Sub_BC;					fin.getline(dummy, NCHAR);
 	fin >> Sub_BC_psi;				fin.getline(dummy, NCHAR);
 	fin >> stab >> stab_time;			fin.getline(dummy, NCHAR);
+	fin >> par_per_x >> par_per_y >>par_per_z;	fin.getline(dummy, NCHAR);
+	fin >> per_xp >> per_xn;			fin.getline(dummy, NCHAR);
+	fin >> per_yp >> per_yn;			fin.getline(dummy, NCHAR);
+	fin >> per_zp >> per_zn;			fin.getline(dummy, NCHAR);
 	fin >> fre_backup;                        fin.getline(dummy, NCHAR);
 	fin >>mode_backup_ini;                fin.getline(dummy, NCHAR);
 	fin >> backup_rho;                        fin.getline(dummy, NCHAR);
@@ -375,6 +380,13 @@ double v_max,error_Per;
 	MPI_Bcast(&psi_xn,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&psi_yp,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&psi_yn,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&psi_zp,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&psi_zn,1,MPI_INT,0,MPI_COMM_WORLD);
+
+	MPI_Bcast(&par_per_x,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&par_per_y,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&par_per_z,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&per_yp,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&per_xp,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&per_yn,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&per_zp,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&per_zn,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&per_xn,1,MPI_INT,0,MPI_COMM_WORLD);
+
 	
 int U_max_ref=0;
 
@@ -613,7 +625,7 @@ if (wr_per==1)
 		{       
 			error=Error(u,u0,&u_max,&u_ave);
 			if (u_max>=10.0)	U_max_ref+=1;
-			error_Per=Comput_Perm(psi,u,Per_l,Per_g,PerDir);
+			error_Per=Comput_Perm(psi,u,Per_l,Per_g,PerDir,SupInv);
 			S_l=Comput_Saturation(psi,Solid);
 			if (rank==0)
 			{
@@ -1496,7 +1508,12 @@ void init(double* rho, double** u, double** f,double* psi,double* rho_r, double*
 
 	}
 
-	
+	if (par_per_x==0)
+		{per_xn=0;per_xp=NX;}
+	if (par_per_y==0)
+		{per_yn=0;per_yp=NY;}
+	if (par_per_z==0)
+		{per_zn=0;per_zp=NZ;}
 
 	 	
 }
@@ -4942,11 +4959,39 @@ void output_psi(int m,double* psi,int MirX,int MirY,int MirZ,int mir,int*** Soli
 }
 
 
-double Comput_Perm(double* psi,double** u,double* Per_l,double* Per_g,int PerDIr)
+double Comput_Perm(double* psi,double** u,double* Per_l,double* Per_g,int PerDIr, int* SupInv)
 {
+
 
 	int rank = MPI :: COMM_WORLD . Get_rank ();
 	int mpi_size=MPI :: COMM_WORLD . Get_size ();
+
+	int nx_g[mpi_size];
+	int disp[mpi_size];
+	int si,sj,sm;
+	
+	MPI_Gather(&nx_l,1,MPI_INT,nx_g,1,MPI_INT,0,MPI_COMM_WORLD);
+	
+	
+	if (rank==0)
+		{
+		disp[0]=0;
+	
+		for (int i=1;i<mpi_size;i++)
+			disp[i]=disp[i-1]+nx_g[i-1];
+		
+		}
+
+	MPI_Bcast(disp,mpi_size,MPI_INT,0,MPI_COMM_WORLD);
+
+//	if (rank==2)
+//		for (int i=0;i<mpi_size;i++)
+//			cout<<disp[i]<<"   "<<i<<endl;
+
+
+//	if (rank==1)
+//		cout<<per_zp<<" "<<per_zn<<endl;
+
 	double *rbuf_l, *rbuf_g;
 	rbuf_l=new double[mpi_size*3];
 	rbuf_g=new double[mpi_size*3];
@@ -4975,7 +5020,37 @@ double Comput_Perm(double* psi,double** u,double* Per_l,double* Per_g,int PerDIr
 		}
 		
 		
-		
+	if ((par_per_x-1)*(par_per_y-1)*(par_per_z-1)==0)	
+	for (int i=1;i<=Count;i++)
+	{
+		si=(int)(SupInv[i]/((NY+1)*(NZ+1)));
+		sj=(int)((SupInv[i]%((NY+1)*(NZ+1)))/(NZ+1));
+		sm=(int)(SupInv[i]%(NZ+1)); 
+		si+=disp[rank];
+		//if (rank==1)
+		//cout<<rank<<"  "<<si<<" "<<sj<<" "<<sm<<endl;
+		//cout<<si<<"  "<<per_xn<<"  "<<per_xp<<endl;
+		if ((si>=per_xn) and (si<=per_xp) and (sj>=per_yn) and (sj<=per_yp) and (sm>=per_zn) and (sm<=per_zp))
+		{
+	        if (psi[i]>0)
+		        {
+		                Q_l[0]+=u[i][0];
+		                Q_l[1]+=u[i][1];
+		                Q_l[2]+=u[i][2];
+		        }
+		else
+		        {
+                                Q_g[0]+=u[i][0];
+                                Q_g[1]+=u[i][1];
+                                Q_g[2]+=u[i][2];
+		        
+		        
+		        }
+		}
+
+
+	}
+	else
 	for (int i=1;i<=Count;i++)
 	        if (psi[i]>0)
 		        {
@@ -4991,6 +5066,12 @@ double Comput_Perm(double* psi,double** u,double* Per_l,double* Per_g,int PerDIr
 		        
 		        
 		        }
+
+
+
+
+
+
 
 	MPI_Barrier(MPI_COMM_WORLD);
 
@@ -5056,6 +5137,7 @@ double Comput_Perm(double* psi,double** u,double* Per_l,double* Per_g,int PerDIr
 	
 
 }
+
 
 
 

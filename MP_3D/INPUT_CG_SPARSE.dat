@@ -40,7 +40,7 @@ phase.dat       	    	:Initial components distribution
 2              			:PRESSURE AND VELOCITY BOUNDARY CONDITION OPTIONS: 0,1,2,3: EBC_S,EBC_D,TOLKE_BC,NEBC_D
 0  500				:MULTI-COMPONENT STABALIZER: (a,b) a=0=OFF, a=1=ON, BODY FORCE WILL BE APPLIED AFTER b steps
 0 0 0				:Pemeability calculation Partially  
-0 100				:Permeability calculation partially Starting point and Ending point in X
+130 20				:Permeability calculation partially Starting point and Ending point in X
 0 100				:Permeability calculation partially Starting point and Ending point in Y
 0 100				:Permeability calculation partially Starting point and Ending point in Z
 -1		                   :BACKUP FREQUENCY (-1=NO BACKUP,0=Backup at the end of computation)
