@@ -199,11 +199,12 @@ int LN[5]={2,8,10,12,14};
 
 
 int n,nx_l,n_max,in_BC,PerDir,freRe,freDe,freVe,frePsi,Par_Geo,Par_nx,Par_ny,Par_nz;
-int Zoom,lattice_v;
+int Zoom,lattice_v,in_psi_BC,par_per_x,par_per_y,par_per_z;
 
 
-int wr_per,pre_xp,pre_xn,pre_yp,pre_yn,pre_zp,pre_zn,stab,stab_time,fre_backup;
-int vel_xp,vel_xn,vel_yp,vel_yn,vel_zp,vel_zn,Sub_BC,Out_Mode,mode_backup_ini;
+int wr_per,pre_xp,pre_xn,pre_yp,pre_yn,pre_zp,pre_zn,stab,stab_time,fre_backup,psi_xp,psi_xn,psi_yp;
+int psi_yn,per_xn,per_yn,per_zn;
+int vel_xp,vel_xn,vel_yp,vel_yn,vel_zp,vel_zn,Sub_BC,Out_Mode,mode_backup_ini,psi_zp,psi_zn,per_xp,per_yp,per_zp;
 double in_vis,p_xp,p_xn,p_yp,p_yn,p_zp,p_zn,niu_l,niu_g,ContactAngle_parameter,CapA;
 double inivx,inivy,inivz,v_xp,v_xn,v_yp,v_yn,v_zp,v_zn,Re_l,Re_g,Capillary;
 double error_Per,Permeability,psi_solid,S_l,gxs,gys,gzs,c_s,c_s2,dx_input,dt_input,lat_c;
@@ -250,6 +251,7 @@ double v_max,error_Per;
 	fin >> n_max;					fin.getline(dummy, NCHAR);
 	fin >> reso;					fin.getline(dummy, NCHAR);
 	fin >> in_BC;					fin.getline(dummy, NCHAR);
+	fin >> in_psi_BC;				fin.getline(dummy, NCHAR);
 	fin >> mirX >> mirY >> mirZ;			fin.getline(dummy, NCHAR);
 	fin >> gx >> gy >> gz;				fin.getline(dummy, NCHAR);
 	fin >> pre_xp >> p_xp >> pre_xn >> p_xn;	fin.getline(dummy, NCHAR);
@@ -258,6 +260,9 @@ double v_max,error_Per;
 	fin >> vel_xp >> v_xp >> vel_xn >> v_xn;	fin.getline(dummy, NCHAR);
 	fin >> vel_yp >> v_yp >> vel_yn >> v_yn;	fin.getline(dummy, NCHAR);
 	fin >> vel_zp >> v_zp >> vel_zn >> v_zn;	fin.getline(dummy, NCHAR);
+	fin >> psi_xp >> psi_xn;			fin.getline(dummy, NCHAR);
+	fin >> psi_yp >> psi_yn;			fin.getline(dummy, NCHAR);
+	fin >> psi_zp >> psi_zn;			fin.getline(dummy, NCHAR);
 	fin >> niu_l;					fin.getline(dummy, NCHAR);
 	fin >> niu_g;					fin.getline(dummy, NCHAR);
 	fin >> ContactAngle_parameter;			fin.getline(dummy, NCHAR);
@@ -280,6 +285,10 @@ double v_max,error_Per;
 	fin >> outputfile;				fin.getline(dummy, NCHAR);
 	fin >> Sub_BC;					fin.getline(dummy, NCHAR);
 	fin >> stab >> stab_time;			fin.getline(dummy, NCHAR);
+//	fin >> par_per_x >> par_per_y >>par_per_z;	fin.getline(dummy, NCHAR);
+//	fin >> per_xp >> per_xn;			fin.getline(dummy, NCHAR);
+//	fin >> per_yp >> per_yn;			fin.getline(dummy, NCHAR);
+//	fin >> per_zp >> per_zn;			fin.getline(dummy, NCHAR);
 	fin >> fre_backup;                        fin.getline(dummy, NCHAR);
 	fin >>mode_backup_ini;                fin.getline(dummy, NCHAR);
 	fin >> backup_rho;                        fin.getline(dummy, NCHAR);
@@ -332,9 +341,19 @@ double v_max,error_Per;
 	MPI_Bcast(&lattice_v,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&dx_input,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 	MPI_Bcast(&dt_input,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 
-
+	MPI_Bcast(&in_psi_BC,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&psi_xp,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&psi_xn,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&psi_yp,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&psi_yn,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&psi_zp,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&psi_zn,1,MPI_INT,0,MPI_COMM_WORLD);
 
 	
+	MPI_Bcast(&par_per_x,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&par_per_y,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&par_per_z,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&per_yp,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&per_xp,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&per_yn,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&per_zp,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&per_zn,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&per_xn,1,MPI_INT,0,MPI_COMM_WORLD);
+
+
 int U_max_ref=0;
 
 
@@ -1351,6 +1370,8 @@ void init(double* rho, double** u, double** f,double* psi,double* rho_r, double*
 		
 
 	}
+	
+	//if (par_per_x==1)
 
 	
 
@@ -1806,33 +1827,33 @@ if (rank==0)
 		{
 		        //cout<<f[ci][tmpi]<<endl;
 			//-------------------PERIODIC BOUNDARY CONDITION---------------------------
-		if (in_BC>0)
+		if (in_psi_BC>0)
 		{	     
 			interi=i+e[tmpi][0];
-			if (((pre_xn-1)* (vel_xn-1)==0) and (rank==0) and (interi<0))
+			if ((psi_xn>0) and (rank==0) and (interi<0))
 			        interi=0;
-			if (((pre_xp-1)*(vel_xp-1)==0) and (rank==mpi_size-1) and (interi>=nx_l))
+			if ((psi_xp>0) and (rank==mpi_size-1) and (interi>=nx_l))
 			        interi=nx_l-1;
 			
 			interj=j+e[tmpi][1];
-			if ((pre_yn-1)*(vel_yn-1)==0)
+			if (psi_yn-1>0)
 			        {if (interj<0) {interj=0;}}
 			else
 			        {if (interj<0) {interj=NY;}}
 			 
-			if ((pre_yp-1)*(vel_yp-1)==0)
+			if (psi_yp>0)
 			        {if (interj>NY) {interj=NY;}}
 			else
 			        {if (interj>NY) {interj=0;}}
 			
 			
 			interk=m+e[tmpi][2];
-			if ((pre_zn-1)*(vel_zn-1)==0)
+			if (psi_zn>0)
 			        {if (interk<0) {interk=0;}}
 			else
 			        {if (interk<0) {interk=NZ;}}
 			
-			if ((pre_zp-1)*(vel_zp-1)==0)
+			if (psi_zp>0)
 			        {if (interk>NZ) {interk=NZ;}}
 			else
 			        {if (interk>NZ) {interk=0;}}
@@ -2296,16 +2317,28 @@ void comput_macro_variables( double* rho,double** u,double** u0,double** f,doubl
 			}
 			
 		
-	if (in_BC==1)
+	if (in_psi_BC==1)
                 {
-                   if (((pre_xn==1) or (vel_xn==1)) and (rank==0))    
+                   if ((psi_xn>0) and (rank==0))
+			if (psi_xn==1)    
                            {
                            for(int j=0;j<=NY;j++)
                                    for (int k=0;k<=NZ;k++)
                                    {
-                                   //rho_r[Solid[0][j][k]]=(Psi_local[0][j][k]*1.0+1.0)/2;
+                                   rho_r[Solid[0][j][k]]=(Psi_local[0][j][k]*1.0+1.0)/2;
+                                   rho_b[Solid[0][j][k]]=1.0-rho_r[Solid[0][j][k]];
+                                   psi[Solid[0][j][k]]=Psi_local[0][j][k];
+                                   //psi[Solid[0][j][k]]=psi[Solid[1][j][k]];
+                                   //rho_r[Solid[0][j][k]]=(psi[Solid[0][j][k]]*1.0+1.0)/2;
                                    //rho_b[Solid[0][j][k]]=1.0-rho_r[Solid[0][j][k]];
-                                   //psi[Solid[0][j][k]]=Psi_local[0][j][k];
+                                   
+                                   }
+                           }
+			else
+			{
+                           for(int j=0;j<=NY;j++)
+                                   for (int k=0;k<=NZ;k++)
+                                   {
                                    psi[Solid[0][j][k]]=psi[Solid[1][j][k]];
                                    rho_r[Solid[0][j][k]]=(psi[Solid[0][j][k]]*1.0+1.0)/2;
                                    rho_b[Solid[0][j][k]]=1.0-rho_r[Solid[0][j][k]];
@@ -2313,71 +2346,127 @@ void comput_macro_variables( double* rho,double** u,double** u0,double** f,doubl
                                    }
                            }
                         
-                      if (((pre_xp==1) or (vel_xp==1)) and (rank==mpi_size-1))    
-                           {
+                      if ((psi_xp>0) and (rank==mpi_size-1))    
+                        if (psi_xp==1)   
+			{
                            for(int j=0;j<=NY;j++)
                                    for (int k=0;k<=NZ;k++)
                                    {
-                                   //rho_r[Solid[nx_l-1][j][k]]=(Psi_local[nx_l-1][j][k]*1.0+1.0)/2;
+                                   rho_r[Solid[nx_l-1][j][k]]=(Psi_local[nx_l-1][j][k]*1.0+1.0)/2;
+                                   rho_b[Solid[nx_l-1][j][k]]=1.0-rho_r[Solid[nx_l-1][j][k]];
+                                   psi[Solid[nx_l-1][j][k]]=Psi_local[nx_l-1][j][k];
+                                   //psi[Solid[nx_l-1][j][k]]=psi[Solid[nx_l-2][j][k]];
+                                   //rho_r[Solid[nx_l-1][j][k]]=(psi[Solid[nx_l-1][j][k]]*1.0+1.0)/2;
                                    //rho_b[Solid[nx_l-1][j][k]]=1.0-rho_r[Solid[nx_l-1][j][k]];
-                                   //psi[Solid[nx_l-1][j][k]]=Psi_local[nx_l-1][j][k];
+                                   }
+                           }  
+			else
+			{
+                           for(int j=0;j<=NY;j++)
+                                   for (int k=0;k<=NZ;k++)
+                                   {
+                              
                                    psi[Solid[nx_l-1][j][k]]=psi[Solid[nx_l-2][j][k]];
                                    rho_r[Solid[nx_l-1][j][k]]=(psi[Solid[nx_l-1][j][k]]*1.0+1.0)/2;
                                    rho_b[Solid[nx_l-1][j][k]]=1.0-rho_r[Solid[nx_l-1][j][k]];
                                    }
-                           }  
+                           }  	
                         
                         
-                         if ((pre_yn==1) or (vel_yn==1))    
+                         if (psi_yn==1)    
                            {
                            for(int i=0;i<nx_l;i++)
                                    for (int k=0;k<=NZ;k++)
                                    {
-                                   //rho_r[Solid[i][0][k]]=(Psi_local[i][0][k]*1.0+1.0)/2;
-                                   //rho_b[Solid[i][0][k]]=1.0-rho_r[Solid[i][0][k]];
-                                   //psi[Solid[i][0][k]]=Psi_local[i][0][k];
+                                   rho_r[Solid[i][0][k]]=(Psi_local[i][0][k]*1.0+1.0)/2;
+                                   rho_b[Solid[i][0][k]]=1.0-rho_r[Solid[i][0][k]];
+                                   psi[Solid[i][0][k]]=Psi_local[i][0][k];
+                                   
+                                   }
+                           }
+			else 
+			 if (psi_yn==2)    
+                           {
+                           for(int i=0;i<nx_l;i++)
+                                   for (int k=0;k<=NZ;k++)
+                                   {
                                    psi[Solid[i][0][k]]=psi[Solid[i][1][k]];
                                    rho_r[Solid[i][0][k]]=(psi[Solid[i][0][k]]*1.0+1.0)/2;
                                    rho_b[Solid[i][0][k]]=1.0-rho_r[Solid[i][0][k]];
                                    }
-                           }  
+                           }
+ 
                         
-                        if ((pre_yp==1) or (vel_yp==1))    
+                        if (psi_yp==1)  
                            {
                            for(int i=0;i<nx_l;i++)
                                    for (int k=0;k<=NZ;k++)
                                    {
-                                   //rho_r[Solid[i][NY][k]]=(Psi_local[i][NY][k]*1.0+1.0)/2;
-                                   //rho_b[Solid[i][NY][k]]=1.0-rho_r[Solid[i][NY][k]];
-                                   //psi[Solid[i][NY][k]]=Psi_local[i][NY][k];
+                                   rho_r[Solid[i][NY][k]]=(Psi_local[i][NY][k]*1.0+1.0)/2;
+                                   rho_b[Solid[i][NY][k]]=1.0-rho_r[Solid[i][NY][k]];
+                                   psi[Solid[i][NY][k]]=Psi_local[i][NY][k];
+                                   
+                                   }
+                           }  
+			else
+				if (psi_yp==2)  
+                           {
+                           for(int i=0;i<nx_l;i++)
+                                   for (int k=0;k<=NZ;k++)
+                                   {
+                                   
                                    psi[Solid[i][NY][k]]=psi[Solid[i][NY-1][k]];
                                    rho_r[Solid[i][NY][k]]=(psi[Solid[i][NY][k]]*1.0+1.0)/2;
                                    rho_b[Solid[i][NY][k]]=1.0-rho_r[Solid[i][NY][k]];
                                    }
                            }  
+
+
                         
-                        if ((pre_zn==1) or (vel_zn==1))    
+                        if (psi_zn==1)    
                            {
                            for(int i=0;i<nx_l;i++)
                                    for (int j=0;j<=NY;j++)
                                    {
-                                   //rho_r[Solid[i][j][0]]=(Psi_local[i][j][0]*1.0+1.0)/2;
-                                   //rho_b[Solid[i][j][0]]=1.0-rho_r[Solid[i][j][0]];
-                                   //psi[Solid[i][j][0]]=Psi_local[i][j][0];
+                                   rho_r[Solid[i][j][0]]=(Psi_local[i][j][0]*1.0+1.0)/2;
+                                   rho_b[Solid[i][j][0]]=1.0-rho_r[Solid[i][j][0]];
+                                   psi[Solid[i][j][0]]=Psi_local[i][j][0];
+                                   
+                                   }
+                           } 
+			else
+				 if (psi_zn==2)    
+                           {
+                           for(int i=0;i<nx_l;i++)
+                                   for (int j=0;j<=NY;j++)
+                                   {
+                                   
                                    psi[Solid[i][j][0]]=psi[Solid[i][j][1]];
                                    rho_r[Solid[i][j][0]]=(psi[Solid[i][j][0]]*1.0+1.0)/2;
                                    rho_b[Solid[i][j][0]]=1.0-rho_r[Solid[i][j][0]];
                                    }
-                           }  
+                           } 
                         
-                    if ((pre_zp==1) or (vel_zp==1))    
+
+
+                    if (psi_zp==1)    
                            {
                            for(int i=0;i<nx_l;i++)
                                    for (int j=0;j<=NY;j++)
                                    {
-                                   //rho_r[Solid[i][j][NZ]]=(Psi_local[i][j][NZ]*1.0+1.0)/2;
-                                   //rho_b[Solid[i][j][NZ]]=1.0-rho_r[Solid[i][j][NZ]];
-                                   //psi[Solid[i][j][NZ]]=Psi_local[i][j][NZ];
+                                   rho_r[Solid[i][j][NZ]]=(Psi_local[i][j][NZ]*1.0+1.0)/2;
+                                   rho_b[Solid[i][j][NZ]]=1.0-rho_r[Solid[i][j][NZ]];
+                                   psi[Solid[i][j][NZ]]=Psi_local[i][j][NZ];
+                                   
+                                   }
+                           } 
+		else
+			if (psi_zp==2)    
+                           {
+                           for(int i=0;i<nx_l;i++)
+                                   for (int j=0;j<=NY;j++)
+                                   {
+                                   
                                    psi[Solid[i][j][NZ]]=psi[Solid[i][j][NZ-1]];
                                    rho_r[Solid[i][j][NZ]]=(psi[Solid[i][j][NZ]]*1.0+1.0)/2;
                                    rho_b[Solid[i][j][NZ]]=1.0-rho_r[Solid[i][j][NZ]];
