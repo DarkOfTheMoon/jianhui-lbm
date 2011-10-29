@@ -189,7 +189,7 @@ int Zoom,lattice_v,Sub_BC_psi,Sub_Dis,freDis,ini_psi;
 
 int wr_per,pre_xp,pre_xn,pre_yp,pre_yn,pre_zp,pre_zn,fre_backup;
 int vel_xp,vel_xn,vel_yp,vel_yn,vel_zp,vel_zn,Sub_BC,Out_Mode,mode_backup_ini;
-double in_vis,p_xp,p_xn,p_yp,p_yn,p_zp,p_zn,niu_l,niu_s,tau_s;
+double p_xp,p_xn,p_yp,p_yn,p_zp,p_zn,niu_l,niu_s,tau_s;
 double inivx,inivy,inivz,v_xp,v_xn,v_yp,v_yn,v_zp,v_zn;
 double error_perm,S_l,gxs,gys,gzs,Gravity;
 double Buoyancy_parameter=1.0;
@@ -1266,7 +1266,7 @@ void init(double* rho, double** u, double** f,double** fg, double** F, double** 
 
 	c2=lat_c*lat_c;c4=c2*c2;
 	
-	//niu=in_vis;
+	//niu=niu;
 	tau_f=niu/(c_s2*dt)+0.5;
 	//tau_f=3.0*niu/dt+0.5;
 	//tau_s=3.0*niu_s/dt+0.5;
@@ -4373,13 +4373,13 @@ double Comput_Perm(double** u,double* Permia,int PerDIr)
 			Q[2]+=rbuf[i*3+2];
 			}
 
-		//Perm[0]=Q[0]*(1.0/Zoom)*(1.0/Zoom)/((NX+1)/Zoom*(NY+1)/Zoom*(NZ+1)/Zoom)*(in_vis)/gx;
-		//Perm[1]=Q[1]*(1.0/Zoom)*(1.0/Zoom)/((NX+1)/Zoom*(NY+1)/Zoom*(NZ+1)/Zoom)*(in_vis)/gy;
-		//Perm[2]=Q[2]*(1.0/Zoom)*(1.0/Zoom)/((NX+1)/Zoom*(NY+1)/Zoom*(NZ+1)/Zoom)*(in_vis)/gz;
+		//Perm[0]=Q[0]*(1.0/Zoom)*(1.0/Zoom)/((NX+1)/Zoom*(NY+1)/Zoom*(NZ+1)/Zoom)*(niu)/gx;
+		//Perm[1]=Q[1]*(1.0/Zoom)*(1.0/Zoom)/((NX+1)/Zoom*(NY+1)/Zoom*(NZ+1)/Zoom)*(niu)/gy;
+		//Perm[2]=Q[2]*(1.0/Zoom)*(1.0/Zoom)/((NX+1)/Zoom*(NY+1)/Zoom*(NZ+1)/Zoom)*(niu)/gz;
 
-		Perm[0]=Q[0]/((NX+1)*(NY+1)*(NZ+1))*(in_vis)/(gx+dp);
-		Perm[1]=Q[1]/((NX+1)*(NY+1)*(NZ+1))*(in_vis)/(gy+dp);
-		Perm[2]=Q[2]/((NX+1)*(NY+1)*(NZ+1))*(in_vis)/(gz+dp);
+		Perm[0]=Q[0]/((NX+1)*(NY+1)*(NZ+1))*(niu)/(gx+dp);
+		Perm[1]=Q[1]/((NX+1)*(NY+1)*(NZ+1))*(niu)/(gy+dp);
+		Perm[2]=Q[2]/((NX+1)*(NY+1)*(NZ+1))*(niu)/(gz+dp);
 		
 		switch(PerDIr)
 		{
@@ -4623,7 +4623,7 @@ void Backup_init(double* rho, double** u, double** f,double** fg, double* rho_r,
 
 	c2=lat_c*lat_c;c4=c2*c2;
 
-	//niu=in_vis;
+	//niu=niu;
 	tau_f=niu/(c_s2*dt)+0.5;
 	tau_s=niu_s/(c_s2*dt)+0.5;
 	
