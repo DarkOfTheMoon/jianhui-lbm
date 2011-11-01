@@ -507,8 +507,7 @@ if (wr_per==1)
 	if(n%freRe==0)
 		{       
 			
-			error=Error(u,u0,&u_max,&u_ave);if (u_max>=10.0)	U_max_ref+=1;
-			error_perm=Comput_Perm(u,Permia,PerDir);
+			
 			if (rank==0)
 			{
 			        
@@ -521,9 +520,17 @@ if (wr_per==1)
 				<<setiosflags(ios::scientific)<<error<<endl;
 			fin<<"Elapsed time is "<< the<<"h"<<tme<<"m"<<tse<<"s"<<endl;
 			fin<<"The expected completion time is "<<th<<"h"<<tm<<"m"<<ts<<"s"<<endl;
-			fin<<endl;       
-			        
-			           
+			fin<<endl; 
+			 fin.close();     
+			}
+
+			 error=Error(u,u0,&u_max,&u_ave);if (u_max>=10.0)	U_max_ref+=1;
+			error_perm=Comput_Perm(u,Permia,PerDir); 
+
+			 if (rank==0)
+			{ 
+			    
+			ofstream fin(FileName,ios::app);          
 			finish = MPI_Wtime();
 			
 			remain=(n_max-n)*((finish-start)/n);

@@ -580,10 +580,7 @@ if (wr_per==1)
 	if(n%freRe==0)
 		{       
 			
-			error=Error(u,u0,&u_max,&u_ave);
-			if (u_max>=10.0)	U_max_ref+=1;
-			
-			error_perm=Comput_Perm(u,Permia,PerDir);
+		
 			if (rank==0)
 			{
 			finish = MPI_Wtime();
@@ -600,7 +597,18 @@ if (wr_per==1)
 			fin<<"Elapsed time is "<< the<<"h"<<tme<<"m"<<tse<<"s"<<endl;
 			fin<<"The expected completion time is "<<th<<"h"<<tm<<"m"<<ts<<"s"<<endl;
 			fin<<endl;
+			fin.close();
+			}
+
+			error=Error(u,u0,&u_max,&u_ave);
+			if (u_max>=10.0)	U_max_ref+=1;
 			
+			error_perm=Comput_Perm(u,Permia,PerDir);
+			
+			if (rank==0)
+			{
+			finish = MPI_Wtime();
+			ofstream fin(FileName,ios::app);
 			fin<<"The"<<n<<"th computation result:"<<endl;
 
 			Re=u_ave*(NY+1)/(1.0/3.0*(1/s_v-0.5));
