@@ -532,10 +532,7 @@ if (wr_per==1)
 	
 	if(n%freRe==0)
 		{       
-		        error=Error(u,u0,&v_max,&u_ave);
-			error_Per=Comput_Perm(psi,u,Per_l,Per_g,PerDir);
-			S_l=Comput_Saturation(psi,Solid);
-			
+		        
 			
 			if (rank==0)
 			{
@@ -552,8 +549,20 @@ if (wr_per==1)
 			fin<<"The relative error of permiability computing is: "<<error_Per<<endl;
 			fin<<"Elapsed time is "<< the<<"h"<<tme<<"m"<<tse<<"s"<<endl;
 			fin<<"The expected completion time is "<<th<<"h"<<tm<<"m"<<ts<<"s"<<endl;
-			fin<<endl;       
-			        
+			fin<<endl;    
+			fin.close();
+			}
+			
+			
+			error=Error(u,u0,&v_max,&u_ave);
+			error_Per=Comput_Perm(psi,u,Per_l,Per_g,PerDir);
+			S_l=Comput_Saturation(psi,Solid);
+			
+			
+			
+			if (rank==0)
+			{
+			ofstream fin(FileName,ios::app);           
 			finish = MPI_Wtime();
 			fin<<"The"<<n<<"th computation result:"<<endl;
 			Re_l=u_ave*(NY+1)/niu_l;Re_g=u_ave*(NY+1)/niu_g;

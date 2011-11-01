@@ -51,7 +51,8 @@ int mirX=0;
 int mirY=0;
 int mirZ=0;
 int mir=0;
-
+
+
 
 
 double M[19][19]=
@@ -619,14 +620,12 @@ if (wr_per==1)
 	Solute_ZeroFlux_BC(sol_zf_xp,zf_xp,sol_zf_xn,zf_xn,sol_zf_yp,zf_yp,sol_zf_yn,zf_yn,sol_zf_zp,zf_zp,sol_zf_zn,zf_zn,Fg,Solid,rhoh,u,fg);
 	 
 		comput_macro_variables(rho,u,u0,f,F,rho_r,rho_b,rhor,rhob,psi,SupInv,Solid,Psi_local);
-
+
+
 	
 	if(n%freRe==0)
 		{       
-			error=Error(u,u0,&u_max,&u_ave);
-			if (u_max>=10.0)	U_max_ref+=1;
-			error_Per=Comput_Perm(psi,u,Per_l,Per_g,PerDir,SupInv);
-			S_l=Comput_Saturation(psi,Solid,SupInv);
+			
 			if (rank==0)
 			{
 			ofstream fin(FileName,ios::out);
@@ -644,8 +643,18 @@ if (wr_per==1)
 			fin<<"Elapsed time is "<< the<<"h"<<tme<<"m"<<tse<<"s"<<endl;
 			fin<<"The expected completion time is "<<th<<"h"<<tm<<"m"<<ts<<"s"<<endl;
 			fin<<endl;
+			fin.close();
+			}
 			
 			
+			error=Error(u,u0,&u_max,&u_ave);
+			if (u_max>=10.0)	U_max_ref+=1;
+			error_Per=Comput_Perm(psi,u,Per_l,Per_g,PerDir,SupInv);
+			S_l=Comput_Saturation(psi,Solid,SupInv);
+			
+			if (rank==0)
+			{
+			ofstream fin(FileName,ios::app);
 			finish = MPI_Wtime();
 
 			
