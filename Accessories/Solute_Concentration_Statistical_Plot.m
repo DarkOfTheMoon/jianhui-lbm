@@ -1,12 +1,16 @@
 dat_general=[];str=[];xs=[];Disp=[];EX_general=[];DX_general=[];
 dat_ori=[];
-n=460;
-v=2.4e-03;
+n=7;
+v=1.262644e-4;
 dt=1;
 
 
 for i=1:n
-Pic_Num=5000*i;
+Pic_Num=30000*i;
+    %if (i==0)
+    %    Pic_Num=5000;
+    %end
+    
     dat=load(strcat('Statistical_data_concentration_X_',int2str(Pic_Num),'.sta'));
     [nx,ny]=size(dat);
 dat1=dat;
@@ -27,7 +31,17 @@ xx=0:nx-1;
             xx(j)=xx(j)-td;
         end
     end
+
     
+%=================================    
+%    for j=1:nx
+%     if xx(j)>200
+%         xx(j)=xx(j)-nx+1;
+%     end
+%    end
+%================================       
+       
+       
 for j=1:nx-1
     for k=1:nx-j
         if (xx(k)>xx(k+1))
@@ -54,7 +68,7 @@ end
 x=0:nx-1;
 str=num2str(str);
 
-%plot(xs,dat_general);
+plot(xs,dat_general);
 %legend(str);
 
 

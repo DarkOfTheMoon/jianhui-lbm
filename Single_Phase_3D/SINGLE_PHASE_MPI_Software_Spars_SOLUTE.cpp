@@ -643,13 +643,13 @@ if (wr_per==1)
 			switch(PerDir)
 				{
 				case 1:
-				finfs<<Permia[0]*reso*reso*1000<<endl;break;
+				finfs<<Permia[0]*reso*reso*1000<<" "<<error_perm<<endl;break;
 				case 2:
-				finfs<<Permia[1]*reso*reso*1000<<endl;break;
+				finfs<<Permia[1]*reso*reso*1000<<" "<<error_perm<<endl;break;
 				case 3:
-				finfs<<Permia[2]*reso*reso*1000<<endl;break;
+				finfs<<Permia[2]*reso*reso*1000<<" "<<error_perm<<endl;break;
 				default:
-				finfs<<Permia[0]*reso*reso*1000<<endl;break;
+				finfs<<Permia[0]*reso*reso*1000<<" "<<error_perm<<endl;break;
 				}
 			finfs.close();
 			}
