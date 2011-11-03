@@ -132,7 +132,7 @@ void Geometry_b(int*** );
 
 void Backup(int ,double* ,double**, double**);
 
-double Comput_Perm(double** u,double*,int);
+double Comput_Perm(double** u,double*,int,int*);
 
 double S[19];
 
@@ -172,6 +172,7 @@ int vel_xp,vel_xn,vel_yp,vel_yn,vel_zp,vel_zn,Sub_BC,Out_Mode,mode_backup_ini;
 double in_vis,p_xp,p_xn,p_yp,p_yn,p_zp,p_zn,dx_input,dt_input;
 double inivx,inivy,inivz,v_xp,v_xn,v_yp,v_yn,v_zp,v_zn;
 double error_perm;
+int par_per_x,par_per_y,par_per_z,per_xp,per_xn,per_yp,per_yn,per_zp,per_zn;
 
 char outputfile[128]="./";
 
@@ -200,7 +201,9 @@ int tse,the,tme;
 	if (rank==0)
 	{
 	ifstream fin(argv[1]);
-	
+
+
+							fin.getline(dummy, NCHAR);
 	fin >> filename;				fin.getline(dummy, NCHAR);
 	fin >> NX >> NY >> NZ;				fin.getline(dummy, NCHAR);
 	fin >> n_max;					fin.getline(dummy, NCHAR);
@@ -230,6 +233,11 @@ int tse,the,tme;
 	fin >> lattice_v >> dx_input >> dt_input;	fin.getline(dummy, NCHAR);
 	fin >> outputfile;				fin.getline(dummy, NCHAR);
 	fin >> Sub_BC;					fin.getline(dummy, NCHAR);
+	fin >> par_per_x >> par_per_y >>par_per_z;	fin.getline(dummy, NCHAR);
+	fin >> per_xp >> per_xn;			fin.getline(dummy, NCHAR);
+	fin >> per_yp >> per_yn;			fin.getline(dummy, NCHAR);
+	fin >> per_zp >> per_zn;			fin.getline(dummy, NCHAR);
+							fin.getline(dummy, NCHAR);
 	fin >> fre_backup;                        	fin.getline(dummy, NCHAR);
 	fin >>mode_backup_ini;                		fin.getline(dummy, NCHAR);
 	fin >> backup_rho;                   		fin.getline(dummy, NCHAR);
@@ -280,7 +288,13 @@ int tse,the,tme;
 	MPI_Bcast(&lattice_v,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&dx_input,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 	MPI_Bcast(&dt_input,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 	
-		
+	MPI_Bcast(&par_per_x,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&par_per_y,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&par_per_z,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&per_yp,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&per_xp,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&per_yn,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&per_zp,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&per_zn,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&per_xn,1,MPI_INT,0,MPI_COMM_WORLD);
+
+	
       
 int U_max_ref=0;
 
@@ -525,7 +539,7 @@ if (wr_per==1)
 			}
 
 			 error=Error(u,u0,&u_max,&u_ave);if (u_max>=10.0)	U_max_ref+=1;
-			error_perm=Comput_Perm(u,Permia,PerDir); 
+			error_perm=Comput_Perm(u,Permia,PerDir,SupInv); 
 
 			 if (rank==0)
 			{ 
@@ -1306,6 +1320,16 @@ void init(double* rho, double** u, double** f,int*** Solid)
 
 	}
 */
+
+	if (par_per_x==0)
+		{per_xn=0;per_xp=NX;}
+	if (par_per_y==0)
+		{per_yn=0;per_yp=NY;}
+	if (par_per_z==0)
+		{per_zn=0;per_zp=NZ;}
+
+
+
 	 	
 }
 
@@ -4328,11 +4352,33 @@ void Backup(int m,double* rho,double** u, double** f)
 	
 }
 
-double Comput_Perm(double** u,double* Permia,int PerDIr)
+double Comput_Perm(double** u,double* Permia,int PerDIr,int* SupInv)
 {
 
 	int rank = MPI :: COMM_WORLD . Get_rank ();
 	int mpi_size=MPI :: COMM_WORLD . Get_size ();
+
+	int nx_g[mpi_size];
+	int disp[mpi_size];
+	int si,sj,sm;
+	
+	MPI_Gather(&nx_l,1,MPI_INT,nx_g,1,MPI_INT,0,MPI_COMM_WORLD);
+	
+	
+	if (rank==0)
+		{
+		disp[0]=0;
+	
+		for (int i=1;i<mpi_size;i++)
+			disp[i]=disp[i-1]+nx_g[i-1];
+		
+		}
+
+	MPI_Bcast(disp,mpi_size,MPI_INT,0,MPI_COMM_WORLD);
+
+
+
+
 	double *rbuf;
 	rbuf=new double[mpi_size*3];
 	double Perm[3];
@@ -4354,15 +4400,43 @@ double Comput_Perm(double** u,double* Permia,int PerDIr)
 		default:
 			dp=abs(p_xp-p_xn)*c_s2/(NX+1)/dx;
 		}
+
 		
-		
-		
+	if ((par_per_x-1)*(par_per_y-1)*(par_per_z-1)==0)	
 	for (int i=1;i<=Count;i++)
+	{
+		si=(int)(SupInv[i]/((NY+1)*(NZ+1)));
+		sj=(int)((SupInv[i]%((NY+1)*(NZ+1)))/(NZ+1));
+		sm=(int)(SupInv[i]%(NZ+1)); 
+		si+=disp[rank];
+		//if (rank==1)
+		//cout<<rank<<"  "<<si<<" "<<sj<<" "<<sm<<endl;
+		//cout<<si<<"  "<<per_xn<<"  "<<per_xp<<endl;
+		if ((si>=per_xn) and (si<=per_xp) and (sj>=per_yn) and (sj<=per_yp) and (sm>=per_zn) and (sm<=per_zp))
 		{
-		Q[0]+=u[i][0];
+	        Q[0]+=u[i][0];
 		Q[1]+=u[i][1];
 		Q[2]+=u[i][2];
 		}
+
+
+	}
+	else
+	for (int i=1;i<=Count;i++)
+	       {
+		Q[0]+=u[i][0];
+		Q[1]+=u[i][1];
+		Q[2]+=u[i][2];
+		} 
+
+	
+		
+//	for (int i=1;i<=Count;i++)
+//		{
+//		Q[0]+=u[i][0];
+//		Q[1]+=u[i][1];
+//		Q[2]+=u[i][2];
+//		}
 
 	MPI_Barrier(MPI_COMM_WORLD);
 

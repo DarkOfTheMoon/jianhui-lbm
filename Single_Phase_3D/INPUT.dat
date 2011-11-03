@@ -1,3 +1,4 @@
+=================SINGLE PHASE LATTICE BOLTZMANN CODE INPUT FILE================================================
 BC.dat                  :Geometry filenameEmily_Berea_y_614_764_7.dat
 120 10 3                :nx ny nz
 100000	                 :Maxmum time step
@@ -27,6 +28,11 @@ BC.dat                  :Geometry filenameEmily_Berea_y_614_764_7.dat
 1 1.0 2.0	:Self define lattice velocity: 0=DEFAULT, dx, dt ((u_x+u_y+u_z)*dt/dx<=1 Courant Number)
 ./		:OUTPUT PATH,DEFAULT: ./ (REMEMBER TO INCLUDE "/" AT THE END OF PATH)
 1              :PRESSURE AND VELOCITY BOUNDARY CONDITION OPTIONS: 0,1,2,3: EBC_S,EBC_D,TOLKE_BC,NEBC_D
+1 0 0				:Pemeability calculation Partially  
+130 20				:Permeability calculation partially Starting point and Ending point in X
+0 100				:Permeability calculation partially Starting point and Ending point in Y
+0 100				:Permeability calculation partially Starting point and Ending point in Z
+======================BACKUP OPTIONS===========================
 -1		:BACKUP FREQUENCY (-1=NO BACKUP)
 0               :USE BACKUP DATA (0=OFF, 1=ON)
 LBM_Backup_Density_4000            :BACKUP DATA FOR INTIALIZATION--DENSITY
