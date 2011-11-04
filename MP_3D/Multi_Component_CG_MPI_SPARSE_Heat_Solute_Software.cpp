@@ -93,7 +93,7 @@ double meq[19];
 
 
 
-double uMax,c,Re,dx,dy,Lx,Ly,dt,rho0,P0,tau_f,niu,error,SFx,SFy,reso;
+double uMax,c,Re,dx,dy,Lx,Ly,dt,rho0,P0,tau_f,niu,error,SFx,SFy,reso,ini_Sat;
 
 void Read_Rock(int***,double***, double***, double*,char[128],char[128],char[128]);
 
@@ -232,7 +232,8 @@ double elaps;
 
 double Per_l[3],Per_g[3];
 double v_max,error_Per;
-
+char outp1[128]="psi";
+char outp2[128]="HS";
 
 
 
@@ -300,10 +301,12 @@ double v_max,error_Per;
 	fin >> Sub_BC;					fin.getline(dummy, NCHAR);
 	fin >> Sub_BC_psi;				fin.getline(dummy, NCHAR);
 	fin >> stab >> stab_time;			fin.getline(dummy, NCHAR);
+	fin >> ini_Sat;                                        fin.getline(dummy, NCHAR);
 	fin >> par_per_x >> par_per_y >>par_per_z;	fin.getline(dummy, NCHAR);
 	fin >> per_xp >> per_xn;			fin.getline(dummy, NCHAR);
 	fin >> per_yp >> per_yn;			fin.getline(dummy, NCHAR);
 	fin >> per_zp >> per_zn;			fin.getline(dummy, NCHAR);
+	                                                     fin.getline(dummy, NCHAR);
 	fin >> fre_backup;                        fin.getline(dummy, NCHAR);
 	fin >>mode_backup_ini;                fin.getline(dummy, NCHAR);
 	fin >> backup_rho;                        fin.getline(dummy, NCHAR);
@@ -375,7 +378,7 @@ double v_max,error_Per;
 	MPI_Bcast(&sol_zf_zp,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&zf_zp,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 	MPI_Bcast(&sol_zf_zn,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&zf_zn,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 
-	MPI_Bcast(&Sub_BC_psi,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&Sub_BC_psi,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&ini_Sat,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 
 	MPI_Bcast(&in_psi_BC,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&psi_xp,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&psi_xn,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&psi_yp,1,MPI_INT,0,MPI_COMM_WORLD);
@@ -751,19 +754,20 @@ if (wr_per==1)
 				else
 					output_velocity_b(n,rho,u,mirX,mirY,mirZ,mir,Solid);
 			
-			//===================================	
+			//===================================
+			
 			if ((frePsi>=0) and (n%frePsi==0))
 				if (Out_Mode==1)
-					output_psi(n,psi,mirX,mirY,mirZ,mir,Solid,"psi");
+					output_psi(n,psi,mirX,mirY,mirZ,mir,Solid,outp1);
 				else
-					output_psi_b(n,psi,mirX,mirY,mirZ,mir,Solid,"psi");
+					output_psi_b(n,psi,mirX,mirY,mirZ,mir,Solid,outp1);
 
-
+			
 			if ((freHS>=0) and (n%freHS==0))
 				if (Out_Mode==1)
-					output_psi(n,rhoh,mirX,mirY,mirZ,mir,Solid,"HS");
+					output_psi(n,rhoh,mirX,mirY,mirZ,mir,Solid,outp2);
 				else
-					output_psi_b(n,rhoh,mirX,mirY,mirZ,mir,Solid,"HS");
+					output_psi_b(n,rhoh,mirX,mirY,mirZ,mir,Solid,outp2);
 			//===================================
 			
 			if ((fre_backup>0) and (n%fre_backup==0)  and (n>0))
@@ -1187,7 +1191,11 @@ FILE *ftest;
 	MPI_Bcast(Solid_Int,nx*ny*nz,MPI_INT,0,MPI_COMM_WORLD);
 
 if (rank==0)	
+{
 	cout<<"INPUT FILE READING COMPLETE.  THE POROSITY IS: "<<*porosity<<endl;
+	cout<<endl;
+}
+
 
 	//cout<<nx<<"  "<<ny<<"  "<<nz<<"  zoom "<<Zoom<<endl;
 
@@ -1200,7 +1208,9 @@ if (rank==0)
 		
 		
 		
-		
+if (ini_Sat<0)
+{
+        		
 if (rank==0)
         
 {
@@ -1269,8 +1279,11 @@ FILE *ftest2;
 	
 	MPI_Bcast(Psi_Int,nx*ny*nz,MPI_DOUBLE,0,MPI_COMM_WORLD);
 
-if (rank==0)	
+if (rank==0)
+{	
 	cout<<"Concentration FILE READING COMPLETE. "<<endl;
+	cout<<endl;
+}
 
 	
 	for (i=0;i<nx;i++)
@@ -1280,7 +1293,10 @@ if (rank==0)
 			   
 			Psis[i][j][k]=Psi_Int[i*(ny)*(nz)+j*(nz)+k];
 			}	
-		
+delete [] Psi_Int;			
+			
+			
+}		
 		
 if (rank==0)
         
@@ -1351,7 +1367,7 @@ FILE *ftest3;
 
 if (rank==0)
 	{	
-	cout<<"Concentration FILE READING COMPLETE. "<<endl;
+	cout<<"Solute/Heat FILE READING COMPLETE. "<<endl;
 	cout<<endl;
 	}
 
@@ -1369,7 +1385,7 @@ if (rank==0)
 MPI_Barrier(MPI_COMM_WORLD);
 
 	delete [] Solid_Int;
-	delete [] Psi_Int;
+	
 	delete [] Psi_Int2;
 
 }
@@ -1380,9 +1396,9 @@ void init(double* rho, double** u, double** f,double* psi,double* rho_r, double*
 {	
       
 
-
+        srand((unsigned)time(0));
 	
-	double usqr,vsqr;
+	double usqr,vsqr,rand_double;
 	double c2,c4;
 	
 	rho0=1.0;dt=1.0/Zoom;dx=1.0/Zoom;
@@ -1474,7 +1490,7 @@ void init(double* rho, double** u, double** f,double* psi,double* rho_r, double*
 	psi_solid=ContactAngle_parameter;
 
 	
-
+if (ini_Sat<0)
 	for (int i=1;i<=Count;i++)	
 			
 		{
@@ -1510,12 +1526,53 @@ void init(double* rho, double** u, double** f,double* psi,double* rho_r, double*
 					f[i][lm]=feq(lm,rho[i],u_tmp);
 					eu=elat[lm][0]*u[i][0]+elat[lm][1]*u[i][1]+elat[lm][2]*u[i][2];
 					fg[i][lm]=w[lm]*rhoh[i]*(1+3*eu/c2);
-				}
-
-		
-		
+				}	
 
 	}
+else
+	for (int i=1;i<=Count;i++)	
+			
+		{
+			u[i][0]=inivx;
+			u[i][1]=inivy;
+			u[i][2]=inivz;
+			u_tmp[0]=u[i][0];
+			u_tmp[1]=u[i][1];
+			u_tmp[2]=u[i][2];
+			rand_double=(double(rand()%10000))/10000;
+			if (rand_double<ini_Sat)
+			        psi[i]=1;
+			else
+			        psi[i]=-1;
+			
+			rhoh[i]=Psi_local2[(int)(SupInv[i]/((NY+1)*(NZ+1)))][(int)((SupInv[i]%((NY+1)*(NZ+1)))/(NZ+1))][SupInv[i]%(NZ+1)];
+			rho[i]=1.0;
+			rho_r[i]=(psi[i]*rho[i]+rho[i])/2;
+			rho_b[i]=rho[i]-rho_r[i];
+			rhor[i]=0;
+			rhob[i]=0;
+			
+
+			//forcex[i]=gx;
+			//forcey[i]=gy;
+			//forcez[i]=gz;
+			if (stab==1)
+				{gxs=0;gys=0;gzs=0;}
+			else
+				{gxs=gx;gys=gy;gzs=gz;}
+
+			
+
+			//INITIALIZATION OF m and f
+
+			for (int lm=0;lm<19;lm++)
+				{
+					f[i][lm]=feq(lm,rho[i],u_tmp);
+					eu=elat[lm][0]*u[i][0]+elat[lm][1]*u[i][1]+elat[lm][2]*u[i][2];
+					fg[i][lm]=w[lm]*rhoh[i]*(1+3*eu/c2);
+				}	
+
+	}        
 
 	if (par_per_x==0)
 		{per_xn=0;per_xp=NX;}

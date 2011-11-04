@@ -206,7 +206,7 @@ int wr_per,pre_xp,pre_xn,pre_yp,pre_yn,pre_zp,pre_zn,stab,stab_time,fre_backup,p
 int psi_yn,per_xn,per_yn,per_zn;
 int vel_xp,vel_xn,vel_yp,vel_yn,vel_zp,vel_zn,Sub_BC,Out_Mode,mode_backup_ini,psi_zp,psi_zn,per_xp,per_yp,per_zp;
 double in_vis,p_xp,p_xn,p_yp,p_yn,p_zp,p_zn,niu_l,niu_g,ContactAngle_parameter,CapA;
-double inivx,inivy,inivz,v_xp,v_xn,v_yp,v_yn,v_zp,v_zn,Re_l,Re_g,Capillary;
+double inivx,inivy,inivz,v_xp,v_xn,v_yp,v_yn,v_zp,v_zn,Re_l,Re_g,Capillary,ini_Sat;
 double error_Per,Permeability,psi_solid,S_l,gxs,gys,gzs,c_s,c_s2,dx_input,dt_input,lat_c;
 
 
@@ -285,10 +285,12 @@ double v_max,error_Per;
 	fin >> outputfile;				fin.getline(dummy, NCHAR);
 	fin >> Sub_BC;					fin.getline(dummy, NCHAR);
 	fin >> stab >> stab_time;			fin.getline(dummy, NCHAR);
+	fin >> ini_Sat;                                        fin.getline(dummy, NCHAR);
 	fin >> par_per_x >> par_per_y >>par_per_z;	fin.getline(dummy, NCHAR);
 	fin >> per_xp >> per_xn;			fin.getline(dummy, NCHAR);
 	fin >> per_yp >> per_yn;			fin.getline(dummy, NCHAR);
 	fin >> per_zp >> per_zn;			fin.getline(dummy, NCHAR);
+	                                                        fin.getline(dummy, NCHAR);
 	fin >> fre_backup;                        fin.getline(dummy, NCHAR);
 	fin >>mode_backup_ini;                fin.getline(dummy, NCHAR);
 	fin >> backup_rho;                        fin.getline(dummy, NCHAR);
@@ -339,7 +341,7 @@ double v_max,error_Per;
 	MPI_Bcast(&backup_f,128,MPI_CHAR,0,MPI_COMM_WORLD);
 
 	MPI_Bcast(&lattice_v,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&dx_input,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
-	MPI_Bcast(&dt_input,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Bcast(&dt_input,1,MPI_DOUBLE,0,MPI_COMM_WORLD);MPI_Bcast(&ini_Sat,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 
 	MPI_Bcast(&in_psi_BC,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&psi_xp,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&psi_xn,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&psi_yp,1,MPI_INT,0,MPI_COMM_WORLD);
@@ -1128,8 +1130,11 @@ FILE *ftest;
 	
 	MPI_Bcast(Solid_Int,nx*ny*nz,MPI_INT,0,MPI_COMM_WORLD);
 
-if (rank==0)	
+if (rank==0)
+{	
 	cout<<"INPUT FILE READING COMPLETE.  THE POROSITY IS: "<<*porosity<<endl;
+	cout<<endl;
+}
 
 	//cout<<nx<<"  "<<ny<<"  "<<nz<<"  zoom "<<Zoom<<endl;
 
@@ -1142,7 +1147,9 @@ if (rank==0)
 		
 		
 		
-		
+if (ini_Sat<0)
+{
+        
 if (rank==0)
         
 {
@@ -1225,16 +1232,15 @@ if (rank==0)
 			      //          cout<<i<<" "<<j<<" "<<k<<endl;
 			Psis[i][j][k]=Psi_Int[i*(ny)*(nz)+j*(nz)+k];
 			}	
-		
-		
+	delete [] Psi_Int;	
+}		
 		
 
 //cout<<"asdfasdfasdfasdfa"<<endl;
 MPI_Barrier(MPI_COMM_WORLD);
 
 	delete [] Solid_Int;
-	delete [] Psi_Int;
-
+	
 
 }
 
@@ -1244,9 +1250,9 @@ void init(double* rho, double** u, double** f,double* psi,double* rho_r, double*
 {	
       
 
-
+        srand((unsigned)time(0));
 	
-	double usqr,vsqr;
+	double usqr,vsqr,rand_double;
 	double c2,c4;
 	
 	rho0=1.0;dt=1.0/Zoom;dx=1.0/Zoom;
@@ -1334,8 +1340,7 @@ void init(double* rho, double** u, double** f,double* psi,double* rho_r, double*
 
 	psi_solid=ContactAngle_parameter;
 
-	
-
+	if (ini_Sat<0)
 	for (int i=1;i<=Count;i++)	
 			
 		{
@@ -1369,13 +1374,51 @@ void init(double* rho, double** u, double** f,double* psi,double* rho_r, double*
 				//if (Solid[(int)(SupInv[i]/((NY+1)*(NZ+1)))][(int)((SupInv[i]%((NY+1)*(NZ+1)))/(NZ+1))][SupInv[i]%(NZ+1)]<0)
 				//	f[i][lm]=0.0;
 				//else
-					f[i][lm]=feq(lm,rho[i],u_tmp);
-				
-
-		
-		
+					f[i][lm]=feq(lm,rho[i],u_tmp);	
 
 	}
+	else
+	for (int i=1;i<=Count;i++)	
+			
+		{
+			u[i][0]=inivx;
+			u[i][1]=inivy;
+			u[i][2]=inivz;
+			u_tmp[0]=u[i][0];
+			u_tmp[1]=u[i][1];
+			u_tmp[2]=u[i][2];
+			rand_double=(double(rand()%10000))/10000;
+			if (rand_double<ini_Sat)
+			        psi[i]=1;
+			else
+			        psi[i]=-1;
+			
+			rho[i]=1.0;
+			rho_r[i]=(psi[i]*rho[i]+rho[i])/2;
+			rho_b[i]=rho[i]-rho_r[i];
+			rhor[i]=0;
+			rhob[i]=0;
+			
+
+			//forcex[i]=gx;
+			//forcey[i]=gy;
+			//forcez[i]=gz;
+			if (stab==1)
+				{gxs=0;gys=0;gzs=0;}
+			else
+				{gxs=gx;gys=gy;gzs=gz;}
+
+			
+
+			//INITIALIZATION OF m and f
+
+			for (int lm=0;lm<19;lm++)
+				//if (Solid[(int)(SupInv[i]/((NY+1)*(NZ+1)))][(int)((SupInv[i]%((NY+1)*(NZ+1)))/(NZ+1))][SupInv[i]%(NZ+1)]<0)
+				//	f[i][lm]=0.0;
+				//else
+					f[i][lm]=feq(lm,rho[i],u_tmp);	
+
+	}       
 	
 	if (par_per_x==0)
 		{per_xn=0;per_xp=NX;}
