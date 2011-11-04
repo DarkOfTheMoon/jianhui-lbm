@@ -299,7 +299,7 @@ double v_max,error_Per;
 	fin >> backup_f;                        fin.getline(dummy, NCHAR);
 	fin.close();
 	
-	//cout<<q_p<<"    asdfa "<<endl;
+	cout<<par_per_x<<"    asdfa    "<<backup_f<<endl;
 	NX=NX-1;NY=NY-1;NZ=NZ-1;
 	}
 
@@ -1248,7 +1248,27 @@ MPI_Barrier(MPI_COMM_WORLD);
 
 void init(double* rho, double** u, double** f,double* psi,double* rho_r, double* rho_b, double* rhor, double* rhob,double*** Psi_local, int* SupInv)
 {	
-      
+       int rank = MPI :: COMM_WORLD . Get_rank ();
+	int mpi_size=MPI :: COMM_WORLD . Get_size ();
+
+	
+	int nx_g[mpi_size];
+	int disp[mpi_size];
+	int si,sj,sm;
+	
+	MPI_Gather(&nx_l,1,MPI_INT,nx_g,1,MPI_INT,0,MPI_COMM_WORLD);
+	
+	
+	if (rank==0)
+		{
+		disp[0]=0;
+	
+		for (int i=1;i<mpi_size;i++)
+			disp[i]=disp[i-1]+nx_g[i-1];
+		
+		}
+
+	MPI_Bcast(disp,mpi_size,MPI_INT,0,MPI_COMM_WORLD);
 
         srand((unsigned)time(0));
 	
@@ -1273,7 +1293,8 @@ void init(double* rho, double** u, double** f,double* psi,double* rho_r, double*
 	tau_f=niu/(c_s2*dt)+0.5;
 	s_v=1/tau_f;
         
-	double pr; //raduis of the obstacles
+	//double pr; //raduis of the obstacles
+       int loc_x,loc_y,loc_z;
        
 	double s_other=8*(2-s_v)/(8-s_v);
 	double u_tmp[3];
@@ -1336,7 +1357,13 @@ void init(double* rho, double** u, double** f,double* psi,double* rho_r, double*
 
 	}
 
-
+	if (par_per_x==0)
+		{per_xn=0;per_xp=NX;}
+	if (par_per_y==0)
+		{per_yn=0;per_yp=NY;}
+	if (par_per_z==0)
+		{per_zn=0;per_zp=NZ;}
+	
 
 	psi_solid=ContactAngle_parameter;
 
@@ -1417,15 +1444,26 @@ void init(double* rho, double** u, double** f,double* psi,double* rho_r, double*
 				//	f[i][lm]=0.0;
 				//else
 					f[i][lm]=feq(lm,rho[i],u_tmp);	
-
+			
+			if ((par_per_x>0) or (par_per_y>0) or (par_per_z>0))
+			        {        
+			                loc_x=(int)(SupInv[i]/((NY+1)*(NZ+1)))+disp[rank];
+			                loc_y=(int)((SupInv[i]%((NY+1)*(NZ+1)))/(NZ+1));
+			                loc_z=SupInv[i]%(NZ+1);
+			                if ((loc_x<per_xn) or (loc_x>per_xp) or (loc_y<per_yn) or (loc_y>per_yp) or (loc_z<per_zn) or (loc_z>per_zp))
+			                {        
+			                        psi[i]=1;
+			                        rho_r[i]=(psi[i]*rho[i]+rho[i])/2;
+			                        rho_b[i]=rho[i]-rho_r[i];
+			                       
+			                }
+			                
+			                
+			        }
+					
 	}       
 	
-	if (par_per_x==0)
-		{per_xn=0;per_xp=NX;}
-	if (par_per_y==0)
-		{per_yn=0;per_yp=NY;}
-	if (par_per_z==0)
-		{per_zn=0;per_zp=NZ;}
+	
 
 	
 

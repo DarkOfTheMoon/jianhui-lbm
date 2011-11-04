@@ -1394,7 +1394,28 @@ MPI_Barrier(MPI_COMM_WORLD);
 
 void init(double* rho, double** u, double** f,double* psi,double* rho_r, double* rho_b, double* rhor, double* rhob,double*** Psi_local, double*** Psi_local2, int* SupInv)
 {	
-      
+      int rank = MPI :: COMM_WORLD . Get_rank ();
+	int mpi_size=MPI :: COMM_WORLD . Get_size ();
+
+	
+	int nx_g[mpi_size];
+	int disp[mpi_size];
+	int si,sj,sm;
+	
+	MPI_Gather(&nx_l,1,MPI_INT,nx_g,1,MPI_INT,0,MPI_COMM_WORLD);
+	
+	
+	if (rank==0)
+		{
+		disp[0]=0;
+	
+		for (int i=1;i<mpi_size;i++)
+			disp[i]=disp[i-1]+nx_g[i-1];
+		
+		}
+
+	MPI_Bcast(disp,mpi_size,MPI_INT,0,MPI_COMM_WORLD);
+
 
         srand((unsigned)time(0));
 	
@@ -1423,7 +1444,7 @@ void init(double* rho, double** u, double** f,double* psi,double* rho_r, double*
 	//tau_s2=niu_s2/1(c_s2*dt)+0.5;
 
 	double eu; 
-       
+       int loc_x,loc_y,loc_z;
 	double s_other=8*(2-s_v)/(8-s_v);
 	double u_tmp[3];
 
@@ -1484,6 +1505,14 @@ void init(double* rho, double** u, double** f,double* psi,double* rho_r, double*
 	Comput_MI(M,MI);
 
 	}
+	
+	
+	if (par_per_x==0)
+		{per_xn=0;per_xp=NX;}
+	if (par_per_y==0)
+		{per_yn=0;per_yp=NY;}
+	if (par_per_z==0)
+		{per_zn=0;per_zp=NZ;}
 
 
 
@@ -1571,15 +1600,27 @@ else
 					eu=elat[lm][0]*u[i][0]+elat[lm][1]*u[i][1]+elat[lm][2]*u[i][2];
 					fg[i][lm]=w[lm]*rhoh[i]*(1+3*eu/c2);
 				}	
+				
+			if ((par_per_x>0) or (par_per_y>0) or (par_per_z>0))
+			        {      
+			                loc_x=(int)(SupInv[i]/((NY+1)*(NZ+1)))+disp[rank];
+			                loc_y=(int)((SupInv[i]%((NY+1)*(NZ+1)))/(NZ+1));
+			                loc_z=SupInv[i]%(NZ+1);
+			                if ((loc_x<per_xn) or (loc_x>per_xp) or (loc_y<per_yn) or (loc_y>per_yp) or (loc_z<per_zn) or (loc_z>per_zp))
+			                {        
+			                        psi[i]=1;
+			                        rho_r[i]=(psi[i]*rho[i]+rho[i])/2;
+			                        rho_b[i]=rho[i]-rho_r[i];
+			                      
+			                }
+			                
+			                
+			        }	
+				
+				
+				
 
 	}        
-
-	if (par_per_x==0)
-		{per_xn=0;per_xp=NX;}
-	if (par_per_y==0)
-		{per_yn=0;per_yp=NY;}
-	if (par_per_z==0)
-		{per_zn=0;per_zp=NZ;}
 
 	 	
 }

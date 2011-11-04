@@ -2,7 +2,7 @@
 BC.dat                  	:Geometry filenameEmily_Berea_y_614_764_7.dat
 phase.dat       	    	:Initial components distribution
 phase2.dat			:Initial conditions of Heat/Solute
-60 60 60                 	:nx ny nz
+21 80 3                 	:nx ny nz
 12000		     		:Maximum time step
 19.9997	             		:dx (um) Resolution (for Permeability calculation)
 0	        	      	:Pressure Or Velocity Boundary (1=YES, 0=No)
@@ -11,18 +11,18 @@ phase2.dat			:Initial conditions of Heat/Solute
 0 0 0                      	:mirroring option for x,y,z (1=yes, 0=no)
 0.0e-6				:Gravity (Only for Buoyancy, gravity*thermal expansion)
 0.0e-5 0.0 0.0	          	:body force for x,y,z
-0 1.0 0 1.0	    		:Pressure Boundary in X direction (Format detials can be found within this file)p=c_s^2*/rho
-0 1.0 0 1.0	    		:Pressure Boundary in Y direction (Format detials can be found within this file)
-0 1.0 0 1.0	    		:Pressure Boundary in Z direction (Format detials can be found within this file)
-0 0.0 0 0.0	   		:Velocity Boundary in X direction (Format detials can be found within this file)
-0 0.0 0 0.0	   		:Velocity Boundary in Y direction (Format detials can be found within this file)
-0 0.0 0 0.07	   		:Velocity Boundary in Z direction (Format detials can be found within this file)
+0 1.0 0 1.0	    		:Pressure Boundary in X direction p=c_s^2*/rho
+0 1.0 0 1.0	    		:Pressure Boundary in Y direction (Find Format detials within this file)
+0 1.0 0 1.0	    		:Pressure Boundary in Z direction 
+0 0.0 0 0.0	   		:Velocity Boundary in X direction 
+0 0.0 0 0.0	   		:Velocity Boundary in Y direction 
+0 0.0 0 0.07	   		:Velocity Boundary in Z direction 
 0 0				:Psi constant BC in X 0=OFF, 1=Initial constant psi, 2=Neibourghing points
 0 0				:Psi constant BC in Y
 0 0				:Psi constant BC in Z
-0 10.0 0 30.0	    		:Constant concentration BC in X direction (Format detials can be found within this file)
-0 10.0 0 30.0	    		:Constant concentration BC in Y direction (Format detials can be found within this file)
-0 1.0 0 1.0	    		:Constant concentration BC in Z direction (Format detials can be found within this file)
+0 10.0 0 30.0	    		:Constant concentration BC in X direction (Find Format detials within this file)
+0 10.0 0 30.0	    		:Constant concentration BC in Y direction 
+0 1.0 0 1.0	    		:Constant concentration BC in Z direction 
 0 0.0 0 0.0			:Constant Diffusive Flux BC in X direction (p,n)
 0 0.0 0 0.0			:Constant Diffusive Flux BC in Y direction
 0 0.0 0 0.0			:Constant Diffusive Flux BC in Z direction
@@ -37,8 +37,8 @@ phase2.dat			:Initial conditions of Heat/Solute
 =========OUTPUT==CONTROL===================
 1		         	:Permeability writing (1=yes, 0=no)
 1                       	:Direction of Permeability Calculation (1=X, 2=Y, 3=Z)
-50		         	:Frequency of results writing (interval in time steps)
-0               		:Memory Saving mode for output subroutains (0=No, 1=Yes,for large outputs, x,z opposite)
+20		         	:Frequency of results writing (interval in time steps)
+0               		:Memory Saving mode for output (0=No, 1=Yes,for large outputs, x,z opposite)
 100				:Frequency of velocity field writing (in vtk format, -1=no velocity writing)
 100				:Frequency of density field writing (in vtk format, -1=no density writing)
 100				:Frequency of concentration writing (in vtk format, -1=no density writing)
@@ -49,13 +49,13 @@ phase2.dat			:Initial conditions of Heat/Solute
 1				:FACTOR OF MESHREFINEMENT (0,1=No mesh refinement, 1=1X,2=2X,3=3X)
 0 1.0 2.0	:Self define lattice velocity: 0=DEFAULT, dx, dt ((u_x+u_y+u_z)*dt/dx<=1 Courant Number)
 ./				:OUTPUT PATH,DEFAULT: ./ (REMEMBER TO INCLUDE "/" AT THE END OF PATH)
-3              			:PRESSURE AND VELOCITY BOUNDARY CONDITION OPTIONS: 0,1,2,3: EBC_S,EBC_D,TOLKE_BC,NEBC_D
-1				:CONSTANT PSI AND FLUX BOUNDARY CONDITION OPTIONS: 0,1:Inamuro,GUO
-0  500				:MULTI-COMPONENT STABALIZER: (a,b) a=0=OFF, a=1=ON, FORCE WILL BE APPLIED AFTER b steps
-0.4                              :Preset Saturation, [0,1] initial component distribution input is not needed, -1=OFF (for Component A,1)
+3              			:PRESSURE AND VELOCITY BC OPTIONS: 0,1,2,3: EBC_S,EBC_D,TOLKE_BC,NEBC_D
+1				:CONSTANT PSI AND FLUX BC OPTIONS: 0,1:Inamuro,GUO
+0  500				:MULTI-COMPONENT STABALIZER: (a,b) a=0=OFF, a=1=ON, FORCE APPLIED AFTER b steps
+0.4                              :Preset Saturation, [0,1] initial component distri not needed, -1=OFF (Component A,1)
 0 0 0				:Pemeability calculation Partially  
 130 20				:Permeability calculation partially Starting point and Ending point in X
-0 100				:Permeability calculation partially Starting point and Ending point in Y
+70 20				:Permeability calculation partially Starting point and Ending point in Y
 0 100				:Permeability calculation partially Starting point and Ending point in Z
 =======================BACKUP==CONTROLE===================
 -1		                   :BACKUP FREQUENCY (-1=NO BACKUP,0=Backup at the end of computation)
@@ -68,4 +68,6 @@ LBM_Backup_fg_200
 LBM_Backup_HS_200
 
 INSTRUCTIONS OF PARAMETER INPUT
-
+If buffet is add near the geometry boundaries, initial satuation parameter is on and 
+partly permeability calculation is used, the default component in the buffet is set as 
+component A (1)

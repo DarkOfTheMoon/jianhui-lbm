@@ -1,29 +1,29 @@
 
 
 clear;
-lx=60;
-ly=60;
-lz=60;
+lx=21;
+ly=80;
+lz=3;
 
 A=zeros(lx,ly,lz);
 
-% for k=1:lz
-%     for j=1:ly
-%         for i=1:lx
-%            %if (((k==1) || (k==lz)) && (abs(i-lx/2)<=10) && (abs(j-ly/2)<=10)) 
-%            %if ((k==12) && (abs(i-lx/2)<=9) && (abs(j-ly/2)<=9))
-%             %if (sqrt((i-lx*0.3)*(i-lx*0.3)+(j-ly*0.5)*(j-ly*0.5)+(k-lz*0.5)*(k-lz*0.5))<=6)
-%            if ((j==13) && (i>=5) && (i<=lx-5))% && (k>=5) && (k<=lz-5))
-%            %if ((j==1) || (j==ly))
-%            %if ((j==1) || (j==ly) || (k==1) || (k==lz))
-%            %if ((j==1) || (j==ly)) && (i>=lx/2-5) && (i<=lx-5)
-%            %if ((j==1) || (j==ly) || (k==1) || (k==lz)) && (i>=lx/2-15) && (i<=lx-15)
-%                %if ((j==1) || (j==ly) || (k==1) || (k==lz))
-%                 A(i,j,k)=1;
-%            end            
-%         end
-%     end
-% end
+for k=1:lz
+    for j=1:ly
+        for i=1:lx
+           %if (((k==1) || (k==lz)) && (abs(i-lx/2)<=10) && (abs(j-ly/2)<=10)) 
+           %if ((k==12) && (abs(i-lx/2)<=9) && (abs(j-ly/2)<=9))
+            %if (sqrt((i-lx*0.3)*(i-lx*0.3)+(j-ly*0.5)*(j-ly*0.5)+(k-lz*0.5)*(k-lz*0.5))<=6)
+           %if ((j==13) && (i>=5) && (i<=lx-5))% && (k>=5) && (k<=lz-5))
+           %if ((j==1) || (j==ly))
+           %if ((j==1) || (j==ly) || (k==1) || (k==lz))
+           if ((i==1) || (i==lx)) && (j>=ly/2-5) && (j<=ly-5)
+           %if ((j==1) || (j==ly) || (k==1) || (k==lz)) && (i>=lx/2-15) && (i<=lx-15)
+               %if ((j==1) || (j==ly) || (k==1) || (k==lz))
+                A(i,j,k)=1;
+           end            
+        end
+    end
+end
 
 fid = fopen('BC.dat','wt');
 
