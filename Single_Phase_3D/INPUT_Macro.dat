@@ -1,3 +1,4 @@
+============LATTICE BOLTZMANN SIMULATOR FOR MACROSCOPIC POROUS MEDIA=============
 BC.dat                  :Geometry filenameEmily_Berea_y_614_764_7.dat
 perm.dat		:Permeability and porosity data file
 30 60 3                :nx ny nz

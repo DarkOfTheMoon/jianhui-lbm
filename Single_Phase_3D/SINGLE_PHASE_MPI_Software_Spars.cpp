@@ -814,22 +814,6 @@ int sum=0;
 double ave_nx;
 int nx_pre,nx_aft,n_i,sum_nx;
 
-/*
-MPI_Gather(&nx_l,1,MPI_INT,nx_g,1,MPI_INT,0,MPI_COMM_WORLD);
-	
-	
-	if (rank==0)
-		{
-		disp[0]=0;
-	
-		for (int i=1;i<mpi_size;i++)
-			disp[i]=disp[i-1]+nx_g[i-1];
-		
-		
-		}
-
-	MPI_Bcast(disp,mpi_size,MPI_INT,0,MPI_COMM_WORLD);
-*/
 
 
 	for (int i=0;i<=NX;i++)

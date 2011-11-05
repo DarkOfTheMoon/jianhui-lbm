@@ -97,7 +97,7 @@ void Read_Rock(int***,double***, double*,char[128],char[128]);
 
 void tests();
 
-void init_Sparse(int***,int***,double***, double***, int*, int*);
+void init_Sparse_read_rock_parallel(int***, double***, int*, int*);
 
 void init(double*, double**, double**,double**, double**, double**, double*, double*,double*, double*, double*, double***,int*);
 
@@ -153,6 +153,8 @@ void Backup_init(double* , double** , double** ,double** , double* , double* ,do
 
 void psi_reset(double**,double** , double* , double* , double*** , int* );
 
+void Parallelize_Geometry();
+
 
 int e[19][3]=
 {{0,0,0},{1,0,0},{-1,0,0},{0,1,0},{0,-1,0},{0,0,1},{0,0,-1},{1,1,0},{-1,-1,0},{1,-1,0},{-1,1,0},{1,0,1},
@@ -205,7 +207,12 @@ double zf_xp,zf_xn,zf_yp,zf_yn,zf_zp,zf_zn,psi_total;
 int par_per_x,par_per_y,par_per_z,per_xp,per_xn,per_yp,per_yn,per_zp,per_zn;
 
 char outputfile[128]="./";
-
+int NCHAR=128;
+	char     filename[128], dummy[128+1],filenamepsi[128], backup_rho[128], backup_velocity[128],backup_psi[128], backup_f[128], backup_g[128];
+	int      dummyInt;
+	
+	
+	
 int main(int argc , char *argv [])
 {	
 
@@ -232,9 +239,6 @@ double v_max;
 	MPI_Barrier(MPI_COMM_WORLD);
 	start = MPI_Wtime();
 
-	int NCHAR=128;
-	char     filename[128], dummy[128+1],filenamepsi[128], backup_rho[128], backup_velocity[128],backup_psi[128], backup_f[128], backup_g[128];
-	int      dummyInt;
 
 	if (rank==0)
 	{
@@ -392,14 +396,7 @@ if (Zoom>1)
 
 
 
-	nx_l=(int)((NX+1)/para_size);
-	dif=(NX+1)-nx_l*para_size;
-	
-	if (rank>para_size-1-dif)
-		nx_l+=1;
 
-//	if (rank==para_size-1)
-//		nx_l+=(NX+1)%para_size;
 
 	double* Permia;
 	double* rho;
@@ -417,34 +414,20 @@ if (Zoom>1)
 	double* forcez;
 	
 	double*** Psi_local;
-	double*** Psis;
-
-	int*** Solids;
 	int*** Solid;
 	int*  Sl;
 	int*  Sr;
 
-	
+	 Parallelize_Geometry();
 	
 	Solid = new int**[nx_l];
 	Psi_local = new double**[nx_l];
 	Sl = new int[(NY+1)*(NZ+1)];
 	Sr = new int[(NY+1)*(NZ+1)];
 
-	Solids = new int**[(NX+1)/Zoom];
-	Psis = new double**[(NX+1)/Zoom];
 	
-	for (int i=0;i<(NX+1)/Zoom;i++)
-		{		
-		Solids[i] = new int*[(NY+1)/Zoom];
-		Psis[i] = new double*[(NY+1)/Zoom];
-			for (int j=0;j<(NY+1)/Zoom;j++)
-			{
-			Solids[i][j]= new int[(NZ+1)/Zoom];
-			Psis[i][j]= new double[(NZ+1)/Zoom];
-
-			}
-		}
+	
+	
 
 
 	for (int i=0;i<nx_l;i++)
@@ -458,25 +441,11 @@ if (Zoom>1)
 			}
 		}
 
+		MPI_Barrier(MPI_COMM_WORLD);
+		
 
-		Read_Rock(Solids,Psis,&porosity,filename,filenamepsi);
-
-	//cout<<"ahahahahahahahah"<<endl;
-
-	init_Sparse(Solids,Solid,Psis,Psi_local,Sl,Sr);
-
-	for (int i=0;i<(NX+1)/Zoom;i++)
-		{
-		for (int j=0;j<(NY+1)/Zoom;j++)
-		{
-			delete [] Solids[i][j];
-			delete [] Psis[i][j];
-                }
-		delete [] Solids[i];
-		delete [] Psis[i];
-		}
-	delete [] Solids;
-	delete [] Psis;
+	init_Sparse_read_rock_parallel(Solid,Psi_local,Sl,Sr);
+	
 
 	//***************************************************
 	//WARRING: SPARSE MATRIX STARTS FROM INDEX 1 NOT 0!!!
@@ -524,9 +493,13 @@ if (Zoom>1)
 	else
 	        Backup_init(rho, u, f,fg,rho_r, rhor, forcex,forcey,forcez,backup_rho, backup_velocity, backup_psi,backup_f,backup_g);
 
-if (rank==0)
-		cout<<"Porosity= "<<porosity<<endl;
 
+if (rank==0)
+{
+        cout<<endl;
+        cout<<"INITIALIZATION COMPLETED"<<endl;
+        cout<<endl;
+}
 
 
 
@@ -862,9 +835,197 @@ mat a;
 
 }
 
-void init_Sparse(int*** Solids, int*** Solid, double***Psis, double*** Psi_local,int* Sl,int* Sr)
+
+
+
+
+void Parallelize_Geometry()
+{
+        int rank = MPI :: COMM_WORLD . Get_rank ();
+	int mpi_size=MPI :: COMM_WORLD . Get_size ();
+
+
+int nx_g[mpi_size];
+int disp[mpi_size];
+int* Solid_rank0;
+float* Psi_rank0;
+int pore;
+int loc_por[NX+1];
+int sum=0;
+double ave_nx;
+int nx_pre,nx_aft,n_i,sum_nx;
+
+
+
+	for (int i=0;i<=NX;i++)
+	        loc_por[i]=0;
+	
+	
+if (rank==0)
+{
+	FILE *ftest;
+	ifstream fin;
+	
+	ftest = fopen(filename, "r");
+
+	if(ftest == NULL)
+	{
+		cout << "\n The pore geometry file (" << filename <<
+			") does not exist!!!!\n";
+		cout << " Please check the file\n\n";
+
+		exit(0);
+	}
+	fclose(ftest);
+
+	Solid_rank0 = new int[(NX+1)*(NY+1)*(NZ+1)];
+	
+	fin.open(filename);
+	for(int k=0 ; k<=NZ ; k++)
+	for(int j=0 ; j<=NY ; j++)
+	for(int i=0 ; i<=NX ; i++)
+	
+	{
+		while(true)
+		{	
+			fin >> pore;
+			if( pore == 0.0 || pore == 1.0) break;
+		}
+		
+		Solid_rank0[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]=pore;
+		if (pore==0)
+		        {
+		                sum+=1;
+		                loc_por[i]+=1;
+		        }
+	}
+	fin.close();
+}
+
+        MPI_Bcast(loc_por,NX+1,MPI_INT,0,MPI_COMM_WORLD);
+        MPI_Bcast(&sum,1,MPI_INT,0,MPI_COMM_WORLD);
+        
+        //cout<<(double)sum/((NX+1)*(NY+1)*(NZ+1))<<"   rank="<<sum<<endl;
+        //if (rank==1)
+        //for (int i=0;i<=NX;i++)
+         //       cout<<(double)loc_por[i]/((NY+1)*(NZ+1))<<endl;
+         
+	nx_pre=0;nx_aft=0;sum_nx=0;
+	ave_nx=(double)sum/(mpi_size);
+	disp[0]=0;
+	
+	
+	for (int i=0;i<mpi_size-1;i++)
+	        {
+	        nx_pre=0;nx_aft=0;n_i=0;
+	        while (nx_aft<ave_nx*(i+1))
+	                {
+	                nx_pre=nx_aft;
+	                nx_aft+=loc_por[n_i];
+	                n_i+=1;
+	                }
+	        if ((double)(nx_aft-ave_nx*(i+1))>(double)(ave_nx*(i+1)-nx_pre))
+	                disp[i+1]=n_i-1;
+	        else
+	                disp[i+1]=n_i;
+	        
+	        nx_g[i]=disp[i+1]-disp[i];
+	        
+	        }
+	  
+	  nx_g[mpi_size-1]=(NX+1)-disp[mpi_size-1];
+	  
+	  nx_l=nx_g[rank];
+//	  cout<<nx_l<<"    ******rank="<<rank<<endl;
+	  
+	  
+	  
+	  
+	  
+if (rank==0)
 {	
-	MPI_Status status[4] ;
+	ostringstream name;
+	for (int pro_n=0;pro_n<mpi_size;pro_n++)
+	        {
+	             name.str("");
+	             name<<"Parallel_INPUT_Geometry_"<<pro_n<<".input";
+	             ofstream out;
+	             out.open(name.str().c_str());
+	    
+	            
+	             for (int i=disp[pro_n];i<disp[pro_n]+nx_g[pro_n];i++)
+	                     for (int j=0;j<=NY;j++)
+	                     for (int k=0;k<=NZ;k++)
+	             
+	                     out<<Solid_rank0[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]<<endl;
+	        }
+	          
+	cout<<"GEOMETRY INPUT FILE PARTITIONING FOR PARALLEL READING DONE"<<endl;
+	cout<<endl;
+	
+        delete [] Solid_rank0;	    
+        
+        FILE *ftest;
+	ftest = fopen(filenamepsi, "r");
+	ifstream fin;
+	if(ftest == NULL)
+	{
+		cout << "\n The Concentration file (" << filenamepsi <<
+			") does not exist!!!!\n";
+		cout << " Please check the file\n\n";
+
+		exit(0);
+	}
+	fclose(ftest);
+
+	Psi_rank0 = new float[(NX+1)*(NY+1)*(NZ+1)];
+	
+	fin.open(filenamepsi);
+	for(int k=0 ; k<=NZ ; k++)
+	for(int j=0 ; j<=NY ; j++)
+	for(int i=0 ; i<=NX ; i++)
+	
+	{
+		//while(true)
+		//{	
+			fin >> pore;
+		//	if( pore == 0.0 || pore == 1.0) break;
+		//}
+		
+		Psi_rank0[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]=pore;
+	
+	}
+	fin.close();
+
+	  	
+
+	for (int pro_n=0;pro_n<mpi_size;pro_n++)
+	        {
+	             name.str("");
+	             name<<"Parallel_Concentration_"<<pro_n<<".input";
+	             ofstream out;
+	             out.open(name.str().c_str());
+	    
+	            
+	             for (int i=disp[pro_n];i<disp[pro_n]+nx_g[pro_n];i++)
+	                     for (int j=0;j<=NY;j++)
+	                     for (int k=0;k<=NZ;k++)
+	             
+	                     out<<Psi_rank0[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]<<endl;
+	        }
+	          
+	cout<<"CONCENTRATION INPUT FILE PARTITIONING FOR PARALLEL READING DONE"<<endl;
+	cout<<endl;
+	
+        delete [] Psi_rank0;	                
+}
+
+
+
+}
+void init_Sparse_read_rock_parallel(int*** Solid, double*** Psi_local,int* Sl,int* Sr)
+{	
+MPI_Status status[4] ;
 	MPI_Request request[4];
 
 	
@@ -874,18 +1035,31 @@ void init_Sparse(int*** Solids, int*** Solid, double***Psis, double*** Psi_local
 
 bool mark;
 int kk,ip,jp,kp,mean_l,mpi_test,s_c;
+
+int pore;
+double pore2;
+
 	
-	mean_l=(int)((NX+1)/mpi_size);
+       FILE *fread;
+	ifstream fin_read;
+	ostringstream read_name;
+	read_name<<"Parallel_INPUT_Geometry_"<<rank<<".input";
+	
+	
+	fread = fopen(read_name.str().c_str(), "r");
 
-	s_c=0;
-	for (int i=0;i<rank;i++)
-		if (i<mpi_size-((NX+1)-mean_l*mpi_size))
-			s_c+=mean_l;
-		else
-			s_c+=mean_l+1;
+	if(fread == NULL)
+	{
+		cout << "\n The Parallelised Geometry file (" << read_name.str().c_str() <<
+			") does not exist!!!!\n";
+		cout << " Please check the file\n\n";
 
-		
+		exit(0);
+	}
+	fclose(fread);
 
+	fin_read.open(read_name.str().c_str()); 
+	
 
 	int* Sl_send;
 	int* Sr_send;
@@ -901,10 +1075,11 @@ for(int i=0;i<nx_l;i++)
 	for(int j=0;j<=NY;j++)
 		for(int k=0;k<=NZ;k++)
 		{
-			
-		        Psi_local[i][j][k]=Psis[int((s_c+i-(s_c+i)%Zoom)/Zoom)][int((j-j%Zoom)/Zoom)][int((k-k%Zoom)/Zoom)];
-			if (Solids[int((s_c+i-(s_c+i)%Zoom)/Zoom)][int((j-j%Zoom)/Zoom)][int((k-k%Zoom)/Zoom)]==0)
+			fin_read>> pore; 
+
+			if (pore==0)
 				{
+			
 				Solid[i][j][k]=Count;
 				Count++;
 				}
@@ -912,7 +1087,46 @@ for(int i=0;i<nx_l;i++)
 				Solid[i][j][k]=0;
 
 		}
+		
+	fin_read.close();
+	
+	cout<<"GEOMETRY DATA READING DONE-----PROCESSOR No."<<rank<<endl;
+	
 
+	
+	read_name.str("");;
+	read_name<<"Parallel_Concentration_"<<rank<<".input";
+	
+	fread = fopen(read_name.str().c_str(), "r");
+
+	if(fread == NULL)
+	{
+		cout << "\n The Parallelised Concentration file (" << read_name.str().c_str() <<
+			") does not exist!!!!\n";
+		cout << " Please check the file\n\n";
+
+		exit(0);
+	}
+	fclose(fread);
+
+	fin_read.open(read_name.str().c_str()); 
+	
+
+for(int i=0;i<nx_l;i++)	
+	for(int j=0;j<=NY;j++)
+		for(int k=0;k<=NZ;k++)
+		{
+			fin_read>> pore2; 
+			Psi_local[i][j][k]=pore2;
+		}
+		
+	fin_read.close();
+	
+	cout<<"CONCENTRATION DATA READING DONE-----PROCESSOR No."<<rank<<endl;
+
+
+	
+	
 	Count-=1;
 	
 	cl=0;cr=0;	
@@ -974,8 +1188,11 @@ if (rank==0)
 	MPI_Waitall(4,request, status);
 	MPI_Testall(4,request,&mpi_test,status);
 
+
+	
+
 	delete [] Sl_send;
-	delete [] Sr_send;	
+	delete [] Sr_send;		
 }
 
 void Suppliment(int* SupInv,int*** Solid)
