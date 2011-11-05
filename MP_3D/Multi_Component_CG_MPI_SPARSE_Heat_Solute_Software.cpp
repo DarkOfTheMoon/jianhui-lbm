@@ -1060,8 +1060,8 @@ int ny=NY+1;
 int nz=NZ+1;
 
 int* Solid_Int;
-double* Psi_Int;
-double* Psi_Int2;
+float* Psi_Int;
+float* Psi_Int2;
 
 int nx_a,ny_a,nz_a;
 
@@ -1086,12 +1086,12 @@ if (mirZ==1)
 	nz0=(nz0)/2;
 
 
-double pore;
+float pore;
 int i, j, k,ir,jr,kr;
 
 Solid_Int = new int[nx*ny*nz];
-Psi_Int = new double[nx*ny*nz];
-Psi_Int2 = new double[nx*ny*nz];
+
+
 
 	
 
@@ -1206,8 +1206,11 @@ if (rank==0)
 			Solids[i][j][k]=Solid_Int[i*(ny)*(nz)+j*(nz)+k];
 		
 		
-		
-		
+delete [] Solid_Int;		
+Psi_Int = new float[nx*ny*nz];
+
+
+
 if (ini_Sat<0)
 {
         		
@@ -1277,7 +1280,7 @@ FILE *ftest2;
 
 
 	
-	MPI_Bcast(Psi_Int,nx*ny*nz,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Bcast(Psi_Int,nx*ny*nz,MPI_FLOAT,0,MPI_COMM_WORLD);
 
 if (rank==0)
 {	
@@ -1297,7 +1300,10 @@ delete [] Psi_Int;
 			
 			
 }		
-		
+
+
+Psi_Int2 = new float[nx*ny*nz];
+
 if (rank==0)
         
 {
@@ -1363,7 +1369,7 @@ FILE *ftest3;
 
 
 	
-	MPI_Bcast(Psi_Int2,nx*ny*nz,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Bcast(Psi_Int2,nx*ny*nz,MPI_FLOAT,0,MPI_COMM_WORLD);
 
 if (rank==0)
 	{	
@@ -1384,7 +1390,7 @@ if (rank==0)
 
 MPI_Barrier(MPI_COMM_WORLD);
 
-	delete [] Solid_Int;
+	
 	
 	delete [] Psi_Int2;
 
