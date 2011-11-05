@@ -195,7 +195,7 @@ double elaps;
 	if (rank==0)
 	{
 	ifstream fin(argv[1]);
-	
+	                                                        fin.getline(dummy, NCHAR);
 	fin >> filename;				fin.getline(dummy, NCHAR);
 	fin >> perfile;					fin.getline(dummy, NCHAR);
 	fin >> NX >> NY >> NZ;				fin.getline(dummy, NCHAR);
@@ -1092,7 +1092,8 @@ FILE *ftest2;
 	
 	MPI_Bcast(Per_Int,nx*ny*nz,MPI_DOUBLE,0,MPI_COMM_WORLD);
 	MPI_Bcast(Por_Int,nx*ny*nz,MPI_DOUBLE,0,MPI_COMM_WORLD);
-if (rank==0)
+
+if (rank==0)
 	{	
 	cout<<"Permeability and Porosity FILE READING COMPLETE. "<<endl;
 	cout<<endl;
