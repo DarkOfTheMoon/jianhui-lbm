@@ -801,6 +801,7 @@ int* Solid_rank0;
 int pore;
 int loc_por[NX+1];
 int sum=0;
+int sum2=0;
 double ave_nx;
 int nx_pre,nx_aft,n_i,sum_nx;
 int* recv_solid;
@@ -810,6 +811,13 @@ int bufloc[mpi_size];
 
 	for (int i=0;i<=NX;i++)
 	        loc_por[i]=0;
+	
+		if (par_per_x==0)
+		{per_xn=0;per_xp=NX;}
+	if (par_per_y==0)
+		{per_yn=0;per_yp=NY;}
+	if (par_per_z==0)
+		{per_zn=0;per_zp=NZ;}
 	
 	
 if (rank==0)
@@ -848,6 +856,8 @@ if (rank==0)
 		        {
 		                sum+=1;
 		                loc_por[i]+=1;
+		                if ((i>=per_xn) and (i<=per_xp) and (j>=per_yn) and (j<=per_yp) and (k>=per_zn) and (k<=per_zp))
+		                        sum2+=1;
 		        }
 	}
 	fin.close();
@@ -860,7 +870,7 @@ if (rank==0)
 	nx_pre=0;nx_aft=0;sum_nx=0;
 	ave_nx=(double)sum/(mpi_size);
 	disp[0]=0;bufloc[0]=0;
-	
+	porosity=(double)sum2/((per_xp-per_xn+1)*(per_yp-per_yn+1)*(per_zp-per_zn+1));
 	
 	for (int i=0;i<mpi_size-1;i++)
 	        {
@@ -1466,13 +1476,6 @@ void init(double* rho, double** u, double** f,int*** Solid)
 
 	}
 */
-
-	if (par_per_x==0)
-		{per_xn=0;per_xp=NX;}
-	if (par_per_y==0)
-		{per_yn=0;per_yp=NY;}
-	if (par_per_z==0)
-		{per_zn=0;per_zp=NZ;}
 
 
 
@@ -4606,9 +4609,9 @@ double Comput_Perm(double** u,double* Permia,int PerDIr,int* SupInv)
 		//Perm[1]=Q[1]*(1.0/Zoom)*(1.0/Zoom)/((NX+1)/Zoom*(NY+1)/Zoom*(NZ+1)/Zoom)*(in_vis)/gy;
 		//Perm[2]=Q[2]*(1.0/Zoom)*(1.0/Zoom)/((NX+1)/Zoom*(NY+1)/Zoom*(NZ+1)/Zoom)*(in_vis)/gz;
 
-		Perm[0]=Q[0]/((NX+1)*(NY+1)*(NZ+1))*(in_vis)/(gx+dp);
-		Perm[1]=Q[1]/((NX+1)*(NY+1)*(NZ+1))*(in_vis)/(gy+dp);
-		Perm[2]=Q[2]/((NX+1)*(NY+1)*(NZ+1))*(in_vis)/(gz+dp);
+		Perm[0]=Q[0]/((per_xp-per_xn+1)*(per_yp-per_yn+1)*(per_zp-per_zn+1))*(in_vis)/(gx+dp);
+		Perm[1]=Q[1]/((per_xp-per_xn+1)*(per_yp-per_yn+1)*(per_zp-per_zn+1))*(in_vis)/(gy+dp);
+		Perm[2]=Q[2]/((per_xp-per_xn+1)*(per_yp-per_yn+1)*(per_zp-per_zn+1))*(in_vis)/(gz+dp);
 		
 		switch(PerDIr)
 		{
