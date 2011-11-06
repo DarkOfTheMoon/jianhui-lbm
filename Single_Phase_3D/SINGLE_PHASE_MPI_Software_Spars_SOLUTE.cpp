@@ -861,12 +861,12 @@ int loc_por[NX+1];
 int sum=0;
 double ave_nx;
 int nx_pre,nx_aft,n_i,sum_nx;
+
 int* Solid_rank0;
 float* Psi_rank0;
 int* recv_solid;
 float* recv_psi;
-int* send_solid;
-float* send_psi;
+
 int bufsize[mpi_size];
 int bufloc[mpi_size];
 
@@ -977,45 +977,7 @@ MPI_Barrier(MPI_COMM_WORLD);
 
         
         MPI_Scatterv(Solid_rank0,bufsize,bufloc,MPI_INT,recv_solid,nx_l*(NY+1)*(NZ+1),MPI_INT,0,MPI_COMM_WORLD);
-  /*  
-	for (int pro_n=1;pro_n<mpi_size;pro_n++)
-	{
-	                
-	               
-	        
-	        
-	         
-	                if (rank==0)
-	                {
-	                        send_solid = new int[disp[pro_n]*(NY+1)*(NZ+1)];
-	                for (int i=disp[pro_n];i<disp[pro_n]+nx_g[pro_n];i++)
-	                for (int j=0;j<=NY;j++)
-	                for (int k=0;k<=NZ;k++)
-	                        send_solid[(i-disp[pro_n])*(NY+1)*(NZ+1)+j*(NZ+1)+k]=Solid_rank0[i*(NY+1)*(NZ+1)+j*(NZ+1)+k];
-	                
-	                //MPI_Isend(send_solid,nx_g[pro_n]*(NY+1)*(NZ+1),MPI_INT,pro_n,pro_n,MPI_COMM_WORLD,&request);               
-	                
-	                }
-	                
-	                MPI_Sendrecv(send_solid,nx_g[pro_n]*(NY+1)*(NZ+1),MPI_INT,pro_n)
-	                
-	                
-	               /*
-	                if (rank==pro_n)
-	                MPI_Irecv(recv_solid,nx_l*(NY+1)*(NZ+1),MPI_INT,0,pro_n,MPI_COMM_WORLD,&request);   
-	        
-	                 if ((rank==0) or (rank==pro_n))
-			MPI_Wait(&request,&status);
-			
-			
-			
-		        
-		     
-	        }
-	        */
-	        
-	          //if (rank==0)
-		    //            delete [] send_solid; 
+
 	cout<<"GEOMETRY INPUT FILE PARTITIONING FOR PARALLEL READING DONE"<<endl;
 	cout<<endl;
 
@@ -1082,8 +1044,7 @@ MPI_Barrier(MPI_COMM_WORLD);
 	                }
 	       delete [] Solid_rank0;	
 	       delete [] Psi_rank0;  
-	      // delete [] send_solid;
-	      // delete [] send_psi;
+	
 	       
 	
 }
