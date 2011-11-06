@@ -35,36 +35,36 @@ end
 A=zeros(lx,ly,lz);
 B=zeros(lx,ly,lz);
 
-% for k=1:lz
-%     for j=1:ly
-%         for i=1:lx
-%             %if (sqrt((i-lx*0.15)*(i-lx*0.15)+(j-ly*0.5)*(j-ly*0.5)+(k-lz*0.5)*(k-lz*0.5))<=7)
-%              %if ((abs(i-lx/2)<=6) && (abs(j-ly/2)<=6))
-%              %if ((abs(i-lx/2)<=7) && (abs(j-ly/2)<=7) && (abs(k-lz/2)<=7))
-%              if (j>=5) && (j<=18)
-%              %if ((sqrt((i-40)*(i-40)+(j-8)*(j-8))<=7) ||(sqrt((i-56)*(i-56)+(j-8)*(j-8))<=7)) %100,60,3
-%                 A(i,j,k)=0.8;B(i,j,k)=0.03;
-%             else
-%                 A(i,j,k)=0.2;B(i,j,k)=0.01;
-%             end
-%             
-%         end
-%     end
-% end
-
-
-%=======================A=Permeability,B=Porosity================
-
 for k=1:lz
     for j=1:ly
         for i=1:lx
-           
-                A(i,j,k)=0.21;B(i,j,k)=0.1;
-         
+            %if (sqrt((i-lx*0.15)*(i-lx*0.15)+(j-ly*0.5)*(j-ly*0.5)+(k-lz*0.5)*(k-lz*0.5))<=7)
+             %if ((abs(i-lx/2)<=6) && (abs(j-ly/2)<=6))
+             %if ((abs(i-lx/2)<=7) && (abs(j-ly/2)<=7) && (abs(k-lz/2)<=7))
+             %if (j>=5) && (j<=18)
+             if ((sqrt((i-20)*(i-20)+(j-8)*(j-8))<=7) ||(sqrt((i-6)*(i-6)+(j-8)*(j-8))<=7)) %100,60,3
+                A(i,j,k)=0.8;B(i,j,k)=0.7;
+            else
+                A(i,j,k)=0.2;B(i,j,k)=0.1;
+            end
             
         end
     end
 end
+
+
+%=======================A=Permeability,B=Porosity================
+
+% for k=1:lz
+%     for j=1:ly
+%         for i=1:lx
+%            
+%                 A(i,j,k)=0.21;B(i,j,k)=0.1;
+%          
+%             
+%         end
+%     end
+% end
 
 
 

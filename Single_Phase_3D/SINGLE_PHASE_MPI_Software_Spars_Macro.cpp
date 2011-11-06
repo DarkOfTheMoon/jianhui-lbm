@@ -97,9 +97,9 @@ void Read_Rock(int***,double*, double*,double*,char[128], char[128]);
 
 void tests();
 
-void init_Sparse(int***, int***, double*, double*,int*,int*);
+void init_Sparse_read_rock_parallel(int*,int*);
 
-void init(double*, double**, double**, double*, double*, double*, double*, double*, double*, double*, int*);
+void init(double*, double**, double**, double*, double*, double*, double*, double*, int*);
 
 void collision(double*,double** ,double** ,double** ,double*, double*, double*, double*, double*,int* ,int***,int*, int*);
 
@@ -135,7 +135,9 @@ double feq(int,double, double[3],double);
 
 void Suppliment(int*,int***);
 
-void Backup_init(double* rho, double** u, double** f, double*, double*, double*, double*,double*, double*, double*,char[128], char[128],char[128],int*);
+void Parallelize_Geometry();
+
+void Backup_init(double* rho, double** u, double** f, double*, double*,double*, double*, double*,char[128], char[128],char[128],int*);
 
 int e[19][3]=
 {{0,0,0},{1,0,0,},{-1,0,0},{0,1,0},{0,-1,0},{0,0,1},{0,0,-1},{1,1,0},{-1,1,0},{1,-1,0},{-1,-1,0},{0,1,1},
@@ -166,7 +168,16 @@ double inivx,inivy,inivz,v_xp,v_xn,v_yp,v_yn,v_zp,v_zn;
 double error_perm,F_epsilon,c_s,c_s2,dx_input,dt_input,lat_c;
 
 char outputfile[128]="./";
+int NCHAR=128;
+	char     filename[128], perfile[128], dummy[128+1], backup_rho[128], backup_velocity[128],backup_f[128];
+	int      dummyInt;
 
+	
+int*** Solid;
+	float* Per_Int;
+	float* Por_Int;
+	
+	
 int main(int argc , char *argv [])
 {	
 
@@ -187,10 +198,6 @@ double elaps;
 
 	MPI_Barrier(MPI_COMM_WORLD);
 	start = MPI_Wtime();
-
-	int NCHAR=128;
-	char     filename[128], perfile[128], dummy[128+1], backup_rho[128], backup_velocity[128],backup_f[128];
-	int      dummyInt;
 
 	if (rank==0)
 	{
@@ -234,7 +241,7 @@ double elaps;
 	
 	fin.close();
 	
-	//cout<<backup_f<<endl;
+	cout<<backup_f<<endl;
 	
 	
 	NX=NX-1;NY=NY-1;NZ=NZ-1;
@@ -316,71 +323,46 @@ if (Zoom>1)
 	double* forcey;
 	double* forcez;
 	
-	double* Per_Int;
-	double* Por_Int;
+	
 
-	//double*** Per_local;
-	//double*** Por_local;
 
 	double* PerC;
 	double* PorC;
 
-	int*** Solids;
-	int*** Solid;
+
+	
 	int*  Sl;
 	int*  Sr;
 
+	 Parallelize_Geometry();
 	
 	
-	Solid = new int**[nx_l];
 
-	//Per_local = new double**[nx_l];
-	//Por_local = new double**[nx_l];
 
 	Sl = new int[(NY+1)*(NZ+1)];
 	Sr = new int[(NY+1)*(NZ+1)];
 
-	Solids = new int**[(NX+1)/Zoom];
 
-	Per_Int = new double[((NX+1)/Zoom)*((NY+1)/Zoom)*((NZ+1)/Zoom)];
-	Por_Int = new double[((NX+1)/Zoom)*((NY+1)/Zoom)*((NZ+1)/Zoom)];
+//	Per_Int = new double[((NX+1)/Zoom)*((NY+1)/Zoom)*((NZ+1)/Zoom)];
+//	Por_Int = new double[((NX+1)/Zoom)*((NY+1)/Zoom)*((NZ+1)/Zoom)];
 
 
 	
 
-	for (int i=0;i<(NX+1)/Zoom;i++)
-		{		
-		Solids[i] = new int*[(NY+1)/Zoom];
-	
-			for (int j=0;j<(NY+1)/Zoom;j++)
-			{
-			Solids[i][j]= new int[(NZ+1)/Zoom];
-			
+//	Solid = new int**[nx_l];
+//	for (int i=0;i<nx_l;i++)
+//		{
+//		Solid[i] = new int*[NY+1];
+//			for (int j=0;j<=NY;j++)
+//			Solid[i][j]= new int[NZ+1];
+//		}
 
-			}
-		}
-
-
-	for (int i=0;i<nx_l;i++)
-		{
-		Solid[i] = new int*[NY+1];
-			for (int j=0;j<=NY;j++)
-			Solid[i][j]= new int[NZ+1];
-		}
-
-	Read_Rock(Solids,Per_Int,Por_Int ,&porosity,filename,perfile);
 
 	
-	init_Sparse(Solids,Solid,Per_Int,Por_Int,Sl,Sr);
+	init_Sparse_read_rock_parallel(Sl,Sr);
 	
 	
-	for (int i=0;i<(NX+1)/Zoom;i++)
-		{
-		for (int j=0;j<(NY+1)/Zoom;j++)
-			delete [] Solids[i][j];
-		delete [] Solids[i];
-		}
-	delete [] Solids;
+	
 
 	
 
@@ -426,9 +408,9 @@ if (Zoom>1)
 	}
 
 if (mode_backup_ini==0)
-	init(rho,u,f,PerC, PorC, Per_Int, Por_Int, forcex, forcey,forcez, SupInv);
+	init(rho,u,f,PerC, PorC, forcex, forcey,forcez, SupInv);
 else
-        Backup_init(rho,u,f,PerC,PorC, Per_Int, Por_Int,forcex,forcey, forcez,backup_rho,backup_velocity,backup_f,SupInv);
+        Backup_init(rho,u,f,PerC,PorC, forcex,forcey, forcez,backup_rho,backup_velocity,backup_f,SupInv);
 
 if (rank==0)
 		cout<<"Porosity= "<<porosity<<endl;
@@ -582,7 +564,7 @@ if (wr_per==1)
 			if ((fre_backup>=0) and (n%fre_backup==0) and (n>0))
 			        Backup(n,rho,u,f);
 			        
-			if(error!=error) {cout<<"PROGRAM STOP"<<endl;break;};
+			if((error!=error) and (n>100)) {cout<<"PROGRAM STOP"<<endl;break;};
 			if(U_max_ref>=5) {cout<<"PROGRAM STOP DUE TO HIGH VELOCITY"<<endl;break;}
 		}	
 	}
@@ -721,8 +703,232 @@ void Suppliment(int* SupInv,int*** Solid)
 
 }
 
+void Parallelize_Geometry()
+{
+        int rank = MPI :: COMM_WORLD . Get_rank ();
+	int mpi_size=MPI :: COMM_WORLD . Get_size ();
+	MPI_Status status;
+	MPI_Request request;
 
-void init_Sparse(int*** Solids, int*** Solid, double* Per_Int, double* Por_Int,int* Sl,int* Sr)
+int nx_g[mpi_size];
+int disp[mpi_size];
+int pore;
+float pore2,pore3;
+int loc_por[NX+1];
+int sum=0;
+double ave_nx;
+int nx_pre,nx_aft,n_i,sum_nx;
+
+//====================
+int* Solid_rank0;
+float* Per_rank0;
+float* Por_rank0;
+int* recv_solid;
+float* recv_per;
+float* recv_por;
+
+int bufsize[mpi_size];
+int bufloc[mpi_size];
+//=====================
+
+
+	for (int i=0;i<=NX;i++)
+	        loc_por[i]=0;
+	
+	
+if (rank==0)
+{
+	FILE *ftest;
+	ifstream fin;
+	
+	ftest = fopen(filename, "r");
+
+	if(ftest == NULL)
+	{
+		cout << "\n The pore geometry file (" << filename <<
+			") does not exist!!!!\n";
+		cout << " Please check the file\n\n";
+
+		exit(0);
+	}
+	fclose(ftest);
+
+	Solid_rank0 = new int[(NX+1)*(NY+1)*(NZ+1)];
+	
+	fin.open(filename);
+	for(int k=0 ; k<=NZ ; k++)
+	for(int j=0 ; j<=NY ; j++)
+	for(int i=0 ; i<=NX ; i++)
+	
+	{
+		while(true)
+		{	
+			fin >> pore;
+			if( pore == 0.0 || pore == 1.0) break;
+		}
+		
+		Solid_rank0[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]=pore;
+		if (pore==0)
+		        {
+		                sum+=1;
+		                loc_por[i]+=1;
+		        }
+	}
+	fin.close();
+}
+
+        MPI_Bcast(loc_por,NX+1,MPI_INT,0,MPI_COMM_WORLD);
+        MPI_Bcast(&sum,1,MPI_INT,0,MPI_COMM_WORLD);
+        
+   
+         
+	nx_pre=0;nx_aft=0;sum_nx=0;
+	ave_nx=(double)sum/(mpi_size);
+	disp[0]=0;
+	bufloc[0]=0;   //===========
+	
+	for (int i=0;i<mpi_size-1;i++)
+	        {
+	        nx_pre=0;nx_aft=0;n_i=0;
+	        while (nx_aft<ave_nx*(i+1))
+	                {
+	                nx_pre=nx_aft;
+	                nx_aft+=loc_por[n_i];
+	                n_i+=1;
+	                }
+	        if ((double)(nx_aft-ave_nx*(i+1))>(double)(ave_nx*(i+1)-nx_pre))
+	                disp[i+1]=n_i-1;
+	        else
+	                disp[i+1]=n_i;
+	        
+	        nx_g[i]=disp[i+1]-disp[i];
+	  
+	        //======================
+	        bufsize[i]=nx_g[i]*(NY+1)*(NZ+1);
+	        bufloc[i+1]=bufloc[i]+bufsize[i];
+	        //=======================
+	        
+	        }
+	  
+	  nx_g[mpi_size-1]=(NX+1)-disp[mpi_size-1];
+	  bufsize[mpi_size-1]=nx_g[mpi_size-1]*(NY+1)*(NZ+1);//======
+	  
+	  nx_l=nx_g[rank];
+	  
+	
+
+//===========================================	  
+	    Solid = new int**[nx_l];
+	for (int i=0;i<nx_l;i++)
+	{
+		Solid[i] = new int*[NY+1];
+			for (int j=0;j<=NY;j++)
+			Solid[i][j]= new int[NZ+1];
+	}
+		
+	  Per_rank0 = new float[(NX+1)*(NY+1)*(NZ+1)];
+	  Por_rank0 = new float[(NX+1)*(NY+1)*(NZ+1)];
+	  
+		recv_solid = new int[nx_l*(NY+1)*(NZ+1)];
+		recv_per = new float[nx_l*(NY+1)*(NZ+1)];
+		recv_por = new float[nx_l*(NY+1)*(NZ+1)];
+//========================================
+		
+
+MPI_Barrier(MPI_COMM_WORLD);
+
+        
+        MPI_Scatterv(Solid_rank0,bufsize,bufloc,MPI_INT,recv_solid,nx_l*(NY+1)*(NZ+1),MPI_INT,0,MPI_COMM_WORLD);
+
+	cout<<"GEOMETRY INPUT FILE PARTITIONING FOR PARALLEL READING DONE   Processor No."<<rank<<endl;
+	//cout<<endl;
+
+
+
+
+    
+ 
+ 
+ if (rank==0)
+{       
+        FILE *ftest;
+	ftest = fopen(perfile, "r");
+	ifstream fin;
+	if(ftest == NULL)
+	{
+		cout << "\n The Concentration file (" << perfile <<
+			") does not exist!!!!\n";
+		cout << " Please check the file\n\n";
+
+		exit(0);
+	}
+	fclose(ftest);
+
+	Per_rank0 = new float[(NX+1)*(NY+1)*(NZ+1)];
+	
+	fin.open(perfile);
+	for(int k=0 ; k<=NZ ; k++)
+	for(int j=0 ; j<=NY ; j++)
+	for(int i=0 ; i<=NX ; i++)
+	
+	{
+	
+			fin >> pore2 >> pore3;
+			Per_rank0[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]=pore2;
+			Por_rank0[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]=pore3;
+			
+	
+	
+	}
+	fin.close();
+	
+}
+
+
+	
+MPI_Barrier(MPI_COMM_WORLD);	
+	
+        MPI_Scatterv(Per_rank0,bufsize,bufloc,MPI_FLOAT,recv_per,nx_l*(NY+1)*(NZ+1),MPI_FLOAT,0,MPI_COMM_WORLD);
+	MPI_Scatterv(Por_rank0,bufsize,bufloc,MPI_FLOAT,recv_por,nx_l*(NY+1)*(NZ+1),MPI_FLOAT,0,MPI_COMM_WORLD);
+	        
+	 cout<<"PERMEABILITY AND POROSITY FILE PARTITIONING FOR PARALLEL READING DONE   Processor No."<<rank<<endl;
+//	cout<<endl;
+   
+MPI_Barrier(MPI_COMM_WORLD);		        
+	        
+	        
+	if (rank==0)
+{	
+
+	       delete [] Solid_rank0;	
+	       delete [] Per_rank0;  
+	       delete [] Por_rank0;
+	
+}
+
+
+        Per_Int = new float[nx_l*(NY+1)*(NZ+1)];
+        Por_Int = new float[nx_l*(NY+1)*(NZ+1)];
+
+	for (int i=0;i<nx_l;i++)
+	                for (int j=0;j<=NY;j++)
+	                for (int k=0;k<=NZ;k++)
+	                {
+	                Solid[i][j][k]=recv_solid[i*(NY+1)*(NZ+1)+j*(NZ+1)+k];
+	                Per_Int[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]=recv_per[i*(NY+1)*(NZ+1)+j*(NZ+1)+k];
+	                Por_Int[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]=recv_por[i*(NY+1)*(NZ+1)+j*(NZ+1)+k];
+	                
+	                }
+	           
+	 delete [] recv_per;
+	 delete [] recv_solid;
+	 delete [] recv_por;
+       
+}
+
+
+
+void init_Sparse_read_rock_parallel(int* Sl,int* Sr)
 {	
 
 
@@ -735,19 +941,9 @@ void init_Sparse(int*** Solids, int*** Solid, double* Per_Int, double* Por_Int,i
 	int mpi_size=MPI :: COMM_WORLD . Get_size ();
 
 bool mark;
-int kk,ip,jp,kp,mean_l,mpi_test,s_c;
+int kk,ip,jp,kp,mean_l,mpi_test;
 	
-	mean_l=(int)((NX+1)/mpi_size);
-
-	s_c=0;
-	for (int i=0;i<rank;i++)
-		if (i<mpi_size-((NX+1)-mean_l*mpi_size))
-			s_c+=mean_l;
-		else
-			s_c+=mean_l+1;
-
-		
-
+	
 
 	int* Sl_send;
 	int* Sr_send;
@@ -763,11 +959,7 @@ for(int i=0;i<nx_l;i++)
 	for(int j=0;j<=NY;j++)
 		for(int k=0;k<=NZ;k++)
 		{
-			ip=int((s_c+i-(s_c+i)%Zoom)/Zoom);
-			jp=int((j-j%Zoom)/Zoom);
-			kp=int((k-k%Zoom)/Zoom);
-		
-			if (Solids[int((s_c+i-(s_c+i)%Zoom)/Zoom)][int((j-j%Zoom)/Zoom)][int((k-k%Zoom)/Zoom)]==0)
+			if (Solid[i][j][k]==0)
 				{
 				Solid[i][j][k]=Count;
 				
@@ -847,279 +1039,6 @@ if (rank==0)
 
 
 
-
-void Read_Rock(int*** Solids,double* Per_Int, double* Por_Int ,double* porosity,char poreFileName[128], char perfile[128])
-{
-
-
-int rank = MPI :: COMM_WORLD . Get_rank ();
-int mpi_size=MPI :: COMM_WORLD . Get_size ();
-
-
-
-int nx0=NX+1;
-int ny0=NY+1;
-int nz0=NZ+1;
-
-
-int nx=NX+1;
-int ny=NY+1;
-int nz=NZ+1;
-
-int* Solid_Int;
-//double* Psi_Int;
-
-int nx_a,ny_a,nz_a;
-
-if (Zoom>1)
-	{
-	nx0=(nx0)/Zoom;
-	ny0=(ny0)/Zoom;
-	nz0=(nz0)/Zoom;
-
-	nx=(nx)/Zoom;
-	ny=(ny)/Zoom;
-	nz=(nz)/Zoom;	
-	}
-
-
-
-if (mirX==1)
-	nx0=(nx0)/2;
-if (mirY==1)
-	ny0=(ny0)/2;
-if (mirZ==1)
-	nz0=(nz0)/2;
-
-
-double pore,per1, por1;
-int i, j, k,ir,jr,kr;
-
-Solid_Int = new int[nx*ny*nz];
-//Per1_Int = new double[nx*ny*nz];
-//Por1_Int = new double[nx*ny*nz];
-
-
-
-	
-
-if (rank==0)
-{
-
-
-if (Par_Geo==0)
-	{
-	nx_a=nx0;
-	ny_a=ny0;
-	nz_a=nz0;
-	}
-else
-	{
-	nx_a=Par_nx;
-	ny_a=Par_ny;
-	nz_a=Par_nz;
-	}
-
-FILE *ftest;
-	ifstream fin;
-	
-	ftest = fopen(poreFileName, "r");
-
-	if(ftest == NULL)
-	{
-		cout << "\n The pore geometry file (" << poreFileName <<
-			") does not exist!!!!\n";
-		cout << " Please check the file\n\n";
-
-		exit(0);
-	}
-	fclose(ftest);
-
-	fin.open(poreFileName);
-
-
-	
-	// Reading pore geometry
-	for(k=0 ; k<nz_a ; k++)
-	for(j=0 ; j<ny_a ; j++)
-	for(i=0 ; i<nx_a ; i++)
-	
-	{
-		while(true)
-		{	
-			fin >> pore;
-			if( pore == 0.0 || pore == 1.0) break;
-		}
-		if ((pore == 0.0) && (i<nx0) && (j<ny0) && (k<nz0))	Solid_Int[i*ny*nz+j*nz+k] = 0;
-		//else			Solid_Int[i][j][k] = 1;
-		if ((pore == 1.0) && (i<nx0) && (j<ny0) && (k<nz0))	Solid_Int[i*ny*nz+j*nz+k] = 1;
-	}
-	fin.close();
-
-	// Mirroring the rock
-	if(mirX==1){
-		for(i=nx0 ; i<nx ; i++)
-		for(j=0   ; j<ny ; j++)
-		for(k=0   ; k<nz ; k++)
-				Solid_Int[i*ny*nz+j*nz+k] = Solid_Int[(nx-i-1)*ny*nz+j*nz+k];
-	                }
-
-	if(mirY==1){
-		for(j=ny0 ; j<ny ; j++)
-		for(i=0   ; i<nx ; i++)
-		for(k=0   ; k<nz ; k++)
-				Solid_Int[i*ny*nz+j*nz+k] = Solid_Int[i*ny*nz+(ny-j-1)*nz+k];
-	                        }
-
-	if(mirZ==1){
-		for(k=nz0 ; k<nz ; k++)
-		for(j=0   ; j<ny ; j++)
-		for(i=0   ; i<nx ; i++)
-				Solid_Int[i*ny*nz+j*nz+k] = Solid_Int[i*ny*nz+j*nz+nz-k-1];
-	                        }
-
-
-	//MESH REFINEMENT
-	
-
-
-	//double porosity;
-
-	// Calculate Porosity
-	int nNodes = 0;
-	for(i=0 ; i<nx*ny*nz ; i++)
-		if(Solid_Int[i] == 0) nNodes++;
-
-	*porosity = (double)nNodes / (nx*ny*nz);
-
-}
-
-
-	
-	MPI_Bcast(Solid_Int,nx*ny*nz,MPI_INT,0,MPI_COMM_WORLD);
-
-if (rank==0)		
-	cout<<"INPUT FILE READING COMPLETE.  THE POROSITY IS: "<<*porosity<<endl;
-
-	//cout<<nx<<"  "<<ny<<"  "<<nz<<"  zoom "<<Zoom<<endl;
-
-	
-	for (i=0;i<nx;i++)
-		for (j=0;j<ny;j++)
-			for (k=0;k<nz;k++)
-			Solids[i][j][k]=Solid_Int[i*(ny)*(nz)+j*(nz)+k];
-		
-		
-		
-		
-		
-if (rank==0)
-        
-{
-FILE *ftest2;
-	ifstream fin2;
-	
-	ftest2 = fopen(perfile, "r");
-
-	if(ftest2 == NULL)
-	{
-		cout << "\n The concentration file (" << perfile <<
-			") does not exist!!!!\n";
-		cout << " Please check the file\n\n";
-
-		exit(0);
-	}
-	fclose(ftest2);
-
-	fin2.open(perfile);
-
-
-	
-	// Reading pore geometry
-	for(k=0 ; k<nz_a ; k++)
-	for(j=0 ; j<ny_a ; j++)
-	for(i=0 ; i<nx_a ; i++)
-	
-	{
-		//while(true)
-		//{	
-			fin2 >> per1 >> por1;
-		//	if( (pore>-10000.0) and (pore<10000)) break;
-		//}
-		//if ((pore == 1.0) && (i<nx0) && (j<ny0) && (k<nz0))	Psi_Int[i*ny*nz+j*nz+k] = 1.0;
-		//else			Solid_Int[i][j][k] = 1;
-		//if ((pore == 0.0) && (i<nx0) && (j<ny0) && (k<nz0))	
-		Per_Int[i*ny*nz+j*nz+k] = per1;
-		Por_Int[i*ny*nz+j*nz+k] = por1;
-	}
-	fin2.close();
-
-	// Mirroring the concentration
-	if(mirX==1){
-		for(i=nx0 ; i<nx ; i++)
-		for(j=0   ; j<ny ; j++)
-		for(k=0   ; k<nz ; k++)
-				{
-				Per_Int[i*ny*nz+j*nz+k] = Per_Int[(nx-i-1)*ny*nz+j*nz+k];
-				Por_Int[i*ny*nz+j*nz+k] = Por_Int[(nx-i-1)*ny*nz+j*nz+k];
-				}
-	}
-
-	if(mirY==1){
-		for(j=ny0 ; j<ny ; j++)
-		for(i=0   ; i<nx ; i++)
-		for(k=0   ; k<nz ; k++)
-				{
-				Per_Int[i*ny*nz+j*nz+k] = Per_Int[i*ny*nz+(ny-j-1)*nz+k];
-				Por_Int[i*ny*nz+j*nz+k] = Por_Int[i*ny*nz+(ny-j-1)*nz+k];
-				}
-	}
-
-	if(mirZ==1){
-		for(k=nz0 ; k<nz ; k++)
-		for(j=0   ; j<ny ; j++)
-		for(i=0   ; i<nx ; i++)
-				{
-				Per_Int[i*ny*nz+j*nz+k] = Per_Int[i*ny*nz+j*nz+nz-k-1];
-				Por_Int[i*ny*nz+j*nz+k] = Por_Int[i*ny*nz+j*nz+nz-k-1];
-				}
-	}
-
-
-}
-
-
-	
-	MPI_Bcast(Per_Int,nx*ny*nz,MPI_DOUBLE,0,MPI_COMM_WORLD);
-	MPI_Bcast(Por_Int,nx*ny*nz,MPI_DOUBLE,0,MPI_COMM_WORLD);
-
-if (rank==0)
-	{	
-	cout<<"Permeability and Porosity FILE READING COMPLETE. "<<endl;
-	cout<<endl;
-	}
-	
-	//for (i=0;i<nx;i++)
-	//	for (j=0;j<ny;j++)
-	//		for (k=0;k<nz;k++)
-	//		{
-	//		Per_Int[i][j][k]=Per_Int_Int[i*(ny)*(nz)+j*(nz)+k];
-	//		Por_Int[i][j][k]=Psi_Int[i*(ny)*(nz)+j*(nz)+k];
-	//		}	
-		
-		
-		
-
-//cout<<"asdfasdfasdfasdfa"<<endl;
-MPI_Barrier(MPI_COMM_WORLD);
-
-	delete [] Solid_Int;
-	
-
-
-}
-
-
 double feq(int k,double rho,double u[3],double epsi)
 {
 
@@ -1129,13 +1048,15 @@ double feq(int k,double rho,double u[3],double epsi)
 	eu=(elat[k][0]*u[0]+elat[k][1]*u[1]+elat[k][2]*u[2]);
 	uv=(u[0]*u[0]+u[1]*u[1]+u[2]*u[2]);
 	feq=w[k]*rho*(1.0+3.0*eu/c2+4.5*eu*eu/(c4*epsi)-1.5*uv/(c2*epsi));
+	if (n==0)
+	//cout<<epsi<<endl;
 	return feq;
 
 }
 
 
 
-void init(double* rho, double** u, double** f,double* PerC, double* PorC, double* Per_Int, double* Por_Int, double* forcex, double* forcey, double* forcez, int* SupInv)
+void init(double* rho, double** u, double** f,double* PerC, double* PorC,  double* forcex, double* forcey, double* forcez, int* SupInv)
 {	
 
       
@@ -1213,13 +1134,13 @@ void init(double* rho, double** u, double** f,double* PerC, double* PorC, double
 				
 			//cout<<i<<"    @@@@@@@@@@@@@@    "<<endl;
 
-			ip=(int)(SupInv[i]/((NY+1)*(NZ+1)))+disp[rank];
+			ip=(int)(SupInv[i]/((NY+1)*(NZ+1)));
 			jp=(int)((SupInv[i]%((NY+1)*(NZ+1)))/(NZ+1));
 			kp=(int)(SupInv[i]%(NZ+1));
 
-			ip=(ip-ip%Zoom)/Zoom;
-			jp=(jp-jp%Zoom)/Zoom;
-			kp=(kp-kp%Zoom)/Zoom;
+			//ip=(ip-ip%Zoom)/Zoom;
+			//jp=(jp-jp%Zoom)/Zoom;
+			//kp=(kp-kp%Zoom)/Zoom;
  			//cout<<ip<<"   "<<jp<<"  "<<kp<<"    "<<disp[rank]<<endl;
 
 
@@ -1232,14 +1153,15 @@ void init(double* rho, double** u, double** f,double* PerC, double* PorC, double
 
 			rho[i]=1.0;
 			
-			ijk=ip*((NY+1)/Zoom)*((NZ+1)/Zoom)+jp*((NZ+1)/Zoom)+kp;
+			//ijk=ip*((NY+1)/Zoom)*((NZ+1)/Zoom)+jp*((NZ+1)/Zoom)+kp;
 			//cout<<ijk<<"      @@@@@@@@      "<<Per_Int[10700]<<endl;
 
 
-			PerC[i]=Per_Int[ijk];
-			PorC[i]=Por_Int[ijk];
+			PerC[i]=Per_Int[ip*(NY+1)*(NZ+1)+jp*(NZ+1)+kp];
+			PorC[i]=Por_Int[ip*(NY+1)*(NZ+1)+jp*(NZ+1)+kp];
 			
-
+			//if (PorC[i]==0)
+			 //       cout<<ip<<"  "<<jp<<"  "<<kp<<"  "<<rank<<endl;
 			
 			//***********************************************************************
 
@@ -3365,7 +3287,7 @@ void Backup(int m,double* rho,double** u, double** f)
 
 
 
-void Backup_init(double* rho, double** u, double** f, double* PerC, double* PorC, double* Per_Int, double* Por_Int, double* forcex, double* forcey, double* forcez, char backup_rho[128], char backup_velocity[128], char backup_f[128],int* SupInv)
+void Backup_init(double* rho, double** u, double** f, double* PerC, double* PorC, double* forcex, double* forcey, double* forcez, char backup_rho[128], char backup_velocity[128], char backup_f[128],int* SupInv)
 {	
       
   
@@ -3479,7 +3401,7 @@ void Backup_init(double* rho, double** u, double** f, double* PerC, double* PorC
 				
 			
 
-			ip=(int)(SupInv[i]/((NY+1)*(NZ+1)))+disp[rank];
+			ip=(int)(SupInv[i]/((NY+1)*(NZ+1)));
 			jp=(int)((SupInv[i]%((NY+1)*(NZ+1)))/(NZ+1));
 			kp=(int)(SupInv[i]%(NZ+1));
 
@@ -3488,13 +3410,9 @@ void Backup_init(double* rho, double** u, double** f, double* PerC, double* PorC
 			kp=(kp-kp%Zoom)/Zoom;
  			
 
-
-			ijk=ip*((NY+1)/Zoom)*((NZ+1)/Zoom)+jp*((NZ+1)/Zoom)+kp;
+			PerC[i]=Per_Int[ip*(NY+1)*(NZ+1)+jp*(NZ+1)+kp];
+			PorC[i]=Por_Int[ip*(NY+1)*(NZ+1)+jp*(NZ+1)+kp];
 			
-
-
-			PerC[i]=Per_Int[ijk];
-			PorC[i]=Por_Int[ijk];
 			
 
 			
