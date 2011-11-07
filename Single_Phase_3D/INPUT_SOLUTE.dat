@@ -1,15 +1,15 @@
 =============INPUT FILE FOR 3D LATTICE BOLTZMANN MPI CODE--Solute and heat transfer=======
 BC.dat                  	:Geometry filenameEmily_Berea_y_614_764_7.dat
 phase.dat       	    	:Initial components distribution
-100 30 3                 	:nx ny nz
+160 16 3                 	:nx ny nz
 700000		     		:Maximum time step
 19.9997	             		:dx (um) Resolution (for Permeability calculation)
-0 	        	      	:Pressure Or Velocity Boundary (1=YES, 0=No)
+1 	        	      	:Pressure Or Velocity Boundary (1=YES, 0=No)
 0.0 20				:Buoyancy Parameter (0= no buoyancy, reference_psi F=/rho*g+Bouyancy*(/psi-reference_psi)*g)
 0 0 0                      	:mirroring option for x,y,z (1=yes, 0=no)
 0.0e-6				:Gravity (Only for Buoyancy, gravity*thermal expansion)
-1.0e-5 0.0 0.0	          	:body force for x,y,z
-0 1.0 0 1.003	    		:Pressure Boundary in X direction (Format detials can be found within this file)p=c_s^2*/rho
+0.0e-5 0.0 0.0	          	:body force for x,y,z
+1 1.0 1 1.01	    		:Pressure Boundary in X direction (Format detials can be found within this file)p=c_s^2*/rho
 0 1.0 0 1.0	    		:Pressure Boundary in Y direction (Format detials can be found within this file)
 0 1.0 0 1.0	    		:Pressure Boundary in Z direction (Format detials can be found within this file)
 0 0.0 0 0.0	   		:Velocity Boundary in X direction (Format detials can be found within this file)
@@ -39,7 +39,7 @@ phase.dat       	    	:Initial components distribution
 1				:FACTOR OF MESHREFINEMENT (0,1=No mesh refinement, 1=1X,2=2X,3=3X)
 0 1.0 1.0	              :Self define lattice velocity: 0=DEFAULT, dx, dt ((u_x+u_y+u_z)*dt/dx<=1 Courant Number)
 ./   				:OUTPUT PATH,DEFAULT: ./ (REMEMBER TO INCLUDE "/" AT THE END OF PATH)
-3              			:PRESSURE AND VELOCITY BOUNDARY CONDITION OPTIONS: 0,1,2,3: EBC_S,EBC_D,TOLKE_BC,NEBC_D
+2              			:PRESSURE AND VELOCITY BOUNDARY CONDITION OPTIONS: 0,1,2,3: EBC_S,EBC_D,TOLKE_BC,NEBC_D
 1				:CONSTANT PSI AND FLUX BOUNDARY CONDITION OPTIONS: 0,1:Inamuro,GUO
 2000                              :Concentration initialization from the xth timesteps (-1=OFF)
 0 0 0				:Pemeability calculation Partially  

@@ -1869,7 +1869,7 @@ int Q=19;
 double u_ls[3]={0,0,0};
 int rank = MPI :: COMM_WORLD . Get_rank ();
 int mpi_size=MPI :: COMM_WORLD . Get_size ();
-
+double m_l[19];
 
 //Equilibriun boundary condition. velocities of boundary particles are set as 0.0
 if (Sub_BC==0)
@@ -2076,68 +2076,89 @@ if (yp==1)
 for (int i=0;i<nx_l;i++)
 	for(int k=0;k<=NZ;k++)	
 	        if (Solid[i][NY][k]>0)
-		for (int ks=0;ks<Q;ks++)
-			
-			if (e[ks][1]<0)
+			if (Solid[i][NY-1][k]>0)
 			{
-				if (Solid[i][NY-1][k]>0)
+			for (int mi=0; mi<19; mi++)
 					{
-					u_ls[0]=u[Solid[i][NY-1][k]][0];
-					u_ls[1]=u[Solid[i][NY-1][k]][1];
-					u_ls[2]=u[Solid[i][NY-1][k]][2];
-					F[Solid[i][NY][k]][ks]=feq(ks,rho_yp,u_ls,PorC[Solid[i][NY][k]])-F[Solid[i][NY][k]][LR[ks]]+feq(LR[ks],rho_yp,u_ls,PorC[Solid[i][NY][k]]);
-					}
-				else
-					{
-					u_ls[0]=0.0;
-					u_ls[1]=0.0;u_ls[2]=0.0;
-					F[Solid[i][NY][k]][ks]=feq(ks,rho_yp,u_ls,PorC[Solid[i][NY][k]])-F[Solid[i][NY][k]][LR[ks]]+feq(LR[ks],rho_yp,u_ls,PorC[Solid[i][NY][k]]);
-					}
+					m_l[mi]=0;
+					for (int mj=0; mj<19; mj++)
+						m_l[mi]+=M[mi][mj]*f[Solid[i][NY-1][k]][mj];					}
+
+			m_l[0]=rho_yp;
+			for (int mi=0; mi<19; mi++)
+				{
+				F[Solid[i][NY][k]][mi]=0;
+				for (int mj=0; mj<19; mj++)
+					F[Solid[i][NY][k]][mi]+=MI[mi][mj]*m_l[mj];
+				}
+			}
+			else
+			{
+			u_ls[0]=0.0;u_ls[1]=0.0;u_ls[2]=0.0;
+			for (int ks=0;ks<Q;ks++)
+				F[Solid[i][NY][k]][ks]=feq(ks,rho_yp,u_ls,PorC[Solid[i][NY][k]]);
+			
 			}
 
+		
 
 if (yn==1)
 for (int i=0;i<nx_l;i++)
 	for(int k=0;k<=NZ;k++)
 	if (Solid[i][0][k]>0)	
-		for (int ks=0;ks<Q;ks++)
-			if (e[ks][1]>0)
+		if (Solid[i][1][k]>0)
 			{
-				if (Solid[i][1][k]>0)
+			for (int mi=0; mi<19; mi++)
 					{
-					u_ls[0]=u[Solid[i][1][k]][0];
-					u_ls[1]=u[Solid[i][1][k]][1];
-					u_ls[2]=u[Solid[i][1][k]][2];
-					F[Solid[i][0][k]][ks]=feq(ks,rho_yn,u_ls,PorC[Solid[i][0][k]])-F[Solid[i][0][k]][LR[ks]]+feq(LR[ks],rho_yn,u_ls,PorC[Solid[i][0][k]]);
-					}
-			else
-					{
-					u_ls[0]=0.0;
-					u_ls[1]=0.0;u_ls[2]=0.0;
-					F[Solid[i][0][k]][ks]=feq(ks,rho_yn,u_ls,PorC[Solid[i][0][k]])-F[Solid[i][0][k]][LR[ks]]+feq(LR[ks],rho_yn,u_ls,PorC[Solid[i][0][k]]);
-					}
+					m_l[mi]=0;
+					for (int mj=0; mj<19; mj++)
+						m_l[mi]+=M[mi][mj]*f[Solid[i][1][k]][mj];					}
+
+			m_l[0]=rho_yn;
+			for (int mi=0; mi<19; mi++)
+				{
+				F[Solid[i][0][k]][mi]=0;
+				for (int mj=0; mj<19; mj++)
+					F[Solid[i][0][k]][mi]+=MI[mi][mj]*m_l[mj];
+				}
 			}
+			else
+			{
+			u_ls[0]=0.0;u_ls[1]=0.0;u_ls[2]=0.0;
+			for (int ks=0;ks<Q;ks++)
+				F[Solid[i][0][k]][ks]=feq(ks,rho_yn,u_ls,PorC[Solid[i][0][k]]);
+			
+			}
+
+
+
 
 if (zp==1)
 for (int i=0;i<nx_l;i++)
 	for(int j=0;j<=NY;j++)
 	if (Solid[i][j][NZ]>0)
-		for (int ks=0;ks<Q;ks++)
-		if (e[ks][2]<0)
-			{			
-			if (Solid[i][j][NZ-1]>0)
+		if (Solid[i][j][NZ-1]>0)
+			{
+			for (int mi=0; mi<19; mi++)
+					{
+					m_l[mi]=0;
+					for (int mj=0; mj<19; mj++)
+						m_l[mi]+=M[mi][mj]*f[Solid[i][j][NZ-1]][mj];					}
+
+			m_l[0]=rho_zp;
+			for (int mi=0; mi<19; mi++)
 				{
-				u_ls[0]=u[Solid[i][j][NZ-1]][0];
-				u_ls[1]=u[Solid[i][j][NZ-1]][1];
-				u_ls[2]=u[Solid[i][j][NZ-1]][2];
-				F[Solid[i][j][NZ]][ks]=feq(ks,rho_zp,u_ls,PorC[Solid[i][j][NZ]])-F[Solid[i][j][NZ]][LR[ks]]+feq(LR[ks],rho_zp,u_ls,PorC[Solid[i][j][NZ]]);
+				F[Solid[i][j][NZ]][mi]=0;
+				for (int mj=0; mj<19; mj++)
+					F[Solid[i][j][NZ]][mi]+=MI[mi][mj]*m_l[mj];
 				}
-				else
-				{
-				u_ls[0]=0.0;
-				u_ls[1]=0.0;u_ls[2]=0.0;
-				F[Solid[i][j][NZ]][ks]=feq(ks,rho_zp,u_ls,PorC[Solid[i][j][NZ]])-F[Solid[i][j][NZ]][LR[ks]]+feq(LR[ks],rho_zp,u_ls,PorC[Solid[i][j][NZ]]);
-				}
+			}
+			else
+			{
+			u_ls[0]=0.0;u_ls[1]=0.0;u_ls[2]=0.0;
+			for (int ks=0;ks<Q;ks++)
+				F[Solid[i][j][NZ]][ks]=feq(ks,rho_zp,u_ls,PorC[Solid[i][j][NZ]]);
+			
 			}
 
 
@@ -2147,48 +2168,60 @@ if (zn==1)
 for (int i=0;i<nx_l;i++)
 	for(int j=0;j<=NY;j++)
 	if (Solid[i][j][0]>0)
-		for (int ks=0;ks<Q;ks++)
-		if (e[ks][2]>0)
-		{
-			if (Solid[i][j][1]>0)
+		if (Solid[i][j][1]>0)
 			{
-			u_ls[0]=u[Solid[i][j][1]][0];
-			u_ls[1]=u[Solid[i][j][1]][1];
-			u_ls[2]=u[Solid[i][j][1]][2];
-			F[Solid[i][j][0]][ks]=feq(ks,rho_zn,u_ls,PorC[Solid[i][j][0]])-F[Solid[i][j][0]][LR[ks]]+feq(LR[ks],rho_zn,u_ls,PorC[Solid[i][j][0]]);
+			for (int mi=0; mi<19; mi++)
+					{
+					m_l[mi]=0;
+					for (int mj=0; mj<19; mj++)
+						m_l[mi]+=M[mi][mj]*f[Solid[i][j][1]][mj];					}
+
+			m_l[0]=rho_zn;
+			for (int mi=0; mi<19; mi++)
+				{
+				F[Solid[i][j][0]][mi]=0;
+				for (int mj=0; mj<19; mj++)
+					F[Solid[i][j][0]][mi]+=MI[mi][mj]*m_l[mj];
+				}
 			}
 			else
 			{
-			u_ls[0]=0.0;
-			u_ls[1]=0.0;u_ls[2]=0.0;
-			F[Solid[i][j][0]][ks]=feq(ks,rho_zn,u_ls,PorC[Solid[i][j][0]])-F[Solid[i][j][0]][LR[ks]]+feq(LR[ks],rho_zn,u_ls,PorC[Solid[i][j][0]]);
+			u_ls[0]=0.0;u_ls[1]=0.0;u_ls[2]=0.0;
+			for (int ks=0;ks<Q;ks++)
+				F[Solid[i][j][0]][ks]=feq(ks,rho_zn,u_ls,PorC[Solid[i][j][0]]);
+			
 			}
-		
-		}
+
+
 
 if ((xp==1) && (rank==mpi_size-1))
 for (int j=0;j<=NY;j++)
 	for (int k=0;k<=NZ;k++)
 	if (Solid[nx_l-1][j][k]>0)
-		for (int ks=0;ks<Q;ks++)			
-			if (e[ks][0]<0)
+		if (Solid[nx_l-2][j][k]>0)
 			{
-				if (Solid[nx_l-2][j][k]>0)
+			for (int mi=0; mi<19; mi++)
 					{
-					u_ls[0]=u[Solid[nx_l-2][j][k]][0];
-					u_ls[1]=u[Solid[nx_l-2][j][k]][1];
-					u_ls[2]=u[Solid[nx_l-2][j][k]][2];
-					F[Solid[nx_l-1][j][k]][ks]=feq(ks,rho_xp,u_ls,PorC[Solid[nx_l-1][j][k]])-F[Solid[nx_l-1][j][k]][LR[ks]]+feq(LR[ks],rho_xp,u_ls,PorC[Solid[nx_l-1][j][k]]);
-					}
-				else	
-					{
-					u_ls[0]=0.0;
-					u_ls[1]=0.0;
-					u_ls[2]=0.0;
-					F[Solid[nx_l-1][j][k]][ks]=feq(ks,rho_xp,u_ls,PorC[Solid[nx_l-1][j][k]])-F[Solid[nx_l-1][j][k]][LR[ks]]+feq(LR[ks],rho_xp,u_ls,PorC[Solid[nx_l-1][j][k]]);
-					}
+					m_l[mi]=0;
+					for (int mj=0; mj<19; mj++)
+						m_l[mi]+=M[mi][mj]*f[Solid[nx_l-2][j][k]][mj];					}
 
+			m_l[0]=rho_xp;
+			for (int mi=0; mi<19; mi++)
+				{
+				F[Solid[nx_l-1][j][k]][mi]=0;
+				for (int mj=0; mj<19; mj++)
+					F[Solid[nx_l-1][j][k]][mi]+=MI[mi][mj]*m_l[mj];
+				}
 			}
+			else
+			{
+			u_ls[0]=0.0;u_ls[1]=0.0;u_ls[2]=0.0;
+			for (int ks=0;ks<Q;ks++)
+				F[Solid[nx_l-1][j][NZ]][ks]=feq(ks,rho_xp,u_ls,PorC[Solid[nx_l-1][j][NZ]]);
+			
+			}
+		
 		
 
 
@@ -2196,30 +2229,30 @@ if ((xn==1) && (rank==0))
 for (int j=0;j<=NY;j++)
 	for(int k=0;k<=NZ;k++)
 	if (Solid[0][j][k]>0)
-		for (int ks=0;ks<Q;ks++)
-			
-			if (e[ks][0]>0)
+		if (Solid[1][j][k]>0)
 			{
-				if(Solid[1][j][k]>0)
+			for (int mi=0; mi<19; mi++)
 					{
-					u_ls[0]=u[Solid[1][j][k]][0];
-					u_ls[1]=u[Solid[1][j][k]][1];
-					u_ls[2]=u[Solid[1][j][k]][1];
-					F[Solid[0][j][k]][ks]=feq(ks,rho_xn,u_ls,PorC[Solid[0][j][k]])-F[Solid[0][j][k]][LR[ks]]+feq(LR[ks],rho_xn,u_ls,PorC[Solid[0][j][k]]);
-					//f[Solid[0][j][k]][ks]=feq(ks,rho_xn,u_ls);
-					}
-				else
-					{
-					u_ls[0]=0.0;
-					u_ls[1]=0.0;
-					u_ls[2]=0.0;
-					F[Solid[0][j][k]][ks]=feq(ks,rho_xn,u_ls,PorC[Solid[0][j][k]])-F[Solid[0][j][k]][LR[ks]]+feq(LR[ks],rho_xn,u_ls,PorC[Solid[0][j][k]]);
-					}
+					m_l[mi]=0;
+					for (int mj=0; mj<19; mj++)
+						m_l[mi]+=M[mi][mj]*f[Solid[1][j][k]][mj];					}
 
+			m_l[0]=rho_xn;
+			for (int mi=0; mi<19; mi++)
+				{
+				F[Solid[0][j][k]][mi]=0;
+				for (int mj=0; mj<19; mj++)
+					F[Solid[0][j][k]][mi]+=MI[mi][mj]*m_l[mj];
+				}
+			}
+			else
+			{
+			u_ls[0]=0.0;u_ls[1]=0.0;u_ls[2]=0.0;
+			for (int ks=0;ks<Q;ks++)
+				F[Solid[0][j][NZ]][ks]=feq(ks,rho_xn,u_ls,PorC[Solid[0][j][NZ]]);
+			
 			}
 
-	
-	
 }		
 
 //Non-equilibrium boundary condition

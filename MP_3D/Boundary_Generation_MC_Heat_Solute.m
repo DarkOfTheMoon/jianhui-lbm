@@ -1,8 +1,8 @@
 
 
 clear;
-lx=21;
-ly=80;
+lx=160;
+ly=13;
 lz=3;
 
 A=zeros(lx,ly,lz);
