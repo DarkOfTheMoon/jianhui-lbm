@@ -562,6 +562,7 @@ if (wr_per==1)
 			error_Per=Comput_Perm(psi,u,Per_l,Per_g,PerDir,SupInv);
 			S_l=Comput_Saturation(psi,Solid,SupInv);
 			
+
 			if (rank==0)
 			{
 			ofstream fin(FileName,ios::app);
@@ -643,7 +644,7 @@ if (wr_per==1)
 		//==============================================================================================
 			cout<<"The"<<n<<"th computation result:"<<endl;
 			cout<<"The Density of point(NX/2,NY/2,NZ/2) is: "<<setprecision(6)
-				<<rho[Solid[((NX+1)/para_size/2)][NY/2][NZ/2]]<<endl;
+				<<rho[Solid[nx_l/2][NY/2][NZ/2]]<<endl;
 			
 			cout<<"The Maximum velocity is: "<<setprecision(6)<<u_max<<"   Re_l="<<Re_l<<"   Re_g="<<Re_g<<endl;
 			cout<<"Courant Number="<<u_max*dt/dx<<"	 Capillary Num="<<Capillary<<endl;
