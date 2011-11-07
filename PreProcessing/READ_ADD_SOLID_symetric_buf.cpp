@@ -86,15 +86,17 @@ double pore;
 	//for(i=0 ; i<nx ; i++)				///*********
 
 
-	while (!fin.eof())
+	while (!fin.eof())                                        //**********
 		{	
 			fin >> ci >> cj>> ck>>pore;
-			//if (!(pore == 0.0) and !(pore == 1.0)) break;
-			//cout<<ci<<" "<<cj<<" "<<ck<<" "<<pore<<endl;
+			//fin >> pore;
+			
 			if (pore == 0.0)	{Solid[ci-1][cj-1][ck-1] = 0;}
-			//else			Solid_Int[i][j][k] = 1;
+			//if (pore == 0.0)	{Solid[i][j][k] = 0;}
+			
 			if (pore == 1.0) 	{Solid[ci-1][cj-1][ck-1] = 1;sum++;}
-			//Solid_Int[ci][cj][ck]=pore;
+			//if (pore == 1.0) 	{Solid[i][j][k] = 1;sum++;}
+			
 			
 			
 			

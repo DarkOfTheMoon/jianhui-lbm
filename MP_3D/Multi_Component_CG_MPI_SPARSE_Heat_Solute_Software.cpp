@@ -1906,7 +1906,7 @@ if (rank==0)
 
 		uu=u[ci][0]*u[ci][0]+u[ci][1]*u[ci][1]+u[ci][2]*u[ci][2];
 
-		if ((sqrt((rho_r[ci]-rho_b[ci])*(rho_r[ci]-rho_b[ci]))>=0.9) and (ind_S=1))
+		if ((sqrt((rho_r[ci]-rho_b[ci])*(rho_r[ci]-rho_b[ci]))>=0.9) and (ind_S==1))
 		{C[0]=0;C[1]=0;C[2]=0;}
 
 		//C[0]=0;C[1]=0;C[2]=0;
