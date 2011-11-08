@@ -643,7 +643,7 @@ if (wr_per==1)
 		//==============================================================================================
 			cout<<"The"<<n<<"th computation result:"<<endl;
 			cout<<"The Density of point(NX/2,NY/2,NZ/2) is: "<<setprecision(6)
-				<<rho[Solid[(int)Count/2][NY/2][NZ/2]]<<endl;
+				<<rho[(int)(Count/2)]<<endl;
 			
 			cout<<"The Maximum velocity is: "<<setprecision(6)<<u_max<<"   Re_l="<<Re_l<<"   Re_g="<<Re_g<<endl;
 			cout<<"Courant Number="<<u_max*dt/dx<<"	 Capillary Num="<<Capillary<<endl;
