@@ -1,9 +1,9 @@
 
 
 clear;
-lx=160;
-ly=13;
-lz=3;
+lx=64;
+ly=66;
+lz=66;
 
 A=zeros(lx,ly,lz);
 
@@ -41,10 +41,11 @@ for k=1:lz
     for j=1:ly
         for i=1:lx
             %if (sqrt((i-lx*0.5)*(i-lx*0.5)+(j-ly*0.4+3)*(j-ly*0.4+3))<=8)
-             if ((abs(i-lx/2)<=6) && (abs(j-19)<=6))
+             %if ((abs(i-lx/2)<=6) && (abs(j-19)<=6))
              %if ((abs(i-lx/2)<=7) && (abs(j-ly/2)<=7) && (abs(k-lz/2)<=7))
              %if (i<=lx/2-10)
              %if ((sqrt((i-40)*(i-40)+(j-8)*(j-8))<=7) ||(sqrt((i-56)*(i-56)+(j-8)*(j-8))<=7)) %100,60,3
+             if (i<3)
                 A(i,j,k)=1;
             else
                 A(i,j,k)=-1;

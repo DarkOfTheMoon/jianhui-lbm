@@ -92,7 +92,6 @@ double meq[19];
 
 double uMax,lat_c,c_s,c_s2,Re,dx,dy,Lx,Ly,dt,rho0,P0,tau_f,niu,error,SFx,SFy,reso;
 
-void Read_Rock(int***,double*,char[128]);
 
 void tests();
 
@@ -109,8 +108,6 @@ void standard_bounceback_boundary(int,double**);
 void collision(double*,double** ,double** ,double** , int* ,int***,int*, int*);
 
 void comput_macro_variables( double* ,double**,double** ,double** ,double**  ,int* ,int***);
-
-//void comput_macro_variables_IMR( double* ,double** ,double** ,double**,double** ,int*,int*** , double* , double*, double*, int ,double ,double* ,double* , double* );
 
 double Error(double** ,double** ,double*, double*);
 
@@ -217,7 +214,6 @@ int tse,the,tme;
 	fin >> n_max;					fin.getline(dummy, NCHAR);
 	fin >> reso;					fin.getline(dummy, NCHAR);
 	fin >> in_BC;					fin.getline(dummy, NCHAR);
-	fin >> mirX >> mirY >> mirZ;			fin.getline(dummy, NCHAR);
 	fin >> gx >> gy >> gz;				fin.getline(dummy, NCHAR);
 	fin >> pre_xp >> p_xp >> pre_xn >> p_xn;	fin.getline(dummy, NCHAR);
 	fin >> pre_yp >> p_yp >> pre_yn >> p_yn;	fin.getline(dummy, NCHAR);
@@ -234,10 +230,7 @@ int tse,the,tme;
 	fin >> Out_Mode;				fin.getline(dummy, NCHAR);
 	fin >> freVe;					fin.getline(dummy, NCHAR);
 	fin >> freDe;					fin.getline(dummy, NCHAR);
-	fin >> mir;					fin.getline(dummy, NCHAR);
 							fin.getline(dummy, NCHAR);
-	fin >> Par_Geo >> Par_nx >> Par_ny >> Par_nz;	fin.getline(dummy, NCHAR);
-	fin >> Zoom;					fin.getline(dummy, NCHAR);
 	fin >> lattice_v >> dx_input >> dt_input;	fin.getline(dummy, NCHAR);
 	fin >> outputfile;				fin.getline(dummy, NCHAR);
 	fin >> Sub_BC;					fin.getline(dummy, NCHAR);
@@ -261,9 +254,9 @@ int tse,the,tme;
 	}
 
 	MPI_Bcast(&filename,128,MPI_CHAR,0,MPI_COMM_WORLD);
-	MPI_Bcast(&mirX,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&NX,1,MPI_INT,0,MPI_COMM_WORLD);
-	MPI_Bcast(&mirY,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&NY,1,MPI_INT,0,MPI_COMM_WORLD);
-	MPI_Bcast(&mirZ,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&NZ,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&NX,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&NY,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&NZ,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&n_max,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&reso,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 	MPI_Bcast(&in_BC,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&gx,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 	MPI_Bcast(&gy,1,MPI_DOUBLE,0,MPI_COMM_WORLD);MPI_Bcast(&gz,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
@@ -285,8 +278,8 @@ int tse,the,tme;
 	MPI_Bcast(&inivz,1,MPI_DOUBLE,0,MPI_COMM_WORLD);MPI_Bcast(&wr_per,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&PerDir,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&freRe,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&freVe,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&freDe,1,MPI_INT,0,MPI_COMM_WORLD);
-	MPI_Bcast(&mir,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&in_vis,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
-	MPI_Bcast(&Zoom,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&outputfile,128,MPI_CHAR,0,MPI_COMM_WORLD);
+	MPI_Bcast(&in_vis,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Bcast(&outputfile,128,MPI_CHAR,0,MPI_COMM_WORLD);
 	//MPI_Bcast(&EI,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&q_p,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 	MPI_Bcast(&fre_backup,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&mode_backup_ini,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&Sub_BC,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&Out_Mode,1,MPI_INT,0,MPI_COMM_WORLD);
@@ -306,6 +299,12 @@ int tse,the,tme;
       
 int U_max_ref=0;
 
+mirX=0;
+mirY=0;
+mirZ=0;
+mir=1;
+
+Par_Geo=0;
 
 if (mirX==1)
 	NX=NX*2+1;
@@ -324,7 +323,7 @@ if (Zoom>1)
 	}
 //***************************************************************
 */
-
+Zoom=1;
 if (Zoom>1)
 	{	
 	NX=(NX+1)*Zoom-1;
@@ -624,7 +623,7 @@ if (wr_per==1)
 
 			cout<<"The"<<n<<"th computation result:"<<endl;
 			cout<<"The Density of point(NX/2,NY/2,NZ/2) is: "<<setprecision(6)
-				<<rho[Solid[(nx_l/2)][NY/2][NZ/2]]<<endl;
+				<<rho[(int)Count/2]<<endl;
 		//=============================================================================================
 			cout<<"The permiability is: "<<Permia[0]*reso*reso*1000<<", "<<Permia[1]*reso*reso*1000<<", "<<Permia[2]*reso*reso*1000<<endl;
 			cout<<"The relative error of permiability computing is: "<<error_perm<<endl;
@@ -1061,240 +1060,6 @@ void Suppliment(int* SupInv,int*** Solid)
 
 }
 
-void Read_Rock(int*** Solids,double* porosity,char poreFileName[128])
-{
-
-
-int rank = MPI :: COMM_WORLD . Get_rank ();
-int mpi_size=MPI :: COMM_WORLD . Get_size ();
-
-
-
-int nx0=NX+1;
-int ny0=NY+1;
-int nz0=NZ+1;
-
-
-int nx=NX+1;
-int ny=NY+1;
-int nz=NZ+1;
-
-int* Solid_Int;
-int nx_a,ny_a,nz_a;
-
-if (Zoom>1)
-	{
-	nx0=(nx0)/Zoom;
-	ny0=(ny0)/Zoom;
-	nz0=(nz0)/Zoom;
-
-	nx=(nx)/Zoom;
-	ny=(ny)/Zoom;
-	nz=(nz)/Zoom;	
-	}
-
-
-
-if (mirX==1)
-	nx0=(nx0)/2;
-if (mirY==1)
-	ny0=(ny0)/2;
-if (mirZ==1)
-	nz0=(nz0)/2;
-
-
-double pore;
-int i, j, k,ir,jr,kr;
-
-Solid_Int = new int[nx*ny*nz];
-
-
-
-	
-
-if (rank==0)
-{
-
-
-if (Par_Geo==0)
-	{
-	nx_a=nx0;
-	ny_a=ny0;
-	nz_a=nz0;
-	}
-else
-	{
-	nx_a=Par_nx;
-	ny_a=Par_ny;
-	nz_a=Par_nz;
-	}
-
-FILE *ftest;
-	ifstream fin;
-	
-	ftest = fopen(poreFileName, "r");
-
-	if(ftest == NULL)
-	{
-		cout << "\n The pore geometry file (" << poreFileName <<
-			") does not exist!!!!\n";
-		cout << " Please check the file\n\n";
-
-		exit(0);
-	}
-	fclose(ftest);
-
-	fin.open(poreFileName);
-
-
-	
-	// Reading pore geometry
-	for(k=0 ; k<nz_a ; k++)
-	for(j=0 ; j<ny_a ; j++)
-	for(i=0 ; i<nx_a ; i++)
-	
-	{
-		while(true)
-		{	
-			fin >> pore;
-			if( pore == 0.0 || pore == 1.0) break;
-		}
-		if ((pore == 0.0) && (i<nx0) && (j<ny0) && (k<nz0))	Solid_Int[i*ny*nz+j*nz+k] = 0;
-		//else			Solid_Int[i][j][k] = 1;
-		if ((pore == 1.0) && (i<nx0) && (j<ny0) && (k<nz0))	Solid_Int[i*ny*nz+j*nz+k] = 1;
-	}
-	fin.close();
-
-	// Mirroring the rock
-	if(mirX==1){
-		for(i=nx0 ; i<nx ; i++)
-		for(j=0   ; j<ny ; j++)
-		for(k=0   ; k<nz ; k++)
-				Solid_Int[i*ny*nz+j*nz+k] = Solid_Int[(nx-i-1)*ny*nz+j*nz+k];
-	}
-
-	if(mirY==1){
-		for(j=ny0 ; j<ny ; j++)
-		for(i=0   ; i<nx ; i++)
-		for(k=0   ; k<nz ; k++)
-				Solid_Int[i*ny*nz+j*nz+k] = Solid_Int[i*ny*nz+(ny-j-1)*nz+k];
-	}
-
-	if(mirZ==1){
-		for(k=nz0 ; k<nz ; k++)
-		for(j=0   ; j<ny ; j++)
-		for(i=0   ; i<nx ; i++)
-				Solid_Int[i*ny*nz+j*nz+k] = Solid_Int[i*ny*nz+j*nz+nz-k-1];
-	}
-
-
-	//MESH REFINEMENT
-	
-
-
-	//double porosity;
-
-	// Calculate Porosity
-	int nNodes = 0;
-	for(i=0 ; i<nx*ny*nz ; i++)
-		if(Solid_Int[i] == 0) nNodes++;
-
-	*porosity = (double)nNodes / (nx*ny*nz);
-
-}
-
-
-	
-	MPI_Bcast(Solid_Int,nx*ny*nz,MPI_INT,0,MPI_COMM_WORLD);
-
-if (rank==0)
-	{	
-	cout<<"INPUT FILE READING COMPLETE.  THE POROSITY IS: "<<*porosity<<endl;
-	cout<<endl;
-	}
-	
-
-	
-	for (i=0;i<nx;i++)
-		for (j=0;j<ny;j++)
-			for (k=0;k<nz;k++)
-			Solids[i][j][k]=Solid_Int[i*(ny)*(nz)+j*(nz)+k];
-
-
-MPI_Barrier(MPI_COMM_WORLD);
-
-
-
-	
-/*
-//*************THIN SOLID BOUNDARY MESH REFINEDMENT**************
-	
-	for (i=0;i<nx;i++)
-		for (j=0;j<ny;j++)
-			for (k=0;k<nz;k++)
-			Solids[i*2][j*2][k*2]=Solid_Int[i*(ny)*(nz)+j*(nz)+k];
-
-
-
-	cout<<nx<<" "<<ny<<" "<<nz<<endl;
-
-	for (k=0;k<nz;k++)   //k==2*k
-		{
-		for (j=0;j<ny;j++)	//j=2*j
-			for(i=0;i<nx-1;i++)
-				{
-				ir=2*i+1;jr=2*j;kr=2*k;
-				if ((Solids[ir-1][jr][kr]==1) and (Solids[ir+1][jr][kr]==1))
-					Solids[ir][jr][kr]=1;
-				else
-					Solids[ir][jr][kr]=0;
-				}
-
-		for (i=0;i<nx;i++)
-			for (j=0;j<ny-1;j++)
-				{
-				ir=2*i;jr=2*j+1;kr=k*2;
-				if ((Solids[ir][jr-1][kr]==1) and (Solids[ir][jr+1][kr]==1))
-					Solids[ir][jr][kr]=1;
-				else
-					Solids[ir][jr][kr]=0;
-				}
-
-		}
-	//cout<<"@@@@@@@@@@@@@"<<endl;
-	for (k=0;k<nz-1;k++)
-		{
-		for (i=0;i<=NX;i++)
-			for (j=0;j<=NY;j++)
-			{
-			kr=2*k+1;
-			if ((Solids[i][j][kr-1]==1) and (Solids[i][j][kr+1]==1))
-				Solids[i][j][kr]=1;
-			else
-					Solids[i][j][kr]=0;
-			}
-		}
-//******************************************************************************
-*/
-/*
-	for (i=0;i<nx;i++)
-		for (j=0;j<(ny);j++)
-			for (k=0;k<(nz);k++)
-				for (int iz=0;iz<=Zoom-1;iz++)
-					for (int jz=0;jz<=Zoom-1;jz++)
-						for (int kz=0;kz<=Zoom-1;kz++)
-						Solids[Zoom*i+iz][Zoom*j+jz][Zoom*k+kz]=Solid_Int[i*(ny)*(nz)+j*(nz)+k];
-				
-
-
-	}
-	
-*/
-	delete [] Solid_Int;
-
-
-}
-
 
 
 
@@ -1393,89 +1158,7 @@ void init(double* rho, double** u, double** f,int*** Solid)
 
 	}
 
-/*
-	if (Sub_BC==2)
-	{
-	if ((pre_yp-1)*(pre_yn-1)==0)
-	for (int i=0;i<nx_l;i++)
-		for (int k=0;k<=NZ;k++)
-		{
-		if (pre_yp==1)
-			{
-			rho[Solid[i][NY][k]]=p_yp;
-			u_tmp[0]=u[Solid[i][NY][k]][0];
-			u_tmp[1]=u[Solid[i][NY][k]][1];
-			u_tmp[2]=u[Solid[i][NY][k]][2];
-			for (int lm=0;lm<19;lm++)
-				f[Solid[i][NY][k]][lm]=feq(lm,p_yp,u_tmp);
-			}
-		if (pre_yn==1)
-			{
-			rho[Solid[i][0][k]]=p_yn;
-			u_tmp[0]=u[Solid[i][0][k]][0];
-			u_tmp[1]=u[Solid[i][0][k]][1];
-			u_tmp[2]=u[Solid[i][0][k]][2];
-			for (int lm=0;lm<19;lm++)
-				f[Solid[i][0][k]][lm]=feq(lm,p_yn,u_tmp);
-			}
-		}
-	
-	if ((pre_zp-1)*(pre_zn-1)==0)
-	for (int i=0;i<nx_l;i++)
-		for (int j=0;j<=NY;j++)
-		{
-		if (pre_zp==1)
-			{
-			rho[Solid[i][j][NZ]]=p_zp;
-			u_tmp[0]=u[Solid[i][j][NZ]][0];
-			u_tmp[1]=u[Solid[i][j][NZ]][1];
-			u_tmp[2]=u[Solid[i][j][NZ]][2];
-			for (int lm=0;lm<19;lm++)
-				f[Solid[i][j][NZ]][lm]=feq(lm,p_zp,u_tmp);
-			}
-		if (pre_zn==1)
-			{
-			rho[Solid[i][j][0]]=p_yn;
-			u_tmp[0]=u[Solid[i][j][0]][0];
-			u_tmp[1]=u[Solid[i][j][0]][1];
-			u_tmp[2]=u[Solid[i][j][0]][2];
-			for (int lm=0;lm<19;lm++)
-				f[Solid[i][j][0]][lm]=feq(lm,p_zn,u_tmp);
-			}
-		}
 
-
-	
-	if ((pre_xp-1)*(pre_xn-1)==0)
-	for (int j=0;j<=NY;j++)
-		for (int k=0;k<=NZ;k++)
-		{
-		if ((pre_xp==1) and (rank==mpi_size-1))
-			{
-			rho[Solid[nx_l-1][j][k]]=p_xp;
-			u_tmp[0]=u[Solid[nx_l-1][j][k]][0];
-			u_tmp[1]=u[Solid[nx_l-1][j][k]][1];
-			u_tmp[2]=u[Solid[nx_l-1][j][k]][2];
-			for (int lm=0;lm<19;lm++)
-				f[Solid[nx_l-1][j][k]][lm]=feq(lm,p_xp,u_tmp);
-			}
-		if ((pre_xn==1) and (rank==0))
-			{
-			rho[Solid[0][j][k]]=p_xn;
-			u_tmp[0]=u[Solid[0][j][k]][0];
-			u_tmp[1]=u[Solid[0][j][k]][1];
-			u_tmp[2]=u[Solid[0][j][k]][2];
-			for (int lm=0;lm<19;lm++)
-				f[Solid[0][j][k]][lm]=feq(lm,p_xn,u_tmp);
-			}
-		}
-
-
-
-
-
-	}
-*/
 
 
 
@@ -2288,7 +1971,7 @@ int i,j,m,ip,jp,kp;
 
 			//============================================================================
 
-			
+			/*
 			// ==================   m=Mf matrix calculation  =============================
 			// ==================   F_hat=(I-.5*S)MGuoF =====================================
 				for (int mi=0; mi<19; mi++)
@@ -2304,7 +1987,198 @@ int i,j,m,ip,jp,kp;
 					m_l[mi]=m_l[mi]-S[mi]*(m_l[mi]-meq[mi])+dt*F_hat[mi];
 					}
 			//============================================================================
+			*/
+			
 
+//==========================
+m_l[0]=+1.000*f[ci][0]+1.000*f[ci][1]+1.000*f[ci][2]+1.000*f[ci][3]+1.000*f[ci][4]+1.000*f[ci][5]+1.000*f[ci][6]+1.000*f[ci][7]+1.000*f[ci][8]+1.000*f[ci][9]+1.000*f[ci][10]+1.000*f[ci][11]+1.000*f[ci][12]+1.000*f[ci][13]+1.000*f[ci][14]+1.000*f[ci][15]+1.000*f[ci][16]+1.000*f[ci][17]+1.000*f[ci][18];
+
+F_hat[0]=+1.000*GuoF[0]+1.000*GuoF[1]+1.000*GuoF[2]+1.000*GuoF[3]+1.000*GuoF[4]+1.000*GuoF[5]+1.000*GuoF[6]+1.000*GuoF[7]+1.000*GuoF[8]+1.000*GuoF[9]+1.000*GuoF[10]+1.000*GuoF[11]+1.000*GuoF[12]+1.000*GuoF[13]+1.000*GuoF[14]+1.000*GuoF[15]+1.000*GuoF[16]+1.000*GuoF[17]+1.000*GuoF[18];
+
+meq[0]=+1.000*f_eq[0]+1.000*f_eq[1]+1.000*f_eq[2]+1.000*f_eq[3]+1.000*f_eq[4]+1.000*f_eq[5]+1.000*f_eq[6]+1.000*f_eq[7]+1.000*f_eq[8]+1.000*f_eq[9]+1.000*f_eq[10]+1.000*f_eq[11]+1.000*f_eq[12]+1.000*f_eq[13]+1.000*f_eq[14]+1.000*f_eq[15]+1.000*f_eq[16]+1.000*f_eq[17]+1.000*f_eq[18];
+
+F_hat[0]*=(1-0.5*S[0]);
+m_l[0]=m_l[0]-S[0]*(m_l[0]-meq[0])+dt*F_hat[0];
+//=======================================
+
+m_l[1]=-30.000*f[ci][0]-11.000*f[ci][1]-11.000*f[ci][2]-11.000*f[ci][3]-11.000*f[ci][4]-11.000*f[ci][5]-11.000*f[ci][6]+8.000*f[ci][7]+8.000*f[ci][8]+8.000*f[ci][9]+8.000*f[ci][10]+8.000*f[ci][11]+8.000*f[ci][12]+8.000*f[ci][13]+8.000*f[ci][14]+8.000*f[ci][15]+8.000*f[ci][16]+8.000*f[ci][17]+8.000*f[ci][18];
+
+F_hat[1]=-30.000*GuoF[0]-11.000*GuoF[1]-11.000*GuoF[2]-11.000*GuoF[3]-11.000*GuoF[4]-11.000*GuoF[5]-11.000*GuoF[6]+8.000*GuoF[7]+8.000*GuoF[8]+8.000*GuoF[9]+8.000*GuoF[10]+8.000*GuoF[11]+8.000*GuoF[12]+8.000*GuoF[13]+8.000*GuoF[14]+8.000*GuoF[15]+8.000*GuoF[16]+8.000*GuoF[17]+8.000*GuoF[18];
+
+meq[1]=-30.000*f_eq[0]-11.000*f_eq[1]-11.000*f_eq[2]-11.000*f_eq[3]-11.000*f_eq[4]-11.000*f_eq[5]-11.000*f_eq[6]+8.000*f_eq[7]+8.000*f_eq[8]+8.000*f_eq[9]+8.000*f_eq[10]+8.000*f_eq[11]+8.000*f_eq[12]+8.000*f_eq[13]+8.000*f_eq[14]+8.000*f_eq[15]+8.000*f_eq[16]+8.000*f_eq[17]+8.000*f_eq[18];
+
+F_hat[1]*=(1-0.5*S[1]);
+m_l[1]=m_l[1]-S[1]*(m_l[1]-meq[1])+dt*F_hat[1];
+//=======================================
+
+m_l[2]=+12.000*f[ci][0]-4.000*f[ci][1]-4.000*f[ci][2]-4.000*f[ci][3]-4.000*f[ci][4]-4.000*f[ci][5]-4.000*f[ci][6]+1.000*f[ci][7]+1.000*f[ci][8]+1.000*f[ci][9]+1.000*f[ci][10]+1.000*f[ci][11]+1.000*f[ci][12]+1.000*f[ci][13]+1.000*f[ci][14]+1.000*f[ci][15]+1.000*f[ci][16]+1.000*f[ci][17]+1.000*f[ci][18];
+
+F_hat[2]=+12.000*GuoF[0]-4.000*GuoF[1]-4.000*GuoF[2]-4.000*GuoF[3]-4.000*GuoF[4]-4.000*GuoF[5]-4.000*GuoF[6]+1.000*GuoF[7]+1.000*GuoF[8]+1.000*GuoF[9]+1.000*GuoF[10]+1.000*GuoF[11]+1.000*GuoF[12]+1.000*GuoF[13]+1.000*GuoF[14]+1.000*GuoF[15]+1.000*GuoF[16]+1.000*GuoF[17]+1.000*GuoF[18];
+
+meq[2]=+12.000*f_eq[0]-4.000*f_eq[1]-4.000*f_eq[2]-4.000*f_eq[3]-4.000*f_eq[4]-4.000*f_eq[5]-4.000*f_eq[6]+1.000*f_eq[7]+1.000*f_eq[8]+1.000*f_eq[9]+1.000*f_eq[10]+1.000*f_eq[11]+1.000*f_eq[12]+1.000*f_eq[13]+1.000*f_eq[14]+1.000*f_eq[15]+1.000*f_eq[16]+1.000*f_eq[17]+1.000*f_eq[18];
+
+F_hat[2]*=(1-0.5*S[2]);
+m_l[2]=m_l[2]-S[2]*(m_l[2]-meq[2])+dt*F_hat[2];
+//=======================================
+
+m_l[3]=+0.000*f[ci][0]+1.000*f[ci][1]-1.000*f[ci][2]+0.000*f[ci][3]+0.000*f[ci][4]+0.000*f[ci][5]+0.000*f[ci][6]+1.000*f[ci][7]-1.000*f[ci][8]+1.000*f[ci][9]-1.000*f[ci][10]+0.000*f[ci][11]+0.000*f[ci][12]+0.000*f[ci][13]+0.000*f[ci][14]+1.000*f[ci][15]-1.000*f[ci][16]+1.000*f[ci][17]-1.000*f[ci][18];
+
+F_hat[3]=+0.000*GuoF[0]+1.000*GuoF[1]-1.000*GuoF[2]+0.000*GuoF[3]+0.000*GuoF[4]+0.000*GuoF[5]+0.000*GuoF[6]+1.000*GuoF[7]-1.000*GuoF[8]+1.000*GuoF[9]-1.000*GuoF[10]+0.000*GuoF[11]+0.000*GuoF[12]+0.000*GuoF[13]+0.000*GuoF[14]+1.000*GuoF[15]-1.000*GuoF[16]+1.000*GuoF[17]-1.000*GuoF[18];
+
+meq[3]=+0.000*f_eq[0]+1.000*f_eq[1]-1.000*f_eq[2]+0.000*f_eq[3]+0.000*f_eq[4]+0.000*f_eq[5]+0.000*f_eq[6]+1.000*f_eq[7]-1.000*f_eq[8]+1.000*f_eq[9]-1.000*f_eq[10]+0.000*f_eq[11]+0.000*f_eq[12]+0.000*f_eq[13]+0.000*f_eq[14]+1.000*f_eq[15]-1.000*f_eq[16]+1.000*f_eq[17]-1.000*f_eq[18];
+
+F_hat[3]*=(1-0.5*S[3]);
+m_l[3]=m_l[3]-S[3]*(m_l[3]-meq[3])+dt*F_hat[3];
+//=======================================
+
+m_l[4]=+0.000*f[ci][0]-4.000*f[ci][1]+4.000*f[ci][2]+0.000*f[ci][3]+0.000*f[ci][4]+0.000*f[ci][5]+0.000*f[ci][6]+1.000*f[ci][7]-1.000*f[ci][8]+1.000*f[ci][9]-1.000*f[ci][10]+0.000*f[ci][11]+0.000*f[ci][12]+0.000*f[ci][13]+0.000*f[ci][14]+1.000*f[ci][15]-1.000*f[ci][16]+1.000*f[ci][17]-1.000*f[ci][18];
+
+F_hat[4]=+0.000*GuoF[0]-4.000*GuoF[1]+4.000*GuoF[2]+0.000*GuoF[3]+0.000*GuoF[4]+0.000*GuoF[5]+0.000*GuoF[6]+1.000*GuoF[7]-1.000*GuoF[8]+1.000*GuoF[9]-1.000*GuoF[10]+0.000*GuoF[11]+0.000*GuoF[12]+0.000*GuoF[13]+0.000*GuoF[14]+1.000*GuoF[15]-1.000*GuoF[16]+1.000*GuoF[17]-1.000*GuoF[18];
+
+meq[4]=+0.000*f_eq[0]-4.000*f_eq[1]+4.000*f_eq[2]+0.000*f_eq[3]+0.000*f_eq[4]+0.000*f_eq[5]+0.000*f_eq[6]+1.000*f_eq[7]-1.000*f_eq[8]+1.000*f_eq[9]-1.000*f_eq[10]+0.000*f_eq[11]+0.000*f_eq[12]+0.000*f_eq[13]+0.000*f_eq[14]+1.000*f_eq[15]-1.000*f_eq[16]+1.000*f_eq[17]-1.000*f_eq[18];
+
+F_hat[4]*=(1-0.5*S[4]);
+m_l[4]=m_l[4]-S[4]*(m_l[4]-meq[4])+dt*F_hat[4];
+//=======================================
+
+m_l[5]=+0.000*f[ci][0]+0.000*f[ci][1]+0.000*f[ci][2]+1.000*f[ci][3]-1.000*f[ci][4]+0.000*f[ci][5]+0.000*f[ci][6]+1.000*f[ci][7]+1.000*f[ci][8]-1.000*f[ci][9]-1.000*f[ci][10]+1.000*f[ci][11]-1.000*f[ci][12]+1.000*f[ci][13]-1.000*f[ci][14]+0.000*f[ci][15]+0.000*f[ci][16]+0.000*f[ci][17]+0.000*f[ci][18];
+
+F_hat[5]=+0.000*GuoF[0]+0.000*GuoF[1]+0.000*GuoF[2]+1.000*GuoF[3]-1.000*GuoF[4]+0.000*GuoF[5]+0.000*GuoF[6]+1.000*GuoF[7]+1.000*GuoF[8]-1.000*GuoF[9]-1.000*GuoF[10]+1.000*GuoF[11]-1.000*GuoF[12]+1.000*GuoF[13]-1.000*GuoF[14]+0.000*GuoF[15]+0.000*GuoF[16]+0.000*GuoF[17]+0.000*GuoF[18];
+
+meq[5]=+0.000*f_eq[0]+0.000*f_eq[1]+0.000*f_eq[2]+1.000*f_eq[3]-1.000*f_eq[4]+0.000*f_eq[5]+0.000*f_eq[6]+1.000*f_eq[7]+1.000*f_eq[8]-1.000*f_eq[9]-1.000*f_eq[10]+1.000*f_eq[11]-1.000*f_eq[12]+1.000*f_eq[13]-1.000*f_eq[14]+0.000*f_eq[15]+0.000*f_eq[16]+0.000*f_eq[17]+0.000*f_eq[18];
+
+F_hat[5]*=(1-0.5*S[5]);
+m_l[5]=m_l[5]-S[5]*(m_l[5]-meq[5])+dt*F_hat[5];
+//=======================================
+
+m_l[6]=+0.000*f[ci][0]+0.000*f[ci][1]+0.000*f[ci][2]-4.000*f[ci][3]+4.000*f[ci][4]+0.000*f[ci][5]+0.000*f[ci][6]+1.000*f[ci][7]+1.000*f[ci][8]-1.000*f[ci][9]-1.000*f[ci][10]+1.000*f[ci][11]-1.000*f[ci][12]+1.000*f[ci][13]-1.000*f[ci][14]+0.000*f[ci][15]+0.000*f[ci][16]+0.000*f[ci][17]+0.000*f[ci][18];
+
+F_hat[6]=+0.000*GuoF[0]+0.000*GuoF[1]+0.000*GuoF[2]-4.000*GuoF[3]+4.000*GuoF[4]+0.000*GuoF[5]+0.000*GuoF[6]+1.000*GuoF[7]+1.000*GuoF[8]-1.000*GuoF[9]-1.000*GuoF[10]+1.000*GuoF[11]-1.000*GuoF[12]+1.000*GuoF[13]-1.000*GuoF[14]+0.000*GuoF[15]+0.000*GuoF[16]+0.000*GuoF[17]+0.000*GuoF[18];
+
+meq[6]=+0.000*f_eq[0]+0.000*f_eq[1]+0.000*f_eq[2]-4.000*f_eq[3]+4.000*f_eq[4]+0.000*f_eq[5]+0.000*f_eq[6]+1.000*f_eq[7]+1.000*f_eq[8]-1.000*f_eq[9]-1.000*f_eq[10]+1.000*f_eq[11]-1.000*f_eq[12]+1.000*f_eq[13]-1.000*f_eq[14]+0.000*f_eq[15]+0.000*f_eq[16]+0.000*f_eq[17]+0.000*f_eq[18];
+
+F_hat[6]*=(1-0.5*S[6]);
+m_l[6]=m_l[6]-S[6]*(m_l[6]-meq[6])+dt*F_hat[6];
+//=======================================
+
+m_l[7]=+0.000*f[ci][0]+0.000*f[ci][1]+0.000*f[ci][2]+0.000*f[ci][3]+0.000*f[ci][4]+1.000*f[ci][5]-1.000*f[ci][6]+0.000*f[ci][7]+0.000*f[ci][8]+0.000*f[ci][9]+0.000*f[ci][10]+1.000*f[ci][11]+1.000*f[ci][12]-1.000*f[ci][13]-1.000*f[ci][14]+1.000*f[ci][15]+1.000*f[ci][16]-1.000*f[ci][17]-1.000*f[ci][18];
+
+F_hat[7]=+0.000*GuoF[0]+0.000*GuoF[1]+0.000*GuoF[2]+0.000*GuoF[3]+0.000*GuoF[4]+1.000*GuoF[5]-1.000*GuoF[6]+0.000*GuoF[7]+0.000*GuoF[8]+0.000*GuoF[9]+0.000*GuoF[10]+1.000*GuoF[11]+1.000*GuoF[12]-1.000*GuoF[13]-1.000*GuoF[14]+1.000*GuoF[15]+1.000*GuoF[16]-1.000*GuoF[17]-1.000*GuoF[18];
+
+meq[7]=+0.000*f_eq[0]+0.000*f_eq[1]+0.000*f_eq[2]+0.000*f_eq[3]+0.000*f_eq[4]+1.000*f_eq[5]-1.000*f_eq[6]+0.000*f_eq[7]+0.000*f_eq[8]+0.000*f_eq[9]+0.000*f_eq[10]+1.000*f_eq[11]+1.000*f_eq[12]-1.000*f_eq[13]-1.000*f_eq[14]+1.000*f_eq[15]+1.000*f_eq[16]-1.000*f_eq[17]-1.000*f_eq[18];
+
+F_hat[7]*=(1-0.5*S[7]);
+m_l[7]=m_l[7]-S[7]*(m_l[7]-meq[7])+dt*F_hat[7];
+//=======================================
+
+m_l[8]=+0.000*f[ci][0]+0.000*f[ci][1]+0.000*f[ci][2]+0.000*f[ci][3]+0.000*f[ci][4]-4.000*f[ci][5]+4.000*f[ci][6]+0.000*f[ci][7]+0.000*f[ci][8]+0.000*f[ci][9]+0.000*f[ci][10]+1.000*f[ci][11]+1.000*f[ci][12]-1.000*f[ci][13]-1.000*f[ci][14]+1.000*f[ci][15]+1.000*f[ci][16]-1.000*f[ci][17]-1.000*f[ci][18];
+
+F_hat[8]=+0.000*GuoF[0]+0.000*GuoF[1]+0.000*GuoF[2]+0.000*GuoF[3]+0.000*GuoF[4]-4.000*GuoF[5]+4.000*GuoF[6]+0.000*GuoF[7]+0.000*GuoF[8]+0.000*GuoF[9]+0.000*GuoF[10]+1.000*GuoF[11]+1.000*GuoF[12]-1.000*GuoF[13]-1.000*GuoF[14]+1.000*GuoF[15]+1.000*GuoF[16]-1.000*GuoF[17]-1.000*GuoF[18];
+
+meq[8]=+0.000*f_eq[0]+0.000*f_eq[1]+0.000*f_eq[2]+0.000*f_eq[3]+0.000*f_eq[4]-4.000*f_eq[5]+4.000*f_eq[6]+0.000*f_eq[7]+0.000*f_eq[8]+0.000*f_eq[9]+0.000*f_eq[10]+1.000*f_eq[11]+1.000*f_eq[12]-1.000*f_eq[13]-1.000*f_eq[14]+1.000*f_eq[15]+1.000*f_eq[16]-1.000*f_eq[17]-1.000*f_eq[18];
+
+F_hat[8]*=(1-0.5*S[8]);
+m_l[8]=m_l[8]-S[8]*(m_l[8]-meq[8])+dt*F_hat[8];
+//=======================================
+
+m_l[9]=+0.000*f[ci][0]+2.000*f[ci][1]+2.000*f[ci][2]-1.000*f[ci][3]-1.000*f[ci][4]-1.000*f[ci][5]-1.000*f[ci][6]+1.000*f[ci][7]+1.000*f[ci][8]+1.000*f[ci][9]+1.000*f[ci][10]-2.000*f[ci][11]-2.000*f[ci][12]-2.000*f[ci][13]-2.000*f[ci][14]+1.000*f[ci][15]+1.000*f[ci][16]+1.000*f[ci][17]+1.000*f[ci][18];
+
+F_hat[9]=+0.000*GuoF[0]+2.000*GuoF[1]+2.000*GuoF[2]-1.000*GuoF[3]-1.000*GuoF[4]-1.000*GuoF[5]-1.000*GuoF[6]+1.000*GuoF[7]+1.000*GuoF[8]+1.000*GuoF[9]+1.000*GuoF[10]-2.000*GuoF[11]-2.000*GuoF[12]-2.000*GuoF[13]-2.000*GuoF[14]+1.000*GuoF[15]+1.000*GuoF[16]+1.000*GuoF[17]+1.000*GuoF[18];
+
+meq[9]=+0.000*f_eq[0]+2.000*f_eq[1]+2.000*f_eq[2]-1.000*f_eq[3]-1.000*f_eq[4]-1.000*f_eq[5]-1.000*f_eq[6]+1.000*f_eq[7]+1.000*f_eq[8]+1.000*f_eq[9]+1.000*f_eq[10]-2.000*f_eq[11]-2.000*f_eq[12]-2.000*f_eq[13]-2.000*f_eq[14]+1.000*f_eq[15]+1.000*f_eq[16]+1.000*f_eq[17]+1.000*f_eq[18];
+
+F_hat[9]*=(1-0.5*S[9]);
+m_l[9]=m_l[9]-S[9]*(m_l[9]-meq[9])+dt*F_hat[9];
+//=======================================
+
+m_l[10]=+0.000*f[ci][0]-4.000*f[ci][1]-4.000*f[ci][2]+2.000*f[ci][3]+2.000*f[ci][4]+2.000*f[ci][5]+2.000*f[ci][6]+1.000*f[ci][7]+1.000*f[ci][8]+1.000*f[ci][9]+1.000*f[ci][10]-2.000*f[ci][11]-2.000*f[ci][12]-2.000*f[ci][13]-2.000*f[ci][14]+1.000*f[ci][15]+1.000*f[ci][16]+1.000*f[ci][17]+1.000*f[ci][18];
+
+F_hat[10]=+0.000*GuoF[0]-4.000*GuoF[1]-4.000*GuoF[2]+2.000*GuoF[3]+2.000*GuoF[4]+2.000*GuoF[5]+2.000*GuoF[6]+1.000*GuoF[7]+1.000*GuoF[8]+1.000*GuoF[9]+1.000*GuoF[10]-2.000*GuoF[11]-2.000*GuoF[12]-2.000*GuoF[13]-2.000*GuoF[14]+1.000*GuoF[15]+1.000*GuoF[16]+1.000*GuoF[17]+1.000*GuoF[18];
+
+meq[10]=+0.000*f_eq[0]-4.000*f_eq[1]-4.000*f_eq[2]+2.000*f_eq[3]+2.000*f_eq[4]+2.000*f_eq[5]+2.000*f_eq[6]+1.000*f_eq[7]+1.000*f_eq[8]+1.000*f_eq[9]+1.000*f_eq[10]-2.000*f_eq[11]-2.000*f_eq[12]-2.000*f_eq[13]-2.000*f_eq[14]+1.000*f_eq[15]+1.000*f_eq[16]+1.000*f_eq[17]+1.000*f_eq[18];
+
+F_hat[10]*=(1-0.5*S[10]);
+m_l[10]=m_l[10]-S[10]*(m_l[10]-meq[10])+dt*F_hat[10];
+//=======================================
+
+m_l[11]=+0.000*f[ci][0]+0.000*f[ci][1]+0.000*f[ci][2]+1.000*f[ci][3]+1.000*f[ci][4]-1.000*f[ci][5]-1.000*f[ci][6]+1.000*f[ci][7]+1.000*f[ci][8]+1.000*f[ci][9]+1.000*f[ci][10]+0.000*f[ci][11]+0.000*f[ci][12]+0.000*f[ci][13]+0.000*f[ci][14]-1.000*f[ci][15]-1.000*f[ci][16]-1.000*f[ci][17]-1.000*f[ci][18];
+
+F_hat[11]=+0.000*GuoF[0]+0.000*GuoF[1]+0.000*GuoF[2]+1.000*GuoF[3]+1.000*GuoF[4]-1.000*GuoF[5]-1.000*GuoF[6]+1.000*GuoF[7]+1.000*GuoF[8]+1.000*GuoF[9]+1.000*GuoF[10]+0.000*GuoF[11]+0.000*GuoF[12]+0.000*GuoF[13]+0.000*GuoF[14]-1.000*GuoF[15]-1.000*GuoF[16]-1.000*GuoF[17]-1.000*GuoF[18];
+
+meq[11]=+0.000*f_eq[0]+0.000*f_eq[1]+0.000*f_eq[2]+1.000*f_eq[3]+1.000*f_eq[4]-1.000*f_eq[5]-1.000*f_eq[6]+1.000*f_eq[7]+1.000*f_eq[8]+1.000*f_eq[9]+1.000*f_eq[10]+0.000*f_eq[11]+0.000*f_eq[12]+0.000*f_eq[13]+0.000*f_eq[14]-1.000*f_eq[15]-1.000*f_eq[16]-1.000*f_eq[17]-1.000*f_eq[18];
+
+F_hat[11]*=(1-0.5*S[11]);
+m_l[11]=m_l[11]-S[11]*(m_l[11]-meq[11])+dt*F_hat[11];
+//=======================================
+
+m_l[12]=+0.000*f[ci][0]+0.000*f[ci][1]+0.000*f[ci][2]-2.000*f[ci][3]-2.000*f[ci][4]+2.000*f[ci][5]+2.000*f[ci][6]+1.000*f[ci][7]+1.000*f[ci][8]+1.000*f[ci][9]+1.000*f[ci][10]+0.000*f[ci][11]+0.000*f[ci][12]+0.000*f[ci][13]+0.000*f[ci][14]-1.000*f[ci][15]-1.000*f[ci][16]-1.000*f[ci][17]-1.000*f[ci][18];
+
+F_hat[12]=+0.000*GuoF[0]+0.000*GuoF[1]+0.000*GuoF[2]-2.000*GuoF[3]-2.000*GuoF[4]+2.000*GuoF[5]+2.000*GuoF[6]+1.000*GuoF[7]+1.000*GuoF[8]+1.000*GuoF[9]+1.000*GuoF[10]+0.000*GuoF[11]+0.000*GuoF[12]+0.000*GuoF[13]+0.000*GuoF[14]-1.000*GuoF[15]-1.000*GuoF[16]-1.000*GuoF[17]-1.000*GuoF[18];
+
+meq[12]=+0.000*f_eq[0]+0.000*f_eq[1]+0.000*f_eq[2]-2.000*f_eq[3]-2.000*f_eq[4]+2.000*f_eq[5]+2.000*f_eq[6]+1.000*f_eq[7]+1.000*f_eq[8]+1.000*f_eq[9]+1.000*f_eq[10]+0.000*f_eq[11]+0.000*f_eq[12]+0.000*f_eq[13]+0.000*f_eq[14]-1.000*f_eq[15]-1.000*f_eq[16]-1.000*f_eq[17]-1.000*f_eq[18];
+
+F_hat[12]*=(1-0.5*S[12]);
+m_l[12]=m_l[12]-S[12]*(m_l[12]-meq[12])+dt*F_hat[12];
+//=======================================
+
+m_l[13]=+0.000*f[ci][0]+0.000*f[ci][1]+0.000*f[ci][2]+0.000*f[ci][3]+0.000*f[ci][4]+0.000*f[ci][5]+0.000*f[ci][6]+1.000*f[ci][7]-1.000*f[ci][8]-1.000*f[ci][9]+1.000*f[ci][10]+0.000*f[ci][11]+0.000*f[ci][12]+0.000*f[ci][13]+0.000*f[ci][14]+0.000*f[ci][15]+0.000*f[ci][16]+0.000*f[ci][17]+0.000*f[ci][18];
+
+F_hat[13]=+0.000*GuoF[0]+0.000*GuoF[1]+0.000*GuoF[2]+0.000*GuoF[3]+0.000*GuoF[4]+0.000*GuoF[5]+0.000*GuoF[6]+1.000*GuoF[7]-1.000*GuoF[8]-1.000*GuoF[9]+1.000*GuoF[10]+0.000*GuoF[11]+0.000*GuoF[12]+0.000*GuoF[13]+0.000*GuoF[14]+0.000*GuoF[15]+0.000*GuoF[16]+0.000*GuoF[17]+0.000*GuoF[18];
+
+meq[13]=+0.000*f_eq[0]+0.000*f_eq[1]+0.000*f_eq[2]+0.000*f_eq[3]+0.000*f_eq[4]+0.000*f_eq[5]+0.000*f_eq[6]+1.000*f_eq[7]-1.000*f_eq[8]-1.000*f_eq[9]+1.000*f_eq[10]+0.000*f_eq[11]+0.000*f_eq[12]+0.000*f_eq[13]+0.000*f_eq[14]+0.000*f_eq[15]+0.000*f_eq[16]+0.000*f_eq[17]+0.000*f_eq[18];
+
+F_hat[13]*=(1-0.5*S[13]);
+m_l[13]=m_l[13]-S[13]*(m_l[13]-meq[13])+dt*F_hat[13];
+//=======================================
+
+m_l[14]=+0.000*f[ci][0]+0.000*f[ci][1]+0.000*f[ci][2]+0.000*f[ci][3]+0.000*f[ci][4]+0.000*f[ci][5]+0.000*f[ci][6]+0.000*f[ci][7]+0.000*f[ci][8]+0.000*f[ci][9]+0.000*f[ci][10]+1.000*f[ci][11]-1.000*f[ci][12]-1.000*f[ci][13]+1.000*f[ci][14]+0.000*f[ci][15]+0.000*f[ci][16]+0.000*f[ci][17]+0.000*f[ci][18];
+
+F_hat[14]=+0.000*GuoF[0]+0.000*GuoF[1]+0.000*GuoF[2]+0.000*GuoF[3]+0.000*GuoF[4]+0.000*GuoF[5]+0.000*GuoF[6]+0.000*GuoF[7]+0.000*GuoF[8]+0.000*GuoF[9]+0.000*GuoF[10]+1.000*GuoF[11]-1.000*GuoF[12]-1.000*GuoF[13]+1.000*GuoF[14]+0.000*GuoF[15]+0.000*GuoF[16]+0.000*GuoF[17]+0.000*GuoF[18];
+
+meq[14]=+0.000*f_eq[0]+0.000*f_eq[1]+0.000*f_eq[2]+0.000*f_eq[3]+0.000*f_eq[4]+0.000*f_eq[5]+0.000*f_eq[6]+0.000*f_eq[7]+0.000*f_eq[8]+0.000*f_eq[9]+0.000*f_eq[10]+1.000*f_eq[11]-1.000*f_eq[12]-1.000*f_eq[13]+1.000*f_eq[14]+0.000*f_eq[15]+0.000*f_eq[16]+0.000*f_eq[17]+0.000*f_eq[18];
+
+F_hat[14]*=(1-0.5*S[14]);
+m_l[14]=m_l[14]-S[14]*(m_l[14]-meq[14])+dt*F_hat[14];
+//=======================================
+
+m_l[15]=+0.000*f[ci][0]+0.000*f[ci][1]+0.000*f[ci][2]+0.000*f[ci][3]+0.000*f[ci][4]+0.000*f[ci][5]+0.000*f[ci][6]+0.000*f[ci][7]+0.000*f[ci][8]+0.000*f[ci][9]+0.000*f[ci][10]+0.000*f[ci][11]+0.000*f[ci][12]+0.000*f[ci][13]+0.000*f[ci][14]+1.000*f[ci][15]-1.000*f[ci][16]-1.000*f[ci][17]+1.000*f[ci][18];
+
+F_hat[15]=+0.000*GuoF[0]+0.000*GuoF[1]+0.000*GuoF[2]+0.000*GuoF[3]+0.000*GuoF[4]+0.000*GuoF[5]+0.000*GuoF[6]+0.000*GuoF[7]+0.000*GuoF[8]+0.000*GuoF[9]+0.000*GuoF[10]+0.000*GuoF[11]+0.000*GuoF[12]+0.000*GuoF[13]+0.000*GuoF[14]+1.000*GuoF[15]-1.000*GuoF[16]-1.000*GuoF[17]+1.000*GuoF[18];
+
+meq[15]=+0.000*f_eq[0]+0.000*f_eq[1]+0.000*f_eq[2]+0.000*f_eq[3]+0.000*f_eq[4]+0.000*f_eq[5]+0.000*f_eq[6]+0.000*f_eq[7]+0.000*f_eq[8]+0.000*f_eq[9]+0.000*f_eq[10]+0.000*f_eq[11]+0.000*f_eq[12]+0.000*f_eq[13]+0.000*f_eq[14]+1.000*f_eq[15]-1.000*f_eq[16]-1.000*f_eq[17]+1.000*f_eq[18];
+
+F_hat[15]*=(1-0.5*S[15]);
+m_l[15]=m_l[15]-S[15]*(m_l[15]-meq[15])+dt*F_hat[15];
+//=======================================
+
+m_l[16]=+0.000*f[ci][0]+0.000*f[ci][1]+0.000*f[ci][2]+0.000*f[ci][3]+0.000*f[ci][4]+0.000*f[ci][5]+0.000*f[ci][6]+1.000*f[ci][7]-1.000*f[ci][8]+1.000*f[ci][9]-1.000*f[ci][10]+0.000*f[ci][11]+0.000*f[ci][12]+0.000*f[ci][13]+0.000*f[ci][14]-1.000*f[ci][15]+1.000*f[ci][16]-1.000*f[ci][17]+1.000*f[ci][18];
+
+F_hat[16]=+0.000*GuoF[0]+0.000*GuoF[1]+0.000*GuoF[2]+0.000*GuoF[3]+0.000*GuoF[4]+0.000*GuoF[5]+0.000*GuoF[6]+1.000*GuoF[7]-1.000*GuoF[8]+1.000*GuoF[9]-1.000*GuoF[10]+0.000*GuoF[11]+0.000*GuoF[12]+0.000*GuoF[13]+0.000*GuoF[14]-1.000*GuoF[15]+1.000*GuoF[16]-1.000*GuoF[17]+1.000*GuoF[18];
+
+meq[16]=+0.000*f_eq[0]+0.000*f_eq[1]+0.000*f_eq[2]+0.000*f_eq[3]+0.000*f_eq[4]+0.000*f_eq[5]+0.000*f_eq[6]+1.000*f_eq[7]-1.000*f_eq[8]+1.000*f_eq[9]-1.000*f_eq[10]+0.000*f_eq[11]+0.000*f_eq[12]+0.000*f_eq[13]+0.000*f_eq[14]-1.000*f_eq[15]+1.000*f_eq[16]-1.000*f_eq[17]+1.000*f_eq[18];
+
+F_hat[16]*=(1-0.5*S[16]);
+m_l[16]=m_l[16]-S[16]*(m_l[16]-meq[16])+dt*F_hat[16];
+//=======================================
+
+m_l[17]=+0.000*f[ci][0]+0.000*f[ci][1]+0.000*f[ci][2]+0.000*f[ci][3]+0.000*f[ci][4]+0.000*f[ci][5]+0.000*f[ci][6]-1.000*f[ci][7]-1.000*f[ci][8]+1.000*f[ci][9]+1.000*f[ci][10]+1.000*f[ci][11]-1.000*f[ci][12]+1.000*f[ci][13]-1.000*f[ci][14]+0.000*f[ci][15]+0.000*f[ci][16]+0.000*f[ci][17]+0.000*f[ci][18];
+
+F_hat[17]=+0.000*GuoF[0]+0.000*GuoF[1]+0.000*GuoF[2]+0.000*GuoF[3]+0.000*GuoF[4]+0.000*GuoF[5]+0.000*GuoF[6]-1.000*GuoF[7]-1.000*GuoF[8]+1.000*GuoF[9]+1.000*GuoF[10]+1.000*GuoF[11]-1.000*GuoF[12]+1.000*GuoF[13]-1.000*GuoF[14]+0.000*GuoF[15]+0.000*GuoF[16]+0.000*GuoF[17]+0.000*GuoF[18];
+
+meq[17]=+0.000*f_eq[0]+0.000*f_eq[1]+0.000*f_eq[2]+0.000*f_eq[3]+0.000*f_eq[4]+0.000*f_eq[5]+0.000*f_eq[6]-1.000*f_eq[7]-1.000*f_eq[8]+1.000*f_eq[9]+1.000*f_eq[10]+1.000*f_eq[11]-1.000*f_eq[12]+1.000*f_eq[13]-1.000*f_eq[14]+0.000*f_eq[15]+0.000*f_eq[16]+0.000*f_eq[17]+0.000*f_eq[18];
+
+F_hat[17]*=(1-0.5*S[17]);
+m_l[17]=m_l[17]-S[17]*(m_l[17]-meq[17])+dt*F_hat[17];
+//=======================================
+
+m_l[18]=+0.000*f[ci][0]+0.000*f[ci][1]+0.000*f[ci][2]+0.000*f[ci][3]+0.000*f[ci][4]+0.000*f[ci][5]+0.000*f[ci][6]+0.000*f[ci][7]+0.000*f[ci][8]+0.000*f[ci][9]+0.000*f[ci][10]-1.000*f[ci][11]-1.000*f[ci][12]+1.000*f[ci][13]+1.000*f[ci][14]+1.000*f[ci][15]+1.000*f[ci][16]-1.000*f[ci][17]-1.000*f[ci][18];
+
+F_hat[18]=+0.000*GuoF[0]+0.000*GuoF[1]+0.000*GuoF[2]+0.000*GuoF[3]+0.000*GuoF[4]+0.000*GuoF[5]+0.000*GuoF[6]+0.000*GuoF[7]+0.000*GuoF[8]+0.000*GuoF[9]+0.000*GuoF[10]-1.000*GuoF[11]-1.000*GuoF[12]+1.000*GuoF[13]+1.000*GuoF[14]+1.000*GuoF[15]+1.000*GuoF[16]-1.000*GuoF[17]-1.000*GuoF[18];
+
+meq[18]=+0.000*f_eq[0]+0.000*f_eq[1]+0.000*f_eq[2]+0.000*f_eq[3]+0.000*f_eq[4]+0.000*f_eq[5]+0.000*f_eq[6]+0.000*f_eq[7]+0.000*f_eq[8]+0.000*f_eq[9]+0.000*f_eq[10]-1.000*f_eq[11]-1.000*f_eq[12]+1.000*f_eq[13]+1.000*f_eq[14]+1.000*f_eq[15]+1.000*f_eq[16]-1.000*f_eq[17]-1.000*f_eq[18];
+
+F_hat[18]*=(1-0.5*S[18]);
+m_l[18]=m_l[18]-S[18]*(m_l[18]-meq[18])+dt*F_hat[18];
 
 
 
@@ -2315,7 +2189,7 @@ int i,j,m,ip,jp,kp;
 			for (int mj=0; mj<19; mj++)
 				sum+=MI[mi][mj]*m_l[mj];
 
-			//F[ci][mi]=0;
+			
 			ip=i+e[mi][0];
 			jp=j+e[mi][1];if (jp<0) {jp=NY;}; if (jp>NY) {jp=0;};
 			kp=m+e[mi][2];if (kp<0) {kp=NZ;}; if (kp>NZ) {kp=0;};
@@ -2369,9 +2243,24 @@ int i,j,m,ip,jp,kp;
 			
 			}
 
+/*
+	
+	int dest_l,dest_r;
+	if (rank+1>mpi_size-1)
+		dest_r=0;
+	else
+		dest_r=rank+1;
 
-	
-	
+	if (rank-1<0)
+		dest_l=mpi_size-1;
+	else
+		dest_l=rank-1;
+
+MPI_Barrier(MPI_COMM_WORLD);
+MPI_Sendrecv(sendr,Gcl[dest_r]*5,MPI_DOUBLE,dest_r,rank*2+1,recvl,Gcl[rank]*5,MPI_DOUBLE,dest_l,(dest_l)*2+1, MPI_COMM_WORLD,&status[0]);
+MPI_Sendrecv(sendl,Gcr[dest_l]*5,MPI_DOUBLE,dest_l,rank*2,recvr,Gcr[rank]*5,MPI_DOUBLE,dest_r,(dest_r)*2, MPI_COMM_WORLD,&status[1]);
+*/
+
 
 
 	if (rank==0)
@@ -2407,6 +2296,9 @@ int i,j,m,ip,jp,kp;
 	MPI_Waitall(4,request, status);
 
 	MPI_Testall(4,request,&mpi_test,status);	
+
+
+
 		
 			for(i=1;i<=Gcl[rank];i++)
 				for (int lm=0;lm<5;lm++)
@@ -2433,124 +2325,6 @@ int i,j,m,ip,jp,kp;
 }
 
 
-void standard_bounceback_boundary(int it,double** f)
-{
-
-	double tmp;
-			tmp = f[it][1];f[it][1] = f[it][2];f[it][2] = tmp;
-			tmp = f[it][3];f[it][3] = f[it][4];f[it][4] = tmp;
-                        tmp = f[it][5];f[it][5] = f[it][6];f[it][6] = tmp;
-			tmp = f[it][7];f[it][7] = f[it][10];f[it][10] = tmp;
-			tmp = f[it][8];f[it][8] = f[it][9];f[it][9] = tmp;
-			tmp = f[it][11];f[it][11] = f[it][14];f[it][14] = tmp;
-                        tmp = f[it][12];f[it][12] = f[it][13];f[it][13] = tmp;
-			tmp = f[it][15];f[it][15] = f[it][18];f[it][18] = tmp;
-			tmp = f[it][16];f[it][16] = f[it][17];f[it][17] = tmp;
-
-
-			
-
-}
-
-
-/*
-void comput_macro_variables_IMR( double* rho,double** u,double** u0,double** f,double** F,int* SupInv,int*** Solid,  int n,double porosity,double* gx,double* gy, double* gz)
-{
-	
-	int rank = MPI :: COMM_WORLD . Get_rank ();
-	int mpi_size=MPI :: COMM_WORLD . Get_size ();
-	double rho0=1.0;
-	double dp[3],rhok;
-	double *rbuf;
-	rbuf=new double[mpi_size*3];
-
-	for(int i=1;i<=Count;i++)	
-                  
-			{ 
-
-				
-				rhok=rho[i];
-				u0[i][0]=u[i][0];
-				u0[i][1]=u[i][1];
-				u0[i][2]=u[i][2];
-				rho[i]=0;
-				u[i][0]=0;
-				u[i][1]=0;
-				u[i][2]=0;
-	
-				for(int k=0;k<19;k++)
-					{
-					f[i][k]=F[i][k];
-					rho[i]+=f[i][k];
-					u[i][0]+=e[k][0]*f[i][k];
-					u[i][1]+=e[k][1]*f[i][k];
-					u[i][2]+=e[k][2]*f[i][k];
-					}
-			
-
-				u[i][0]=(u[i][0]+dt*gx/2)/rho[i];
-				u[i][1]=(u[i][1]+dt*gy/2)/rho[i];
-				u[i][2]=(u[i][2]+dt*gz/2)/rho[i];
-					
-
-			
-
-				dp[0]+=forcex[i]-(u[i][0]-u0[i][0])*rhok;
-				dp[1]+=forcey[i]-(u[i][1]-u0[i][1])*rhok;
-				dp[2]+=forcez[i]-(u[i][2]-u0[i][2])*rhok;
-				
-			}
-			
-
-                     
-
-	if ((n%1000==0) and (n>100))
-	{
-	
-	MPI_Barrier(MPI_COMM_WORLD);   
-	MPI_Gather(dp,3,MPI_DOUBLE,rbuf,3,MPI_DOUBLE,0,MPI_COMM_WORLD);
-
-	if (rank==0)
-		{
-		dp[0]=0;dp[1]=0;dp[2]=0;
-		for (int i=0;i<mpi_size;i++)
-			{
-			dp[0]+=rbuf[i*3+0];
-			dp[1]+=rbuf[i*3+1];
-			dp[2]+=rbuf[i*3+2];
-			}
-		dp[0]/=(NX+1)*(NY+1)*(NZ+1)*porosity;
-		dp[1]/=(NX+1)*(NY+1)*(NZ+1)*porosity;
-		dp[2]/=(NX+1)*(NY+1)*(NZ+1)*porosity;
-		}
-	
-
-		
-	MPI_Bcast(dp,3,MPI_DOUBLE,0,MPI_COMM_WORLD);	
-		for (int i=1;i<=Count;i++)
-			{
-		switch(PerDir)
-		{
-		case 1:
-			forcex[i]=dp[0];break;
-		case 2:
-			forcey[i]=dp[1];break;
-		case 3:
-			forcez[i]=dp[2];break;
-		default:
-			forcex[i]=dp[0];
-		}
-
-			}
-	*gx=dp[0];
-	*gy=dp[1];
-	*gz=dp[2];
-	
-	}
-	delete [] rbuf;
-
-}
-*/
 
 void comput_macro_variables( double* rho,double** u,double** u0,double** f,double** F,int* SupInv,int*** Solid)
 {
@@ -2595,55 +2369,7 @@ void comput_macro_variables( double* rho,double** u,double** u0,double** f,doubl
 			}
 
 
-/*
-	if (Sub_BC==2)
-	{
-	if ((pre_yp-1)*(pre_yn-1)==0)
-	for (int i=0;i<nx_l;i++)
-		for (int k=0;k<=NZ;k++)
-		{
-		if (pre_yp==1)
-			rho[Solid[i][NY][k]]=p_yp;
-		
-		if (pre_yn==1)
-			rho[Solid[i][0][k]]=p_yn;
-			
-		}
-	
-	if ((pre_zp-1)*(pre_zn-1)==0)
-	for (int i=0;i<nx_l;i++)
-		for (int j=0;j<=NY;j++)
-		{
-		if (pre_zp==1)
-			rho[Solid[i][j][NZ]]=p_zp;
-			
-		if (pre_zn==1)
-			rho[Solid[i][j][0]]=p_yn;
-			
-		}
 
-
-	
-	if ((pre_xp-1)*(pre_xn-1)==0)
-	for (int j=0;j<=NY;j++)
-		for (int k=0;k<=NZ;k++)
-		{
-		if ((pre_xp==1) and (rank==mpi_size-1))
-			rho[Solid[nx_l-1][j][k]]=p_xp;
-			
-		if ((pre_xn==1) and (rank==0))
-			rho[Solid[0][j][k]]=p_xn;
-			
-		}
-
-
-
-
-
-	}
-
-*/	
-	//MPI_Barrier(MPI_COMM_WORLD); 
 
 }
 
@@ -3593,104 +3319,7 @@ for(int i=1; i<Count; i++)
 }
 
 
-/*
-void Geometry(int*** Solid)	
-{	
-	int rank = MPI :: COMM_WORLD . Get_rank ();
-	int mpi_size=MPI :: COMM_WORLD . Get_size ();
 
-	const int root_rank=0;
-
-	
-	int* nx_g = new int[mpi_size];
-	int* disp = new int[mpi_size];
-
-	
-	MPI_Gather(&nx_l,1,MPI_INT,nx_g,1,MPI_INT,root_rank,MPI_COMM_WORLD);
-	
-	
-	if (rank==root_rank)
-		{
-		disp[0]=0;
-		for (int i=0;i<mpi_size;i++)
-			nx_g[i]*=(NY+1)*(NZ+1);
-
-		for (int i=1;i<mpi_size;i++)
-			disp[i]=disp[i-1]+nx_g[i-1];
-		}
-
-
-		
-	
-	int* Solid_storage= new int[nx_l*(NY+1)*(NZ+1)];
-	int* rbuf;
-
-	for(int i=0;i<nx_l;i++)
-		for(int j=0;j<=NY;j++)
-			for(int k=0;k<=NZ;k++)
-			if (Solid[i][j][k]<=0)
-				Solid_storage[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]=1;
-			else
-				Solid_storage[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]=0;
-
-	if (rank==root_rank)
-		rbuf= new int[(NX+1)*(NY+1)*(NZ+1)];
-	
-	//MPI_Barrier(MPI_COMM_WORLD);
-	MPI_Gatherv(Solid_storage,nx_l*(NY+1)*(NZ+1),MPI_INT,rbuf,nx_g,disp,MPI_INT,root_rank,MPI_COMM_WORLD);
-	
-	int NX0=NX+1;
-	int NY0=NY+1;
-	int NZ0=NZ+1;
-
-if (mir==0)
-	{	
-	if (mirX==1)
-		NX0=NX0/2;
-	if (mirY==1)
-		NY0=NY0/2;
-	if (mirZ==1)
-		NZ0=NZ0/2;
-	}
-
-
-
-	if (rank==root_rank)
-	{
-	ostringstream name;
-	name<<outputfile<<"LBM_Geometry"<<".vtk";
-	ofstream out;
-	out.open(name.str().c_str());
-	out<<"# vtk DataFile Version 2.0"<<endl;
-	out<<"J.Yang Lattice Boltzmann Simulation 3D Single Phase-Solid-Geometry"<<endl;
-	out<<"ASCII"<<endl;
-	out<<"DATASET STRUCTURED_POINTS"<<endl;
-	out<<"DIMENSIONS         "<<NX0<<"         "<<NY0<<"         "<<NZ0<<endl;
-	out<<"ORIGIN 0 0 0"<<endl;
-	out<<"SPACING 1 1 1"<<endl;
-	out<<"POINT_DATA     "<<NX0*NY0*NZ0<<endl;
-	out<<"SCALARS sample_scalars float"<<endl;
-	out<<"LOOKUP_TABLE default"<<endl;
-for(int k=0;k<NZ0;k++)
-        for(int j=0; j<NY0; j++)
-		for(int i=0;i<NX0;i++)
-			//for(int k=0;k<=NZ;k++)
-			out<<"		"<<rbuf[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]<<endl;
-	out.close();
-	
-	}
-		
-	delete [] Solid_storage;
-	if (rank==root_rank)
-		delete [] rbuf;
-
-	delete [] nx_g;
-	delete [] disp;
-
-		
-}
-
-*/
 
 //OUTPUT SUBROUTAINS:
 //ALL THE OUTPUTS ARE TRANSFERED TO PROCESSOR 0, AND EXPORT TO DAT FILE BY PROCESSOR 0
