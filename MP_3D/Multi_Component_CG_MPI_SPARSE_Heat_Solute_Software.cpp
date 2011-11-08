@@ -157,6 +157,7 @@ void Backup(int ,double*, double*, double**, double**);
 void Parallelize_Geometry();
 
 
+
 int e[19][3]=
 {{0,0,0},{1,0,0},{-1,0,0},{0,1,0},{0,-1,0},{0,0,1},{0,0,-1},{1,1,0},{-1,-1,0},{1,-1,0},{-1,1,0},{1,0,1},
 {-1,0,-1},{1,0,-1},{-1,0,1},{0,1,1},{0,-1,-1},{0,1,-1},{0,-1,1}};
@@ -666,11 +667,17 @@ if (wr_per==1)
 				}
 			finfs2.close();
 			}
-
+			
+			
+			//==========for bodyforce output===========
+			ofstream finf3(FileName3,ios::app);
+			finf3<<S_l<<" "<<1-S_l<<endl;
+			finf3.close();
+			
 			
 			cout<<"The"<<n<<"th computation result:"<<endl;
 			cout<<"The Density of point(NX/2,NY/2,NZ/2) is: "<<setprecision(6)
-				<<rho[Solid[(nx_l/2)][NY/2][NZ/2]]<<endl;
+				<<rho[Solid[(int)Count/2][NY/2][NZ/2]]<<endl;
 			
 			cout<<"The Maximum velocity is: "<<setprecision(6)<<u_max<<"   Re_l="<<Re_l<<"   Re_g="<<Re_g<<endl;
 			cout<<"Courant Number="<<u_max*dt/dx<<"	 Capillary Num="<<Capillary<<endl;
@@ -1152,6 +1159,7 @@ MPI_Barrier(MPI_COMM_WORLD);
 	 delete [] recv_solid;
         delete [] recv_psi2;
 }
+
 
 
 void init_Sparse_read_rock_parallel(int* Sl,int* Sr)
@@ -3698,7 +3706,8 @@ for (int i=0;i<nx_l;i++)
 					{
 					m_l[mi]=0;
 					for (int mj=0; mj<19; mj++)
-						m_l[mi]+=M[mi][mj]*f[Solid[i][NY-1][k]][mj];					}
+						m_l[mi]+=M[mi][mj]*f[Solid[i][NY-1][k]][mj];
+					}
 
 			m_l[0]=rho_yp;
 			for (int mi=0; mi<19; mi++)
@@ -3728,7 +3737,8 @@ for (int i=0;i<nx_l;i++)
 					{
 					m_l[mi]=0;
 					for (int mj=0; mj<19; mj++)
-						m_l[mi]+=M[mi][mj]*f[Solid[i][1][k]][mj];					}
+						m_l[mi]+=M[mi][mj]*f[Solid[i][1][k]][mj];
+					}
 
 			m_l[0]=rho_yn;
 			for (int mi=0; mi<19; mi++)
@@ -3759,7 +3769,8 @@ for (int i=0;i<nx_l;i++)
 					{
 					m_l[mi]=0;
 					for (int mj=0; mj<19; mj++)
-						m_l[mi]+=M[mi][mj]*f[Solid[i][j][NZ-1]][mj];					}
+						m_l[mi]+=M[mi][mj]*f[Solid[i][j][NZ-1]][mj];
+					}
 
 			m_l[0]=rho_zp;
 			for (int mi=0; mi<19; mi++)
@@ -3790,7 +3801,8 @@ for (int i=0;i<nx_l;i++)
 					{
 					m_l[mi]=0;
 					for (int mj=0; mj<19; mj++)
-						m_l[mi]+=M[mi][mj]*f[Solid[i][j][1]][mj];					}
+						m_l[mi]+=M[mi][mj]*f[Solid[i][j][1]][mj];
+					}
 
 			m_l[0]=rho_zn;
 			for (int mi=0; mi<19; mi++)
@@ -3820,7 +3832,8 @@ for (int j=0;j<=NY;j++)
 					{
 					m_l[mi]=0;
 					for (int mj=0; mj<19; mj++)
-						m_l[mi]+=M[mi][mj]*f[Solid[nx_l-2][j][k]][mj];					}
+						m_l[mi]+=M[mi][mj]*f[Solid[nx_l-2][j][k]][mj];
+					}
 
 			m_l[0]=rho_xp;
 			for (int mi=0; mi<19; mi++)
@@ -3851,7 +3864,8 @@ for (int j=0;j<=NY;j++)
 					{
 					m_l[mi]=0;
 					for (int mj=0; mj<19; mj++)
-						m_l[mi]+=M[mi][mj]*f[Solid[1][j][k]][mj];					}
+						m_l[mi]+=M[mi][mj]*f[Solid[1][j][k]][mj];
+					}
 
 			m_l[0]=rho_xn;
 			for (int mi=0; mi<19; mi++)
