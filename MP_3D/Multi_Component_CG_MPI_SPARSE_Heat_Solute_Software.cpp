@@ -28,7 +28,7 @@ struct mat{
 using namespace std;        
 const int Q=19;          
 
-
+int preci=2;
 double u_max,u_ave,gx,gy,gz,porosity;
 
 //----------
@@ -4988,7 +4988,7 @@ void output_psi_b(int m,double* psi,int MirX,int MirY,int MirZ,int mir,int*** So
         for(int k=0;k<NZ0;k++)
       		for(int j=0; j<NY0; j++)
 			for(int i=0;i<NX0;i++)
-				out<<rbuf_psi[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]<<endl;
+				out<<setprecision(preci)<<rbuf_psi[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]<<endl;
 
 	out.close();
 				
@@ -5110,9 +5110,9 @@ void output_psi(int m,double* psi,int MirX,int MirY,int MirZ,int mir,int*** Soli
         	for(int j=0; j<NY0; j++)
 			for(int k=0;k<NZ0;k++)
 			if (Solid[i][j][k]>0)
-				out<<psi[Solid[i][j][k]]<<endl;
+				out<<setprecision(preci)<<psi[Solid[i][j][k]]<<endl;
 			else
-				out<<psi_0<<endl;
+				out<<setprecision(preci)<<psi_0<<endl;
 			
 	out.close();
 	}
@@ -5151,7 +5151,7 @@ void output_psi(int m,double* psi,int MirX,int MirY,int MirZ,int mir,int*** Soli
 			if (i+disp[processor]<NX0)
         		for(int j=0; j<NY0; j++)
 				for(int k=0;k<NZ0;k++)
-				out<<rece[i*NY0*NZ0+j*NZ0+k]<<endl;	
+				out<<setprecision(preci)<<rece[i*NY0*NZ0+j*NZ0+k]<<endl;	
 
 		
 		out.close();
