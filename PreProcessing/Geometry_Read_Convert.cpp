@@ -11,9 +11,9 @@ using namespace std;
 int main (int argc , char * argv [])
 {
 
-int nx=128;
-int ny=128;
-int nz=128;
+int nx=200;
+int ny=200;
+int nz=200;
 int dir=3;
 
 int pls[4][3]={{0,2,2},{2,0,2},{2,2,0},{0,0,0}};
@@ -21,7 +21,7 @@ int pls[4][3]={{0,2,2},{2,0,2},{2,2,0},{0,0,0}};
 int sum=0;
 
 bool*** Solid_Int;
-char poreFileName[128]="128.all";
+char poreFileName[128]="F35.dat";
 
 	FILE *ftest;
 	ifstream fin;
@@ -56,11 +56,14 @@ double pore;
 			}
 		}
 	
-	
-		while(!fin.eof())
+	for(k=0 ; k<nz ; k++)				///*********
+	for(j=0 ; j<ny ; j++)
+	for(i=0 ; i<nx ; i++)	
+	//	while(!fin.eof())
 		{	
-			fin >> i >> j>> k>> pore;
-			Solid_Int[i-1][j-1][k-1]=pore;
+			//fin >> i >> j>> k>> pore;
+			fin >> pore;
+			Solid_Int[i][j][k]=pore;
 		}
 		
 	
@@ -71,7 +74,7 @@ double pore;
 	//cout<<sum<<endl;
 
 	ostringstream name;
-	name<<"Bentheimer"<<".vtk";
+	name<<"F35.dat"<<".vtk";
 	ofstream out;
 	out.open(name.str().c_str());
 	out<<"# vtk DataFile Version 2.0"<<endl;
@@ -99,15 +102,15 @@ double pore;
 
 
 //=======================================================================================
-dir=0;                 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-int div=2; 			//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+dir=3;                 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+int div=4; 			//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 int nx_d=nx/div;
 int ny_d=ny/div;
 int nz_d=nz/div;
-int sym_x=0;
-int sym_y=0;
-int sym_z=0;
-int add_buf_x_n=5;
+int sym_x=1;
+int sym_y=1;
+int sym_z=1;
+int add_buf_x_n=0;
 int add_buf_y_n=0;
 int add_buf_z_n=0;
 
@@ -145,29 +148,41 @@ for (int k_x=1;k_x<=div;k_x++)
 		
 		
 if (sym_x==1)
+	{
 	for(k=0 ; k<nz_d+pls[dir][2] ; k++)				///*********
 	for(j=0 ; j<ny_d+pls[dir][1] ; j++)
 	for(i=0 ; i<nx_d+pls[dir][0] ; i++)				///*********
 		Solid[nx_d+pls[dir][0]+i][j][k]=Solid[nx_d+pls[dir][0]-1-i][j][k];
+	nx_d=nx_d*2;
+	}
 
 
 if (sym_y==1)
+	{
 	for(k=0 ; k<nz_d+pls[dir][2] ; k++)				///*********
 	for(j=0 ; j<ny_d+pls[dir][1] ; j++)
 	for(i=0 ; i<nx_d+pls[dir][0] ; i++)				///*********
 		Solid[i][ny_d+pls[dir][1]+j][k]=Solid[i][ny_d+pls[dir][1]-1-j][k];
-
+	ny_d=ny_d*2;
+	}
 
 if (sym_z==1)
+	{
 	for(k=0 ; k<nz_d+pls[dir][2] ; k++)				///*********
 	for(j=0 ; j<ny_d+pls[dir][1] ; j++)
 	for(i=0 ; i<nx_d+pls[dir][0] ; i++)				///*********
 		Solid[i][j][nz_d+pls[dir][2]+k]=Solid[i][j][nz_d+pls[dir][2]-1-k];
+	nz_d=nz_d*2;
+	}
 
+	nx_d=nx/div;
+	ny_d=ny/div;
+	nz_d=nz/div;
 
+	cout<<(i_x-1)*div*div+(j_x-1)*div+(k_x-1)<<endl;
 	//ostringstream name;
 	name.str("");
-	name<<"Bentheimer_"<<(i_x-1)*div*div+(j_x-1)*div+(k_x-1)<<".vtk";
+	name<<"F35_"<<(i_x-1)*div*div+(j_x-1)*div+(k_x-1)<<".vtk";
 	ofstream out;
 	out.open(name.str().c_str());
 	out<<"# vtk DataFile Version 2.0"<<endl;
