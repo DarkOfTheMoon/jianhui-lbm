@@ -1064,7 +1064,10 @@ MPI_Barrier(MPI_COMM_WORLD);
 	
 }
 
-
+	//-------------------------
+	double psi_total_g[mpi_size];
+	psi_total=0;
+	//-------------------------
 
 	for (int i=0;i<nx_l;i++)
 	                for (int j=0;j<=NY;j++)
@@ -1072,9 +1075,22 @@ MPI_Barrier(MPI_COMM_WORLD);
 	                {
 	                Solid[i][j][k]=recv_solid[i*(NY+1)*(NZ+1)+j*(NZ+1)+k];
 	                Psi_local[i][j][k]=recv_psi[i*(NY+1)*(NZ+1)+j*(NZ+1)+k];
-	                
+	                psi_total+=recv_psi[i*(NY+1)*(NZ+1)+j*(NZ+1)+k];
 	                }
+
+	MPI_Barrier(MPI_COMM_WORLD);	
 	           
+	MPI_Gather(&psi_total,1,MPI_DOUBLE,psi_total_g,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Bcast(psi_total_g,mpi_size,MPI_DOUBLE,0,MPI_COMM_WORLD);
+
+
+	psi_total=0;
+	for (int i=0;i<mpi_size;i++)
+		psi_total+=psi_total_g[i];
+
+	//cout<<psi_total<<"  "<<rank<<endl;;
+
+
 	 delete [] recv_psi;
 	 delete [] recv_solid;
        
@@ -1247,8 +1263,11 @@ void init(double* rho, double** u, double** f,double** fg, double** F, double** 
        
 	double s_other=8*(2-s_v)/(8-s_v);
 	double u_tmp[3];
-	
-        	
+
+
+
+
+
 	if (lattice_v==1)
 	{
 	
@@ -1323,6 +1342,7 @@ void init(double* rho, double** u, double** f,double** fg, double** F, double** 
 			u_tmp[1]=u[i][1];
 			u_tmp[2]=u[i][2];
 			rho_r[i]=Psi_local[(int)(SupInv[i]/((NY+1)*(NZ+1)))][(int)((SupInv[i]%((NY+1)*(NZ+1)))/(NZ+1))][SupInv[i]%(NZ+1)];
+		
 			rho[i]=1.0;
 			//rho_r[i]=psi[i];
 			
