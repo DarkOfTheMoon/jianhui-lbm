@@ -697,7 +697,7 @@ if (wr_per==1)
 			                {
 					Statistical_psi(rho_r,n,Solid);
 					//==========for bodyforce output===========
-					if ((rank==0) and (ini_psi>0) and (n>ini_psi))
+					if ((rank==0) and (n>ini_psi))
 					{
 					ofstream finf3(FileName3,ios::app);
 					finf3<<Dispersion<<endl;
@@ -4700,6 +4700,10 @@ if (Sub_Dis==1)
            MPI_Gatherv(s_psi,nx_l,MPI_DOUBLE,rbuf,nx_g,disp,MPI_DOUBLE,0,MPI_COMM_WORLD);     
        if (rank==0)
 	{
+	//psi_total=0;
+	//for (int i=0;i<=NX;i++)
+	//	psi_total+=rbuf[i];
+
         ostringstream name;
 	name<<outputfile<<"Statistical_data_concentration_X_"<<m<<".sta";
 	ofstream out;
