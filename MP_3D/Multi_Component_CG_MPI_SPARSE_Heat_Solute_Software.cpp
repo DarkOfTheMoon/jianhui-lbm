@@ -187,7 +187,7 @@ int SXP[5]={2,8,10,12,14};
 
 
 int n,nx_l,n_max,in_BC,PerDir,freRe,freDe,freVe,frePsi,Par_Geo,Par_nx,Par_ny,Par_nz;
-int Zoom,lattice_v,freHS,Sub_BC_psi,in_psi_BC;
+int Zoom,lattice_v,freHS,Sub_BC_psi,in_psi_BC,ini_buf;
 
 
 int wr_per,pre_xp,pre_xn,pre_yp,pre_yn,pre_zp,pre_zn,stab,stab_time,fre_backup;
@@ -304,6 +304,7 @@ char outp2[128]="HS";
 	fin >> Sub_BC_psi;				fin.getline(dummy, NCHAR);
 	fin >> stab >> stab_time;			fin.getline(dummy, NCHAR);
 	fin >> ini_Sat;                                        fin.getline(dummy, NCHAR);
+	fin >> ini_buf;                                 fin.getline(dummy, NCHAR);
 	fin >> par_per_x >> par_per_y >>par_per_z;	fin.getline(dummy, NCHAR);
 	fin >> per_xp >> per_xn;			fin.getline(dummy, NCHAR);
 	fin >> per_yp >> per_yn;			fin.getline(dummy, NCHAR);
@@ -326,7 +327,7 @@ char outp2[128]="HS";
 	MPI_Bcast(&filename,128,MPI_CHAR,0,MPI_COMM_WORLD);
 	MPI_Bcast(&NX,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&NY,1,MPI_INT,0,MPI_COMM_WORLD);
-	MPI_Bcast(&NZ,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&NZ,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&ini_buf,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&n_max,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&reso,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 	MPI_Bcast(&in_BC,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&gx,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 	MPI_Bcast(&gy,1,MPI_DOUBLE,0,MPI_COMM_WORLD);MPI_Bcast(&gz,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
@@ -1305,7 +1306,7 @@ void init(double* rho, double** u, double** f,double* psi,double* rho_r, double*
 	MPI_Bcast(disp,mpi_size,MPI_INT,0,MPI_COMM_WORLD);
 
 
-        srand((unsigned)time(0));
+        srand((unsigned)time(0)+rank);
 	
 	double usqr,vsqr,rand_double;
 	double c2,c4;
@@ -1494,9 +1495,9 @@ else
 			                loc_x=(int)(SupInv[i]/((NY+1)*(NZ+1)))+disp[rank];
 			                loc_y=(int)((SupInv[i]%((NY+1)*(NZ+1)))/(NZ+1));
 			                loc_z=SupInv[i]%(NZ+1);
-			                if ((loc_x<per_xn) or (loc_x>per_xp) or (loc_y<per_yn) or (loc_y>per_yp) or (loc_z<per_zn) or (loc_z>per_zp))
+			                if (((loc_x<per_xn) or (loc_x>per_xp) or (loc_y<per_yn) or (loc_y>per_yp) or (loc_z<per_zn) or (loc_z>per_zp)) and ((ini_buf==-1) or (ini_buf==1)))
 			                {        
-			                        psi[i]=1;
+			                        psi[i]=ini_buf;
 			                        rho_r[i]=(psi[i]*rho[i]+rho[i])/2;
 			                        rho_b[i]=rho[i]-rho_r[i];
 			                      
@@ -2453,6 +2454,9 @@ void comput_macro_variables( double* rho,double** u,double** u0,double** f,doubl
 	
 	int rank = MPI :: COMM_WORLD . Get_rank ();
 	int mpi_size=MPI :: COMM_WORLD . Get_size ();
+	srand((unsigned)time(0)+rank);
+	double rand_double,psi_rand;
+
 
 	for(int i=1;i<=Count;i++)	
                    
@@ -2498,59 +2502,106 @@ void comput_macro_variables( double* rho,double** u,double** u0,double** f,doubl
                            {
                            for(int j=0;j<=NY;j++)
                                    for (int k=0;k<=NZ;k++)
+				   if (Solid[0][j][k]>0)
                                    {
                                    rho_r[Solid[0][j][k]]=(Psi_local[0][j][k]*1.0+1.0)/2;
                                    rho_b[Solid[0][j][k]]=1.0-rho_r[Solid[0][j][k]];
                                    psi[Solid[0][j][k]]=Psi_local[0][j][k];
-                                   //psi[Solid[0][j][k]]=psi[Solid[1][j][k]];
-                                   //rho_r[Solid[0][j][k]]=(psi[Solid[0][j][k]]*1.0+1.0)/2;
-                                   //rho_b[Solid[0][j][k]]=1.0-rho_r[Solid[0][j][k]];
+				//cout<<Psi_local[0][j][k]<<"  "<<j<<"  "<<k<<endl;
+                                   
                                    
                                    }
                            }
 			else
+			if (psi_xn==2)
 			{
                            for(int j=0;j<=NY;j++)
                                    for (int k=0;k<=NZ;k++)
+				   if ((Solid[0][j][k]>0) and (Solid[1][j][k]))
                                    {
                                    psi[Solid[0][j][k]]=psi[Solid[1][j][k]];
                                    rho_r[Solid[0][j][k]]=(psi[Solid[0][j][k]]*1.0+1.0)/2;
                                    rho_b[Solid[0][j][k]]=1.0-rho_r[Solid[0][j][k]];
                                    
                                    }
-                           }
+                        }
+			else
+			if (psi_xn==3)
+			{
+			for(int j=0;j<=NY;j++)
+                                   for (int k=0;k<=NZ;k++)
+				   if (Solid[0][j][k]>0)
+                                   {
+				   rand_double=(double(rand()%10000))/10000;
+					if (rand_double<ini_Sat)
+			        		psi_rand=1;
+					else
+			        		psi_rand=-1;
+			
+                                   rho_r[Solid[0][j][k]]=(psi_rand*1.0+1.0)/2;
+                                   rho_b[Solid[0][j][k]]=1.0-rho_r[Solid[0][j][k]];
+                                   psi[Solid[0][j][k]]=psi_rand;
+                                   
+                                   }
+			}
+
+
+
+
                         
                       if ((psi_xp>0) and (rank==mpi_size-1))    
                         if (psi_xp==1)   
 			{
                            for(int j=0;j<=NY;j++)
                                    for (int k=0;k<=NZ;k++)
+				   if (Solid[nx_l-1][j][k]>0)
                                    {
                                    rho_r[Solid[nx_l-1][j][k]]=(Psi_local[nx_l-1][j][k]*1.0+1.0)/2;
                                    rho_b[Solid[nx_l-1][j][k]]=1.0-rho_r[Solid[nx_l-1][j][k]];
                                    psi[Solid[nx_l-1][j][k]]=Psi_local[nx_l-1][j][k];
-                                   //psi[Solid[nx_l-1][j][k]]=psi[Solid[nx_l-2][j][k]];
-                                   //rho_r[Solid[nx_l-1][j][k]]=(psi[Solid[nx_l-1][j][k]]*1.0+1.0)/2;
-                                   //rho_b[Solid[nx_l-1][j][k]]=1.0-rho_r[Solid[nx_l-1][j][k]];
+                                   
                                    }
                            }  
 			else
+			if (psi_xp==2)
 			{
                            for(int j=0;j<=NY;j++)
                                    for (int k=0;k<=NZ;k++)
+				   if ((Solid[nx_l-1][j][k]>0) and (Solid[nx_l-2][j][k]>0))
                                    {
                               
                                    psi[Solid[nx_l-1][j][k]]=psi[Solid[nx_l-2][j][k]];
                                    rho_r[Solid[nx_l-1][j][k]]=(psi[Solid[nx_l-1][j][k]]*1.0+1.0)/2;
                                    rho_b[Solid[nx_l-1][j][k]]=1.0-rho_r[Solid[nx_l-1][j][k]];
                                    }
-                           }  	
-                        
+                           } 
+			else 
+			if (psi_xp==3)	
+                        {
+						
+			for(int j=0;j<=NY;j++)
+                             for (int k=0;k<=NZ;k++)
+				   if (Solid[nx_l-1][j][k]>0)
+                                   {
+				rand_double=(double(rand()%10000))/10000;
+					if (rand_double<ini_Sat)
+			        		psi_rand=1;
+					else
+			        		psi_rand=-1;	
+                                   rho_r[Solid[nx_l-1][j][k]]=(psi_rand*1.0+1.0)/2;
+                                   rho_b[Solid[nx_l-1][j][k]]=1.0-rho_r[Solid[nx_l-1][j][k]];
+                                   psi[Solid[nx_l-1][j][k]]=psi_rand;
+                                   
+                                   }
+
+
+			}
                         
                          if (psi_yn==1)    
                            {
                            for(int i=0;i<nx_l;i++)
                                    for (int k=0;k<=NZ;k++)
+				   if (Solid[i][0][k]>0)
                                    {
                                    rho_r[Solid[i][0][k]]=(Psi_local[i][0][k]*1.0+1.0)/2;
                                    rho_b[Solid[i][0][k]]=1.0-rho_r[Solid[i][0][k]];
@@ -2563,10 +2614,30 @@ void comput_macro_variables( double* rho,double** u,double** u0,double** f,doubl
                            {
                            for(int i=0;i<nx_l;i++)
                                    for (int k=0;k<=NZ;k++)
+				   if ((Solid[i][0][k]>0) and (Solid[i][1][k]>0))
                                    {
                                    psi[Solid[i][0][k]]=psi[Solid[i][1][k]];
                                    rho_r[Solid[i][0][k]]=(psi[Solid[i][0][k]]*1.0+1.0)/2;
                                    rho_b[Solid[i][0][k]]=1.0-rho_r[Solid[i][0][k]];
+                                   }
+                           }
+			else
+			if (psi_yn==3)
+			{
+                           for(int i=0;i<nx_l;i++)
+                                   for (int k=0;k<=NZ;k++)
+				   if (Solid[i][0][k]>0)
+                                   {
+
+					rand_double=(double(rand()%10000))/10000;
+					if (rand_double<ini_Sat)
+			        		psi_rand=1;
+					else
+			        		psi_rand=-1;
+                                   rho_r[Solid[i][0][k]]=(psi_rand*1.0+1.0)/2;
+                                   rho_b[Solid[i][0][k]]=1.0-rho_r[Solid[i][0][k]];
+                                   psi[Solid[i][0][k]]=psi_rand;
+                                   
                                    }
                            }
  
@@ -2575,6 +2646,7 @@ void comput_macro_variables( double* rho,double** u,double** u0,double** f,doubl
                            {
                            for(int i=0;i<nx_l;i++)
                                    for (int k=0;k<=NZ;k++)
+					if (Solid[i][NY][k]>0)
                                    {
                                    rho_r[Solid[i][NY][k]]=(Psi_local[i][NY][k]*1.0+1.0)/2;
                                    rho_b[Solid[i][NY][k]]=1.0-rho_r[Solid[i][NY][k]];
@@ -2583,17 +2655,37 @@ void comput_macro_variables( double* rho,double** u,double** u0,double** f,doubl
                                    }
                            }  
 			else
-				if (psi_yp==2)  
+			if (psi_yp==2)  
                            {
                            for(int i=0;i<nx_l;i++)
                                    for (int k=0;k<=NZ;k++)
+					if ((Solid[i][NY][k]>0) and (Solid[i][NY-1][k]>0))
                                    {
                                    
                                    psi[Solid[i][NY][k]]=psi[Solid[i][NY-1][k]];
                                    rho_r[Solid[i][NY][k]]=(psi[Solid[i][NY][k]]*1.0+1.0)/2;
                                    rho_b[Solid[i][NY][k]]=1.0-rho_r[Solid[i][NY][k]];
                                    }
-                           }  
+                           } 
+				else
+				if (psi_yp==3)  
+				{
+				for(int i=0;i<nx_l;i++)
+                                   for (int k=0;k<=NZ;k++)
+					if (Solid[i][NY][k]>0)
+                                   {
+
+					rand_double=(double(rand()%10000))/10000;
+					if (rand_double<ini_Sat)
+			        		psi_rand=1;
+					else
+			        		psi_rand=-1;
+                                   rho_r[Solid[i][NY][k]]=(psi_rand*1.0+1.0)/2;
+                                   rho_b[Solid[i][NY][k]]=1.0-rho_r[Solid[i][NY][k]];
+                                   psi[Solid[i][NY][k]]=psi_rand;
+                                   
+                                   }
+				} 
 
 
                         
@@ -2601,6 +2693,7 @@ void comput_macro_variables( double* rho,double** u,double** u0,double** f,doubl
                            {
                            for(int i=0;i<nx_l;i++)
                                    for (int j=0;j<=NY;j++)
+					if (Solid[i][j][0]>0)
                                    {
                                    rho_r[Solid[i][j][0]]=(Psi_local[i][j][0]*1.0+1.0)/2;
                                    rho_b[Solid[i][j][0]]=1.0-rho_r[Solid[i][j][0]];
@@ -2613,13 +2706,32 @@ void comput_macro_variables( double* rho,double** u,double** u0,double** f,doubl
                            {
                            for(int i=0;i<nx_l;i++)
                                    for (int j=0;j<=NY;j++)
+					if ((Solid[i][j][0]>0) and (Solid[i][j][1]>0))
                                    {
                                    
                                    psi[Solid[i][j][0]]=psi[Solid[i][j][1]];
                                    rho_r[Solid[i][j][0]]=(psi[Solid[i][j][0]]*1.0+1.0)/2;
                                    rho_b[Solid[i][j][0]]=1.0-rho_r[Solid[i][j][0]];
                                    }
-                           } 
+                           }
+			else 
+			if (psi_zn==3)
+				{
+				for(int i=0;i<nx_l;i++)
+                                   for (int j=0;j<=NY;j++)
+					if (Solid[i][j][0]>0)
+                                   {
+					rand_double=(double(rand()%10000))/10000;
+					if (rand_double<ini_Sat)
+			        		psi_rand=1;
+					else
+			        		psi_rand=-1;
+                                   rho_r[Solid[i][j][0]]=(psi_rand*1.0+1.0)/2;
+                                   rho_b[Solid[i][j][0]]=1.0-rho_r[Solid[i][j][0]];
+                                   psi[Solid[i][j][0]]=psi_rand;
+                                   
+                                   }
+				}
                         
 
 
@@ -2627,6 +2739,7 @@ void comput_macro_variables( double* rho,double** u,double** u0,double** f,doubl
                            {
                            for(int i=0;i<nx_l;i++)
                                    for (int j=0;j<=NY;j++)
+					if (Solid[i][j][NZ]>0)
                                    {
                                    rho_r[Solid[i][j][NZ]]=(Psi_local[i][j][NZ]*1.0+1.0)/2;
                                    rho_b[Solid[i][j][NZ]]=1.0-rho_r[Solid[i][j][NZ]];
@@ -2639,20 +2752,37 @@ void comput_macro_variables( double* rho,double** u,double** u0,double** f,doubl
                            {
                            for(int i=0;i<nx_l;i++)
                                    for (int j=0;j<=NY;j++)
+					if ((Solid[i][j][NZ]>0) and (Solid[i][j][NZ-1]>0))
                                    {
                                    
                                    psi[Solid[i][j][NZ]]=psi[Solid[i][j][NZ-1]];
                                    rho_r[Solid[i][j][NZ]]=(psi[Solid[i][j][NZ]]*1.0+1.0)/2;
                                    rho_b[Solid[i][j][NZ]]=1.0-rho_r[Solid[i][j][NZ]];
                                    }
-                           }      
+                           } 
+			else
+			if (psi_zp==3)  
+			   {
+                           for(int i=0;i<nx_l;i++)
+                                   for (int j=0;j<=NY;j++)
+					if (Solid[i][j][NZ]>0)
+                                   {
+					rand_double=(double(rand()%10000))/10000;
+					if (rand_double<ini_Sat)
+			        		psi_rand=1;
+					else
+			        		psi_rand=-1;
+                                   rho_r[Solid[i][j][NZ]]=(psi_rand*1.0+1.0)/2;
+                                   rho_b[Solid[i][j][NZ]]=1.0-rho_r[Solid[i][j][NZ]];
+                                   psi[Solid[i][j][NZ]]=psi_rand;
+                                   
+                                   }
+                           }   
                         
                         
                 }
 	
                      
-			
-	//MPI_Barrier(MPI_COMM_WORLD); 
 
 }
 

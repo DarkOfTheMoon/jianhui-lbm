@@ -1,16 +1,16 @@
 =============INPUT FILE FOR 3D LATTICE BOLTZMANN MPI CODE--MULTI COMPONENT COLOR GRADIENT MODEL=======
-Bentheimer_6.dat                 	:Geometry filename
+BC.dat                 	:Geometry filename
 phase.dat       	    	:Initial components distribution
 phase2.dat			:Initial conditions of Heat/Solute
-64 66 66                 	:nx ny nz
-1000		     		:Maximum time step
+120 36 3                 	:nx ny nz
+100000		     		:Maximum time step
 4.9	             		:dx (um) Resolution (for Permeability calculation)
-1	        	      	:Pressure Or Velocity Boundary (1=YES, 0=No)
+0	        	      	:Pressure Or Velocity Boundary (1=YES, 0=No)
 1				:Psi constant BC (For Red and Blud fluids)
 0.0 20				:Buoyancy Parameter(0=no buoyancy,reference_psi F=/rho*g+Bouyancy*(/psi-reference_psi)*g)
 0.0e-6				:Gravity (Only for Buoyancy, gravity*thermal expansion)
-0.0e-5 0.0 0.0	          	:body force for x,y,z
-1 1.0 1 1.01	    		:Pressure Boundary in X direction p=c_s^2*/rho
+2.0e-5 0.0 0.0	          	:body force for x,y,z
+0 1.0 0 1.01	    		:Pressure Boundary in X direction p=c_s^2*/rho
 0 1.0 0 1.0	    		:Pressure Boundary in Y direction (Find Format detials within this file)
 0 1.0 0 1.0	    		:Pressure Boundary in Z direction 
 0 0.0 0 0.0	   		:Velocity Boundary in X direction 
@@ -29,8 +29,8 @@ phase2.dat			:Initial conditions of Heat/Solute
 0.01    		       		:Viscosity (Component B, psi=-1)
 0.0439	    		        :Diffusion coefficient (Component A, psi=1)
 0.0439	    		        :Diffusion coefficient (Component B, psi=-1)
-0.66     		      	:Contact Angle Cos(Theta)(Positive=1 wetting, Negative -1 wetting)
-0.9e-2    		      	:Surface tension (Kappa)
+0.0     		      	:Contact Angle Cos(Theta)(Positive=1 wetting, Negative -1 wetting)
+0.8e-2    		      	:Surface tension (Kappa)
 0.0 0.0 0.0			:initial velocity for x,y,z
 200	        	       	:Permeability (Single Phase mD)
 =========OUTPUT==CONTROL===================
@@ -38,19 +38,20 @@ phase2.dat			:Initial conditions of Heat/Solute
 1                       	:Direction of Permeability Calculation (1=X, 2=Y, 3=Z)
 20		         	:Frequency of results writing (interval in time steps)
 0               		:Memory Saving mode for output (0=No, 1=Yes,for large outputs, x,z opposite)
--1				:Frequency of velocity field writing (in vtk format, -1=no velocity writing)
--1				:Frequency of density field writing (in vtk format, -1=no density writing)
--1				:Frequency of concentration writing (in vtk format, -1=no density writing)
--1				:Frequency of Heat/Solute writing (in vtk format, -1=no density writing)
+200				:Frequency of velocity field writing (in vtk format, -1=no velocity writing)
+200				:Frequency of density field writing (in vtk format, -1=no density writing)
+200				:Frequency of concentration writing (in vtk format, -1=no density writing)
+200				:Frequency of Heat/Solute writing (in vtk format, -1=no density writing)
 ==============ADVANCE==PARAMETER==========
 0 1.0 2.0	:Self define lattice velocity: 0=DEFAULT, dx, dt ((u_x+u_y+u_z)*dt/dx<=1 Courant Number)
 ./				:OUTPUT PATH,DEFAULT: ./ (REMEMBER TO INCLUDE "/" AT THE END OF PATH)
 2              			:PRESSURE AND VELOCITY BC OPTIONS: 0,1,2,3: EBC_S,EBC_D,TOLKE_BC,NEBC_D
 1				:CONSTANT PSI AND FLUX BC OPTIONS: 0,1:Inamuro,GUO
 0  500				:MULTI-COMPONENT STABALIZER: (a,b) a=0=OFF, a=1=ON, FORCE APPLIED AFTER b steps
--1                              :Preset Saturation, [0,1] initial component distri not needed, -1=OFF (Component A,1)
-0 0 0				:Pemeability calculation Partially  
-130 20				:Permeability calculation partially Starting point and Ending point in X
+0.3                              :Preset Saturation, [0,1] initial component distri not needed, -1=OFF (Component A,1)
+1				:PRESET VALUE FOR BUFFET AREA, 0=NO,1=COMP A,-1=COMP B (valid when preset satuation)
+1 0 0				:Pemeability calculation Partially  
+119 20				:Permeability calculation partially Starting point and Ending point in X
 70 20				:Permeability calculation partially Starting point and Ending point in Y
 0 100				:Permeability calculation partially Starting point and Ending point in Z
 =======================BACKUP==CONTROLE===================
