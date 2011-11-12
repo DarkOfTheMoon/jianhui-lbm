@@ -481,11 +481,13 @@ char FileName[128];strcpy(FileName,outputfile);
 char FileName2[128];strcpy(FileName2,outputfile);
 char FileName3[128];strcpy(FileName3,outputfile);
 char FileName4[128];strcpy(FileName4,outputfile);
+char FileName5[128];strcpy(FileName5,outputfile);
 
 strcat(FileName,"Results.txt");
 strcat(FileName2,"Relative_Permeability_Component1.txt");
 strcat(FileName4,"Relative_Permeability_Component2.txt");
 strcat(FileName3,"bodyforce.txt");
+strcat(FileName5,"Velocity_ave_max.txt");
 //========================================================
 
 
@@ -502,6 +504,8 @@ if (wr_per==1)
 
 
 	fins.open(FileName3,ios::out);
+	fins.close();
+	fins.open(FileName5,ios::out);
 	fins.close();
 
 	
@@ -633,7 +637,9 @@ if (wr_per==1)
 			ofstream finf3(FileName3,ios::app);
 			finf3<<S_l<<" "<<1-S_l<<endl;
 			finf3.close();
-		
+			ofstream finf5(FileName5,ios::app);
+			finf5<<u_ave<<" "<<u_max<<endl;
+			finf5.close();
 
 			//cout<<"The"<<n<<"th computation result:"<<endl;
 		//=============================================================================================

@@ -426,10 +426,13 @@ if (rank==0)
 char FileName[128];strcpy(FileName,outputfile);
 char FileName2[128];strcpy(FileName2,outputfile);
 char FileName3[128];strcpy(FileName3,outputfile);
+char FileName4[128];strcpy(FileName4,outputfile);
+
 
 strcat(FileName,"Results.txt");
 strcat(FileName2,"Permeability.txt");
 strcat(FileName3,"bodyforce.txt");
+strcat(FileName4,"Velocity_ave_max.txt");
 //========================================================
 
 
@@ -528,6 +531,10 @@ if (wr_per==1)
 			ofstream finf3(FileName3,ios::app);
 			finf3<<gx<<endl;
 			finf3.close();
+			
+			ofstream finf4(FileName4,ios::app);
+			finf4<<u_ave<<" "<<u_max<<endl;
+			finf4.close();
 		
 
 			cout<<"The"<<n<<"th computation result:"<<endl;
@@ -2280,7 +2287,8 @@ for (int i=0;i<nx_l;i++)
 					{
 					m_l[mi]=0;
 					for (int mj=0; mj<19; mj++)
-						m_l[mi]+=M[mi][mj]*f[Solid[i][NY-1][k]][mj];					}
+						m_l[mi]+=M[mi][mj]*f[Solid[i][NY-1][k]][mj];
+					}
 
 			m_l[0]=rho_yp;
 			for (int mi=0; mi<19; mi++)
@@ -2310,7 +2318,8 @@ for (int i=0;i<nx_l;i++)
 					{
 					m_l[mi]=0;
 					for (int mj=0; mj<19; mj++)
-						m_l[mi]+=M[mi][mj]*f[Solid[i][1][k]][mj];					}
+						m_l[mi]+=M[mi][mj]*f[Solid[i][1][k]][mj];
+					}
 
 			m_l[0]=rho_yn;
 			for (int mi=0; mi<19; mi++)
@@ -2341,7 +2350,8 @@ for (int i=0;i<nx_l;i++)
 					{
 					m_l[mi]=0;
 					for (int mj=0; mj<19; mj++)
-						m_l[mi]+=M[mi][mj]*f[Solid[i][j][NZ-1]][mj];					}
+						m_l[mi]+=M[mi][mj]*f[Solid[i][j][NZ-1]][mj];
+					}
 
 			m_l[0]=rho_zp;
 			for (int mi=0; mi<19; mi++)
@@ -2372,7 +2382,8 @@ for (int i=0;i<nx_l;i++)
 					{
 					m_l[mi]=0;
 					for (int mj=0; mj<19; mj++)
-						m_l[mi]+=M[mi][mj]*f[Solid[i][j][1]][mj];					}
+						m_l[mi]+=M[mi][mj]*f[Solid[i][j][1]][mj];
+					}
 
 			m_l[0]=rho_zn;
 			for (int mi=0; mi<19; mi++)
@@ -2402,7 +2413,8 @@ for (int j=0;j<=NY;j++)
 					{
 					m_l[mi]=0;
 					for (int mj=0; mj<19; mj++)
-						m_l[mi]+=M[mi][mj]*f[Solid[nx_l-2][j][k]][mj];					}
+						m_l[mi]+=M[mi][mj]*f[Solid[nx_l-2][j][k]][mj];
+					}
 
 			m_l[0]=rho_xp;
 			for (int mi=0; mi<19; mi++)
@@ -2433,7 +2445,8 @@ for (int j=0;j<=NY;j++)
 					{
 					m_l[mi]=0;
 					for (int mj=0; mj<19; mj++)
-						m_l[mi]+=M[mi][mj]*f[Solid[1][j][k]][mj];					}
+						m_l[mi]+=M[mi][mj]*f[Solid[1][j][k]][mj];
+					}
 
 			m_l[0]=rho_xn;
 			for (int mi=0; mi<19; mi++)
