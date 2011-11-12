@@ -733,7 +733,7 @@ if (wr_per==1)
 			        Backup(n,rho,psi,u,f);
 			
 			
-			if(error!=error) {cout<<"PROGRAM STOP"<<endl;break;};
+			//if(error!=error) {cout<<"PROGRAM STOP"<<endl;break;};
 			if(U_max_ref>=5) {cout<<"PROGRAM STOP DUE TO HIGH VELOCITY"<<endl;break;}
 		}	
 	}

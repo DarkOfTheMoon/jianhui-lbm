@@ -572,7 +572,7 @@ if (wr_per==1)
 			if ((fre_backup>=0) and (n%fre_backup==0) and (n>0))
 			        Backup(n,rho,u,f);
 			        
-			if((error!=error) and (n>100)) {cout<<"PROGRAM STOP"<<endl;break;};
+			//if((error!=error) and (n>100)) {cout<<"PROGRAM STOP"<<endl;break;};
 			if(U_max_ref>=5) {cout<<"PROGRAM STOP DUE TO HIGH VELOCITY"<<endl;break;}
 		}	
 	}
