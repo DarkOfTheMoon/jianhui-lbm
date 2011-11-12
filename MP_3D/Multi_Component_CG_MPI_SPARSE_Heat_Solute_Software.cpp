@@ -678,7 +678,7 @@ if (wr_per==1)
 			finf3<<S_l<<" "<<1-S_l<<endl;
 			finf3.close();
 			ofstream finf5(FileName5,ios::app);
-			finf5<<u_ave<<" "<<u_max<<endl;
+			finf5<<u_ave<<" "<<u_max<<" "<<error<<endl;
 			finf5.close();
 			
 			

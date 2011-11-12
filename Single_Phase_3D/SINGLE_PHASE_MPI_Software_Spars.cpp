@@ -623,7 +623,7 @@ if (wr_per==1)
 			finf3<<gx<<endl;
 			finf3.close();
 			ofstream finf4(FileName4,ios::app);
-			finf4<<u_ave<<"  "<<u_max<<endl;
+			finf4<<u_ave<<"  "<<u_max<<" "<<error<<endl;
 			finf4.close();
 		
 
