@@ -1238,6 +1238,8 @@ double F_hat[19],GuoF[19],f_eq[19],u_tmp[3];
 double m_l[19];
 int i,j,m,ip,jp,kp;
 
+const double c_l=lat_c;
+
 	double* sendl;
 	double* sendr;
 
@@ -1309,6 +1311,7 @@ int i,j,m,ip,jp,kp;
 			
 
 			//=================FORCE TERM_GUO=========================================
+/*
 			for (int k=0;k<19;k++)
 			{	
 			lm0=((elat[k][0]-u[ci][0]/PorC[ci])*forcex[ci]+(elat[k][1]-u[ci][1]/PorC[ci])*forcey[ci]+(elat[k][2]-u[ci][2]/PorC[ci])*forcez[ci])/c_s2;
@@ -1317,6 +1320,106 @@ int i,j,m,ip,jp,kp;
 			GuoF[k]=w[k]*(lm0+lm1);
 			//GuoF[k]=0.0;
 			}
+
+*/
+
+//==========================
+lm0=((+0.000*c_l-u[ci][0]/PorC[ci])*forcex[ci]+(+0.000*c_l-u[ci][1]/PorC[ci])*forcey[ci]+(+0.000*c_l-u[ci][2]/PorC[ci])*forcez[ci])/c_s2;
+lm1=(+0.000*c_l*u[ci][0]+(+0.000*c_l)*u[ci][1]+(+0.000*c_l)*u[ci][2])*(+0.000*c_l*forcex[ci]+(+0.000*c_l)*forcey[ci]+(+0.000*c_l)*forcez[ci])/(c_s2*c_s2);
+lm1/=PorC[ci];
+GuoF[0]=w[0]*(lm0+lm1);
+
+lm0=((+1.000*c_l-u[ci][0]/PorC[ci])*forcex[ci]+(+0.000*c_l-u[ci][1]/PorC[ci])*forcey[ci]+(+0.000*c_l-u[ci][2]/PorC[ci])*forcez[ci])/c_s2;
+lm1=(+1.000*c_l*u[ci][0]+(+0.000*c_l)*u[ci][1]+(+0.000*c_l)*u[ci][2])*(+1.000*c_l*forcex[ci]+(+0.000*c_l)*forcey[ci]+(+0.000*c_l)*forcez[ci])/(c_s2*c_s2);
+lm1/=PorC[ci];
+GuoF[1]=w[1]*(lm0+lm1);
+
+lm0=((-1.000*c_l-u[ci][0]/PorC[ci])*forcex[ci]+(+0.000*c_l-u[ci][1]/PorC[ci])*forcey[ci]+(+0.000*c_l-u[ci][2]/PorC[ci])*forcez[ci])/c_s2;
+lm1=(-1.000*c_l*u[ci][0]+(+0.000*c_l)*u[ci][1]+(+0.000*c_l)*u[ci][2])*(-1.000*c_l*forcex[ci]+(+0.000*c_l)*forcey[ci]+(+0.000*c_l)*forcez[ci])/(c_s2*c_s2);
+lm1/=PorC[ci];
+GuoF[2]=w[2]*(lm0+lm1);
+
+lm0=((+0.000*c_l-u[ci][0]/PorC[ci])*forcex[ci]+(+1.000*c_l-u[ci][1]/PorC[ci])*forcey[ci]+(+0.000*c_l-u[ci][2]/PorC[ci])*forcez[ci])/c_s2;
+lm1=(+0.000*c_l*u[ci][0]+(+1.000*c_l)*u[ci][1]+(+0.000*c_l)*u[ci][2])*(+0.000*c_l*forcex[ci]+(+1.000*c_l)*forcey[ci]+(+0.000*c_l)*forcez[ci])/(c_s2*c_s2);
+lm1/=PorC[ci];
+GuoF[3]=w[3]*(lm0+lm1);
+
+lm0=((+0.000*c_l-u[ci][0]/PorC[ci])*forcex[ci]+(-1.000*c_l-u[ci][1]/PorC[ci])*forcey[ci]+(+0.000*c_l-u[ci][2]/PorC[ci])*forcez[ci])/c_s2;
+lm1=(+0.000*c_l*u[ci][0]+(-1.000*c_l)*u[ci][1]+(+0.000*c_l)*u[ci][2])*(+0.000*c_l*forcex[ci]+(-1.000*c_l)*forcey[ci]+(+0.000*c_l)*forcez[ci])/(c_s2*c_s2);
+lm1/=PorC[ci];
+GuoF[4]=w[4]*(lm0+lm1);
+
+lm0=((+0.000*c_l-u[ci][0]/PorC[ci])*forcex[ci]+(+0.000*c_l-u[ci][1]/PorC[ci])*forcey[ci]+(+1.000*c_l-u[ci][2]/PorC[ci])*forcez[ci])/c_s2;
+lm1=(+0.000*c_l*u[ci][0]+(+0.000*c_l)*u[ci][1]+(+1.000*c_l)*u[ci][2])*(+0.000*c_l*forcex[ci]+(+0.000*c_l)*forcey[ci]+(+1.000*c_l)*forcez[ci])/(c_s2*c_s2);
+lm1/=PorC[ci];
+GuoF[5]=w[5]*(lm0+lm1);
+
+lm0=((+0.000*c_l-u[ci][0]/PorC[ci])*forcex[ci]+(+0.000*c_l-u[ci][1]/PorC[ci])*forcey[ci]+(-1.000*c_l-u[ci][2]/PorC[ci])*forcez[ci])/c_s2;
+lm1=(+0.000*c_l*u[ci][0]+(+0.000*c_l)*u[ci][1]+(-1.000*c_l)*u[ci][2])*(+0.000*c_l*forcex[ci]+(+0.000*c_l)*forcey[ci]+(-1.000*c_l)*forcez[ci])/(c_s2*c_s2);
+lm1/=PorC[ci];
+GuoF[6]=w[6]*(lm0+lm1);
+
+lm0=((+1.000*c_l-u[ci][0]/PorC[ci])*forcex[ci]+(+1.000*c_l-u[ci][1]/PorC[ci])*forcey[ci]+(+0.000*c_l-u[ci][2]/PorC[ci])*forcez[ci])/c_s2;
+lm1=(+1.000*c_l*u[ci][0]+(+1.000*c_l)*u[ci][1]+(+0.000*c_l)*u[ci][2])*(+1.000*c_l*forcex[ci]+(+1.000*c_l)*forcey[ci]+(+0.000*c_l)*forcez[ci])/(c_s2*c_s2);
+lm1/=PorC[ci];
+GuoF[7]=w[7]*(lm0+lm1);
+
+lm0=((-1.000*c_l-u[ci][0]/PorC[ci])*forcex[ci]+(+1.000*c_l-u[ci][1]/PorC[ci])*forcey[ci]+(+0.000*c_l-u[ci][2]/PorC[ci])*forcez[ci])/c_s2;
+lm1=(-1.000*c_l*u[ci][0]+(+1.000*c_l)*u[ci][1]+(+0.000*c_l)*u[ci][2])*(-1.000*c_l*forcex[ci]+(+1.000*c_l)*forcey[ci]+(+0.000*c_l)*forcez[ci])/(c_s2*c_s2);
+lm1/=PorC[ci];
+GuoF[8]=w[8]*(lm0+lm1);
+
+lm0=((+1.000*c_l-u[ci][0]/PorC[ci])*forcex[ci]+(-1.000*c_l-u[ci][1]/PorC[ci])*forcey[ci]+(+0.000*c_l-u[ci][2]/PorC[ci])*forcez[ci])/c_s2;
+lm1=(+1.000*c_l*u[ci][0]+(-1.000*c_l)*u[ci][1]+(+0.000*c_l)*u[ci][2])*(+1.000*c_l*forcex[ci]+(-1.000*c_l)*forcey[ci]+(+0.000*c_l)*forcez[ci])/(c_s2*c_s2);
+lm1/=PorC[ci];
+GuoF[9]=w[9]*(lm0+lm1);
+
+lm0=((-1.000*c_l-u[ci][0]/PorC[ci])*forcex[ci]+(-1.000*c_l-u[ci][1]/PorC[ci])*forcey[ci]+(+0.000*c_l-u[ci][2]/PorC[ci])*forcez[ci])/c_s2;
+lm1=(-1.000*c_l*u[ci][0]+(-1.000*c_l)*u[ci][1]+(+0.000*c_l)*u[ci][2])*(-1.000*c_l*forcex[ci]+(-1.000*c_l)*forcey[ci]+(+0.000*c_l)*forcez[ci])/(c_s2*c_s2);
+lm1/=PorC[ci];
+GuoF[10]=w[10]*(lm0+lm1);
+
+lm0=((+0.000*c_l-u[ci][0]/PorC[ci])*forcex[ci]+(+1.000*c_l-u[ci][1]/PorC[ci])*forcey[ci]+(+1.000*c_l-u[ci][2]/PorC[ci])*forcez[ci])/c_s2;
+lm1=(+0.000*c_l*u[ci][0]+(+1.000*c_l)*u[ci][1]+(+1.000*c_l)*u[ci][2])*(+0.000*c_l*forcex[ci]+(+1.000*c_l)*forcey[ci]+(+1.000*c_l)*forcez[ci])/(c_s2*c_s2);
+lm1/=PorC[ci];
+GuoF[11]=w[11]*(lm0+lm1);
+
+lm0=((+0.000*c_l-u[ci][0]/PorC[ci])*forcex[ci]+(-1.000*c_l-u[ci][1]/PorC[ci])*forcey[ci]+(+1.000*c_l-u[ci][2]/PorC[ci])*forcez[ci])/c_s2;
+lm1=(+0.000*c_l*u[ci][0]+(-1.000*c_l)*u[ci][1]+(+1.000*c_l)*u[ci][2])*(+0.000*c_l*forcex[ci]+(-1.000*c_l)*forcey[ci]+(+1.000*c_l)*forcez[ci])/(c_s2*c_s2);
+lm1/=PorC[ci];
+GuoF[12]=w[12]*(lm0+lm1);
+
+lm0=((+0.000*c_l-u[ci][0]/PorC[ci])*forcex[ci]+(+1.000*c_l-u[ci][1]/PorC[ci])*forcey[ci]+(-1.000*c_l-u[ci][2]/PorC[ci])*forcez[ci])/c_s2;
+lm1=(+0.000*c_l*u[ci][0]+(+1.000*c_l)*u[ci][1]+(-1.000*c_l)*u[ci][2])*(+0.000*c_l*forcex[ci]+(+1.000*c_l)*forcey[ci]+(-1.000*c_l)*forcez[ci])/(c_s2*c_s2);
+lm1/=PorC[ci];
+GuoF[13]=w[13]*(lm0+lm1);
+
+lm0=((+0.000*c_l-u[ci][0]/PorC[ci])*forcex[ci]+(-1.000*c_l-u[ci][1]/PorC[ci])*forcey[ci]+(-1.000*c_l-u[ci][2]/PorC[ci])*forcez[ci])/c_s2;
+lm1=(+0.000*c_l*u[ci][0]+(-1.000*c_l)*u[ci][1]+(-1.000*c_l)*u[ci][2])*(+0.000*c_l*forcex[ci]+(-1.000*c_l)*forcey[ci]+(-1.000*c_l)*forcez[ci])/(c_s2*c_s2);
+lm1/=PorC[ci];
+GuoF[14]=w[14]*(lm0+lm1);
+
+lm0=((+1.000*c_l-u[ci][0]/PorC[ci])*forcex[ci]+(+0.000*c_l-u[ci][1]/PorC[ci])*forcey[ci]+(+1.000*c_l-u[ci][2]/PorC[ci])*forcez[ci])/c_s2;
+lm1=(+1.000*c_l*u[ci][0]+(+0.000*c_l)*u[ci][1]+(+1.000*c_l)*u[ci][2])*(+1.000*c_l*forcex[ci]+(+0.000*c_l)*forcey[ci]+(+1.000*c_l)*forcez[ci])/(c_s2*c_s2);
+lm1/=PorC[ci];
+GuoF[15]=w[15]*(lm0+lm1);
+
+lm0=((-1.000*c_l-u[ci][0]/PorC[ci])*forcex[ci]+(+0.000*c_l-u[ci][1]/PorC[ci])*forcey[ci]+(+1.000*c_l-u[ci][2]/PorC[ci])*forcez[ci])/c_s2;
+lm1=(-1.000*c_l*u[ci][0]+(+0.000*c_l)*u[ci][1]+(+1.000*c_l)*u[ci][2])*(-1.000*c_l*forcex[ci]+(+0.000*c_l)*forcey[ci]+(+1.000*c_l)*forcez[ci])/(c_s2*c_s2);
+lm1/=PorC[ci];
+GuoF[16]=w[16]*(lm0+lm1);
+
+lm0=((+1.000*c_l-u[ci][0]/PorC[ci])*forcex[ci]+(+0.000*c_l-u[ci][1]/PorC[ci])*forcey[ci]+(-1.000*c_l-u[ci][2]/PorC[ci])*forcez[ci])/c_s2;
+lm1=(+1.000*c_l*u[ci][0]+(+0.000*c_l)*u[ci][1]+(-1.000*c_l)*u[ci][2])*(+1.000*c_l*forcex[ci]+(+0.000*c_l)*forcey[ci]+(-1.000*c_l)*forcez[ci])/(c_s2*c_s2);
+lm1/=PorC[ci];
+GuoF[17]=w[17]*(lm0+lm1);
+
+lm0=((-1.000*c_l-u[ci][0]/PorC[ci])*forcex[ci]+(+0.000*c_l-u[ci][1]/PorC[ci])*forcey[ci]+(-1.000*c_l-u[ci][2]/PorC[ci])*forcez[ci])/c_s2;
+lm1=(-1.000*c_l*u[ci][0]+(+0.000*c_l)*u[ci][1]+(-1.000*c_l)*u[ci][2])*(-1.000*c_l*forcex[ci]+(+0.000*c_l)*forcey[ci]+(-1.000*c_l)*forcez[ci])/(c_s2*c_s2);
+lm1/=PorC[ci];
+GuoF[18]=w[18]*(lm0+lm1);
+
+//====================
 
 
 			

@@ -2,7 +2,7 @@
 BC.dat                  	:Geometry filenameEmily_Berea_y_614_764_7.dat
 phase.dat       	    	:Initial components distribution
 390 10 1                 	:nx ny nz
-50000		     		:Maximum time step
+200000		     		:Maximum time step
 9.8	             		:dx (um) Resolution (for Permeability calculation)
 0 	        	      	:Pressure Or Velocity Boundary (1=YES, 0=No)
 0.0 20				:Buoyancy Parameter (0= no buoyancy, reference_psi F=/rho*g+Bouyancy*(/psi-reference_psi)*g)
