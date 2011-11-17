@@ -521,13 +521,15 @@ if (wr_per==1)
 
 	//periodic_streaming(f,F,SupInv,Solid,Sl,Sr,rho,u);	
 	
+	if ((stab==0) or ((stab==1) and (n>=stab_time)))
+	{
 	if ((1-pre_xp)*(1-pre_xn)*(1-pre_yp)*(1-pre_yn)*(1-pre_zp)*(1-pre_zn)==0)
 		boundary_pressure(pre_xp,p_xp,pre_xn,p_xn,pre_yp,p_yp,pre_yn,p_yn,pre_zp,p_zp,pre_zn,p_zn,f,F,u,rho,Solid);
 
 	
 	if ((1-vel_xp)*(1-vel_xn)*(1-vel_yp)*(1-vel_yn)*(1-vel_zp)*(1-vel_zn)==0)
 		boundary_velocity(vel_xp,v_xp,vel_xn,v_xn,vel_yp,v_yp,vel_yn,v_yn,vel_zp,v_zp,vel_zn,v_zn,f,F,rho,u,Solid);
-
+	}
   		 
 		comput_macro_variables(rho,u,u0,f,F,rho_r,rho_b,rhor,rhob,psi,SupInv);
 
