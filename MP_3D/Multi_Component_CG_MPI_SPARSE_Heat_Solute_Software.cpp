@@ -546,6 +546,12 @@ if (wr_per==1)
 	fins.open(FileName3,ios::out);
 	fins.close();
 
+	fins.open(FileName4,ios::out);
+	fins.close();
+
+	fins.open(FileName5,ios::out);
+	fins.close();
+
 	
 	
 	for(n=0;n<=n_max;n++)

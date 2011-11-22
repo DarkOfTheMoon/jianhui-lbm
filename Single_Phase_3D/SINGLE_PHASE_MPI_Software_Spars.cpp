@@ -513,6 +513,9 @@ if (wr_per==1)
 	fins.open(FileName3,ios::out);
 	fins.close();
 
+	
+	fins.open(FileName4,ios::out);
+	fins.close();
 
 
 //cout<<Sr[1*(NZ+1)+0]<<"  RRRR   "<<rank<<endl;
