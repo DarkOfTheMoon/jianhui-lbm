@@ -5543,6 +5543,8 @@ double Comput_Perm(double* psi,double** u,double* Per_l,double* Per_g,int PerDIr
 		Capillary=sqrt(vxl*vxl+vyl*vyl+vzl*vzl)*niu_l/CapA;
 
 		
+		u_ave=sqrt((vxl/porosity)*(vxl/porosity)+(vyl/porosity)*(vyl/porosity)+(vzl/porosity)*(vzl/porosity));
+		
 		switch(PerDIr)
 		{
 		case 1:

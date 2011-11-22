@@ -4619,7 +4619,9 @@ double Comput_Perm(double** u,double* Permia,int PerDIr, int* SupInv)
 	int nx_g[mpi_size];
 	int disp[mpi_size];
 	int si,sj,sm;
-	
+
+	double avex,avey,avez;
+
 	MPI_Gather(&nx_l,1,MPI_INT,nx_g,1,MPI_INT,0,MPI_COMM_WORLD);
 	
 	
@@ -4736,6 +4738,12 @@ double Comput_Perm(double** u,double* Permia,int PerDIr, int* SupInv)
 		Permia[0]=Perm[0];
 		Permia[1]=Perm[1];
 		Permia[2]=Perm[2];
+
+		avex=Q[0]/((per_xp-per_xn+1)*(per_yp-per_yn+1)*(per_zp-per_zn+1)*porosity);
+		avey=Q[1]/((per_xp-per_xn+1)*(per_yp-per_yn+1)*(per_zp-per_zn+1)*porosity);
+		avez=Q[2]/((per_xp-per_xn+1)*(per_yp-per_yn+1)*(per_zp-per_zn+1)*porosity);
+
+		u_ave=sqrt(avex*avex+avey*avey+avez*avez);
 
 		}
 	

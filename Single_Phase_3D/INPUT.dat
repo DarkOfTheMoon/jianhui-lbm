@@ -1,7 +1,7 @@
 =================SINGLE PHASE LATTICE BOLTZMANN CODE INPUT FILE================================================
 Bentheimer_6.dat        :Geometry filename
 64 66 66                :nx ny nz
-1000	                 :Maxmum time step
+3000	                 :Maxmum time step
 4.9	                :x=1 (um) Resolution (for Permeability calculation, resolution/dx)
 1	        	       :Pressure/Velocity Boundary (1=Yes, 0=No)   Convergence accelerator (1=yes, 0=no)
 0.0e-5 0.0 0.0          :body force for x,y,z

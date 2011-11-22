@@ -2152,7 +2152,7 @@ m_l[18]=m_l[18]-S[18]*(m_l[18]-meq[18])+dt*F_hat[18];
                  //g_r[mi]=w[mi]*rho_r[ci]*(1+3*eu/c2);
                  //g_b[mi]=w[mi]*rho_b[ci]*(1+3*eu/c2);
 
-		 g_r[mi]=w[mi]*rho_r[ci]*(1+3*eu/c2+4.5*eu*eu/c4-1.5*uu/c2);
+		 g_r[mi]=w[mi]*rho_r[ci]*(1+3*eu/c2+4.5*eu*eu/c4-1.5*uu/c2); if (g_r[mi]<0) cout<<mi<<"  "<<g_r[mi]<<"  "<<n<<"  "<<rho_r[ci]<<endl;
                  g_b[mi]=w[mi]*rho_b[ci]*(1+3*eu/c2+4.5*eu*eu/c4-1.5*uu/c2);
 		
 			
@@ -4852,7 +4852,8 @@ double Comput_Perm(double* psi,double** u,double* Per_l,double* Per_g,int PerDIr
 		vzl=(Q_l[2]+Q_g[2])/((per_xp-per_xn+1)*(per_yp-per_yn+1)*(per_zp-per_zn+1));
 		Capillary=sqrt(vxl*vxl+vyl*vyl+vzl*vzl)*niu_l/CapA;
 
-		
+		u_ave=sqrt((vxl/porosity)*(vxl/porosity)+(vyl/porosity)*(vyl/porosity)+(vzl/porosity)*(vzl/porosity));
+
 		switch(PerDIr)
 		{
 		case 1:
