@@ -1,13 +1,13 @@
 =============INPUT FILE FOR 3D LATTICE BOLTZMANN MPI CODE--Solute and heat transfer=======
 BC.dat                  	:Geometry filenameEmily_Berea_y_614_764_7.dat
 phase.dat       	    	:Initial components distribution
-590 10 1                 	:nx ny nz
+100 10 3                 	:nx ny nz
 200000		     		:Maximum time step
 9.8	             		:dx (um) Resolution (for Permeability calculation)
 0 	        	      	:Pressure Or Velocity Boundary (1=YES, 0=No)
-0.0 20				:Buoyancy Parameter (0= no buoyancy, reference_psi F=/rho*g+Bouyancy*(/psi-reference_psi)*g)
+0.0 0.0				:Buoyancy Parameter (0= no buoyancy, reference_psi F=/rho*g+Bouyancy*(/psi-reference_psi)*g)
 0.0e-6				:Gravity (Only for Buoyancy, gravity*thermal expansion)
-3.44e-6 0.0 0.0	          	:body force for x,y,z
+5.44e-6 0.0 0.0	          	:body force for x,y,z
 0 1.0 0 1.006	    		:Pressure Boundary in X direction (Format detials can be found within this file)p=c_s^2*/rho
 0 1.0 0 1.0	    		:Pressure Boundary in Y direction (Format detials can be found within this file)
 0 1.0 0 1.0	    		:Pressure Boundary in Z direction (Format detials can be found within this file)
@@ -20,7 +20,7 @@ phase.dat       	    	:Initial components distribution
 0 0.0 0 0.0			:Constant Diffusive Flux BC in X direction (p,n)
 0 0.0 0 0.0			:Constant Diffusive Flux BC in Y direction
 0 0.0 0 0.0			:Constant Diffusive Flux BC in Z direction
-0.05	       		      	:Viscosity
+0.02	       		      	:Viscosity
 0.0013	    		        :Diffusion coefficient
 0.0 0.0 0.0			:initial velocity for x,y,z
 =========OUTPUT==CONTROL===================
@@ -30,8 +30,8 @@ phase.dat       	    	:Initial components distribution
 0               		:Memory Saving mode for output subroutains (0=No, 1=Yes,for large outputs, x,z opposite)
 -1				:Frequency of velocity field writing (in vtk format, -1=no velocity writing)
 -1				:Frequency of density field writing (in vtk format, -1=no density writing)
-10000				:Frequency of concentration writing (in vtk format, -1=no density writing)
-1 5000                        :Dispersion statistics (0=No,1=X direction, 2=Y, 3=Z; Frequncy of writing)
+2000				:Frequency of concentration writing (in vtk format, -1=no density writing)
+1 1000                        :Dispersion statistics (0=No,1=X direction, 2=Y, 3=Z; Frequncy of writing)
 ==============ADVANCE==PARAMETER==========
 0 0.5 1.0	              :Self define lattice velocity: 0=DEFAULT, dx, dt ((u_x+u_y+u_z)*dt/dx<=1 Courant Number)
 ./   				:OUTPUT PATH,DEFAULT: ./ (REMEMBER TO INCLUDE "/" AT THE END OF PATH)

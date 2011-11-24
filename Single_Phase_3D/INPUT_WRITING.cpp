@@ -46,7 +46,7 @@ for (int i=0;i<total_number;i++)
         out<<"-1		:Frequency of density field writing"<<endl;
         out<<"==============ADVANCE==PARAMETER=========="<<endl;
         out<<"1 0.25 1.0	:Self define lattice velocity"<<endl;
-        out<<"./128.		:OUTPUT PATH,DEFAULT"<<endl;
+        out<<"./"<<i<<"_		:OUTPUT PATH,DEFAULT"<<endl;
         out<<"1              :PRESSURE AND VELOCITY BOUNDARY CONDITION"<<endl;
         out<<"0 0 0				:Pemeability calculation Partially"<<endl;  
         out<<"130 20				:Permeability calculation partially Starting point and Ending point in X"<<endl;

@@ -4381,7 +4381,7 @@ void output_psi_b(int m,double* psi,int MirX,int MirY,int MirZ,int mir,int*** So
 			if (Solid[i][j][k]>0)
 				psi_storage[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]=psi[Solid[i][j][k]];
 			else
-				psi_storage[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]=0.0;
+				psi_storage[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]=ref_psi;
 			}
 
 	if (rank==root_rank)
@@ -4473,7 +4473,7 @@ void output_psi(int m,double* psi,int MirX,int MirY,int MirZ,int mir,int*** Soli
 	const int mpi_size=MPI :: COMM_WORLD . Get_size ();
 	const int root_rank=0;
 	
-	double psi_0=0.0;
+	double psi_0=ref_psi;
 	
 	
 	MPI_Status status;

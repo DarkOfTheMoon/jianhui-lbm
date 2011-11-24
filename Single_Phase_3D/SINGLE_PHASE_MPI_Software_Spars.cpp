@@ -145,6 +145,8 @@ void Backup_init(double* rho, double** u, double** f, char[128], char[128],char[
 
 void Parallelize_Geometry();
 
+void Comput_Grop_Perm(double** ,double* ,int ,int* );
+
 
 int e[19][3]=
 {{0,0,0},{1,0,0,},{-1,0,0},{0,1,0},{0,-1,0},{0,0,1},{0,0,-1},{1,1,0},{-1,1,0},{1,-1,0},{-1,-1,0},{0,1,1},
@@ -566,7 +568,11 @@ if (wr_per==1)
 
 			 error=Error(u,u0,&u_max,&u_ave);if (u_max>=10.0)	U_max_ref+=1;
 			error_perm=Comput_Perm(u,Permia,PerDir,SupInv); 
-
+			
+			
+			//Comput_Grop_Perm(u,Permia,PerDir,SupInv);
+			
+			
 			 if (rank==0)
 			{ 
 			    
@@ -4514,5 +4520,190 @@ void Backup_init(double* rho, double** u, double** f, char backup_rho[128], char
 	
 
 	 	
+}
+
+
+
+
+void Comput_Grop_Perm(double** u,double* Permia,int PerDIr,int* SupInv)
+{
+
+	int rank = MPI :: COMM_WORLD . Get_rank ();
+	int mpi_size=MPI :: COMM_WORLD . Get_size ();
+
+	int nx_g[mpi_size];
+	int disp[mpi_size];
+	int si,sj,sm;
+	int per_xn1,per_xp1,per_yn1,per_yp1,per_zn1,per_zp1;
+	int General_size=512;
+	int sub_size,por_loc,vol_g;
+	char File[128];
+	strcpy(File,outputfile);
+
+	//========================================
+	int loop[4]={1,1,2,4};
+	int loop_size[4]={512,256,128,64};
+	int loop_s[4][3]={{0,1,1},{128,129,129},{128,129,129},{128,129,129}};
+	//========================================
+
+
+	MPI_Gather(&nx_l,1,MPI_INT,nx_g,1,MPI_INT,0,MPI_COMM_WORLD);
+
+	
+	
+	if (rank==0)
+		{
+		disp[0]=0;
+	
+		for (int i=1;i<mpi_size;i++)
+			disp[i]=disp[i-1]+nx_g[i-1];
+		
+		}
+
+	MPI_Bcast(disp,mpi_size,MPI_INT,0,MPI_COMM_WORLD);
+
+
+
+	double *rbuf;
+	int *rbuf_p;
+	rbuf=new double[mpi_size*3];
+	rbuf_p=new int[mpi_size];
+	double Perm[3];
+	double error;
+	double Q[3]={0.0,0.0,0.0};
+
+	double dp;
+	if (in_BC==0)
+	        dp=0;
+	else
+	switch(PerDIr)
+		{
+		case 1:
+			dp=abs(p_xp-p_xn)*c_s2/(NX+1)/dx;break;
+		case 2:
+			dp=abs(p_yp-p_yn)*c_s2/(NY+1)/dx;break;
+		case 3:
+			dp=abs(p_zp-p_zn)*c_s2/(NZ+1)/dx;break;
+		default:
+			dp=abs(p_xp-p_xn)*c_s2/(NX+1)/dx;
+		}
+
+ostringstream name;
+for (int divi=0;divi<4;divi++)	
+{
+
+if (rank==0)
+{
+name.str(""); 
+name<<File<<"Perm_"<<loop_size[divi]<<".output";
+	
+//-----------------------------------------	 
+//	ifstream fin;
+//	fin.open(name.str().c_str());
+//	
+  //      	for(int i=1;i<=Count;i++)
+    //    	        fin >> rho[i];
+  
+      // fin.close();
+
+//ofstream out;
+//	out.open(name.str().c_str());
+
+ofstream fin(name.str().c_str(),ios::out);
+fin.close();
+//ofstream fin(FileName,ios::app);
+//----------------------------------------------------
+}
+
+
+vol_g=loop_size[divi]*loop_size[divi]*loop_size[divi];
+
+
+for (int in_x=0;in_x<loop[divi];in_x++)
+for (int in_y=0;in_y<loop[divi];in_y++)
+for (int in_z=0;in_z<loop[divi];in_z++)
+
+{
+	
+	per_xn1=loop_s[divi][0]+in_x*loop_size[divi];
+	per_yn1=loop_s[divi][1]+in_y*loop_size[divi];
+	per_zn1=loop_s[divi][2]+in_z*loop_size[divi];
+
+	per_xp1=loop_s[divi][0]+in_x*loop_size[divi]+loop_size[divi]-1;
+	per_yp1=loop_s[divi][1]+in_y*loop_size[divi]+loop_size[divi]-1;
+	per_zp1=loop_s[divi][2]+in_z*loop_size[divi]+loop_size[divi]-1;
+
+
+	por_loc=0;
+	Q[0]=0;Q[1]=0;Q[2]=0;
+	for (int i=1;i<=Count;i++)
+	{
+		si=(int)(SupInv[i]/((NY+1)*(NZ+1)));
+		sj=(int)((SupInv[i]%((NY+1)*(NZ+1)))/(NZ+1));
+		sm=(int)(SupInv[i]%(NZ+1)); 
+		si+=disp[rank];
+		
+
+		if ((si>=per_xn1) and (si<=per_xp1) and (sj>=per_yn1) and (sj<=per_yp1) and (sm>=per_zn1) and (sm<=per_zp1))
+		{
+	        Q[0]+=u[i][0];
+		Q[1]+=u[i][1];
+		Q[2]+=u[i][2];
+		por_loc+=1;
+		}
+
+
+	}
+	
+	
+		
+
+
+	MPI_Barrier(MPI_COMM_WORLD);
+
+	MPI_Gather(&por_loc,1,MPI_INT,rbuf_p,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Gather(&Q,3,MPI_DOUBLE,rbuf,3,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	
+	if (rank==0)
+		{
+		Q[0]=0;Q[1]=0;Q[2]=0;por_loc=0;
+		for (int i=0;i<mpi_size;i++)
+			{
+			Q[0]+=rbuf[i*3+0];
+			Q[1]+=rbuf[i*3+1];
+			Q[2]+=rbuf[i*3+2];
+			por_loc+=rbuf_p[i];
+			}
+
+	
+		Perm[0]=Q[0]/(vol_g)*(in_vis)/(gx+dp);
+		Perm[1]=Q[1]/(vol_g)*(in_vis)/(gy+dp);
+		Perm[2]=Q[2]/(vol_g)*(in_vis)/(gz+dp);
+		
+		
+
+		}
+	MPI_Barrier(MPI_COMM_WORLD);
+
+
+	//================INDICATED PERMEABILITY CALCULATION DIRECTION HERE!!!!!====================
+	if (rank==0)
+	{
+	ofstream fin(name.str().c_str(),ios::app);
+	fin<<Perm[0]*reso*reso*1000<<" "<< (double)por_loc/vol_g <<endl;
+	fin.close();
+	}
+
+
+
+	}
+}
+	
+	delete [] rbuf;
+	delete [] rbuf_p;
+	
+	
+	
+
 }
 
