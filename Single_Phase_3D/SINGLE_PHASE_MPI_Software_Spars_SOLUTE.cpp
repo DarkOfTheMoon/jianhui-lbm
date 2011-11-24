@@ -1080,7 +1080,8 @@ MPI_Barrier(MPI_COMM_WORLD);
 	                {
 	                Solid[i][j][k]=recv_solid[i*(NY+1)*(NZ+1)+j*(NZ+1)+k];
 	                Psi_local[i][j][k]=recv_psi[i*(NY+1)*(NZ+1)+j*(NZ+1)+k];
-	                psi_total+=recv_psi[i*(NY+1)*(NZ+1)+j*(NZ+1)+k];
+			if (Solid[i][j][k]==0)
+	                	psi_total+=recv_psi[i*(NY+1)*(NZ+1)+j*(NZ+1)+k];
 	                }
 
 	MPI_Barrier(MPI_COMM_WORLD);	
