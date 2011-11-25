@@ -154,8 +154,6 @@ void psi_reset(double**,double** , double* , double* , double*** , int* );
 
 void Parallelize_Geometry();
 
-void Dispersion_psi(double*,int , int*** );
-
 
 int e[19][3]=
 {{0,0,0},{1,0,0},{-1,0,0},{0,1,0},{0,-1,0},{0,0,1},{0,0,-1},{1,1,0},{-1,-1,0},{1,-1,0},{-1,1,0},{1,0,1},
@@ -187,7 +185,7 @@ int SXP[5]={2,8,10,12,14};
 
 
 int n,nx_l,n_max,in_BC,PerDir,freRe,freDe,freVe,frePsi,Par_Geo,Par_nx,Par_ny,Par_nz;
-int Zoom,lattice_v,Sub_BC_psi,Sub_Sta,freDis,freSta,ini_psi,Disp_cal;
+int Zoom,lattice_v,Sub_BC_psi,Sub_Dis,freDis,ini_psi;
 
 
 int wr_per,pre_xp,pre_xn,pre_yp,pre_yn,pre_zp,pre_zn,fre_backup;
@@ -281,8 +279,7 @@ double v_max;
 	fin >> freVe;					fin.getline(dummy, NCHAR);
 	fin >> freDe;					fin.getline(dummy, NCHAR);
 	fin >> frePsi;					fin.getline(dummy, NCHAR);
-	fin >> Sub_Sta >> freSta;	            	fin.getline(dummy, NCHAR);
-	fin >> Disp_cal >> freDis;			fin.getline(dummy, NCHAR);
+	fin >> Sub_Dis >> freDis;                fin.getline(dummy, NCHAR);
 							fin.getline(dummy, NCHAR);
 	fin >> lattice_v >> dx_input >> dt_input;	fin.getline(dummy, NCHAR);
 	fin >> outputfile;				fin.getline(dummy, NCHAR);
@@ -336,8 +333,8 @@ double v_max;
 	MPI_Bcast(&inivz,1,MPI_DOUBLE,0,MPI_COMM_WORLD);MPI_Bcast(&wr_per,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&PerDir,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&freRe,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&freVe,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&freDe,1,MPI_INT,0,MPI_COMM_WORLD);
-	MPI_Bcast(&Gravity,1,MPI_DOUBLE,0,MPI_COMM_WORLD);MPI_Bcast(&Disp_cal,1,MPI_INT,0,MPI_COMM_WORLD);
-	MPI_Bcast(&outputfile,128,MPI_CHAR,0,MPI_COMM_WORLD);MPI_Bcast(&freSta,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&Gravity,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Bcast(&outputfile,128,MPI_CHAR,0,MPI_COMM_WORLD);
 
 	MPI_Bcast(&Sub_BC,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&Out_Mode,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&niu,1,MPI_DOUBLE,0,MPI_COMM_WORLD);MPI_Bcast(&niu_s,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
@@ -362,7 +359,7 @@ double v_max;
 
 	MPI_Bcast(&lattice_v,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&dx_input,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 	MPI_Bcast(&dt_input,1,MPI_DOUBLE,0,MPI_COMM_WORLD);MPI_Bcast(&Sub_BC_psi,1,MPI_INT,0,MPI_COMM_WORLD);
-	MPI_Bcast(&Sub_Sta,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&freDis,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&Sub_Dis,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&freDis,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&ini_psi,1,MPI_INT,0,MPI_COMM_WORLD);
 
 	MPI_Bcast(&par_per_x,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&par_per_y,1,MPI_INT,0,MPI_COMM_WORLD);
@@ -701,22 +698,18 @@ if (wr_per==1)
 				else
 					output_psi_b(n,rho_r,mirX,mirY,mirZ,mir,Solid);
 				
-			if ((freSta>=0) and (n%freSta==0) and (Sub_Sta>0))	
+			if ((freDis>=0) and (n%freDis==0) and (Sub_Dis>0))	
+			                {
 					Statistical_psi(rho_r,n,Solid);
 					//==========for bodyforce output===========
-			if ((n>ini_psi) and (Disp_cal>0) and (n%freDis==0))
+					if ((rank==0) and (n>ini_psi))
 					{
-					Dispersion_psi(rho_r,n,Solid);
-					if (rank==0)
-						{
-						ofstream finf3(FileName3,ios::app);
-						finf3<<Dispersion<<endl;
-						finf3.close();
-						}
+					ofstream finf3(FileName3,ios::app);
+					finf3<<Dispersion<<endl;
+					finf3.close();
 					}
-					
 					//=========================================
-					
+					}
 		
 			//===================================
 			
@@ -4764,194 +4757,6 @@ double Comput_Perm(double** u,double* Permia,int PerDIr, int* SupInv)
 }
 
 
-void Dispersion_psi(double* psi,int m, int*** Solid)
-{
-
- int rank = MPI :: COMM_WORLD . Get_rank ();
-	int mpi_size=MPI :: COMM_WORLD . Get_size ();
-	
-double* s_psi;
-double* rbuf;
-int * nx_g;
-int* disp;
-double EX,DX,EX2;
-
-if (Disp_cal==1)
-        {
-                nx_g = new int[mpi_size];
-                disp = new int[mpi_size];
-
-	
-	MPI_Gather(&nx_l,1,MPI_INT,nx_g,1,MPI_INT,0,MPI_COMM_WORLD);
-	
-	
-	if (rank==0)
-		{
-		disp[0]=0;
-		for (int i=0;i<mpi_size;i++)
-			nx_g[i]*=1;
-
-		for (int i=1;i<mpi_size;i++)
-			disp[i]=disp[i-1]+nx_g[i-1];
-		
-		 rbuf = new double[NX+1];
-		}
-		
-
-                s_psi = new double[nx_l];
-                for (int i=0;i<nx_l;i++)
-                        {
-                        s_psi[i]=0;
-                        for (int j=0;j<=NY;j++)
-                                for (int k=0;k<=NZ;k++)
-                                if (Solid[i][j][k]>0)
-                                        s_psi[i]+=psi[Solid[i][j][k]];
-                                                        
-                        }
-               
-           MPI_Gatherv(s_psi,nx_l,MPI_DOUBLE,rbuf,nx_g,disp,MPI_DOUBLE,0,MPI_COMM_WORLD);     
-       if (rank==0)
-	{
-	//psi_total=0;
-	//for (int i=0;i<=NX;i++)
-	//	psi_total+=rbuf[i];
-
-
-	EX=0;EX2=0;
-	for (int i=per_xn;i<=per_xp;i++)
-		{
-	       
-		EX+=i*dx*rbuf[i]/psi_total;
-		EX2+=(i*dx*i*dx)*rbuf[i]/psi_total;
-		}
-	
-	        
-		DX=EX2-EX*EX;
-		Dispersion=(DX-disp_pre)*0.5/(freDis*dt);
-		disp_pre=DX;
-        	
-                delete [] rbuf;
-
-
-
-
-        }
-	delete [] s_psi;
-	delete [] disp;
-	delete [] nx_g;
-	         
-                
-                
-        }
-        
-        
-        
-        
-if (Disp_cal==2)
-        {
-               if (rank==0)
-                       rbuf = new double [(NY+1)*mpi_size];
-   
-               s_psi = new double[NY+1];
-                for (int j=0;j<=NY;j++)
-                {        
-                s_psi[j]=0;
-                for (int i=0;i<nx_l;i++)
-                        for (int k=0;k<=NZ;k++)
-                                if(Solid[i][j][k]>0)
-                                s_psi[j]+=psi[Solid[i][j][k]];
-                                     
-                
-                }
-
-            MPI_Barrier(MPI_COMM_WORLD);                    
-           MPI_Gather(s_psi,NY+1,MPI_DOUBLE,rbuf,NY+1,MPI_DOUBLE,0,MPI_COMM_WORLD);  
-            
-	if (rank==0)
-	{
-		 for (int j=0;j<=NY;j++)
-		 {
-		         s_psi[j]=0;
-		         for (int i=0;i<mpi_size;i++)
-		                 s_psi[j]+=rbuf[i*(NY+1)+j];
-				
-		 }
-       
-       
-	EX=0;EX2=0;
-	for (int j=per_yn;j<=per_yp;j++)
-		{
-	       
-		EX+=j*dx*s_psi[j]/psi_total;
-		EX2+=(j*dx*j*dx)*s_psi[j]/psi_total;
-		}
-	
-		DX=EX2-EX*EX;
-		Dispersion=(DX-disp_pre)*0.5/(freDis*dt);	
-		disp_pre=DX;
-        
-                delete [] rbuf;
-        }
-	delete [] s_psi;
-	
-
-}
-
-if (Disp_cal==3)
-        {
-               if (rank==0)
-                       rbuf = new double [(NZ+1)*mpi_size];
-   
-               s_psi = new double[NZ+1];
-                for (int k=0;k<=NZ;k++)
-                {        
-                s_psi[k]=0;
-                for (int i=0;i<nx_l;i++)
-                        for (int j=0;j<=NY;j++)
-                                if(Solid[i][j][k]>0)
-                                s_psi[k]+=psi[Solid[i][j][k]];
-                                     
-                
-                }
-
-            MPI_Barrier(MPI_COMM_WORLD);                    
-           MPI_Gather(s_psi,NZ+1,MPI_DOUBLE,rbuf,NZ+1,MPI_DOUBLE,0,MPI_COMM_WORLD);  
-            
-	if (rank==0)
-	{
-		 for (int k=0;k<=NZ;k++)
-		 {
-		         s_psi[k]=0;
-		         for (int i=0;i<mpi_size;i++)
-		                 s_psi[k]+=rbuf[i*(NZ+1)+k];
-				
-		 }
-       
-       
-	EX=0;EX2=0;
-	
-	for (int k=per_zn;k<=per_zp;k++)
-		{
-	        
-		EX+=k*dx*s_psi[k]/psi_total;
-		EX2+=(k*dx*k*dx)*s_psi[k]/psi_total;
-		}
-	
-	        DX=EX2-EX*EX;
-		Dispersion=(DX-disp_pre)*0.5/(freDis*dt);
-		disp_pre=DX;
-        	
-                delete [] rbuf;
-        }
-	delete [] s_psi;
-	
-
-}
-
-
-
-}
-
 void Statistical_psi(double* psi,int m, int*** Solid)
 {
         int rank = MPI :: COMM_WORLD . Get_rank ();
@@ -4963,7 +4768,7 @@ int * nx_g;
 int* disp;
 double EX,DX,EX2;
 
-if (Sub_Sta==1)
+if (Sub_Dis==1)
         {
                 nx_g = new int[mpi_size];
                 disp = new int[mpi_size];
@@ -5007,17 +4812,19 @@ if (Sub_Sta==1)
 	name<<outputfile<<"Statistical_data_concentration_X_"<<m<<".sta";
 	ofstream out;
 	out.open(name.str().c_str());
-
-
-	
+	EX=0;EX2=0;
 	for (int i=per_xn;i<=per_xp;i++)
 		{
 	        out<<rbuf[i]<<endl;
-		
+		EX+=i*dx*rbuf[i]/psi_total;
+		EX2+=(i*dx*i*dx)*rbuf[i]/psi_total;
 		}
 	out.close();
 	        
-		
+		DX=EX2-EX*EX;
+		Dispersion=(DX-disp_pre)*0.5/(freDis*dt);
+		disp_pre=DX;
+        	//cout<<EX<<"    nis   "<<psi_total<<endl;
                 delete [] rbuf;
 
 
@@ -5035,7 +4842,7 @@ if (Sub_Sta==1)
         
         
         
-if (Sub_Sta==2)
+if (Sub_Dis==2)
         {
                if (rank==0)
                        rbuf = new double [(NY+1)*mpi_size];
@@ -5069,14 +4876,17 @@ if (Sub_Sta==2)
 	name<<outputfile<<"Statistical_data_concentration_Y_"<<m<<".sta";
 	ofstream out;
 	out.open(name.str().c_str());
-	
+	EX=0;EX2=0;
 	for (int j=per_yn;j<=per_yp;j++)
 		{
 	        out<<s_psi[j]<<endl;
-		
+		EX+=j*dx*s_psi[j]/psi_total;
+		EX2+=(j*dx*j*dx)*s_psi[j]/psi_total;
 		}
 	out.close();
-		
+		DX=EX2-EX*EX;
+		Dispersion=(DX-disp_pre)*0.5/(freDis*dt);	
+		disp_pre=DX;
         
                 delete [] rbuf;
         }
@@ -5085,7 +4895,7 @@ if (Sub_Sta==2)
 
 }
 
-if (Sub_Sta==3)
+if (Sub_Dis==3)
         {
                if (rank==0)
                        rbuf = new double [(NZ+1)*mpi_size];
@@ -5118,15 +4928,19 @@ if (Sub_Sta==3)
         ostringstream name;
 	name<<outputfile<<"Statistical_data_concentration_Z_"<<m<<".sta";
 	ofstream out;
-	
+	EX=0;EX2=0;
 	out.open(name.str().c_str());
 	for (int k=per_zn;k<=per_zp;k++)
 		{
 	        out<<s_psi[k]<<endl;
-		
+		EX+=k*dx*s_psi[k]/psi_total;
+		EX2+=(k*dx*k*dx)*s_psi[k]/psi_total;
 		}
 	out.close();
-	        
+	        DX=EX2-EX*EX;
+		Dispersion=(DX-disp_pre)*0.5/(freDis*dt);
+		disp_pre=DX;
+        	
                 delete [] rbuf;
         }
 	delete [] s_psi;
