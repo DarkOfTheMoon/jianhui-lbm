@@ -2156,7 +2156,9 @@ m_l[18]=m_l[18]-S[18]*(m_l[18]-meq[18])+dt*F_hat[18];
                  //g_r[mi]=w[mi]*rho_r[ci]*(1+3*eu/c2);
                  //g_b[mi]=w[mi]*rho_b[ci]*(1+3*eu/c2);
 
-		 g_r[mi]=w[mi]*rho_r[ci]*(1+3*eu/c2+4.5*eu*eu/c4-1.5*uu/c2); if (g_r[mi]<0) cout<<mi<<"  "<<g_r[mi]<<"  "<<n<<"  "<<rho_r[ci]<<endl;
+		 g_r[mi]=w[mi]*rho_r[ci]*(1+3*eu/c2+4.5*eu*eu/c4-1.5*uu/c2); 
+		//if (g_r[mi]<0) 
+		//cout<<mi<<"  "<<g_r[mi]<<"  "<<n<<"  "<<rho_r[ci]<<endl;
                  g_b[mi]=w[mi]*rho_b[ci]*(1+3*eu/c2+4.5*eu*eu/c4-1.5*uu/c2);
 		
 			

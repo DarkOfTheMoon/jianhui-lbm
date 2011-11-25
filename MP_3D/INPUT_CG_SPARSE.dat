@@ -1,12 +1,12 @@
 =============INPUT FILE FOR 3D LATTICE BOLTZMANN MPI CODE--MULTI COMPONENT COLOR GRADIENT MODEL=======
-cut_128_spbc_2.dat                 	:Geometry filenameEmily_Berea_y_614_764_7.dat
+BC.dat                 	:Geometry filenameEmily_Berea_y_614_764_7.dat
 phase.dat       	    	:Initial components distribution
-64 64 64                 	:nx ny nz
+160 13 3                 	:nx ny nz
 10000		     		:Maximum time step
 4.9	             		:dx (um) Resolution (for Permeability calculation)
 0	        	      	:Pressure Or Velocity Boundary (1=YES, 0=No)
 0				:Psi constant BC
-0.0e-6 0.0 0.0	          	:body force for x,y,z
+5.0e-6 0.0 0.0	          	:body force for x,y,z
 0 1.0 0 1.0027	    		:Pressure Boundary in X direction ()p=c_s^2*/rho
 0 1.0 0 1.0	    		:Pressure Boundary in Y direction ()
 0 1.0 0 1.0	    		:Pressure Boundary in Z direction (Format detials can be found within this file)
@@ -16,10 +16,10 @@ phase.dat       	    	:Initial components distribution
 0 0				:Psi constant BC in X 0=OFF, 1=Ini psi, 2=Neibourghing,3=Rand
 0 0				:Psi constant BC in Y
 0 0				:Psi constant BC in Z
-0.1    		       		:Viscosity (Component A, psi=1)
-0.1    		       		:Viscosity (Component B, psi=-1)
+0.07    		       		:Viscosity (Component A, psi=1)
+0.07    		       		:Viscosity (Component B, psi=-1)
 0.7     		      	:Contact Angle Cos(Theta) (Positive=1 wetting, Negative -1 wetting)
-1.2e-2    		      	:Surface tension (Kappa)
+0.9e-2    		      	:Surface tension (Kappa)
 0.0 0.0 0.0			:initial velocity for x,y,z
 200	        	       	:Permeability (Single Phase mD)
 =========OUTPUT==CONTROL===================
