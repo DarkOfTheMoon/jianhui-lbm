@@ -705,7 +705,7 @@ if (wr_per==1)
 					if ((rank==0) and (n>ini_psi))
 					{
 					ofstream finf3(FileName3,ios::app);
-					finf3<<Dispersion<<endl;
+					finf3<<Dispersion<<"  "<<disp_pre<<endl;
 					finf3.close();
 					}
 					//=========================================
