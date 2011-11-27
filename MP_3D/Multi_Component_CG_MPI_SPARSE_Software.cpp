@@ -4856,7 +4856,7 @@ double Comput_Perm(double* psi,double** u,double* Per_l,double* Per_g,int PerDIr
 		vxl=(Q_l[0]+Q_g[0])/((per_xp-per_xn+1)*(per_yp-per_yn+1)*(per_zp-per_zn+1));
 		vyl=(Q_l[1]+Q_g[1])/((per_xp-per_xn+1)*(per_yp-per_yn+1)*(per_zp-per_zn+1));
 		vzl=(Q_l[2]+Q_g[2])/((per_xp-per_xn+1)*(per_yp-per_yn+1)*(per_zp-per_zn+1));
-		Capillary=sqrt(vxl*vxl+vyl*vyl+vzl*vzl)*niu_l/CapA;
+		Capillary=sqrt(vxl*vxl+vyl*vyl+vzl*vzl)/porosity*niu_l/CapA;   
 
 		u_ave=sqrt((vxl/porosity)*(vxl/porosity)+(vyl/porosity)*(vyl/porosity)+(vzl/porosity)*(vzl/porosity));
 
