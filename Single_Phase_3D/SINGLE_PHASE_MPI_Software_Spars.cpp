@@ -2288,7 +2288,7 @@ F_hat[18]*=(1-0.5*S[18]);
 m_l[18]=m_l[18]-S[18]*(m_l[18]-meq[18])+dt*F_hat[18];
 
 
-/*
+
 //==========================
 m_inv_l[0]=+((double)0X1.AF286BCA1AF28P-5)*m_l[0]+((double)-0X1.9AA066A819A9EP-7)*m_l[1]+((double)0X1.8618618618619P-5)*m_l[2]+((double)0X0P+0)*m_l[3]+((double)0X0P+0)*m_l[4]+((double)0X0P+0)*m_l[5]+((double)0X0P+0)*m_l[6]+((double)0X0P+0)*m_l[7]+((double)0X0P+0)*m_l[8]+((double)0X1P-58)*m_l[9]+((double)0X1P-59)*m_l[10]+((double)0X0P+0)*m_l[11]+((double)0X0P+0)*m_l[12]+((double)0X0P+0)*m_l[13]+((double)0X0P+0)*m_l[14]+((double)-0X0P+0)*m_l[15]+((double)0X0P+0)*m_l[16]+((double)-0X0P+0)*m_l[17]+((double)0X0P+0)*m_l[18];
 
@@ -2327,16 +2327,16 @@ m_inv_l[16]=+((double)0X1.AF286BCA1AF2AP-5)*m_l[0]+((double)0X1.B6006D801B603P-9
 m_inv_l[17]=+((double)0X1.AF286BCA1AF2AP-5)*m_l[0]+((double)0X1.B6006D801B601P-9)*m_l[1]+((double)0X1.0410410410412P-8)*m_l[2]+((double)0X1.999999999999AP-4)*m_l[3]+((double)0X1.999999999999AP-6)*m_l[4]+((double)0X0P+0)*m_l[5]+((double)0X0P+0)*m_l[6]+((double)-0X1.999999999999AP-4)*m_l[7]+((double)-0X1.999999999999AP-6)*m_l[8]+((double)0X1.C71C71C71C71DP-6)*m_l[9]+((double)0X1.C71C71C71C71DP-7)*m_l[10]+((double)-0X1.5555555555555P-4)*m_l[11]+((double)-0X1.5555555555555P-5)*m_l[12]+((double)0X0P+0)*m_l[13]+((double)-0X0P+0)*m_l[14]+((double)-0X1P-2)*m_l[15]+((double)-0X1P-3)*m_l[16]+((double)0X0P+0)*m_l[17]+((double)-0X1P-3)*m_l[18];
 
 m_inv_l[18]=+((double)0X1.AF286BCA1AF2AP-5)*m_l[0]+((double)0X1.B6006D801B603P-9)*m_l[1]+((double)0X1.0410410410412P-8)*m_l[2]+((double)-0X1.999999999999AP-4)*m_l[3]+((double)-0X1.999999999999AP-6)*m_l[4]+((double)0X0P+0)*m_l[5]+((double)0X0P+0)*m_l[6]+((double)-0X1.999999999999AP-4)*m_l[7]+((double)-0X1.999999999999AP-6)*m_l[8]+((double)0X1.C71C71C71C71DP-6)*m_l[9]+((double)0X1.C71C71C71C71DP-7)*m_l[10]+((double)-0X1.5555555555555P-4)*m_l[11]+((double)-0X1.5555555555555P-5)*m_l[12]+((double)-0X0P+0)*m_l[13]+((double)0X0P+0)*m_l[14]+((double)0X1P-2)*m_l[15]+((double)0X1P-3)*m_l[16]+((double)0X0P+0)*m_l[17]+((double)-0X1P-3)*m_l[18];
-*/
+
 //====================
 
 			// ==================   f=M_-1m matrix calculation and streaming =============================
 		for (int mi=0; mi<19; mi++)
 			{
-			sum=0;	
-			for (int mj=0; mj<19; mj++)
-				sum+=MI[mi][mj]*m_l[mj];
-			//sum=m_inv_l[mi];
+			//sum=0;	
+			//for (int mj=0; mj<19; mj++)
+			//	sum+=MI[mi][mj]*m_l[mj];
+			sum=m_inv_l[mi];
 			
 			ip=i+e[mi][0];
 			jp=j+e[mi][1];if (jp<0) {jp=NY;}; if (jp>NY) {jp=0;};
