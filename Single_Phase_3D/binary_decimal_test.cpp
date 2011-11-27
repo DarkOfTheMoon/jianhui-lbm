@@ -33,14 +33,24 @@ int main(int argc , char *argv [])
         double num1=267.435346;
         
         char* a;
+        //char* b="^-??p??9p?";
+        char b[128];
+        //b="^-??p??9p?";
+        
         
         a=(char *)(&num1);
-        
+        memcpy (b,&num1,8);
         //cout<<a<<endl;
+        cout<<"16 digital= "<<hex<<num1<<endl;
         
         double* num2=(double *)(a);
         
         cout<<*num2*3<<"   "<<*num2<<endl;
+        
+        sprintf(b,"%A\n",num1);
+        
+        double n=0X1.0B6F72D5E071CP+8;
+        cout<<"n="<<n<<"         "<<b<<endl;
 }
 
 

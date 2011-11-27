@@ -1890,7 +1890,7 @@ void collision(double* rho,double** u,double** f,double** F,int* SupInv,int*** S
 double lm0,lm1,sum;
 double usqr,vsqr;
 double F_hat[19],GuoF[19],f_eq[19],u_tmp[3];
-double m_l[19];
+double m_l[19],m_inv_l[19];
 int i,j,m,ip,jp,kp;
 
 
@@ -2288,6 +2288,47 @@ F_hat[18]*=(1-0.5*S[18]);
 m_l[18]=m_l[18]-S[18]*(m_l[18]-meq[18])+dt*F_hat[18];
 
 
+/*
+//==========================
+m_inv_l[0]=+((double)0X1.AF286BCA1AF28P-5)*m_l[0]+((double)-0X1.9AA066A819A9EP-7)*m_l[1]+((double)0X1.8618618618619P-5)*m_l[2]+((double)0X0P+0)*m_l[3]+((double)0X0P+0)*m_l[4]+((double)0X0P+0)*m_l[5]+((double)0X0P+0)*m_l[6]+((double)0X0P+0)*m_l[7]+((double)0X0P+0)*m_l[8]+((double)0X1P-58)*m_l[9]+((double)0X1P-59)*m_l[10]+((double)0X0P+0)*m_l[11]+((double)0X0P+0)*m_l[12]+((double)0X0P+0)*m_l[13]+((double)0X0P+0)*m_l[14]+((double)-0X0P+0)*m_l[15]+((double)0X0P+0)*m_l[16]+((double)-0X0P+0)*m_l[17]+((double)0X0P+0)*m_l[18];
+
+m_inv_l[1]=+((double)0X1.AF286BCA1AF2EP-5)*m_l[0]+((double)-0X1.2D204B4812D21P-8)*m_l[1]+((double)-0X1.0410410410411P-6)*m_l[2]+((double)0X1.999999999999AP-4)*m_l[3]+((double)-0X1.999999999999AP-4)*m_l[4]+((double)0X0P+0)*m_l[5]+((double)0X0P+0)*m_l[6]+((double)0X0P+0)*m_l[7]+((double)0X0P+0)*m_l[8]+((double)0X1.C71C71C71C71CP-5)*m_l[9]+((double)-0X1.C71C71C71C71BP-5)*m_l[10]+((double)0X0P+0)*m_l[11]+((double)0X0P+0)*m_l[12]+((double)0X0P+0)*m_l[13]+((double)0X0P+0)*m_l[14]+((double)-0X0P+0)*m_l[15]+((double)0X0P+0)*m_l[16]+((double)-0X0P+0)*m_l[17]+((double)0X0P+0)*m_l[18];
+
+m_inv_l[2]=+((double)0X1.AF286BCA1AF2EP-5)*m_l[0]+((double)-0X1.2D204B4812D2P-8)*m_l[1]+((double)-0X1.041041041041P-6)*m_l[2]+((double)-0X1.999999999999AP-4)*m_l[3]+((double)0X1.999999999999AP-4)*m_l[4]+((double)0X0P+0)*m_l[5]+((double)0X0P+0)*m_l[6]+((double)0X0P+0)*m_l[7]+((double)0X0P+0)*m_l[8]+((double)0X1.C71C71C71C71BP-5)*m_l[9]+((double)-0X1.C71C71C71C71DP-5)*m_l[10]+((double)0X0P+0)*m_l[11]+((double)0X0P+0)*m_l[12]+((double)0X0P+0)*m_l[13]+((double)0X0P+0)*m_l[14]+((double)-0X0P+0)*m_l[15]+((double)0X0P+0)*m_l[16]+((double)0X0P+0)*m_l[17]+((double)0X0P+0)*m_l[18];
+
+m_inv_l[3]=+((double)0X1.AF286BCA1AF2AP-5)*m_l[0]+((double)-0X1.2D204B4812D2P-8)*m_l[1]+((double)-0X1.041041041041P-6)*m_l[2]+((double)0X0P+0)*m_l[3]+((double)0X0P+0)*m_l[4]+((double)0X1.9999999999999P-4)*m_l[5]+((double)-0X1.999999999999AP-4)*m_l[6]+((double)-0X1.999999999999AP-58)*m_l[7]+((double)-0X1.999999999999AP-60)*m_l[8]+((double)-0X1.C71C71C71C71CP-6)*m_l[9]+((double)0X1.C71C71C71C71CP-6)*m_l[10]+((double)0X1.5555555555555P-4)*m_l[11]+((double)-0X1.5555555555556P-4)*m_l[12]+((double)0X0P+0)*m_l[13]+((double)0X1P-57)*m_l[14]+((double)-0X0P+0)*m_l[15]+((double)0X0P+0)*m_l[16]+((double)-0X1P-57)*m_l[17]+((double)0X0P+0)*m_l[18];
+
+m_inv_l[4]=+((double)0X1.AF286BCA1AF2AP-5)*m_l[0]+((double)-0X1.2D204B4812D2P-8)*m_l[1]+((double)-0X1.041041041041P-6)*m_l[2]+((double)0X0P+0)*m_l[3]+((double)0X0P+0)*m_l[4]+((double)-0X1.9999999999999P-4)*m_l[5]+((double)0X1.999999999999AP-4)*m_l[6]+((double)-0X1.999999999999AP-58)*m_l[7]+((double)-0X1.999999999999AP-60)*m_l[8]+((double)-0X1.C71C71C71C719P-6)*m_l[9]+((double)0X1.C71C71C71C71EP-6)*m_l[10]+((double)0X1.5555555555555P-4)*m_l[11]+((double)-0X1.5555555555556P-4)*m_l[12]+((double)0X0P+0)*m_l[13]+((double)-0X1P-57)*m_l[14]+((double)-0X0P+0)*m_l[15]+((double)0X0P+0)*m_l[16]+((double)-0X0P+0)*m_l[17]+((double)0X0P+0)*m_l[18];
+
+m_inv_l[5]=+((double)0X1.AF286BCA1AF29P-5)*m_l[0]+((double)-0X1.2D204B4812D21P-8)*m_l[1]+((double)-0X1.041041041041P-6)*m_l[2]+((double)0X0P+0)*m_l[3]+((double)0X0P+0)*m_l[4]+((double)0X0P+0)*m_l[5]+((double)0X0P+0)*m_l[6]+((double)0X1.999999999999AP-4)*m_l[7]+((double)-0X1.999999999999AP-4)*m_l[8]+((double)-0X1.C71C71C71C71BP-6)*m_l[9]+((double)0X1.C71C71C71C71DP-6)*m_l[10]+((double)-0X1.5555555555555P-4)*m_l[11]+((double)0X1.5555555555556P-4)*m_l[12]+((double)0X0P+0)*m_l[13]+((double)0X0P+0)*m_l[14]+((double)-0X0P+0)*m_l[15]+((double)0X0P+0)*m_l[16]+((double)0X0P+0)*m_l[17]+((double)0X0P+0)*m_l[18];
+
+m_inv_l[6]=+((double)0X1.AF286BCA1AF2AP-5)*m_l[0]+((double)-0X1.2D204B4812D21P-8)*m_l[1]+((double)-0X1.041041041041P-6)*m_l[2]+((double)0X0P+0)*m_l[3]+((double)0X0P+0)*m_l[4]+((double)0X0P+0)*m_l[5]+((double)0X0P+0)*m_l[6]+((double)-0X1.9999999999999P-4)*m_l[7]+((double)0X1.999999999999AP-4)*m_l[8]+((double)-0X1.C71C71C71C717P-6)*m_l[9]+((double)0X1.C71C71C71C71EP-6)*m_l[10]+((double)-0X1.5555555555555P-4)*m_l[11]+((double)0X1.5555555555556P-4)*m_l[12]+((double)0X0P+0)*m_l[13]+((double)0X0P+0)*m_l[14]+((double)-0X0P+0)*m_l[15]+((double)0X0P+0)*m_l[16]+((double)0X0P+0)*m_l[17]+((double)0X0P+0)*m_l[18];
+
+m_inv_l[7]=+((double)0X1.AF286BCA1AF2AP-5)*m_l[0]+((double)0X1.B6006D801B603P-9)*m_l[1]+((double)0X1.0410410410412P-8)*m_l[2]+((double)0X1.999999999999AP-4)*m_l[3]+((double)0X1.999999999999AP-6)*m_l[4]+((double)0X1.999999999999AP-4)*m_l[5]+((double)0X1.999999999999AP-6)*m_l[6]+((double)0X0P+0)*m_l[7]+((double)0X0P+0)*m_l[8]+((double)0X1.C71C71C71C71DP-6)*m_l[9]+((double)0X1.C71C71C71C71DP-7)*m_l[10]+((double)0X1.5555555555555P-4)*m_l[11]+((double)0X1.5555555555555P-5)*m_l[12]+((double)0X1P-2)*m_l[13]+((double)0X0P+0)*m_l[14]+((double)-0X0P+0)*m_l[15]+((double)0X1P-3)*m_l[16]+((double)-0X1P-3)*m_l[17]+((double)0X0P+0)*m_l[18];
+
+m_inv_l[8]=+((double)0X1.AF286BCA1AF2AP-5)*m_l[0]+((double)0X1.B6006D801B605P-9)*m_l[1]+((double)0X1.0410410410412P-8)*m_l[2]+((double)-0X1.999999999999AP-4)*m_l[3]+((double)-0X1.999999999999AP-6)*m_l[4]+((double)0X1.999999999999AP-4)*m_l[5]+((double)0X1.999999999999AP-6)*m_l[6]+((double)0X0P+0)*m_l[7]+((double)0X0P+0)*m_l[8]+((double)0X1.C71C71C71C71DP-6)*m_l[9]+((double)0X1.C71C71C71C71DP-7)*m_l[10]+((double)0X1.5555555555555P-4)*m_l[11]+((double)0X1.5555555555555P-5)*m_l[12]+((double)-0X1P-2)*m_l[13]+((double)-0X0P+0)*m_l[14]+((double)-0X0P+0)*m_l[15]+((double)-0X1P-3)*m_l[16]+((double)-0X1P-3)*m_l[17]+((double)0X0P+0)*m_l[18];
+
+m_inv_l[9]=+((double)0X1.AF286BCA1AF2AP-5)*m_l[0]+((double)0X1.B6006D801B603P-9)*m_l[1]+((double)0X1.0410410410412P-8)*m_l[2]+((double)0X1.999999999999AP-4)*m_l[3]+((double)0X1.999999999999AP-6)*m_l[4]+((double)-0X1.999999999999AP-4)*m_l[5]+((double)-0X1.999999999999AP-6)*m_l[6]+((double)0X0P+0)*m_l[7]+((double)0X0P+0)*m_l[8]+((double)0X1.C71C71C71C71DP-6)*m_l[9]+((double)0X1.C71C71C71C71DP-7)*m_l[10]+((double)0X1.5555555555555P-4)*m_l[11]+((double)0X1.5555555555555P-5)*m_l[12]+((double)-0X1P-2)*m_l[13]+((double)0X0P+0)*m_l[14]+((double)-0X0P+0)*m_l[15]+((double)0X1P-3)*m_l[16]+((double)0X1P-3)*m_l[17]+((double)0X0P+0)*m_l[18];
+
+m_inv_l[10]=+((double)0X1.AF286BCA1AF2AP-5)*m_l[0]+((double)0X1.B6006D801B605P-9)*m_l[1]+((double)0X1.0410410410412P-8)*m_l[2]+((double)-0X1.999999999999AP-4)*m_l[3]+((double)-0X1.999999999999AP-6)*m_l[4]+((double)-0X1.999999999999AP-4)*m_l[5]+((double)-0X1.999999999999AP-6)*m_l[6]+((double)0X0P+0)*m_l[7]+((double)0X0P+0)*m_l[8]+((double)0X1.C71C71C71C71DP-6)*m_l[9]+((double)0X1.C71C71C71C71DP-7)*m_l[10]+((double)0X1.5555555555555P-4)*m_l[11]+((double)0X1.5555555555555P-5)*m_l[12]+((double)0X1P-2)*m_l[13]+((double)0X0P+0)*m_l[14]+((double)-0X0P+0)*m_l[15]+((double)-0X1P-3)*m_l[16]+((double)0X1P-3)*m_l[17]+((double)0X0P+0)*m_l[18];
+
+m_inv_l[11]=+((double)0X1.AF286BCA1AF27P-5)*m_l[0]+((double)0X1.B6006D801B6P-9)*m_l[1]+((double)0X1.041041041041P-8)*m_l[2]+((double)0X0P+0)*m_l[3]+((double)0X0P+0)*m_l[4]+((double)0X1.9999999999998P-4)*m_l[5]+((double)0X1.9999999999998P-6)*m_l[6]+((double)0X1.9999999999998P-4)*m_l[7]+((double)0X1.9999999999998P-6)*m_l[8]+((double)-0X1.C71C71C71C71CP-5)*m_l[9]+((double)-0X1.C71C71C71C71CP-6)*m_l[10]+((double)0X0P+0)*m_l[11]+((double)0X0P+0)*m_l[12]+((double)0X0P+0)*m_l[13]+((double)0X1P-2)*m_l[14]+((double)-0X0P+0)*m_l[15]+((double)0X0P+0)*m_l[16]+((double)0X1.0000000000001P-3)*m_l[17]+((double)-0X1.0000000000001P-3)*m_l[18];
+
+m_inv_l[12]=+((double)0X1.AF286BCA1AF2CP-5)*m_l[0]+((double)0X1.B6006D801B602P-9)*m_l[1]+((double)0X1.0410410410412P-8)*m_l[2]+((double)0X0P+0)*m_l[3]+((double)0X0P+0)*m_l[4]+((double)-0X1.999999999999AP-4)*m_l[5]+((double)-0X1.999999999999AP-6)*m_l[6]+((double)0X1.999999999999AP-4)*m_l[7]+((double)0X1.999999999999AP-6)*m_l[8]+((double)-0X1.C71C71C71C71CP-5)*m_l[9]+((double)-0X1.C71C71C71C71CP-6)*m_l[10]+((double)0X0P+0)*m_l[11]+((double)0X0P+0)*m_l[12]+((double)0X0P+0)*m_l[13]+((double)-0X1P-2)*m_l[14]+((double)-0X0P+0)*m_l[15]+((double)0X0P+0)*m_l[16]+((double)-0X1P-3)*m_l[17]+((double)-0X1P-3)*m_l[18];
+
+m_inv_l[13]=+((double)0X1.AF286BCA1AF28P-5)*m_l[0]+((double)0X1.B6006D801B602P-9)*m_l[1]+((double)0X1.0410410410412P-8)*m_l[2]+((double)0X0P+0)*m_l[3]+((double)0X0P+0)*m_l[4]+((double)0X1.999999999999AP-4)*m_l[5]+((double)0X1.999999999999AP-6)*m_l[6]+((double)-0X1.999999999999AP-4)*m_l[7]+((double)-0X1.999999999999AP-6)*m_l[8]+((double)-0X1.C71C71C71C71DP-5)*m_l[9]+((double)-0X1.C71C71C71C71DP-6)*m_l[10]+((double)0X0P+0)*m_l[11]+((double)0X0P+0)*m_l[12]+((double)0X0P+0)*m_l[13]+((double)-0X1P-2)*m_l[14]+((double)-0X0P+0)*m_l[15]+((double)0X0P+0)*m_l[16]+((double)0X1P-3)*m_l[17]+((double)0X1P-3)*m_l[18];
+
+m_inv_l[14]=+((double)0X1.AF286BCA1AF2CP-5)*m_l[0]+((double)0X1.B6006D801B602P-9)*m_l[1]+((double)0X1.0410410410412P-8)*m_l[2]+((double)0X0P+0)*m_l[3]+((double)0X0P+0)*m_l[4]+((double)-0X1.999999999999AP-4)*m_l[5]+((double)-0X1.999999999999AP-6)*m_l[6]+((double)-0X1.999999999999AP-4)*m_l[7]+((double)-0X1.999999999999AP-6)*m_l[8]+((double)-0X1.C71C71C71C71BP-5)*m_l[9]+((double)-0X1.C71C71C71C71BP-6)*m_l[10]+((double)0X0P+0)*m_l[11]+((double)0X0P+0)*m_l[12]+((double)0X0P+0)*m_l[13]+((double)0X1P-2)*m_l[14]+((double)-0X0P+0)*m_l[15]+((double)0X0P+0)*m_l[16]+((double)-0X1P-3)*m_l[17]+((double)0X1P-3)*m_l[18];
+
+m_inv_l[15]=+((double)0X1.AF286BCA1AF2AP-5)*m_l[0]+((double)0X1.B6006D801B601P-9)*m_l[1]+((double)0X1.0410410410412P-8)*m_l[2]+((double)0X1.999999999999AP-4)*m_l[3]+((double)0X1.999999999999AP-6)*m_l[4]+((double)0X0P+0)*m_l[5]+((double)0X0P+0)*m_l[6]+((double)0X1.999999999999AP-4)*m_l[7]+((double)0X1.999999999999AP-6)*m_l[8]+((double)0X1.C71C71C71C71DP-6)*m_l[9]+((double)0X1.C71C71C71C71DP-7)*m_l[10]+((double)-0X1.5555555555555P-4)*m_l[11]+((double)-0X1.5555555555555P-5)*m_l[12]+((double)-0X0P+0)*m_l[13]+((double)0X0P+0)*m_l[14]+((double)0X1P-2)*m_l[15]+((double)-0X1P-3)*m_l[16]+((double)0X0P+0)*m_l[17]+((double)0X1P-3)*m_l[18];
+
+m_inv_l[16]=+((double)0X1.AF286BCA1AF2AP-5)*m_l[0]+((double)0X1.B6006D801B603P-9)*m_l[1]+((double)0X1.0410410410412P-8)*m_l[2]+((double)-0X1.999999999999AP-4)*m_l[3]+((double)-0X1.999999999999AP-6)*m_l[4]+((double)0X0P+0)*m_l[5]+((double)0X0P+0)*m_l[6]+((double)0X1.999999999999AP-4)*m_l[7]+((double)0X1.999999999999AP-6)*m_l[8]+((double)0X1.C71C71C71C71DP-6)*m_l[9]+((double)0X1.C71C71C71C71DP-7)*m_l[10]+((double)-0X1.5555555555555P-4)*m_l[11]+((double)-0X1.5555555555555P-5)*m_l[12]+((double)0X0P+0)*m_l[13]+((double)0X0P+0)*m_l[14]+((double)-0X1P-2)*m_l[15]+((double)0X1P-3)*m_l[16]+((double)0X0P+0)*m_l[17]+((double)0X1P-3)*m_l[18];
+
+m_inv_l[17]=+((double)0X1.AF286BCA1AF2AP-5)*m_l[0]+((double)0X1.B6006D801B601P-9)*m_l[1]+((double)0X1.0410410410412P-8)*m_l[2]+((double)0X1.999999999999AP-4)*m_l[3]+((double)0X1.999999999999AP-6)*m_l[4]+((double)0X0P+0)*m_l[5]+((double)0X0P+0)*m_l[6]+((double)-0X1.999999999999AP-4)*m_l[7]+((double)-0X1.999999999999AP-6)*m_l[8]+((double)0X1.C71C71C71C71DP-6)*m_l[9]+((double)0X1.C71C71C71C71DP-7)*m_l[10]+((double)-0X1.5555555555555P-4)*m_l[11]+((double)-0X1.5555555555555P-5)*m_l[12]+((double)0X0P+0)*m_l[13]+((double)-0X0P+0)*m_l[14]+((double)-0X1P-2)*m_l[15]+((double)-0X1P-3)*m_l[16]+((double)0X0P+0)*m_l[17]+((double)-0X1P-3)*m_l[18];
+
+m_inv_l[18]=+((double)0X1.AF286BCA1AF2AP-5)*m_l[0]+((double)0X1.B6006D801B603P-9)*m_l[1]+((double)0X1.0410410410412P-8)*m_l[2]+((double)-0X1.999999999999AP-4)*m_l[3]+((double)-0X1.999999999999AP-6)*m_l[4]+((double)0X0P+0)*m_l[5]+((double)0X0P+0)*m_l[6]+((double)-0X1.999999999999AP-4)*m_l[7]+((double)-0X1.999999999999AP-6)*m_l[8]+((double)0X1.C71C71C71C71DP-6)*m_l[9]+((double)0X1.C71C71C71C71DP-7)*m_l[10]+((double)-0X1.5555555555555P-4)*m_l[11]+((double)-0X1.5555555555555P-5)*m_l[12]+((double)-0X0P+0)*m_l[13]+((double)0X0P+0)*m_l[14]+((double)0X1P-2)*m_l[15]+((double)0X1P-3)*m_l[16]+((double)0X0P+0)*m_l[17]+((double)-0X1P-3)*m_l[18];
+*/
+//====================
 
 			// ==================   f=M_-1m matrix calculation and streaming =============================
 		for (int mi=0; mi<19; mi++)
@@ -2295,7 +2336,7 @@ m_l[18]=m_l[18]-S[18]*(m_l[18]-meq[18])+dt*F_hat[18];
 			sum=0;	
 			for (int mj=0; mj<19; mj++)
 				sum+=MI[mi][mj]*m_l[mj];
-
+			//sum=m_inv_l[mi];
 			
 			ip=i+e[mi][0];
 			jp=j+e[mi][1];if (jp<0) {jp=NY;}; if (jp>NY) {jp=0;};
