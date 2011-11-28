@@ -4240,7 +4240,7 @@ if (mir==0)
 	out<<"ORIGIN 0 0 0"<<endl;
 	out<<"SPACING 1 1 1"<<endl;
 	out<<"POINT_DATA     "<<NX0*NY0*NZ0<<endl;
-	out<<"SCALARS sample_scalars float"<<endl;
+	out<<"SCALARS sample_scalars double"<<endl;
 	out<<"LOOKUP_TABLE default"<<endl;
 for(int k=0;k<NZ0;k++)
         for(int j=0; j<NY0; j++)
@@ -4469,7 +4469,7 @@ void output_density_b(int m,double* rho,int MirX,int MirY,int MirZ,int mir,int**
 	out<<"ORIGIN 0 0 0"<<endl;
 	out<<"SPACING 1 1 1"<<endl;
 	out<<"POINT_DATA     "<<NX0*NY0*NZ0<<endl;
-	out<<"SCALARS sample_scalars float"<<endl;
+	out<<"SCALARS sample_scalars double"<<endl;
 	out<<"LOOKUP_TABLE default"<<endl;
 
         for(int k=0;k<NZ0;k++)
@@ -4576,7 +4576,7 @@ void output_psi_b(int m,double* psi,int MirX,int MirY,int MirZ,int mir,int*** So
 	out<<"ORIGIN 0 0 0"<<endl;
 	out<<"SPACING 1 1 1"<<endl;
 	out<<"POINT_DATA     "<<NX0*NY0*NZ0<<endl;
-	out<<"SCALARS sample_scalars float"<<endl;
+	out<<"SCALARS sample_scalars double"<<endl;
 	out<<"LOOKUP_TABLE default"<<endl;
 
         for(int k=0;k<NZ0;k++)
@@ -4668,7 +4668,7 @@ void output_psi(int m,double* psi,int MirX,int MirY,int MirZ,int mir,int*** Soli
 	out<<"ORIGIN 0 0 0"<<endl;
 	out<<"SPACING 1 1 1"<<endl;
 	out<<"POINT_DATA     "<<NX0*NY0*NZ0<<endl;
-	out<<"SCALARS sample_scalars float"<<endl;
+	out<<"SCALARS sample_scalars double"<<endl;
 	out<<"LOOKUP_TABLE default"<<endl;
 	out.close();
 
