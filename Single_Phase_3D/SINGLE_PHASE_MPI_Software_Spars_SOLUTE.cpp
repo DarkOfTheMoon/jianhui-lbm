@@ -1458,7 +1458,7 @@ double lm0,lm1,cc,sum,uu;
 double ux,uy,uz,nx,ny,nz;
 double usqr,vsqr,eu,ef,cospsi,s_other;
 double F_hat[19],GuoF[19],f_eq[19],u_tmp[3];
-double m_l[19];
+double m_l[19],m_inv_l[19];
 int i,j,m;
 int interi,interj,interk,ip,jp,kp;
 double c2,c4;
@@ -1572,8 +1572,8 @@ MPI_Barrier(MPI_COMM_WORLD);
 			forcez[ci]=gz;
 		
 			//=================FORCE TERM_GUO=========================================
-
 /*
+//=====================================
 			for (int k=0;k<19;k++)
 			{	
 			lm0=((elat[k][0]-u[ci][0])*forcex[ci]+(elat[k][1]-u[ci][1])*forcey[ci]+(elat[k][2]-u[ci][2])*forcez[ci])/c_s2;
@@ -1581,7 +1581,7 @@ MPI_Barrier(MPI_COMM_WORLD);
 			GuoF[k]=w[k]*(lm0+lm1);
 			//GuoF[k]=0.0;
 			}
-
+//=======================================
 */
 
 
@@ -1850,24 +1850,24 @@ m_l[18]=m_l[18]-S[18]*(m_l[18]-meq[18])+dt*F_hat[18];
 
 
 
-
-
-			
+		
 			
 			// ==================   m=Mf matrix calculation  =============================
 			// ==================   F_hat=(I-.5*S)MGuoF =====================================
 				for (int mi=0; mi<19; mi++)
 					{
-					//m_l[mi]=0;F_hat[mi]=0;
-					//for (int mj=0; mj<19; mj++)
-					//	{
-					//	m_l[mi]+=M[mi][mj]*f[ci][mj];
-					//	F_hat[mi]+=M[mi][mj]*GuoF[mj];
-					//	}
-					//F_hat[mi]*=(1-0.5*S[mi]);
-					//m_l[mi]=m_l[mi]-S[mi]*(m_l[mi]-meq[mi])+dt*F_hat[mi];
+					 /*
+					 //========================       
+					m_l[mi]=0;F_hat[mi]=0;
+					for (int mj=0; mj<19; mj++)
+						{
+						m_l[mi]+=M[mi][mj]*f[ci][mj];
+						F_hat[mi]+=M[mi][mj]*GuoF[mj];
+						}
+					F_hat[mi]*=(1-0.5*S[mi]);
+					m_l[mi]=m_l[mi]-S[mi]*(m_l[mi]-meq[mi])+dt*F_hat[mi];
 			//==============================================================================
-
+			                */
 
 
 			//================================================================================
@@ -1884,14 +1884,57 @@ m_l[18]=m_l[18]-S[18]*(m_l[18]-meq[18])+dt*F_hat[18];
 			//===================================================================================
 
 					}
-			
+
+//==========================
+m_inv_l[0]=+((double)0X1.5555555555555P-2)*1.0*m_l[0]+((double)-0X1P-1)*1.0/(c_l*c_l)*m_l[1]+((double)0X1.5555555555555P-3)*1.0/(c_l*c_l*c_l*c_l)*m_l[2]+((double)0X0P+0)*1.0/c_l*m_l[3]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[4]+((double)0X0P+0)*1.0/(c_l)*m_l[5]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[6]+((double)0X0P+0)*1.0/c_l*m_l[7]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[8]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[9]+((double)0X0P+0)*1.0/(c_l*c_l*c_l*c_l)*m_l[10]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[11]+((double)0X0P+0)*1.0/(c_l*c_l*c_l*c_l)*m_l[12]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[13]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[14]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[15]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[16]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[17]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[18];
+
+m_inv_l[1]=+((double)0X1.C71C71C71C71CP-5)*1.0*m_l[0]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[1]+((double)-0X1.C71C71C71C71EP-5)*1.0/(c_l*c_l*c_l*c_l)*m_l[2]+((double)0X1.5555555555555P-3)*1.0/c_l*m_l[3]+((double)-0X1.5555555555556P-3)*1.0/(c_l*c_l*c_l)*m_l[4]+((double)0X0P+0)*1.0/(c_l)*m_l[5]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[6]+((double)0X0P+0)*1.0/c_l*m_l[7]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[8]+((double)0X1.5555555555556P-4)*1.0/(c_l*c_l)*m_l[9]+((double)-0X1.5555555555554P-4)*1.0/(c_l*c_l*c_l*c_l)*m_l[10]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[11]+((double)0X0P+0)*1.0/(c_l*c_l*c_l*c_l)*m_l[12]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[13]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[14]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[15]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[16]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[17]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[18];
+
+m_inv_l[2]=+((double)0X1.C71C71C71C71DP-5)*1.0*m_l[0]+((double)-0X1P-56)*1.0/(c_l*c_l)*m_l[1]+((double)-0X1.C71C71C71C71DP-5)*1.0/(c_l*c_l*c_l*c_l)*m_l[2]+((double)-0X1.5555555555555P-3)*1.0/c_l*m_l[3]+((double)0X1.5555555555556P-3)*1.0/(c_l*c_l*c_l)*m_l[4]+((double)0X0P+0)*1.0/(c_l)*m_l[5]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[6]+((double)0X0P+0)*1.0/c_l*m_l[7]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[8]+((double)0X1.5555555555556P-4)*1.0/(c_l*c_l)*m_l[9]+((double)-0X1.5555555555554P-4)*1.0/(c_l*c_l*c_l*c_l)*m_l[10]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[11]+((double)0X0P+0)*1.0/(c_l*c_l*c_l*c_l)*m_l[12]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[13]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[14]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[15]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[16]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[17]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[18];
+
+m_inv_l[3]=+((double)0X1.C71C71C71C71DP-5)*1.0*m_l[0]+((double)0X1P-56)*1.0/(c_l*c_l)*m_l[1]+((double)-0X1.C71C71C71C71EP-5)*1.0/(c_l*c_l*c_l*c_l)*m_l[2]+((double)0X0P+0)*1.0/c_l*m_l[3]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[4]+((double)0X1.5555555555554P-3)*1.0/(c_l)*m_l[5]+((double)-0X1.5555555555556P-3)*1.0/(c_l*c_l*c_l)*m_l[6]+((double)0X0P+0)*1.0/c_l*m_l[7]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[8]+((double)-0X1.5555555555555P-5)*1.0/(c_l*c_l)*m_l[9]+((double)0X1.5555555555555P-5)*1.0/(c_l*c_l*c_l*c_l)*m_l[10]+((double)0X1.FFFFFFFFFFFFEP-4)*1.0/(c_l*c_l)*m_l[11]+((double)-0X1.0000000000001P-3)*1.0/(c_l*c_l*c_l*c_l)*m_l[12]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[13]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[14]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[15]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[16]+((double)0X1P-56)*1.0/(c_l*c_l*c_l)*m_l[17]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[18];
+
+m_inv_l[4]=+((double)0X1.C71C71C71C71DP-5)*1.0*m_l[0]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[1]+((double)-0X1.C71C71C71C71AP-5)*1.0/(c_l*c_l*c_l*c_l)*m_l[2]+((double)0X0P+0)*1.0/c_l*m_l[3]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[4]+((double)-0X1.5555555555555P-3)*1.0/(c_l)*m_l[5]+((double)0X1.5555555555556P-3)*1.0/(c_l*c_l*c_l)*m_l[6]+((double)0X0P+0)*1.0/c_l*m_l[7]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[8]+((double)-0X1.5555555555555P-5)*1.0/(c_l*c_l)*m_l[9]+((double)0X1.5555555555555P-5)*1.0/(c_l*c_l*c_l*c_l)*m_l[10]+((double)0X1.FFFFFFFFFFFFEP-4)*1.0/(c_l*c_l)*m_l[11]+((double)-0X1.0000000000001P-3)*1.0/(c_l*c_l*c_l*c_l)*m_l[12]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[13]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[14]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[15]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[16]+((double)-0X1P-56)*1.0/(c_l*c_l*c_l)*m_l[17]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[18];
+
+m_inv_l[5]=+((double)0X1.C71C71C71C718P-5)*1.0*m_l[0]+((double)-0X1.8P-56)*1.0/(c_l*c_l)*m_l[1]+((double)-0X1.C71C71C71C71DP-5)*1.0/(c_l*c_l*c_l*c_l)*m_l[2]+((double)0X0P+0)*1.0/c_l*m_l[3]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[4]+((double)0X0P+0)*1.0/(c_l)*m_l[5]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[6]+((double)0X1.5555555555555P-3)*1.0/c_l*m_l[7]+((double)-0X1.5555555555556P-3)*1.0/(c_l*c_l*c_l)*m_l[8]+((double)-0X1.5555555555558P-5)*1.0/(c_l*c_l)*m_l[9]+((double)0X1.5555555555552P-5)*1.0/(c_l*c_l*c_l*c_l)*m_l[10]+((double)-0X1.FFFFFFFFFFFFDP-4)*1.0/(c_l*c_l)*m_l[11]+((double)0X1.0000000000002P-3)*1.0/(c_l*c_l*c_l*c_l)*m_l[12]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[13]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[14]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[15]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[16]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[17]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[18];
+
+m_inv_l[6]=+((double)0X1.C71C71C71C71AP-5)*1.0*m_l[0]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[1]+((double)-0X1.C71C71C71C71DP-5)*1.0/(c_l*c_l*c_l*c_l)*m_l[2]+((double)0X0P+0)*1.0/c_l*m_l[3]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[4]+((double)-0X1.5555555555554P-58)*1.0/(c_l)*m_l[5]+((double)-0X1.5555555555554P-59)*1.0/(c_l*c_l*c_l)*m_l[6]+((double)-0X1.5555555555555P-3)*1.0/c_l*m_l[7]+((double)0X1.5555555555555P-3)*1.0/(c_l*c_l*c_l)*m_l[8]+((double)-0X1.5555555555556P-5)*1.0/(c_l*c_l)*m_l[9]+((double)0X1.5555555555554P-5)*1.0/(c_l*c_l*c_l*c_l)*m_l[10]+((double)-0X1.FFFFFFFFFFFFEP-4)*1.0/(c_l*c_l)*m_l[11]+((double)0X1P-3)*1.0/(c_l*c_l*c_l*c_l)*m_l[12]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[13]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[14]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[15]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[16]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[17]+((double)-0X1P-55)*1.0/(c_l*c_l*c_l)*m_l[18];
+
+m_inv_l[7]=+((double)0X1.C71C71C71C71BP-6)*1.0*m_l[0]+((double)0X1.5555555555555P-5)*1.0/(c_l*c_l)*m_l[1]+((double)0X1.C71C71C71C71BP-7)*1.0/(c_l*c_l*c_l*c_l)*m_l[2]+((double)0X1.5555555555555P-4)*1.0/c_l*m_l[3]+((double)0X1.5555555555555P-5)*1.0/(c_l*c_l*c_l)*m_l[4]+((double)0X1.5555555555555P-4)*1.0/(c_l)*m_l[5]+((double)0X1.5555555555555P-5)*1.0/(c_l*c_l*c_l)*m_l[6]+((double)0X0P+0)*1.0/c_l*m_l[7]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[8]+((double)0X1.5555555555555P-6)*1.0/(c_l*c_l)*m_l[9]+((double)0X1.5555555555555P-6)*1.0/(c_l*c_l*c_l*c_l)*m_l[10]+((double)0X1.0000000000001P-4)*1.0/(c_l*c_l)*m_l[11]+((double)0X1.0000000000001P-4)*1.0/(c_l*c_l*c_l*c_l)*m_l[12]+((double)0X1P-2)*1.0/(c_l*c_l)*m_l[13]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[14]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[15]+((double)0X1P-3)*1.0/(c_l*c_l*c_l)*m_l[16]+((double)-0X1P-3)*1.0/(c_l*c_l*c_l)*m_l[17]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[18];
+
+m_inv_l[8]=+((double)0X1.C71C71C71C71BP-6)*1.0*m_l[0]+((double)0X1.5555555555555P-5)*1.0/(c_l*c_l)*m_l[1]+((double)0X1.C71C71C71C71BP-7)*1.0/(c_l*c_l*c_l*c_l)*m_l[2]+((double)-0X1.5555555555555P-4)*1.0/c_l*m_l[3]+((double)-0X1.5555555555555P-5)*1.0/(c_l*c_l*c_l)*m_l[4]+((double)-0X1.5555555555555P-4)*1.0/(c_l)*m_l[5]+((double)-0X1.5555555555555P-5)*1.0/(c_l*c_l*c_l)*m_l[6]+((double)0X0P+0)*1.0/c_l*m_l[7]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[8]+((double)0X1.5555555555555P-6)*1.0/(c_l*c_l)*m_l[9]+((double)0X1.5555555555555P-6)*1.0/(c_l*c_l*c_l*c_l)*m_l[10]+((double)0X1.0000000000001P-4)*1.0/(c_l*c_l)*m_l[11]+((double)0X1.0000000000001P-4)*1.0/(c_l*c_l*c_l*c_l)*m_l[12]+((double)0X1P-2)*1.0/(c_l*c_l)*m_l[13]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[14]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[15]+((double)-0X1P-3)*1.0/(c_l*c_l*c_l)*m_l[16]+((double)0X1P-3)*1.0/(c_l*c_l*c_l)*m_l[17]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[18];
+
+m_inv_l[9]=+((double)0X1.C71C71C71C71BP-6)*1.0*m_l[0]+((double)0X1.5555555555555P-5)*1.0/(c_l*c_l)*m_l[1]+((double)0X1.C71C71C71C71BP-7)*1.0/(c_l*c_l*c_l*c_l)*m_l[2]+((double)0X1.5555555555555P-4)*1.0/c_l*m_l[3]+((double)0X1.5555555555555P-5)*1.0/(c_l*c_l*c_l)*m_l[4]+((double)-0X1.5555555555555P-4)*1.0/(c_l)*m_l[5]+((double)-0X1.5555555555555P-5)*1.0/(c_l*c_l*c_l)*m_l[6]+((double)0X0P+0)*1.0/c_l*m_l[7]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[8]+((double)0X1.5555555555555P-6)*1.0/(c_l*c_l)*m_l[9]+((double)0X1.5555555555555P-6)*1.0/(c_l*c_l*c_l*c_l)*m_l[10]+((double)0X1.0000000000001P-4)*1.0/(c_l*c_l)*m_l[11]+((double)0X1.0000000000001P-4)*1.0/(c_l*c_l*c_l*c_l)*m_l[12]+((double)-0X1P-2)*1.0/(c_l*c_l)*m_l[13]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[14]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[15]+((double)0X1P-3)*1.0/(c_l*c_l*c_l)*m_l[16]+((double)0X1P-3)*1.0/(c_l*c_l*c_l)*m_l[17]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[18];
+
+m_inv_l[10]=+((double)0X1.C71C71C71C71BP-6)*1.0*m_l[0]+((double)0X1.5555555555555P-5)*1.0/(c_l*c_l)*m_l[1]+((double)0X1.C71C71C71C71BP-7)*1.0/(c_l*c_l*c_l*c_l)*m_l[2]+((double)-0X1.5555555555555P-4)*1.0/c_l*m_l[3]+((double)-0X1.5555555555555P-5)*1.0/(c_l*c_l*c_l)*m_l[4]+((double)0X1.5555555555555P-4)*1.0/(c_l)*m_l[5]+((double)0X1.5555555555555P-5)*1.0/(c_l*c_l*c_l)*m_l[6]+((double)0X0P+0)*1.0/c_l*m_l[7]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[8]+((double)0X1.5555555555555P-6)*1.0/(c_l*c_l)*m_l[9]+((double)0X1.5555555555555P-6)*1.0/(c_l*c_l*c_l*c_l)*m_l[10]+((double)0X1.0000000000001P-4)*1.0/(c_l*c_l)*m_l[11]+((double)0X1.0000000000001P-4)*1.0/(c_l*c_l*c_l*c_l)*m_l[12]+((double)-0X1P-2)*1.0/(c_l*c_l)*m_l[13]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[14]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[15]+((double)-0X1P-3)*1.0/(c_l*c_l*c_l)*m_l[16]+((double)-0X1P-3)*1.0/(c_l*c_l*c_l)*m_l[17]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[18];
+
+m_inv_l[11]=+((double)0X1.C71C71C71C71DP-6)*1.0*m_l[0]+((double)0X1.5555555555555P-5)*1.0/(c_l*c_l)*m_l[1]+((double)0X1.C71C71C71C71DP-7)*1.0/(c_l*c_l*c_l*c_l)*m_l[2]+((double)0X1.5555555555555P-4)*1.0/c_l*m_l[3]+((double)0X1.5555555555555P-5)*1.0/(c_l*c_l*c_l)*m_l[4]+((double)0X0P+0)*1.0/(c_l)*m_l[5]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[6]+((double)0X1.5555555555555P-4)*1.0/c_l*m_l[7]+((double)0X1.5555555555555P-5)*1.0/(c_l*c_l*c_l)*m_l[8]+((double)0X1.5555555555555P-6)*1.0/(c_l*c_l)*m_l[9]+((double)0X1.5555555555555P-6)*1.0/(c_l*c_l*c_l*c_l)*m_l[10]+((double)-0X1.0000000000001P-4)*1.0/(c_l*c_l)*m_l[11]+((double)-0X1.0000000000001P-4)*1.0/(c_l*c_l*c_l*c_l)*m_l[12]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[13]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[14]+((double)0X1P-2)*1.0/(c_l*c_l)*m_l[15]+((double)-0X1P-3)*1.0/(c_l*c_l*c_l)*m_l[16]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[17]+((double)0X1P-3)*1.0/(c_l*c_l*c_l)*m_l[18];
+
+m_inv_l[12]=+((double)0X1.C71C71C71C71DP-6)*1.0*m_l[0]+((double)0X1.5555555555555P-5)*1.0/(c_l*c_l)*m_l[1]+((double)0X1.C71C71C71C71DP-7)*1.0/(c_l*c_l*c_l*c_l)*m_l[2]+((double)-0X1.5555555555555P-4)*1.0/c_l*m_l[3]+((double)-0X1.5555555555555P-5)*1.0/(c_l*c_l*c_l)*m_l[4]+((double)0X0P+0)*1.0/(c_l)*m_l[5]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[6]+((double)-0X1.5555555555555P-4)*1.0/c_l*m_l[7]+((double)-0X1.5555555555555P-5)*1.0/(c_l*c_l*c_l)*m_l[8]+((double)0X1.5555555555555P-6)*1.0/(c_l*c_l)*m_l[9]+((double)0X1.5555555555555P-6)*1.0/(c_l*c_l*c_l*c_l)*m_l[10]+((double)-0X1.0000000000001P-4)*1.0/(c_l*c_l)*m_l[11]+((double)-0X1.0000000000001P-4)*1.0/(c_l*c_l*c_l*c_l)*m_l[12]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[13]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[14]+((double)0X1P-2)*1.0/(c_l*c_l)*m_l[15]+((double)0X1P-3)*1.0/(c_l*c_l*c_l)*m_l[16]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[17]+((double)-0X1P-3)*1.0/(c_l*c_l*c_l)*m_l[18];
+
+m_inv_l[13]=+((double)0X1.C71C71C71C71DP-6)*1.0*m_l[0]+((double)0X1.5555555555555P-5)*1.0/(c_l*c_l)*m_l[1]+((double)0X1.C71C71C71C71DP-7)*1.0/(c_l*c_l*c_l*c_l)*m_l[2]+((double)0X1.5555555555555P-4)*1.0/c_l*m_l[3]+((double)0X1.5555555555555P-5)*1.0/(c_l*c_l*c_l)*m_l[4]+((double)0X0P+0)*1.0/(c_l)*m_l[5]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[6]+((double)-0X1.5555555555555P-4)*1.0/c_l*m_l[7]+((double)-0X1.5555555555555P-5)*1.0/(c_l*c_l*c_l)*m_l[8]+((double)0X1.5555555555555P-6)*1.0/(c_l*c_l)*m_l[9]+((double)0X1.5555555555555P-6)*1.0/(c_l*c_l*c_l*c_l)*m_l[10]+((double)-0X1.0000000000001P-4)*1.0/(c_l*c_l)*m_l[11]+((double)-0X1.0000000000001P-4)*1.0/(c_l*c_l*c_l*c_l)*m_l[12]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[13]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[14]+((double)-0X1P-2)*1.0/(c_l*c_l)*m_l[15]+((double)-0X1P-3)*1.0/(c_l*c_l*c_l)*m_l[16]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[17]+((double)-0X1P-3)*1.0/(c_l*c_l*c_l)*m_l[18];
+
+m_inv_l[14]=+((double)0X1.C71C71C71C71DP-6)*1.0*m_l[0]+((double)0X1.5555555555555P-5)*1.0/(c_l*c_l)*m_l[1]+((double)0X1.C71C71C71C71DP-7)*1.0/(c_l*c_l*c_l*c_l)*m_l[2]+((double)-0X1.5555555555555P-4)*1.0/c_l*m_l[3]+((double)-0X1.5555555555555P-5)*1.0/(c_l*c_l*c_l)*m_l[4]+((double)0X0P+0)*1.0/(c_l)*m_l[5]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[6]+((double)0X1.5555555555555P-4)*1.0/c_l*m_l[7]+((double)0X1.5555555555555P-5)*1.0/(c_l*c_l*c_l)*m_l[8]+((double)0X1.5555555555555P-6)*1.0/(c_l*c_l)*m_l[9]+((double)0X1.5555555555555P-6)*1.0/(c_l*c_l*c_l*c_l)*m_l[10]+((double)-0X1.0000000000001P-4)*1.0/(c_l*c_l)*m_l[11]+((double)-0X1.0000000000001P-4)*1.0/(c_l*c_l*c_l*c_l)*m_l[12]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[13]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[14]+((double)-0X1P-2)*1.0/(c_l*c_l)*m_l[15]+((double)0X1P-3)*1.0/(c_l*c_l*c_l)*m_l[16]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[17]+((double)0X1P-3)*1.0/(c_l*c_l*c_l)*m_l[18];
+
+m_inv_l[15]=+((double)0X1.C71C71C71C71CP-6)*1.0*m_l[0]+((double)0X1.5555555555555P-5)*1.0/(c_l*c_l)*m_l[1]+((double)0X1.C71C71C71C71CP-7)*1.0/(c_l*c_l*c_l*c_l)*m_l[2]+((double)0X0P+0)*1.0/c_l*m_l[3]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[4]+((double)0X1.5555555555555P-4)*1.0/(c_l)*m_l[5]+((double)0X1.5555555555555P-5)*1.0/(c_l*c_l*c_l)*m_l[6]+((double)0X1.5555555555555P-4)*1.0/c_l*m_l[7]+((double)0X1.5555555555555P-5)*1.0/(c_l*c_l*c_l)*m_l[8]+((double)-0X1.5555555555554P-5)*1.0/(c_l*c_l)*m_l[9]+((double)-0X1.5555555555554P-5)*1.0/(c_l*c_l*c_l*c_l)*m_l[10]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[11]+((double)0X0P+0)*1.0/(c_l*c_l*c_l*c_l)*m_l[12]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[13]+((double)0X1P-2)*1.0/(c_l*c_l)*m_l[14]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[15]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[16]+((double)0X1P-3)*1.0/(c_l*c_l*c_l)*m_l[17]+((double)-0X1P-3)*1.0/(c_l*c_l*c_l)*m_l[18];
+
+m_inv_l[16]=+((double)0X1.C71C71C71C71AP-6)*1.0*m_l[0]+((double)0X1.5555555555557P-5)*1.0/(c_l*c_l)*m_l[1]+((double)0X1.C71C71C71C71AP-7)*1.0/(c_l*c_l*c_l*c_l)*m_l[2]+((double)0X0P+0)*1.0/c_l*m_l[3]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[4]+((double)-0X1.5555555555555P-4)*1.0/(c_l)*m_l[5]+((double)-0X1.5555555555555P-5)*1.0/(c_l*c_l*c_l)*m_l[6]+((double)-0X1.5555555555555P-4)*1.0/c_l*m_l[7]+((double)-0X1.5555555555555P-5)*1.0/(c_l*c_l*c_l)*m_l[8]+((double)-0X1.5555555555554P-5)*1.0/(c_l*c_l)*m_l[9]+((double)-0X1.5555555555554P-5)*1.0/(c_l*c_l*c_l*c_l)*m_l[10]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[11]+((double)0X0P+0)*1.0/(c_l*c_l*c_l*c_l)*m_l[12]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[13]+((double)0X1P-2)*1.0/(c_l*c_l)*m_l[14]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[15]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[16]+((double)-0X1P-3)*1.0/(c_l*c_l*c_l)*m_l[17]+((double)0X1P-3)*1.0/(c_l*c_l*c_l)*m_l[18];
+
+m_inv_l[17]=+((double)0X1.C71C71C71C71CP-6)*1.0*m_l[0]+((double)0X1.5555555555555P-5)*1.0/(c_l*c_l)*m_l[1]+((double)0X1.C71C71C71C71CP-7)*1.0/(c_l*c_l*c_l*c_l)*m_l[2]+((double)0X0P+0)*1.0/c_l*m_l[3]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[4]+((double)0X1.5555555555555P-4)*1.0/(c_l)*m_l[5]+((double)0X1.5555555555555P-5)*1.0/(c_l*c_l*c_l)*m_l[6]+((double)-0X1.5555555555555P-4)*1.0/c_l*m_l[7]+((double)-0X1.5555555555555P-5)*1.0/(c_l*c_l*c_l)*m_l[8]+((double)-0X1.5555555555556P-5)*1.0/(c_l*c_l)*m_l[9]+((double)-0X1.5555555555556P-5)*1.0/(c_l*c_l*c_l*c_l)*m_l[10]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[11]+((double)0X0P+0)*1.0/(c_l*c_l*c_l*c_l)*m_l[12]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[13]+((double)-0X1P-2)*1.0/(c_l*c_l)*m_l[14]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[15]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[16]+((double)0X1P-3)*1.0/(c_l*c_l*c_l)*m_l[17]+((double)0X1P-3)*1.0/(c_l*c_l*c_l)*m_l[18];
+
+m_inv_l[18]=+((double)0X1.C71C71C71C71CP-6)*1.0*m_l[0]+((double)0X1.5555555555555P-5)*1.0/(c_l*c_l)*m_l[1]+((double)0X1.C71C71C71C71CP-7)*1.0/(c_l*c_l*c_l*c_l)*m_l[2]+((double)-0X0P+0)*1.0/c_l*m_l[3]+((double)-0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[4]+((double)-0X1.5555555555555P-4)*1.0/(c_l)*m_l[5]+((double)-0X1.5555555555555P-5)*1.0/(c_l*c_l*c_l)*m_l[6]+((double)0X1.5555555555555P-4)*1.0/c_l*m_l[7]+((double)0X1.5555555555555P-5)*1.0/(c_l*c_l*c_l)*m_l[8]+((double)-0X1.5555555555556P-5)*1.0/(c_l*c_l)*m_l[9]+((double)-0X1.5555555555556P-5)*1.0/(c_l*c_l*c_l*c_l)*m_l[10]+((double)-0X0P+0)*1.0/(c_l*c_l)*m_l[11]+((double)-0X0P+0)*1.0/(c_l*c_l*c_l*c_l)*m_l[12]+((double)-0X0P+0)*1.0/(c_l*c_l)*m_l[13]+((double)-0X1P-2)*1.0/(c_l*c_l)*m_l[14]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[15]+((double)-0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[16]+((double)-0X1P-3)*1.0/(c_l*c_l*c_l)*m_l[17]+((double)-0X1P-3)*1.0/(c_l*c_l*c_l)*m_l[18];
+
+//====================				
+
+
+
 		for (int mi=0; mi<19; mi++)
 			{
-			sum=0;
-			for (int mj=0; mj<19; mj++)
-				sum+=MI[mi][mj]*m_l[mj];
+			//sum=0;
+			//for (int mj=0; mj<19; mj++)
+			//	sum+=MI[mi][mj]*m_l[mj];
 			
-		
+			sum=m_inv_l[mi];
 
 
 			ip=i+e[mi][0];
@@ -3482,13 +3525,13 @@ double Error(double** u,double** u0,double *v_max,double* u_average)
 	temp2=0;
 	temp3=0;
 	double error_in;
-	double u_max;
+	double u_max1;
 	
 
 	rbuf=new double[mpi_size];
 	um = new double[mpi_size];
 	uave = new double[mpi_size];
-	u_max=0;
+	u_max1=0;
 	*v_max=0;
 
 
@@ -3504,21 +3547,21 @@ for(int i=1; i<Count; i++)
 			temp1+=(u[i][0]-u0[i][0])*(u[i][0]-u0[i][0])+(u[i][1]-u0[i][1])*(u[i][1]-u0[i][1])+(u[i][2]-u0[i][2])*(u[i][2]-u0[i][2]);
 			temp2 += u[i][0]*u[i][0]+u[i][1]*u[i][1]+u[i][2]*u[i][2];	
 			temp3+=sqrt(u[i][0]*u[i][0]+u[i][1]*u[i][1]+u[i][2]*u[i][2]);
-			if (u[i][0]*u[i][0]+u[i][1]*u[i][1]+u[i][2]*u[i][2]>u_max)
-				u_max=u[i][0]*u[i][0]+u[i][1]*u[i][1]+u[i][2]*u[i][2];
+			if (u[i][0]*u[i][0]+u[i][1]*u[i][1]+u[i][2]*u[i][2]>u_max1)
+				u_max1=u[i][0]*u[i][0]+u[i][1]*u[i][1]+u[i][2]*u[i][2];
 			
 			}
 		
 		temp1=sqrt(temp1);
 		temp2=sqrt(temp2);
 		error_in=temp1/(temp2+1e-30);
-		u_max=sqrt(u_max);
+		u_max1=sqrt(u_max1);
 
 		MPI_Barrier(MPI_COMM_WORLD);
 		
 	MPI_Gather(&error_in,1,MPI_DOUBLE,rbuf,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 		
-	MPI_Gather(&u_max,1,MPI_DOUBLE,um,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Gather(&u_max1,1,MPI_DOUBLE,um,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 
 	MPI_Gather(&temp3,1,MPI_DOUBLE,uave,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 
