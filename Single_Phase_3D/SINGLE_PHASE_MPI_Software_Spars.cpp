@@ -147,6 +147,8 @@ void Parallelize_Geometry();
 
 void Comput_Grop_Perm(double** ,double* ,int ,int* );
 
+void output_velocity_for_solute(int ,double* ,double** ,int ,int,int,int,int*** );
+
 
 const int e[19][3]=
 {{0,0,0},{1,0,0,},{-1,0,0},{0,1,0},{0,-1,0},{0,0,1},{0,0,-1},{1,1,0},{-1,1,0},{1,-1,0},{-1,-1,0},{0,1,1},
@@ -166,7 +168,7 @@ const int LN[5]={2,8,10,16,18};
 
 
 int n,nx_l,n_max,in_BC,PerDir,freRe,freDe,freVe,Par_Geo,Par_nx,Par_ny,Par_nz;
-int Zoom;
+int Zoom,vel_sol;
 
 
 int wr_per,pre_xp,pre_xn,pre_yp,pre_yn,pre_zp,pre_zn,fre_backup,lattice_v;
@@ -246,6 +248,7 @@ int tse,the,tme;
 	fin >> backup_rho;                   		fin.getline(dummy, NCHAR);
 	fin >> backup_velocity;                		fin.getline(dummy, NCHAR);
 	fin >> backup_f;                        	fin.getline(dummy, NCHAR);
+	fin >> vel_sol;                                fin.getline(dummy, NCHAR);
 	
 	//fin >> EI;					fin.getline(dummy, NCHAR);
 	//fin >> q_p;					fin.getline(dummy, NCHAR);
@@ -289,7 +292,7 @@ int tse,the,tme;
 	MPI_Bcast(&backup_f,128,MPI_CHAR,0,MPI_COMM_WORLD);
 
 	MPI_Bcast(&lattice_v,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&dx_input,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
-	MPI_Bcast(&dt_input,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Bcast(&dt_input,1,MPI_DOUBLE,0,MPI_COMM_WORLD);MPI_Bcast(&vel_sol,1,MPI_INT,0,MPI_COMM_WORLD);
 	
 	MPI_Bcast(&par_per_x,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&par_per_y,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&par_per_z,1,MPI_INT,0,MPI_COMM_WORLD);
@@ -671,7 +674,12 @@ if (wr_per==1)
 				
 			if ((fre_backup>=0) and (n%fre_backup==0) and (n>0))
 			        Backup(n,rho,u,f);
-			        
+			
+			 if ((vel_sol>=0) and (n%vel_sol==0))
+			         output_velocity_for_solute(n,rho,u,mirX,mirY,mirZ,mir,Solid);
+			 
+			 
+			 
 			if(error!=error) {cout<<"PROGRAM STOP"<<endl;break;};
 			if(U_max_ref>=5) {cout<<"PROGRAM STOP DUE TO HIGH VELOCITY"<<endl;break;}
 		}	
@@ -4746,5 +4754,112 @@ for (int in_z=0;in_z<loop[divi];in_z++)
 	
 	
 
+}
+
+
+void output_velocity_for_solute(int m,double* rho,double** u,int MirX,int MirY,int MirZ,int mir,int*** Solid)	
+{
+
+	int rank = MPI :: COMM_WORLD . Get_rank ();
+	const int mpi_size=MPI :: COMM_WORLD . Get_size ();
+	const int root_rank=0;
+	
+	int* nx_g = new int[mpi_size];
+	int* disp = new int[mpi_size];
+
+	
+	MPI_Gather(&nx_l,1,MPI_INT,nx_g,1,MPI_INT,root_rank,MPI_COMM_WORLD);
+	
+	
+	if (rank==root_rank)
+		{
+		disp[0]=0;
+		for (int i=0;i<mpi_size;i++)
+			nx_g[i]*=(NY+1)*(NZ+1)*3;
+
+		for (int i=1;i<mpi_size;i++)
+			disp[i]=disp[i-1]+nx_g[i-1];
+		}
+	
+
+	double* rbuf_v;
+	double* v_storage = new double[nx_l*(NY+1)*(NZ+1)*3];
+
+
+	for (int i=0;i<nx_l;i++)
+		for (int j=0;j<=NY;j++)
+			for(int k=0;k<=NZ;k++)
+			{
+			if (Solid[i][j][k]>0)
+				{
+				v_storage[i*(NY+1)*(NZ+1)*3+j*(NZ+1)*3+k*3]=u[Solid[i][j][k]][0];
+				v_storage[i*(NY+1)*(NZ+1)*3+j*(NZ+1)*3+k*3+1]=u[Solid[i][j][k]][1];
+				v_storage[i*(NY+1)*(NZ+1)*3+j*(NZ+1)*3+k*3+2]=u[Solid[i][j][k]][2];
+				}				
+			else
+				{
+				v_storage[i*(NY+1)*(NZ+1)*3+j*(NZ+1)*3+k*3]=0;
+				v_storage[i*(NY+1)*(NZ+1)*3+j*(NZ+1)*3+k*3+1]=0;
+				v_storage[i*(NY+1)*(NZ+1)*3+j*(NZ+1)*3+k*3+2]=0;
+				}
+			}
+
+	if (rank==root_rank)
+		rbuf_v= new double[(NX+1)*(NY+1)*(NZ+1)*3];
+
+
+	//MPI_Barrier(MPI_COMM_WORLD);
+	MPI_Gatherv(v_storage,nx_l*(NY+1)*(NZ+1)*3,MPI_DOUBLE,rbuf_v,nx_g,disp,MPI_DOUBLE,root_rank,MPI_COMM_WORLD);
+
+
+	int NX0=NX+1;
+	int NY0=NY+1;
+	int NZ0=NZ+1;
+
+if (mir==0)
+	{	
+	if (MirX==1)
+		NX0=NX0/2;
+	if (MirY==1)
+		NY0=NY0/2;
+	if (MirZ==1)
+		NZ0=NZ0/2;
+	}
+
+
+
+	if (rank==root_rank)
+	{        
+	        ostringstream name;
+	        name<<outputfile<<"Velocity_Solute_"<<m<<".bin";
+	        ofstream fs(name.str().c_str());
+        //for(int k=0;k<NZ0;k++)
+      	//	for(int j=0; j<NY0; j++)
+	//		{
+	//		for(int i=0;i<NX0;i++)
+	//		        {
+			        fs.write((char *)(rbuf_v),sizeof(double)*NX0*NY0*NZ0);
+	//		        fs.write((char *)(rbuf_v[i*(NY+1)*(NZ+1)*3+j*(NZ+1)*3+k*3+1]),sizeof(i)*3);
+	//		        fs.write((char *)(&rbuf_v[i*(NY+1)*(NZ+1)*3+j*(NZ+1)*3+k*3+2]),sizeof(i)*3);
+	//		        }
+	//		}
+		fs.close();
+		
+        
+  // ============================================	
+	}
+
+
+
+	if (rank==root_rank)
+		{		
+		delete [] rbuf_v;
+		}
+	delete [] nx_g;
+	delete [] disp;
+	delete [] v_storage;
+	
+
+		
 }
 

@@ -1,10 +1,10 @@
 =================SINGLE PHASE LATTICE BOLTZMANN CODE INPUT FILE================================================
-64_all_128x64x64.dat        :Geometry filename
-128 64 64                :nx ny nz
-1000	                 :Maxmum time step
+BC.dat        :Geometry filename
+100 30 3                :nx ny nz
+60000	                 :Maxmum time step
 4.9	                :x=1 (um) Resolution (for Permeability calculation, resolution/dx)
 0	        	       :Pressure/Velocity Boundary (1=Yes, 0=No)   Convergence accelerator (1=yes, 0=no)
-2.44e-6 0.0 0.0          :body force for x,y,z
+1.44e-6 0.0 0.0          :body force for x,y,z
 0 1.0 0 1.003 	:Pressure Boundary in X direction (Format detials can be found within this file)p=c_s^2*/rho
 0 1.0 0 1.0	:Pressure Boundary in Y direction (Format detials can be found within this file)
 0 1.0 0 1.0	:Pressure Boundary in Z direction (Format detials can be found within this file)
@@ -34,7 +34,7 @@
 LBM_Backup_Density_4000            :BACKUP DATA FOR INTIALIZATION--DENSITY
 LBM_Backup_Velocity_4000           :BACKUP DATA FOR INTIALIZATION--Velocity
 LBM_Backup_f_4000                        :BACKUP DATA FOR DISTRIBUTION FUNCTION F
-
+2000                      :Velocity output for Solute transport every x timesteps
 
 
 
