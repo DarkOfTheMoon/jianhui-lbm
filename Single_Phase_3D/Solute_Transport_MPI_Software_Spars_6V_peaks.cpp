@@ -470,7 +470,7 @@ if (Zoom>1)
 		Geometry_b(Solid);
 
 	for (int psi_n=0;psi_n<num_psi;psi_n++)
-	        init(psi_n*5,rho,u,f,fg[psi_n],F,Fg[psi_n],rho_r[psi_n],rhor,forcex,forcey,forcez,Psi_local,SupInv);
+	        init(psi_n,rho,u,f,fg[psi_n],F,Fg[psi_n],rho_r[psi_n],rhor,forcex,forcey,forcez,Psi_local,SupInv);
 
 		Backup(sol_ini_n,rho,rho_r[0],u,f,fg[0]);
 	
@@ -491,7 +491,7 @@ char FileName2[128];strcpy(FileName2,outputfile);
 char FileName3[128];strcpy(FileName3,outputfile);
 char FileName4[128];strcpy(FileName4,outputfile);
 
-strcat(FileName,"Results.txt");
+strcat(FileName,"Results_solute.txt");
 strcat(FileName2,"Permeability.txt");
 strcat(FileName4,"Velocity_ave_max.txt");
 strcat(FileName3,"bodyforce.txt");
