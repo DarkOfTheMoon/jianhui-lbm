@@ -164,7 +164,7 @@ double ref_psi,c_s,c_s2,dx_input,dt_input,lat_c;
 double Dispersion=0;
 double disp_pre=0;
 
-int sol_c_xp,sol_c_xn,sol_c_yp,sol_c_yn,sol_c_zp,sol_c_zn;
+int sol_c_xp,sol_c_xn,sol_c_yp,sol_c_yn,sol_c_zp,sol_c_zn,wid_psi;
 double c_xp,c_xn,c_yp,c_yn,c_zp,c_zn;
 
 int sol_zf_xp,sol_zf_xn,sol_zf_yp,sol_zf_yn,sol_zf_zp,sol_zf_zn;
@@ -265,7 +265,7 @@ double v_max;
 	fin >> backup_f;                        	fin.getline(dummy, NCHAR);
 	fin >> backup_g;                        	fin.getline(dummy, NCHAR);
 	fin >> sol_ini_n;				fin.getline(dummy, NCHAR);
-	fin >> num_psi;					fin.getline(dummy, NCHAR);
+	fin >> num_psi>>wid_psi;					fin.getline(dummy, NCHAR);
 	
 	
 	fin.close();
@@ -331,7 +331,7 @@ double v_max;
 	MPI_Bcast(&ini_psi,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&sol_ini_n,1,MPI_INT,0,MPI_COMM_WORLD);
 
 	MPI_Bcast(&par_per_x,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&par_per_y,1,MPI_INT,0,MPI_COMM_WORLD);
-	MPI_Bcast(&par_per_z,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&par_per_z,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&wid_psi,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&per_yp,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&per_xp,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&per_yn,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&per_zp,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&per_zn,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&per_xn,1,MPI_INT,0,MPI_COMM_WORLD);
@@ -1267,7 +1267,7 @@ void init(int peak_n,double* rho, double** u, double** f,double** fg, double** F
 				j=(int)((SupInv[ci]%((NY+1)*(NZ+1)))/(NZ+1));
 				m=(int)(SupInv[ci]%(NZ+1));   
 
-			if (i==peak_n)
+			if ((i>=peak_n*wid_psi) and (i<(peak_n+1)*wid_psi))
 			rho_r[ci]=1.0;
 			else
 			rho_r[ci]=0.0;
@@ -3565,12 +3565,12 @@ int ind;
 	           for (int psi_n=1;psi_n<num_psi;psi_n++)
 	                   {
 	                           ind=0;
-	                   for (int i=psi_n;i<=NX;i++)
+	                   for (int i=psi_n*wid_psi;i<=NX;i++)
 	                           {
 	                           ls_psi[ind]=rbuf_general[psi_n][i];
 	                           ind+=1;
 	                           }
-	                   for (int i=0;i<psi_n;i++)
+	                   for (int i=0;i<psi_n*wid_psi;i++)
 	                           {
 	                           ls_psi[ind]=rbuf_general[psi_n][i];
 	                           ind+=1;
