@@ -4759,105 +4759,28 @@ for (int in_z=0;in_z<loop[divi];in_z++)
 
 void output_velocity_for_solute(int m,double* rho,double** u,int MirX,int MirY,int MirZ,int mir,int*** Solid)	
 {
-
-	int rank = MPI :: COMM_WORLD . Get_rank ();
-	const int mpi_size=MPI :: COMM_WORLD . Get_size ();
-	const int root_rank=0;
-	
-	int* nx_g = new int[mpi_size];
-	int* disp = new int[mpi_size];
-
-	
-	MPI_Gather(&nx_l,1,MPI_INT,nx_g,1,MPI_INT,root_rank,MPI_COMM_WORLD);
-	
-	
-	if (rank==root_rank)
-		{
-		disp[0]=0;
-		for (int i=0;i<mpi_size;i++)
-			nx_g[i]*=(NY+1)*(NZ+1)*3;
-
-		for (int i=1;i<mpi_size;i++)
-			disp[i]=disp[i-1]+nx_g[i-1];
-		}
+  	int rank = MPI :: COMM_WORLD . Get_rank ();
+	int mpi_size=MPI :: COMM_WORLD . Get_size ();
 	
 
-	double* rbuf_v;
-	double* v_storage = new double[nx_l*(NY+1)*(NZ+1)*3];
+	double* lsu= new double[Count*3];
+		for (int i=1;i<=Count;i++)
+			for (int j=0;j<3;j++)
+			lsu[(i-1)*3+j]=u[i][j];
 
 
-	for (int i=0;i<nx_l;i++)
-		for (int j=0;j<=NY;j++)
-			for(int k=0;k<=NZ;k++)
-			{
-			if (Solid[i][j][k]>0)
-				{
-				v_storage[i*(NY+1)*(NZ+1)*3+j*(NZ+1)*3+k*3]=u[Solid[i][j][k]][0];
-				v_storage[i*(NY+1)*(NZ+1)*3+j*(NZ+1)*3+k*3+1]=u[Solid[i][j][k]][1];
-				v_storage[i*(NY+1)*(NZ+1)*3+j*(NZ+1)*3+k*3+2]=u[Solid[i][j][k]][2];
-				}				
-			else
-				{
-				v_storage[i*(NY+1)*(NZ+1)*3+j*(NZ+1)*3+k*3]=0;
-				v_storage[i*(NY+1)*(NZ+1)*3+j*(NZ+1)*3+k*3+1]=0;
-				v_storage[i*(NY+1)*(NZ+1)*3+j*(NZ+1)*3+k*3+2]=0;
-				}
-			}
-
-	if (rank==root_rank)
-		rbuf_v= new double[(NX+1)*(NY+1)*(NZ+1)*3];
+	ostringstream name;
+	name<<outputfile<<"Velocity_for_solute_"<<m<<"."<<rank<<".bin";
+	ofstream out;
+	out.open(name.str().c_str());
 
 
-	//MPI_Barrier(MPI_COMM_WORLD);
-	MPI_Gatherv(v_storage,nx_l*(NY+1)*(NZ+1)*3,MPI_DOUBLE,rbuf_v,nx_g,disp,MPI_DOUBLE,root_rank,MPI_COMM_WORLD);
-
-
-	int NX0=NX+1;
-	int NY0=NY+1;
-	int NZ0=NZ+1;
-
-if (mir==0)
-	{	
-	if (MirX==1)
-		NX0=NX0/2;
-	if (MirY==1)
-		NY0=NY0/2;
-	if (MirZ==1)
-		NZ0=NZ0/2;
-	}
-
-
-
-	if (rank==root_rank)
-	{        
-	        ostringstream name;
-	        name<<outputfile<<"Velocity_Solute_"<<m<<".bin";
-	        ofstream fs(name.str().c_str());
-        //for(int k=0;k<NZ0;k++)
-      	//	for(int j=0; j<NY0; j++)
-	//		{
-	//		for(int i=0;i<NX0;i++)
-	//		        {
-			        fs.write((char *)(rbuf_v),sizeof(double)*NX0*NY0*NZ0);
-	//		        fs.write((char *)(rbuf_v[i*(NY+1)*(NZ+1)*3+j*(NZ+1)*3+k*3+1]),sizeof(i)*3);
-	//		        fs.write((char *)(&rbuf_v[i*(NY+1)*(NZ+1)*3+j*(NZ+1)*3+k*3+2]),sizeof(i)*3);
-	//		        }
-	//		}
-		fs.close();
-		
         
-  // ============================================	
-	}
-
-
-
-	if (rank==root_rank)
-		{		
-		delete [] rbuf_v;
-		}
-	delete [] nx_g;
-	delete [] disp;
-	delete [] v_storage;
+			        out.write((char *)lsu,sizeof(double)*Count*3);
+	
+	out.close();
+		
+	delete [] lsu;
 	
 
 		

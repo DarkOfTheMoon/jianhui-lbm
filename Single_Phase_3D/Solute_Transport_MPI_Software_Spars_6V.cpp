@@ -132,11 +132,11 @@ const double w[19]={1.0/3.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.
 
 //========*************************===============
 //int LR[19]={0,2,1,4,3,6,5,10,9,8,7,14,13,12,11,18,17,16,15};
-const int LR[19]={0,2,1,4,3,6,5,8,7,10,9,12,11,14,13,16,15,18,17};
+const int LR[7]={0,2,1,4,3,6,5};
 const int FRP[19]={0,0,0,0,0,0,0,1,0,2,0,3,0,4,0,0,0,0,0};
 const int FLN[19]={0,0,0,0,0,0,0,0,1,0,2,0,3,0,4,0,0,0,0};
-const int RP[5]={1,7,9,11,13};
-const int LN[5]={2,8,10,12,14};
+const int RP=1;
+const int LN=2;
 const int SYN[5]={3,7,10,15,17};
 const int SYP[5]={4,8,9,16,18};
 const int SZN[5]={5,11,14,15,18};
@@ -426,8 +426,8 @@ if (Zoom>1)
 		//f[i] = new double[19];
 		//u0[i] = new double[3];
 		//F[i] = new double[19];
-		fg[i] = new double[19];
-		Fg[i] = new double[19];
+		fg[i] = new double[7];
+		Fg[i] = new double[7];
 		}
 
 	//Comput_MI(M,MI);
@@ -444,7 +444,7 @@ if (Zoom>1)
 		Geometry_b(Solid);
 
 	
-	        init(rho,u,f,fg,F,Fg,rho_r,rhor,forcex,forcey,forcez,Psi_local,SupInv);cout<<"aaaaaaaaa"<<endl;
+	        init(rho,u,f,fg,F,Fg,rho_r,rhor,forcex,forcey,forcez,Psi_local,SupInv);
 		Backup(sol_ini_n,rho,rho_r,u,f,fg);
 	
 
@@ -1237,11 +1237,11 @@ void init(double* rho, double** u, double** f,double** fg, double** F, double** 
 
 			//INITIALIZATION OF m and f
 
-			for (int lm=0;lm<19;lm++)
+			for (int lm=1;lm<7;lm++)
 			{
 			
-			eu=elat[lm][0]*u[i][0]+elat[lm][1]*u[i][1]+elat[lm][2]*u[i][2];
-			fg[i][lm]=w[lm]*rho_r[i]*(1+3*eu/c2);
+			eu=e2[lm][0]*u[i][0]+e2[lm][1]*u[i][1]+e2[lm][2]*u[i][2];
+			fg[i][lm]=1.0/6.0*rho_r[i]*(1+3*eu);
 			Fg[i][lm]=fg[i][lm];
 			
 			}
@@ -1287,13 +1287,13 @@ void collision(double* rho,double** u,double** f,double** F, double** fg, double
 
 	const double c_l=lat_c;	
 
-double g_r[19];
+double g_r[7];
 double rho_0=1.0;
 double lm0,lm1,cc,sum,uu;
 double ux,uy,uz,nx,ny,nz;
 double usqr,vsqr,eu,ef,cospsi,s_other;
-double F_hat[19],GuoF[19],f_eq[19],u_tmp[3];
-double m_l[19],m_inv_l[19];
+//double F_hat[19],GuoF[19],f_eq[19],u_tmp[3];
+//double m_l[19],m_inv_l[19];
 int i,j,m;
 int interi,interj,interk,ip,jp,kp;
 double c2,c4;
@@ -1318,26 +1318,24 @@ double c2,c4;
 	
 
 	
-	double* recvl_s= new double[Gcl[rank]*5];
-	double* recvr_s = new double[Gcr[rank]*5];
+	double* recvl_s= new double[Gcl[rank]];
+	double* recvr_s = new double[Gcr[rank]];
 	
 
 if (rank==0)
 		{
 		
-		sendl_s = new double[Gcr[mpi_size-1]*5];
-		sendr_s = new double[Gcl[rank+1]*5];
+		sendl_s = new double[Gcr[mpi_size-1]];
+		sendr_s = new double[Gcl[rank+1]];
 
 		
 
 
 		for (int ka=0;ka<Gcr[mpi_size-1];ka++)
-				for (int kb=0;kb<5;kb++)
-				{sendl_s[ka*5+kb]=-100;}
+				sendl_s[ka]=-100;
 		                
 		 for (int ka=0;ka<Gcl[rank+1];ka++)
-		                for (int kb=0;kb<5;kb++)
-				{sendr_s[ka*5+kb]=-100;}
+		               sendr_s[ka]=-100;
   
 		
 		
@@ -1346,37 +1344,33 @@ if (rank==0)
 		if (rank==mpi_size-1)
 			{
 			
-			sendl_s = new double[Gcr[rank-1]*5];
-			sendr_s = new double[Gcl[0]*5];
+			sendl_s = new double[Gcr[rank-1]];
+			sendr_s = new double[Gcl[0]];
 			
 			
 
 			for (int ka=0;ka<Gcr[rank-1];ka++)
-				for (int kb=0;kb<5;kb++)
-				{sendl_s[ka*5+kb]=-100;}
+				sendl_s[ka]=-100;
 		                
 
 		        for (int ka=0;ka<Gcl[0];ka++)
-				for (int kb=0;kb<5;kb++)
-			   	{sendr_s[ka*5+kb]=-100;}
+				sendr_s[ka]=-100;
 			
 			
 			}
 			else
 			{
 			
-			sendl_s = new double[Gcr[rank-1]*5];
-			sendr_s = new double[Gcl[rank+1]*5];
+			sendl_s = new double[Gcr[rank-1]];
+			sendr_s = new double[Gcl[rank+1]];
 			
 			
 
 			for (int ka=0;ka<Gcr[rank-1];ka++)
-				for (int kb=0;kb<5;kb++)
-				{sendl_s[ka*5+kb]=-100;}
+				sendl_s[ka]=-100;
 
 		        for (int ka=0;ka<Gcl[rank+1];ka++)
-				for (int kb=0;kb<5;kb++)
-				{sendr_s[ka*5+kb]=-100;}
+				sendr_s[ka]=-100;
 			
 			}
 
@@ -1399,30 +1393,30 @@ MPI_Barrier(MPI_COMM_WORLD);
 			
 			// ==================   m=Mf matrix calculation  =============================
 			// ==================   F_hat=(I-.5*S)MGuoF =====================================
-				for (int mi=0; mi<19; mi++)
+				for (int mi=1; mi<7; mi++)
 					{
 					
 
 
 
-				eu=e[mi][0]*u[ci][0]+e[mi][1]*u[ci][1]+e[mi][2]*u[ci][2];
+				eu=e2[mi][0]*u[ci][0]+e2[mi][1]*u[ci][1]+e2[mi][2]*u[ci][2];
 
                 	//=========================EVOLUTION OF G FOR SIMPLE BOUNDARY========================
                		//	g_r[mi]=fg[ci][mi]-(fg[ci][mi]-w[mi]*rho_r[ci]*(1+3*eu))/tau_s;
 			//=========================EVOLUTION OF G FOR COMPLEX BOUNDARY=======================
-                		g_r[mi]=fg[ci][mi]-(fg[ci][mi]-w[mi]*rho_r[ci]*(1+3*eu/c2+4.5*eu*eu/c4-1.5*uu/c2))/tau_s;
+                		g_r[mi]=fg[ci][mi]-(fg[ci][mi]-1.0/6.0*rho_r[ci]*(1+3*eu))/tau_s;
 			//===================================================================================
 
 					}
 
 
 
-		for (int mi=0; mi<19; mi++)
+		for (int mi=1; mi<7; mi++)
 			{
 			
-			ip=i+e[mi][0];
-			jp=j+e[mi][1];if (jp<0) {jp=NY;}; if (jp>NY) {jp=0;};
-			kp=m+e[mi][2];if (kp<0) {kp=NZ;}; if (kp>NZ) {kp=0;};
+			ip=i+e2[mi][0];
+			jp=j+e2[mi][1];if (jp<0) {jp=NY;}; if (jp>NY) {jp=0;};
+			kp=m+e2[mi][2];if (kp<0) {kp=NZ;}; if (kp>NZ) {kp=0;};
 
 			
 
@@ -1430,7 +1424,7 @@ MPI_Barrier(MPI_COMM_WORLD);
 				if (Sl[jp*(NZ+1)+kp]>0)
 				{
 				
-				sendl_s[(Sl[jp*(NZ+1)+kp]-1)*5+FLN[mi]]=g_r[mi];
+				sendl_s[Sl[jp*(NZ+1)+kp]-1]=g_r[mi];
 				}
 				else
 				{
@@ -1446,7 +1440,7 @@ MPI_Barrier(MPI_COMM_WORLD);
 				if (Sr[jp*(NZ+1)+kp]>0)
 				{
 				
-				sendr_s[(Sr[jp*(NZ+1)+kp]-1)*5+FRP[mi]]=g_r[mi];
+				sendr_s[Sr[jp*(NZ+1)+kp]-1]=g_r[mi];
 				}
 				else
 				{
@@ -1485,30 +1479,30 @@ MPI_Barrier(MPI_COMM_WORLD);
 		{
 		
 		
-		MPI_Isend(sendr_s, Gcl[1]*5, MPI_DOUBLE, rank+1, rank*2+1, MPI_COMM_WORLD,&request2[0]);
-      		MPI_Isend(sendl_s, Gcr[mpi_size-1]*5, MPI_DOUBLE, mpi_size-1, rank*2, MPI_COMM_WORLD,&request2[1]);
-		MPI_Irecv(recvr_s, Gcr[0]*5, MPI_DOUBLE, rank+1, (rank+1)*2, MPI_COMM_WORLD,&request2[2]);		
-      		MPI_Irecv(recvl_s, Gcl[0]*5, MPI_DOUBLE, mpi_size-1, (mpi_size-1)*2+1, MPI_COMM_WORLD,&request2[3] );
+		MPI_Isend(sendr_s, Gcl[1], MPI_DOUBLE, rank+1, rank*2+1, MPI_COMM_WORLD,&request2[0]);
+      		MPI_Isend(sendl_s, Gcr[mpi_size-1], MPI_DOUBLE, mpi_size-1, rank*2, MPI_COMM_WORLD,&request2[1]);
+		MPI_Irecv(recvr_s, Gcr[0], MPI_DOUBLE, rank+1, (rank+1)*2, MPI_COMM_WORLD,&request2[2]);		
+      		MPI_Irecv(recvl_s, Gcl[0], MPI_DOUBLE, mpi_size-1, (mpi_size-1)*2+1, MPI_COMM_WORLD,&request2[3] );
 		
 		
 		}
 		else
 		if (rank==mpi_size-1)
 			{
-			MPI_Isend(sendl_s, Gcr[rank-1]*5, MPI_DOUBLE, rank-1, rank*2, MPI_COMM_WORLD,&request2[0]);
-      			MPI_Isend(sendr_s, Gcl[0]*5,  MPI_DOUBLE, 0, rank*2+1, MPI_COMM_WORLD,&request2[1]);
-			MPI_Irecv(recvl_s, Gcl[rank]*5, MPI_DOUBLE, rank-1, (rank-1)*2+1, MPI_COMM_WORLD,&request2[2] );
-      			MPI_Irecv(recvr_s, Gcr[rank]*5, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD,&request2[3]);
+			MPI_Isend(sendl_s, Gcr[rank-1], MPI_DOUBLE, rank-1, rank*2, MPI_COMM_WORLD,&request2[0]);
+      			MPI_Isend(sendr_s, Gcl[0],  MPI_DOUBLE, 0, rank*2+1, MPI_COMM_WORLD,&request2[1]);
+			MPI_Irecv(recvl_s, Gcl[rank], MPI_DOUBLE, rank-1, (rank-1)*2+1, MPI_COMM_WORLD,&request2[2] );
+      			MPI_Irecv(recvr_s, Gcr[rank], MPI_DOUBLE, 0, 0, MPI_COMM_WORLD,&request2[3]);
 			
 			
 			}
 			else
 			{
 
-      			MPI_Isend(sendl_s, Gcr[rank-1]*5, MPI_DOUBLE, rank-1, rank*2, MPI_COMM_WORLD,&request2[0]);
-      			MPI_Isend(sendr_s, Gcl[rank+1]*5, MPI_DOUBLE, rank+1, rank*2+1, MPI_COMM_WORLD,&request2[1]);
-			MPI_Irecv(recvl_s, Gcl[rank]*5, MPI_DOUBLE, rank-1, (rank-1)*2+1, MPI_COMM_WORLD,&request2[2]);
-      			MPI_Irecv(recvr_s, Gcr[rank]*5, MPI_DOUBLE, rank+1, (rank+1)*2, MPI_COMM_WORLD,&request2[3]);
+      			MPI_Isend(sendl_s, Gcr[rank-1], MPI_DOUBLE, rank-1, rank*2, MPI_COMM_WORLD,&request2[0]);
+      			MPI_Isend(sendr_s, Gcl[rank+1], MPI_DOUBLE, rank+1, rank*2+1, MPI_COMM_WORLD,&request2[1]);
+			MPI_Irecv(recvl_s, Gcl[rank], MPI_DOUBLE, rank-1, (rank-1)*2+1, MPI_COMM_WORLD,&request2[2]);
+      			MPI_Irecv(recvr_s, Gcr[rank], MPI_DOUBLE, rank+1, (rank+1)*2, MPI_COMM_WORLD,&request2[3]);
 			
 			
 			};
@@ -1522,17 +1516,16 @@ MPI_Barrier(MPI_COMM_WORLD);
 	
 
 			for(i=1;i<=Gcl[rank];i++)
-				for (int lm=0;lm<5;lm++)
-					if (recvl_s[(i-1)*5+lm]>-10)
+					if (recvl_s[(i-1)]>-10)
 				        {
 					
-					Fg[i][RP[lm]]=recvl_s[(i-1)*5+lm];
+					Fg[i][RP]=recvl_s[(i-1)];
 			        	}
 			for(j=Count-Gcr[rank]+1;j<=Count;j++)
-				for (int lm=0;lm<5;lm++)
-					if (recvr_s[(j-(Count-Gcr[rank]+1))*5+lm]>-10)
+				
+					if (recvr_s[j-(Count-Gcr[rank]+1)]>-10)
 					{
-					Fg[j][LN[lm]]=recvr_s[(j-(Count-Gcr[rank]+1))*5+lm];
+					Fg[j][LN]=recvr_s[j-(Count-Gcr[rank]+1)];
 			        	
 					}
 			
@@ -1570,7 +1563,7 @@ void comput_macro_variables( double* rho,double** u,double** u0,double** f,doubl
 				rho_r[i]=0;
 				
 	
-				for(int k=0;k<19;k++)
+				for(int k=1;k<7;k++)
 					{
 					
 					

@@ -1,7 +1,7 @@
 =============INPUT FILE FOR 3D LATTICE BOLTZMANN MPI CODE--Solute and heat transfer=======
 BC.dat                  	:Geometry filenameEmily_Berea_y_614_764_7.dat
 phase.dat       	    	:Initial components distribution
-200 20 3                 	:nx ny nz
+100 30 3                 	:nx ny nz
 10000		     		:Maximum time step
 4.9	             		:dx (um) Resolution (for Permeability calculation)
 0 	        	      	:Pressure Or Velocity Boundary (1=YES, 0=No)
@@ -50,6 +50,7 @@ LBM_Backup_Velocity_500                   :BACKUP DATA FOR INTIALIZATION--Veloci
 LBM_Backup_Concentration_500           :BACKUP DATA FOR INTIALIZATION--Velocity
 LBM_Backup_f_500                        :BACKUP DATA FOR DISTRIBUTION FUNCTION F
 LBM_Backup_g_500                        :BACKUP DATA FOR DISTRIBUTION FUNCTION fg
+4000					:intial data for velocity
 
 INSTRUCTIONS OF PARAMETER INPUT
 0				:Constant Concentration BC or 0 flux BC (1=YES, 0=NO)
