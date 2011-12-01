@@ -464,7 +464,7 @@ char FileName2[128];strcpy(FileName2,outputfile);
 char FileName3[128];strcpy(FileName3,outputfile);
 char FileName4[128];strcpy(FileName4,outputfile);
 
-strcat(FileName,"Results.txt");
+strcat(FileName,"Results_solute.txt");
 strcat(FileName2,"Permeability.txt");
 strcat(FileName4,"Velocity_ave_max.txt");
 strcat(FileName3,"bodyforce.txt");
@@ -476,18 +476,18 @@ ofstream fins;
 	fins.open(FileName,ios::trunc);
 	fins.close();
 
-if (wr_per==1)
-	{
-	fins.open(FileName2,ios::trunc);
-	fins.close();
-	}
+//if (wr_per==1)
+//	{
+//	fins.open(FileName2,ios::trunc);
+//	fins.close();
+//	}
 
 
 	fins.open(FileName3,ios::out);
 	fins.close();
 
-	fins.open(FileName4,ios::out);
-	fins.close();
+	//fins.open(FileName4,ios::out);
+	//fins.close();
 	
 	for(n=0;n<=n_max;n++)
 	{
@@ -598,9 +598,9 @@ if (wr_per==1)
 			//finf3<<gx<<endl;
 			//finf3.close();
 			
-			ofstream finf4(FileName4,ios::app);
-			finf4<<u_ave<<" "<<u_max<<" "<<error<<endl;
-			finf4.close();
+			//ofstream finf4(FileName4,ios::app);
+			//finf4<<u_ave<<" "<<u_max<<" "<<error<<endl;
+			//finf4.close();
 		
 
 			//cout<<"The"<<n<<"th computation result:"<<endl;
