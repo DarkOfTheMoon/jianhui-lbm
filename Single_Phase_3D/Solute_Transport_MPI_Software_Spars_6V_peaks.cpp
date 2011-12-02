@@ -3562,22 +3562,22 @@ int ind;
 	                
 	              //   cout<<"ssssssssssssss"<<endl;
 	                
-	           for (int psi_n=1;psi_n<num_psi;psi_n++)
+	           for (int psi_n=0;psi_n<num_psi;psi_n++)
 	                   {
-	                           ind=0;
+	                           ind=0;psi_total=0;
 	                   for (int i=psi_n*wid_psi;i<=NX;i++)
 	                           {
 	                           ls_psi[ind]=rbuf_general[psi_n][i];
-	                           ind+=1;
+	                           ind+=1;psi_total+=rbuf_general[psi_n][i];
 	                           }
 	                   for (int i=0;i<psi_n*wid_psi;i++)
 	                           {
 	                           ls_psi[ind]=rbuf_general[psi_n][i];
-	                           ind+=1;
+	                           ind+=1;psi_total+=rbuf_general[psi_n][i];
 	                           }
 	                           
 	                           for (int i=0;i<=NX;i++)
-	                                   rbuf_general[psi_n][i]=ls_psi[i]; 
+	                                   rbuf_general[psi_n][i]=ls_psi[i]/psi_total; 
 	                   
 	                   
 	                  }
@@ -3586,6 +3586,8 @@ int ind;
 	                  
 	        for (int i=0;i<=NX;i++)
 	                rbuf[i]=0;
+	        
+	        
 	        for (int i=0;i<=NX;i++)
 	                for (int psi_n=0;psi_n<num_psi;psi_n++)
 	                rbuf[i]+=rbuf_general[psi_n][i];
@@ -3594,6 +3596,7 @@ int ind;
 	for (int i=0;i<=NX;i++)
 		psi_total+=rbuf[i];
 	
+	//cout<<psi_total<<endl;
 	
 	ostringstream name2;
 	name2<<outputfile<<"General_disp_concentration_X_"<<m<<".sta";
@@ -3602,9 +3605,11 @@ int ind;
 	EX=0;EX2=0;
 	for (int i=per_xn;i<=per_xp;i++)
 		{
-	        out2<<rbuf[i]<<endl;
+	        out2<<rbuf[i]/psi_total<<endl;
 		EX+=i*dx*rbuf[i]/psi_total;
 		EX2+=(i*dx*i*dx)*rbuf[i]/psi_total;
+		//EX+=i*dx*rbuf[i];
+		//EX2+=(i*dx*i*dx)*rbuf[i];
 		}
 	out2.close();
 	        
