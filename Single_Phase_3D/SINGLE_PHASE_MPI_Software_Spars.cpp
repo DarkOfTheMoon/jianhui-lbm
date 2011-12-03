@@ -698,7 +698,7 @@ if (wr_per==1)
 			if ((fre_backup>=0) and (n%fre_backup==0) and (n>0))
 			        Backup(n,rho,u,f);
 			
-			 if ((vel_sol>=0) and (n%vel_sol==0))
+			 if ((vel_sol>=0) and (n%vel_sol==0) and (n>0))
 			         output_velocity_for_solute(n,rho,u,mirX,mirY,mirZ,mir,Solid);
 			 
 			 
