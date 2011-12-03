@@ -10,23 +10,38 @@ using namespace std;
 int main(int argc , char *argv [])
 {	
 //FileStream   file1=new   FileStream("test_file"); 
-        ofstream fs("binary_file.bin");
-        
+        //ofstream fs("binary_file.bin");
+        //fstream fs("binary_file.bin",ios::out|ios::binary|ios::app);
+        fstream fs;
+        fs.open("binary_file.bin",ios::out|ios::binary);
         double i[3]={3.2567,3.4578422,7.434665};
-      
-      fs.write((char *)(&i),sizeof(i)*3);
-     // cout<<sizeof(i)<<endl;
+        double ia[3][2]={{2.3521,12.356674},{256.35321,1.22222},{3.1111,5.1111}};
+        
+        
+      fs.write((char *)(ia),sizeof(double)*6);
       fs.close();
       
-      double j[3];
+      
+      //fs.open("binary_file.bin",ios::app|ios::binary);
+      //fs.write((char *)(ia),sizeof(ia)*3);
+      
+      
+     // cout<<sizeof(i)<<endl;
+      //fs.close();
+      
+      double j[6];
+      double ja[3][2];
       fstream file;
       
-      file.open("binary_file.bin",ios_base::in);
+      file.open("binary_file.bin",ios::in);
       
-      file.read((char *)(&j),sizeof(i)*3);
+      file.read((char *)(&ja[0][0]),sizeof(double)*6);
+      //file.read((char *)(ja),sizeof(double)*3);
       
       cout<<setiosflags(ios::scientific)<<j[0]<<"  "<<j[1]<<"  "<<j[2]<<endl;
-      cout<<setprecision(10)<<j[0]<<"  "<<j[1]<<"  "<<j[2]<<endl;
+      cout<<endl;
+      cout<<ja[0][0]<<"  "<<ja[1][1]<<"  "<<ja[2][0]<<endl;
+      cout<<setprecision(10)<<j[3]<<"  "<<j[4]<<"  "<<j[5]<<endl;
       file.close();
       
       

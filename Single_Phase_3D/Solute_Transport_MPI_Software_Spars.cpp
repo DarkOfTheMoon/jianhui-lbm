@@ -109,7 +109,9 @@ void Suppliment(int*,int***);
 
 void Backup(int ,double*, double*, double**, double**, double**);
 
-void Backup_init(double* , double** , double** ,double** , double* , double* ,double*, double*, double*, char[128], char[128], char[128], char[128], char[128]);
+void Backup_input_v(int ,double*, double*, double**, double**, double**);
+
+void Backup_init(double*, double**, double**,double**, double**, double**, double*, double*,double*, double*, double*, double***,int*);
 
 void psi_reset(double**,double** , double* , double* , double*** , int* );
 
@@ -256,11 +258,11 @@ double v_max;
 	                                                        fin.getline(dummy, NCHAR);
 	fin >> fre_backup;                        	fin.getline(dummy, NCHAR);
 	fin >>mode_backup_ini;                		fin.getline(dummy, NCHAR);
-	fin >> backup_rho;                        	fin.getline(dummy, NCHAR);
-	fin >> backup_velocity;                		fin.getline(dummy, NCHAR);
-	fin >> backup_psi;                        	fin.getline(dummy, NCHAR);
-	fin >> backup_f;                        	fin.getline(dummy, NCHAR);
-	fin >> backup_g;                        	fin.getline(dummy, NCHAR);
+//	fin >> backup_rho;                        	fin.getline(dummy, NCHAR);
+//	fin >> backup_velocity;                		fin.getline(dummy, NCHAR);
+//	fin >> backup_psi;                        	fin.getline(dummy, NCHAR);
+//	fin >> backup_f;                        	fin.getline(dummy, NCHAR);
+//	fin >> backup_g;                        	fin.getline(dummy, NCHAR);
 	fin >> sol_ini_n;				fin.getline(dummy, NCHAR);
 	
 	
@@ -407,19 +409,35 @@ if (Zoom>1)
 	//rho = new double[Count+1];
 	rho_r = new double[Count+1];
 	Permia = new double[3];
-	rhor = new double[Count+1];
+	//rhor = new double[Count+1];
 	
 	//forcex = new double[Count+1];
 	//forcey = new double[Count+1];
 	//forcez = new double[Count+1];
 	u = new double*[Count+1];
+	u[0] =new double[(Count+1)*3];
+	        for (int i=1;i<=Count;i++)
+		u[i] = u[i-1]+3;
+	
 	//f = new double*[Count+1];
 	//F = new double*[Count+1];
 	fg = new double*[Count+1];
+	fg[0] =new double[(Count+1)*19];
+	        for (int i=1;i<=Count;i++)
+	                fg[i] = fg[i-1]+19;
+	        
+	        
 	Fg = new double*[Count+1];
+	Fg[0] =new double[(Count+1)*19];
+	for (int i=1;i<=Count;i++)
+		Fg[i] = Fg[i-1]+19;
+	
+	
 	//u0 = new double*[Count+1];
 	SupInv = new int[Count+1];
 
+	
+	/*
 	for (int i=0;i<=Count;i++)
 		{
 		u[i] = new double[3];
@@ -429,7 +447,7 @@ if (Zoom>1)
 		fg[i] = new double[19];
 		Fg[i] = new double[19];
 		}
-
+*/
 	//Comput_MI(M,MI);
 	
 	Suppliment(SupInv,Solid);
@@ -443,10 +461,16 @@ if (Zoom>1)
 	else
 		Geometry_b(Solid);
 
-	
+	if (mode_backup_ini==0)
+	{
 	        init(rho,u,f,fg,F,Fg,rho_r,rhor,forcex,forcey,forcez,Psi_local,SupInv);cout<<"aaaaaaaaa"<<endl;
-		Backup(sol_ini_n,rho,rho_r,u,f,fg);
-	
+		Backup_input_v(sol_ini_n,rho,rho_r,u,f,fg);
+	}
+	else
+	        {
+	         Backup_init(rho,u,f,fg,F,Fg,rho_r,rhor,forcex,forcey,forcez,Psi_local,SupInv);cout<<"aaaaaaaaa"<<endl;
+		Backup_input_v(sol_ini_n,rho,rho_r,u,f,fg);              
+	        }
 
 
 if (rank==0)
@@ -658,8 +682,8 @@ ofstream fins;
 			//===================================
 			
 			
-			//if ((fre_backup>=0) and (n%fre_backup==0)  and (n>0))
-			//        Backup(n,rho,rho_r,u,f,fg);
+			if ((fre_backup>=0) and (n%fre_backup==0)  and (n>0))
+			        Backup(n,rho,rho_r,u,f,fg);
 			
 			
 			//if(error!=error) {cout<<"PROGRAM STOP"<<endl;break;};
@@ -672,7 +696,7 @@ ofstream fins;
 	//if (fre_backup>=0)
 	//		        Backup(n_max,rho,rho_r,u,f,fg);
 			
-			
+/*			
 	for (int i=0;i<=Count;i++)
 		{
 		delete [] u[i];
@@ -705,7 +729,7 @@ ofstream fins;
 	delete [] Permia;
 //	delete [] Count;
 
-
+*/
 	finish = MPI_Wtime();
 	
 	
@@ -1228,7 +1252,7 @@ void init(double* rho, double** u, double** f,double** fg, double** F, double** 
 		
 			
 			
-			rhor[i]=0;
+			//rhor[i]=0;
 			
 			
 			//forcex[i]=gx;
@@ -3586,7 +3610,7 @@ if (Sub_Dis==3)
 
 
 
-void Backup(int m,double* rho,double* psi, double** u, double** f, double** g)
+void Backup_input_v(int m,double* rho,double* psi, double** u, double** f, double** g)
 {
 
         int rank = MPI :: COMM_WORLD . Get_rank ();
@@ -3621,4 +3645,114 @@ void Backup(int m,double* rho,double* psi, double** u, double** f, double** g)
 	delete [] lsu;
 }
 
+void Backup(int m,double* rho,double* psi, double** u, double** f, double** g)
+{
+        int rank = MPI :: COMM_WORLD . Get_rank ();
+	int mpi_size=MPI :: COMM_WORLD . Get_size ();
+	
+	
+	ostringstream name3;
+	name3<<outputfile<<"LBM_checkpoint_psi_"<<m<<"."<<rank<<".bin_input";
+	ofstream out;
+	out.open(name3.str().c_str());
+	
+	//for (int i=1;i<=Count;i++)
+        //		out<<psi[i]<<endl;
+	//out.write((char *)(&f[0][0]), sizeof(double)*(Count+1)*19);	
+	out.write((char *)(&psi[0]), sizeof(double)*(Count+1));	
+	
+	out.close();
+
+	ostringstream name5;
+	name5<<outputfile<<"LBM_checkpoint_fg_"<<m<<"."<<rank<<".bin_input";
+	
+	out.open(name5.str().c_str());
+	
+        
+        out.write((char *)(&g[0][0]), sizeof(double)*(Count+1)*19);    
+	out.close();
+
+	
+	
+
+}
+
+
+
+
+void Backup_init(double* rho, double** u, double** f,double** fg, double** F, double** Fg, double* rho_r, double* rhor, double* forcex, double* forcey, double* forcez, double*** Psi_local, int* SupInv)
+{	
+      int rank = MPI :: COMM_WORLD . Get_rank ();
+	int mpi_size=MPI :: COMM_WORLD . Get_size ();
+
+
+	
+	double usqr,vsqr;
+	double c2,c4;
+	
+	
+	rho0=1.0;dt=1.0/Zoom;dx=1.0/Zoom;
+ 
+	if (lattice_v==1)
+		{dx=dx_input;dt=dt_input;}
+
+	lat_c=dx/dt;
+	c_s=lat_c/sqrt(3);
+	c_s2=lat_c*lat_c/3;
+
+	c2=lat_c*lat_c;c4=c2*c2;
+	
+	//niu=niu;
+	tau_f=niu/(c_s2*dt)+0.5;
+	//tau_f=3.0*niu/dt+0.5;
+	//tau_s=3.0*niu_s/dt+0.5;
+	tau_s=niu_s/(c_s2*dt)+0.5;
+
+	s_v=1/tau_f;
+        
+	double pr,eu; //raduis of the obstacles
+       
+	double s_other=8*(2-s_v)/(8-s_v);
+	
+
+
+	ostringstream name5;
+	name5<<"LBM_checkpoint_fg_"<<mode_backup_ini<<"."<<rank<<".bin_input";
+ 	ostringstream name3;
+	name3<<"LBM_checkpoint_psi_"<<mode_backup_ini<<"."<<rank<<".bin_input";
+ 	
+	
+	 
+	fstream fin;
+	
+       
+   
+	
+       
+       fin.open(name3.str().c_str(),ios::in);
+       fin.read((char *)(&rho_r[0]), sizeof(double)*(Count+1));
+  
+       fin.close();
+       
+     
+       
+       fin.open(name5.str().c_str(),ios::in);
+	fin.read((char *)(&fg[0][0]), sizeof(double)*(Count+1)*19);
+        
+       fin.close();
+
+
+
+	
+	
+	for (int i=1;i<=Count;i++)	
+			for (int lm=0;lm<19;lm++)
+			Fg[i][lm]=fg[i][lm];
+		
+                	
+
+	
+
+	 	
+}
 

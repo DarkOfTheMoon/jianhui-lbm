@@ -28,9 +28,9 @@ phase.dat       	    	:Initial components distribution
 1                       	:Direction of Permeability Calculation (1=X, 2=Y, 3=Z)
 50		         	:Frequency of results writing (interval in time steps)
 0               		:Memory Saving mode for output subroutains (0=No, 1=Yes,for large outputs, x,z opposite)
-500				:Frequency of velocity field writing (in vtk format, -1=no velocity writing)
-500				:Frequency of density field writing (in vtk format, -1=no density writing)
-500				:Frequency of concentration writing (in vtk format, -1=no density writing)
+2000				:Frequency of velocity field writing (in vtk format, -1=no velocity writing)
+2000				:Frequency of density field writing (in vtk format, -1=no density writing)
+2000				:Frequency of concentration writing (in vtk format, -1=no density writing)
 2 2000                        :Dispersion statistics (0=No,1=YES; Frequncy of writing)
 ==============ADVANCE==PARAMETER==========
 0 1.0 2.0	              :Self define lattice velocity: 0=DEFAULT, dx, dt ((u_x+u_y+u_z)*dt/dx<=1 Courant Number)
@@ -45,13 +45,8 @@ phase.dat       	    	:Initial components distribution
 ====================BACKUP=PARAMETERS==========================
 -1		                   :BACKUP FREQUENCY (-1=NO BACKUP)
 0                               :INITIALIZATION WITH BACKUP DATA (0=OFF, 1=ON)
-LBM_Backup_Density_500              :BACKUP DATA FOR INTIALIZATION--DENSITY
-LBM_Backup_Velocity_500                   :BACKUP DATA FOR INTIALIZATION--Velocity
-LBM_Backup_Concentration_500           :BACKUP DATA FOR INTIALIZATION--Velocity
-LBM_Backup_f_500                        :BACKUP DATA FOR DISTRIBUTION FUNCTION F
-LBM_Backup_g_500                        :BACKUP DATA FOR DISTRIBUTION FUNCTION fg
-4000					:intial data for velocity
-3 1					:Number of peaks, width of the peak (only for ST_6V_peaks)
+40000					:intial data for velocity (for ST only)
+3 1 12					:Number of peaks, width of the peak,starting coordinate (only for ST_6V_peaks)
 
 INSTRUCTIONS OF PARAMETER INPUT
 0				:Constant Concentration BC or 0 flux BC (1=YES, 0=NO)

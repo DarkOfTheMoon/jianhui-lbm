@@ -148,7 +148,7 @@ void Suppliment(int*,int***);
 
 void Backup(int ,double*, double*, double**, double**, double**);
 
-void Backup_init(double* , double** , double** ,double** , double* , double* ,double*, double*, double*, char[128], char[128], char[128], char[128], char[128]);
+void Backup_init(double* , double** , double** ,double** , double**, double**, double* , double* ,double*, double*, double*, char[128], char[128], char[128], char[128], char[128]);
 
 void psi_reset(double**,double** , double* , double* , double*** , int* );
 
@@ -293,11 +293,11 @@ double v_max;
 	                                                        fin.getline(dummy, NCHAR);
 	fin >> fre_backup;                        	fin.getline(dummy, NCHAR);
 	fin >>mode_backup_ini;                		fin.getline(dummy, NCHAR);
-	fin >> backup_rho;                        	fin.getline(dummy, NCHAR);
-	fin >> backup_velocity;                		fin.getline(dummy, NCHAR);
-	fin >> backup_psi;                        	fin.getline(dummy, NCHAR);
-	fin >> backup_f;                        	fin.getline(dummy, NCHAR);
-	fin >> backup_g;                        	fin.getline(dummy, NCHAR);
+//	fin >> backup_rho;                        	fin.getline(dummy, NCHAR);
+//	fin >> backup_velocity;                		fin.getline(dummy, NCHAR);
+//	fin >> backup_psi;                        	fin.getline(dummy, NCHAR);
+//	fin >> backup_f;                        	fin.getline(dummy, NCHAR);
+//	fin >> backup_g;                        	fin.getline(dummy, NCHAR);
 	
 	
 	fin.close();
@@ -459,21 +459,53 @@ if (Zoom>1)
 
 	rho = new double[Count+1];
 	rho_r = new double[Count+1];
+	
 	Permia = new double[3];
 	rhor = new double[Count+1];
 	
 	forcex = new double[Count+1];
 	forcey = new double[Count+1];
 	forcez = new double[Count+1];
+	
+	
 	u = new double*[Count+1];
+	u[0] = new double[(Count+1)*3];
+	        for (int i=1;i<=Count;i++)
+	              u[i] = u[i-1]+3;
+	      
+	      
 	f = new double*[Count+1];
+	f[0] =new double[(Count+1)*19];
+	        for (int i=1;i<=Count;i++)
+	                f[i] = f[i-1]+19;
+	        
+	        
 	F = new double*[Count+1];
+	F[0] =new double[(Count+1)*19];
+	for (int i=1;i<=Count;i++)
+		F[i] = F[i-1]+19;
+	
+	
 	fg = new double*[Count+1];
+	fg[0] =new double[(Count+1)*19];
+	        for (int i=1;i<=Count;i++)
+	                fg[i] = fg[i-1]+19;
+	        
+	        
 	Fg = new double*[Count+1];
+	Fg[0] =new double[(Count+1)*19];
+	for (int i=1;i<=Count;i++)
+		Fg[i] = Fg[i-1]+19;
+	
+	
 	u0 = new double*[Count+1];
+	u0[0] = new double[(Count+1)*3];
+	        for (int i=1;i<=Count;i++)
+		u0[i] = u0[i-1]+3;
+	
 	SupInv = new int[Count+1];
 
-	for (int i=0;i<=Count;i++)
+	/*for (int i=0;i<=Count;i++)
 		{
 		u[i] = new double[3];
 		f[i] = new double[19];
@@ -482,6 +514,8 @@ if (Zoom>1)
 		fg[i] = new double[19];
 		Fg[i] = new double[19];
 		}
+		
+		*/
 
 	Comput_MI(M,MI);
 	
@@ -497,7 +531,7 @@ if (Zoom>1)
 	if (mode_backup_ini==0)
 	        init(rho,u,f,fg,F,Fg,rho_r,rhor,forcex,forcey,forcez,Psi_local,SupInv);
 	else
-	        Backup_init(rho, u, f,fg,rho_r, rhor, forcex,forcey,forcez,backup_rho, backup_velocity, backup_psi,backup_f,backup_g);
+	        Backup_init(rho, u, f,fg,F,Fg,rho_r, rhor, forcex,forcey,forcez,backup_rho, backup_velocity, backup_psi,backup_f,backup_g);
 
 
 if (rank==0)
@@ -728,7 +762,7 @@ if (wr_per==1)
 	if (fre_backup>=0)
 			        Backup(n_max,rho,rho_r,u,f,fg);
 			
-			
+/*			
 	for (int i=0;i<=Count;i++)
 		{
 		delete [] u[i];
@@ -760,7 +794,7 @@ if (wr_per==1)
 
 	delete [] Permia;
 //	delete [] Count;
-
+*/
 
 	finish = MPI_Wtime();
 	
@@ -4464,13 +4498,13 @@ void output_psi_b(int m,double* psi,int MirX,int MirY,int MirZ,int mir,int*** So
 	out<<"ORIGIN 0 0 0"<<endl;
 	out<<"SPACING 1 1 1"<<endl;
 	out<<"POINT_DATA     "<<NX0*NY0*NZ0<<endl;
-	out<<"SCALARS sample_scalars float"<<endl;
+	out<<"SCALARS sample_scalars double"<<endl;
 	out<<"LOOKUP_TABLE default"<<endl;
 
         for(int k=0;k<NZ0;k++)
       		for(int j=0; j<NY0; j++)
 			for(int i=0;i<NX0;i++)
-				out<<rbuf_psi[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]<<endl;
+				out<<setiosflags(ios::fixed)<<setprecision(7)<<rbuf_psi[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]<<endl;
 
 	out.close();
 
@@ -4570,7 +4604,7 @@ void output_psi(int m,double* psi,int MirX,int MirY,int MirZ,int mir,int*** Soli
 	out<<"ORIGIN 0 0 0"<<endl;
 	out<<"SPACING 1 1 1"<<endl;
 	out<<"POINT_DATA     "<<NX0*NY0*NZ0<<endl;
-	out<<"SCALARS sample_scalars float"<<endl;
+	out<<"SCALARS sample_scalars double"<<endl;
 	out<<"LOOKUP_TABLE default"<<endl;
 	out.close();
 
@@ -4995,7 +5029,7 @@ if (Sub_Dis==3)
 
 }
 
-void Backup_init(double* rho, double** u, double** f,double** fg, double* rho_r, double* rhor, double* forcex,double* forcey, double* forcez, char backup_rho[128], char backup_velocity[128], char backup_psi[128], char backup_f[128], char backup_g[128])
+void Backup_init(double* rho, double** u, double** f,double** fg, double** F, double** Fg,double* rho_r, double* rhor, double* forcex,double* forcey, double* forcez, char backup_rho[128], char backup_velocity[128], char backup_psi[128], char backup_f[128], char backup_g[128])
 {	
       
         int rank = MPI :: COMM_WORLD . Get_rank ();
@@ -5084,62 +5118,77 @@ void Backup_init(double* rho, double** u, double** f,double** fg, double* rho_r,
 		for (int j=0;j<3;j++)
 		elat[i][j]=e[i][j]*lat_c;
 	
+	for (int i=0;i<19;i++)
+		for (int j=0;j<19;j++)
+		M[i][j]*=M_c[i];
+	
+	Comput_MI(M,MI);
 	
 	ostringstream name5;
-	name5<<backup_g<<"."<<rank<<".input";
+	name5<<"LBM_checkpoint_fg_"<<mode_backup_ini<<"."<<rank<<".bin_input";
  	ostringstream name4;
-	name4<<backup_f<<"."<<rank<<".input";
+	name4<<"LBM_checkpoint_f_"<<mode_backup_ini<<"."<<rank<<".bin_input";
 	ostringstream name3;
-	name3<<backup_psi<<"."<<rank<<".input";
+	name3<<"LBM_checkpoint_psi_"<<mode_backup_ini<<"."<<rank<<".bin_input";
  	ostringstream name2;
-	name2<<backup_velocity<<"."<<rank<<".input";
+	name2<<"LBM_checkpoint_velocity_"<<mode_backup_ini<<"."<<rank<<".bin_input";
 	ostringstream name;
-	name<<backup_rho<<"."<<rank<<".input";
+	name<<"LBM_checkpoint_rho_"<<mode_backup_ini<<"."<<rank<<".bin_input";
 	
 	 
-	ifstream fin;
-	fin.open(name.str().c_str());
-	
-        	for(int i=1;i<=Count;i++)
-        	        fin >> rho[i];
+	fstream fin;
+	fin.open(name.str().c_str(),ios::in);
+	fin.read((char *)(&rho[0]), sizeof(double)*(Count+1));
+        //	for(int i=1;i<=Count;i++)
+        //	        fin >> rho[i];
   
        fin.close();
        
    
-	fin.open(name2.str().c_str());
-	
-        	for(int i=1;i<=Count;i++)
-        	        fin >> u[i][0] >> u[i][1] >> u[i][2];
+	fin.open(name2.str().c_str(),ios::in);
+	fin.read((char *)(&u[0][0]), sizeof(double)*(Count+1)*3);
+      //  	for(int i=1;i<=Count;i++)
+       // 	        fin >> u[i][0] >> u[i][1] >> u[i][2];
   
        fin.close();
        
-       fin.open(name3.str().c_str());
-	
-        	for(int i=1;i<=Count;i++)
-        	        fin >> rho_r[i];
+       fin.open(name3.str().c_str(),ios::in);
+       fin.read((char *)(&rho_r[0]), sizeof(double)*(Count+1));
+       // 	for(int i=1;i<=Count;i++)
+       // 	        cout <<"   ddddddd  "<< rho_r[3]<<endl;
   
        fin.close();
        
-       fin.open(name4.str().c_str());
-	
-        	for(int i=1;i<=Count;i++)
-        	        fin >> f[i][0] >> f[i][1] >> f[i][2] >> f[i][3] >> f[i][4] >> f[i][5] >>f[i][6] >> f[i][7] >> f[i][8] >> f[i][9] >> f[i][10] >> f[i][11] >> f[i][12] >> f[i][13] >> f[i][14] >> f[i][15] >> f[i][16] >>f[i][17] >> f[i][18] ;
+       fin.open(name4.str().c_str(),ios::in);
+	fin.read((char *)(&f[0][0]), sizeof(double)*(Count+1)*19);
+       // 	for(int i=1;i<=Count;i++)
+       // 	        fin >> f[i][0] >> f[i][1] >> f[i][2] >> f[i][3] >> f[i][4] >> f[i][5] >>f[i][6] >> f[i][7] >> f[i][8] >> f[i][9] >> f[i][10] >> f[i][11] >> f[i][12] >> f[i][13] >> f[i][14] >> f[i][15] >> f[i][16] >>f[i][17] >> f[i][18] ;
   
        fin.close();
        
-       fin.open(name5.str().c_str());
-	
-        	for(int i=1;i<=Count;i++)
-        	        fin >> fg[i][0] >> fg[i][1] >> fg[i][2] >> fg[i][3] >> fg[i][4] >> fg[i][5] >>fg[i][6] >> fg[i][7] >> fg[i][8] >> fg[i][9] >> fg[i][10] >> fg[i][11] >> fg[i][12] >> fg[i][13] >> fg[i][14] >> fg[i][15] >> fg[i][16] >>fg[i][17] >> fg[i][18] ;
+       fin.open(name5.str().c_str(),ios::in);
+	fin.read((char *)(&fg[0][0]), sizeof(double)*(Count+1)*19);
+        //	for(int i=1;i<=Count;i++)
+        //	        fin >> fg[i][0] >> fg[i][1] >> fg[i][2] >> fg[i][3] >> fg[i][4] >> fg[i][5] >>fg[i][6] >> fg[i][7] >> fg[i][8] >> fg[i][9] >> fg[i][10] >> fg[i][11] >> fg[i][12] >> fg[i][13] >> fg[i][14] >> fg[i][15] >> fg[i][16] >>fg[i][17] >> fg[i][18] ;
   
        fin.close();
 
 	
        for(int i=1;i<=Count;i++)
 		{
+		//rhor[i]=0;
 		forcex[i]=gx;
 		forcey[i]=gy+Gravity*Buoyancy_parameter*rho_r[i];
 		forcez[i]=gz;
+		
+		for (int lm=0;lm<19;lm++)
+			{
+			//f[i][lm]=feq(lm,rho[i],u_tmp);
+			//eu=elat[lm][0]*u[i][0]+elat[lm][1]*u[i][1]+elat[lm][2]*u[i][2];
+			//fg[i][lm]=w[lm]*rho_r[i]*(1+3*eu/c2);
+			F[i][lm]=f[i][lm];Fg[i][lm]=fg[i][lm];
+			//fg[i][lm]=w[mi]*rho_r[ci]*(1+3*eu/c2+4.5*eu*eu/c4-1.5*uu/c2);
+			}
 		}
 
 	 	
@@ -5154,14 +5203,14 @@ void Backup(int m,double* rho,double* psi, double** u, double** f, double** g)
         int rank = MPI :: COMM_WORLD . Get_rank ();
         int mpi_size=MPI :: COMM_WORLD . Get_size ();
         
-        
 	ostringstream name;
-	name<<outputfile<<"LBM_Backup_Velocity_"<<m<<"."<<rank<<".input";
+	name<<outputfile<<"LBM_checkpoint_velocity_"<<m<<"."<<rank<<".bin_input";
 	ofstream out;
 	out.open(name.str().c_str());
-	for (int i=1;i<=Count;i++)
-        		out<<u[i][0]<<" "<<u[i][1]<<" "<<u[i][2]<<" "<<endl;
-		
+	//for (int i=1;i<=Count;i++)
+        //		out<<u[i][0]<<" "<<u[i][1]<<" "<<u[i][2]<<" "<<endl;
+	
+        out.write((char *)(&u[0][0]),sizeof(double)*(Count+1)*3);	
 			
 	out.close();
 	
@@ -5169,55 +5218,58 @@ void Backup(int m,double* rho,double* psi, double** u, double** f, double** g)
 	
 	
 	ostringstream name2;
-	name2<<outputfile<<"LBM_Backup_Density_"<<m<<"."<<rank<<".input";
+	name2<<outputfile<<"LBM_checkpoint_rho_"<<m<<"."<<rank<<".bin_input";
 	ofstream out2;
 	out2.open(name2.str().c_str());
 	
-	for (int i=1;i<=Count;i++)
-        		out2<<rho[i]<<endl;
-		
+	//for (int i=1;i<=Count;i++)
+        //		out2<<rho[i]<<endl;
+	out2.write((char *)(&rho[0]), sizeof(double)*(Count+1));	
 			
 	out2.close();
 	
 
 	
 	ostringstream name3;
-	name3<<outputfile<<"LBM_Backup_Concentration_"<<m<<"."<<rank<<".input";
+	name3<<outputfile<<"LBM_checkpoint_psi_"<<m<<"."<<rank<<".bin_input";
 	//ofstream out;
 	out.open(name3.str().c_str());
 	
-	for (int i=1;i<=Count;i++)
-        		out<<psi[i]<<endl;
-		
-			
+	//for (int i=1;i<=Count;i++)
+        //		out<<psi[i]<<endl;
+	//out.write((char *)(&f[0][0]), sizeof(double)*(Count+1)*19);	
+	out.write((char *)(&psi[0]), sizeof(double)*(Count+1));	
+	
 	out.close();
 	
 	
 	ostringstream name4;
-	name4<<outputfile<<"LBM_Backup_f_"<<m<<"."<<rank<<".input";
+	name4<<outputfile<<"LBM_checkpoint_f_"<<m<<"."<<rank<<".bin_input";
 	//ofstream out;
 	out.open(name4.str().c_str());
 	
-	for (int i=1;i<=Count;i++)
-	{
-	        for (int j=0;j<19;j++)
-        		out<<f[i][j]<<" ";
-        out<<endl;
-        }
-                
+	//for (int i=1;i<=Count;i++)
+	//{
+	//        for (int j=0;j<19;j++)
+        //		out<<f[i][j]<<" ";
+        //out<<endl;
+        //}
+        out.write((char *)(&f[0][0]), sizeof(double)*(Count+1)*19);      
         out.close();
         
 	ostringstream name5;
-	name5<<outputfile<<"LBM_Backup_g_"<<m<<"."<<rank<<".input";
+	name5<<outputfile<<"LBM_checkpoint_fg_"<<m<<"."<<rank<<".bin_input";
 	//ofstream out;
 	out.open(name5.str().c_str());
 	//cout<<disp[mpi_size-1]+c_l[mpi_size-1]<<"    @@@@@@@@@@@@  "<<endl;
-	for (int i=1;i<=Count;i++)
-	{
-	        for (int j=0;j<19;j++)
-        		out<<g[i][j]<<" ";
-        out<<endl;
-        }		
+	//for (int i=1;i<=Count;i++)
+	//{
+	   //     for (int j=0;j<19;j++)
+        	//	out<<g[i][j]<<" ";
+        //out<<endl;
+        //}
+        
+        out.write((char *)(&g[0][0]), sizeof(double)*(Count+1)*19);    
 	out.close();
 
 
