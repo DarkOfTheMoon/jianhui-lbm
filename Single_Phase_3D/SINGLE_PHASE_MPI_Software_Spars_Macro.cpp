@@ -230,14 +230,14 @@ double elaps;
 	fin >> Sub_BC;					fin.getline(dummy, NCHAR);
 	fin >> fre_backup;                        	fin.getline(dummy, NCHAR);
 	fin >>mode_backup_ini;                		fin.getline(dummy, NCHAR);
-	fin >> backup_rho;                        	fin.getline(dummy, NCHAR);
-	fin >> backup_velocity;                		fin.getline(dummy, NCHAR);
-	fin >> backup_f;                        	fin.getline(dummy, NCHAR);
+//	fin >> backup_rho;                        	fin.getline(dummy, NCHAR);
+//	fin >> backup_velocity;                		fin.getline(dummy, NCHAR);
+//	fin >> backup_f;                        	fin.getline(dummy, NCHAR);
 	
 	
 	fin.close();
 	
-	cout<<backup_f<<endl;
+//	cout<<backup_f<<endl;
 	
 	
 	NX=NX-1;NY=NY-1;NZ=NZ-1;
@@ -381,18 +381,37 @@ if (Zoom>1)
 	PorC = new double[Count+1];
 
 	u = new double*[Count+1];
+	u[0] = new double[(Count+1)*3];
+	        for (int i=1;i<=Count;i++)
+	              u[i] = u[i-1]+3;
+	      
 	f = new double*[Count+1];
+	f[0] =new double[(Count+1)*19];
+	        for (int i=1;i<=Count;i++)
+	                f[i] = f[i-1]+19;
+	        
 	F = new double*[Count+1];
+	F[0] =new double[(Count+1)*19];
+	for (int i=1;i<=Count;i++)
+		F[i] = F[i-1]+19;
+	
 	u0 = new double*[Count+1];
+	u0[0] = new double[(Count+1)*3];
+	        for (int i=1;i<=Count;i++)
+		u0[i] = u0[i-1]+3;
+	
 	SupInv = new int[Count+1];
 
-	for (int i=0;i<=Count;i++)
+/*	for (int i=0;i<=Count;i++)
 		{
 		u[i] = new double[3];
 		f[i] = new double[19];
 		u0[i] = new double[3];
 		F[i] = new double[19];
 		}
+*/
+
+
 
 	Comput_MI(M,MI);
 	
@@ -581,7 +600,7 @@ if (wr_per==1)
 	if (fre_backup>=0)
 			        Backup(n_max,rho,u,f);
 	
-
+/*
 	for (int i=0;i<=Count;i++)
 		{
 		delete [] u[i];
@@ -605,7 +624,7 @@ if (wr_per==1)
 	delete [] SupInv;
 	delete [] Sl;
 	delete [] Sr;
-
+*/
 
 	finish = MPI_Wtime();
 	
@@ -3044,7 +3063,7 @@ if (mir==0)
 	out<<"SPACING 1 1 1"<<endl;
 
 	out<<"POINT_DATA     "<<NX0*NY0*NZ0<<endl;
-	out<<"VECTORS sample_vectors double"<<endl;
+	out<<"VECTORS sample_vectors float"<<endl;
 	out<<endl;
 
 	out.close();
@@ -3481,7 +3500,7 @@ if (mir==0)
 	out<<"SPACING 1 1 1"<<endl;
 
 	out<<"POINT_DATA     "<<NX0*NY0*NZ0<<endl;
-	out<<"VECTORS sample_vectors double"<<endl;
+	out<<"VECTORS sample_vectors float"<<endl;
 	out<<endl;
 	//out<<"LOOKUP_TABLE default"<<endl;
 	for(int k=0;k<NZ0;k++)
@@ -3630,12 +3649,12 @@ void Backup(int m,double* rho,double** u, double** f)
 	int mpi_size=MPI :: COMM_WORLD . Get_size ();
 	
 	ostringstream name;
-	name<<outputfile<<"LBM_Backup_Velocity_"<<m<<"."<<rank<<".input";
+	name<<outputfile<<"LBM_checkpoint_velocity_"<<m<<"."<<rank<<".bin_input";
 	ofstream out;
 	out.open(name.str().c_str());
-	for (int i=1;i<=Count;i++)
-        		out<<u[i][0]<<" "<<u[i][1]<<" "<<u[i][2]<<" "<<endl;
-		
+	//for (int i=1;i<=Count;i++)
+        //		out<<u[i][0]<<" "<<u[i][1]<<" "<<u[i][2]<<" "<<endl;
+	 out.write((char *)(&u[0][0]),sizeof(double)*(Count+1)*3);	
 			
 	out.close();
 	
@@ -3643,29 +3662,24 @@ void Backup(int m,double* rho,double** u, double** f)
 	
 	
 	ostringstream name2;
-	name2<<outputfile<<"LBM_Backup_Density_"<<m<<"."<<rank<<".input";
+	name2<<outputfile<<"LBM_checkpoint_rho_"<<m<<"."<<rank<<".bin_input";
 	ofstream out2;
 	out2.open(name2.str().c_str());
 	
-	for (int i=1;i<=Count;i++)
-        		out2<<rho[i]<<endl;
-		
+	//for (int i=1;i<=Count;i++)
+        //		out2<<rho[i]<<endl;
+	out2.write((char *)(&rho[0]), sizeof(double)*(Count+1));		
 			
 	out2.close();
 	
 	
 	
 	ostringstream name4;
-	name4<<outputfile<<"LBM_Backup_f_"<<m<<"."<<rank<<".input";
+	name4<<outputfile<<"LBM_checkpoint_f_"<<m<<"."<<rank<<".bin_input";
 	//ofstream out;
 	out.open(name4.str().c_str());
 	
-	for (int i=1;i<=Count;i++)
-	{
-	        for (int j=0;j<19;j++)
-        		out<<f[i][j]<<" ";
-        out<<endl;
-        }
+	out.write((char *)(&f[0][0]), sizeof(double)*(Count+1)*19); 
                 
         out.close();
         
@@ -3748,40 +3762,44 @@ void Backup_init(double* rho, double** u, double** f, double* PerC, double* PorC
 	S[16]=s_other;
 	S[17]=s_other;
 	S[18]=s_other;
-
-	ostringstream name4;
-	name4<<backup_f<<"."<<rank<<".input";
+	
+	
+ 	ostringstream name4;
+	name4<<"LBM_checkpoint_f_"<<mode_backup_ini<<"."<<rank<<".bin_input";
 	
  	ostringstream name2;
-	name2<<backup_velocity<<"."<<rank<<".input";
-
+	name2<<"LBM_checkpoint_velocity_"<<mode_backup_ini<<"."<<rank<<".bin_input";
 	ostringstream name;
-	name<<backup_rho<<"."<<rank<<".input";
+	name<<"LBM_checkpoint_rho_"<<mode_backup_ini<<"."<<rank<<".bin_input";
 	
 	 
-	ifstream fin;
-	fin.open(name.str().c_str());
-	
-        	for(int i=1;i<=Count;i++)
-        	        fin >> rho[i];
+	fstream fin;
+	fin.open(name.str().c_str(),ios::in);
+	fin.read((char *)(&rho[0]), sizeof(double)*(Count+1));
+        //	for(int i=1;i<=Count;i++)
+        //	        fin >> rho[i];
   
        fin.close();
        
    
-	fin.open(name2.str().c_str());
-	
-        	for(int i=1;i<=Count;i++)
-        	        fin >> u[i][0] >> u[i][1] >> u[i][2];
+	fin.open(name2.str().c_str(),ios::in);
+	fin.read((char *)(&u[0][0]), sizeof(double)*(Count+1)*3);
+      //  	for(int i=1;i<=Count;i++)
+       // 	        fin >> u[i][0] >> u[i][1] >> u[i][2];
+  
+       fin.close();
+       
+       
+       
+       fin.open(name4.str().c_str(),ios::in);
+	fin.read((char *)(&f[0][0]), sizeof(double)*(Count+1)*19);
+       // 	for(int i=1;i<=Count;i++)
+       // 	        fin >> f[i][0] >> f[i][1] >> f[i][2] >> f[i][3] >> f[i][4] >> f[i][5] >>f[i][6] >> f[i][7] >> f[i][8] >> f[i][9] >> f[i][10] >> f[i][11] >> f[i][12] >> f[i][13] >> f[i][14] >> f[i][15] >> f[i][16] >>f[i][17] >> f[i][18] ;
   
        fin.close();
        
       
-       fin.open(name4.str().c_str());
-	
-        	for(int i=1;i<=Count;i++)
-        	        fin >> f[i][0] >> f[i][1] >> f[i][2] >> f[i][3] >> f[i][4] >> f[i][5] >>f[i][6] >> f[i][7] >> f[i][8] >> f[i][9] >> f[i][10] >> f[i][11] >> f[i][12] >> f[i][13] >> f[i][14] >> f[i][15] >> f[i][16] >>f[i][17] >> f[i][18] ;
-       fin.close();
-       
+
      MPI_Barrier(MPI_COMM_WORLD);
 			
 	for (int i=1;i<=Count;i++)	
