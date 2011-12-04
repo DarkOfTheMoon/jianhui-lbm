@@ -3610,7 +3610,7 @@ void Backup_input_v(int m,double* rho,double* psi, double** u, double** f, doubl
 
 	double* lsu= new double[Count*3];
 	ostringstream name;
-	name<<outputfile<<"Velocity_for_solute_"<<m<<"."<<rank<<".bin";
+	name<<"Velocity_for_solute_"<<m<<"."<<rank<<".bin";
 	fstream file;
 	file.open(name.str().c_str(),ios_base::in);
 	
