@@ -554,8 +554,8 @@ ofstream fins;
 			fin<<"The"<<n-freRe<<"th computation result:"<<endl;
 			fin<<"The Maximum velocity is: "<<setprecision(6)<<u_max<<"   Re="<<Re<<endl;
 			fin<<"Peclet Number="<<u_max*dx/niu_s<<"     Courant Number="<<u_max*dt/dx<<endl;
-			fin<<"The max relative error of velocity is: "
-				<<setiosflags(ios::scientific)<<error<<endl;
+			//fin<<"The max relative error of velocity is: "
+			//	<<setiosflags(ios::scientific)<<error<<endl;
 				fin<<"The averaged velocity is: "<<u_ave<<endl;
 			
 			fin<<"Elapsed time is "<< the<<"h"<<tme<<"m"<<tse<<"s"<<endl;
@@ -564,7 +564,7 @@ ofstream fins;
 			fin.close();
 			}
 
-			//error=Error(u,u0,&u_max,&u_ave);
+			error=Error(u,u0,&u_max,&u_ave);
 			if (u_max>=10.0)	U_max_ref+=1;
 			
 			//error_perm=Comput_Perm(u,Permia,PerDir,SupInv);
@@ -589,8 +589,8 @@ ofstream fins;
 		//==============================================================================================
 		        fin<<"The Maximum velocity is: "<<setprecision(6)<<u_max<<"   Re="<<Re<<endl;
 			fin<<"Peclet Number="<<u_max*dx/niu_s<<"     Courant Number="<<u_max*dt/dx<<endl;
-			fin<<"The max relative error of velocity is: "
-				<<setiosflags(ios::scientific)<<error<<endl;
+			//fin<<"The max relative error of velocity is: "
+			//	<<setiosflags(ios::scientific)<<error<<endl;
 				fin<<"The averaged velocity is: "<<u_ave<<endl;
 			
 			fin<<"Elapsed time is "<< the<<"h"<<tme<<"m"<<tse<<"s"<<endl;
@@ -639,10 +639,10 @@ ofstream fins;
 			
 			cout<<"The Maximum velocity is: "<<setprecision(6)<<u_max<<"   Re="<<Re<<endl;
 			cout<<"Peclet Number="<<u_max*dx/niu_s<<"     Courant Number="<<u_max*dt/dx<<endl;
+			cout<<"The averaged velocity is: "<<u_ave<<endl;
 			
 			
-			
-			cout<<"The relative error of permiability computing is: "<<error_perm<<endl;
+			//cout<<"The relative error of permiability computing is: "<<error_perm<<endl;
 			cout<<"Elapsed time is "<< the<<"h"<<tme<<"m"<<tse<<"s"<<endl;
 			cout<<"The expected completion time is "<<th<<"h"<<tm<<"m"<<ts<<"s"<<endl;
 			cout<<endl;
@@ -2115,12 +2115,6 @@ for (int j=0;j<=NY;j++)
 }
 
 
-
-
-
-
-
-
 double Error(double** u,double** u0,double *v_max,double* u_average)
 {	
 	int rank = MPI :: COMM_WORLD . Get_rank ();
@@ -2150,22 +2144,22 @@ double Error(double** u,double** u0,double *v_max,double* u_average)
 for(int i=1; i<Count; i++)
 			{	
 
-			temp1+=(u[i][0]-u0[i][0])*(u[i][0]-u0[i][0])+(u[i][1]-u0[i][1])*(u[i][1]-u0[i][1])+(u[i][2]-u0[i][2])*(u[i][2]-u0[i][2]);
-			temp2 += u[i][0]*u[i][0]+u[i][1]*u[i][1]+u[i][2]*u[i][2];	
+			//temp1+=(u[i][0]-u0[i][0])*(u[i][0]-u0[i][0])+(u[i][1]-u0[i][1])*(u[i][1]-u0[i][1])+(u[i][2]-u0[i][2])*(u[i][2]-u0[i][2]);
+			//temp2 += u[i][0]*u[i][0]+u[i][1]*u[i][1]+u[i][2]*u[i][2];	
 			temp3+=sqrt(u[i][0]*u[i][0]+u[i][1]*u[i][1]+u[i][2]*u[i][2]);
 			if (u[i][0]*u[i][0]+u[i][1]*u[i][1]+u[i][2]*u[i][2]>u_max1)
 				u_max1=u[i][0]*u[i][0]+u[i][1]*u[i][1]+u[i][2]*u[i][2];
 			
 			}
 		
-		temp1=sqrt(temp1);
-		temp2=sqrt(temp2);
-		error_in=temp1/(temp2+1e-30);
+		//temp1=sqrt(temp1);
+		//temp2=sqrt(temp2);
+		//error_in=temp1/(temp2+1e-30);
 		u_max1=sqrt(u_max1);
 
 		MPI_Barrier(MPI_COMM_WORLD);
 		
-	MPI_Gather(&error_in,1,MPI_DOUBLE,rbuf,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	//MPI_Gather(&error_in,1,MPI_DOUBLE,rbuf,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 		
 	MPI_Gather(&u_max1,1,MPI_DOUBLE,um,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 
@@ -2175,8 +2169,8 @@ for(int i=1; i<Count; i++)
 	if (rank==0)
 	    for (int i=0;i<mpi_size;i++)
 		{
-		if (rbuf[i]>error_in)
-			error_in=rbuf[i];
+		//if (rbuf[i]>error_in)
+		//	error_in=rbuf[i];
 		if (um[i]>*v_max)
 			*v_max=um[i];
 		u_compt+=uave[i];
@@ -2195,8 +2189,6 @@ for(int i=1; i<Count; i++)
 	return(error_in);
 
 }
-
-
 
 
 void Geometry(int*** Solid)	

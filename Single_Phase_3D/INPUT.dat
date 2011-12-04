@@ -31,7 +31,7 @@ BC.dat        :Geometry filename
 ======================BACKUP OPTIONS===========================
 -1		:BACKUP FREQUENCY (-1=NO BACKUP)
 0               :USE BACKUP DATA (0=OFF, 1=ON)
-10000                      :Velocity output for Solute transport every x timesteps (-1=NO)
+5000                      :Velocity output for Solute transport every x timesteps (-1=NO)
 
 
 
