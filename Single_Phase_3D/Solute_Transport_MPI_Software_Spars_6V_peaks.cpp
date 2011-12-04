@@ -3733,22 +3733,35 @@ void Backup_init(int peak_n,double* rho, double** u, double** f,double*** fg, do
 	double u_tmp[3];
 
 	ostringstream name5;
-	name5<<"LBM_checkpoint_fg_"<<mode_backup_ini<<"."<<rank<<".bin_input";
+	name5<<pfix<<"LBM_checkpoint_fg_"<<mode_backup_ini<<"."<<rank<<".bin_input";
  	ostringstream name3;
-	name3<<"LBM_checkpoint_psi_"<<mode_backup_ini<<"."<<rank<<".bin_input";
+	name3<<pfix<<"LBM_checkpoint_psi_"<<mode_backup_ini<<"."<<rank<<".bin_input";
  	
 	
 	 
 	fstream fin;
 
        fin.open(name3.str().c_str(),ios::in);
+       
+       if (fin.fail())
+	        {
+	        cout<<"\n file open error on" << name3.str().c_str()<<endl;
+	        exit(-1);
+	        }
+	        
        fin.read((char *)(&rho_r[0][0]), sizeof(double)*num_psi*(Count+1));
   
        fin.close();
        
      
        
-       fin.open(name5.str().c_str(),ios::in);
+       fin.open(name5.str().c_str(),ios::in); 
+       
+       if (fin.fail())
+	        {
+	        cout<<"\n file open error on" << name5.str().c_str()<<endl;
+	        exit(-1);
+	        }
 	fin.read((char *)(&fg[0][0][0]), sizeof(double)*num_psi*(Count+1)*7);
         
        fin.close();

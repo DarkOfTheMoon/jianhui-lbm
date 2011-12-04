@@ -214,7 +214,7 @@ int NCHAR=128;
 
 int*** Solid;
 double*** Psi_local;
-
+char pfix[128];
 	
 int main(int argc , char *argv [])
 {	
@@ -236,6 +236,10 @@ double elaps;
 double Per_l[3],Per_g[3];
 double v_max;
 
+
+        strcpy(pfix,"./");
+        if (argc>2)
+                strcpy(pfix,argv[2]);
 
 
 
@@ -1342,11 +1346,11 @@ void init(double* rho, double** u, double** f,double** fg, double** F, double** 
 	Comput_MI(M,MI);
 
 	}
-
-//	for (int i=0;i<19;i++)
-//		for (int j=0;j<3;j++)
-//		elat[i][j]=e[i][j]*lat_c;
-  //      cout<<elat[13][0]<<" "<<elat[13][1]<<" "<<elat[13][2]<<endl;        
+	
+//eu=0;
+//for (int i=0;i<19;i++)
+//        eu+=M[2][i]*MI[i][2];
+//cout<<eu<<"          aaaaaa"<<endl;
 
 	S[0]=0;
 	S[1]=s_v;
@@ -5118,59 +5122,84 @@ void Backup_init(double* rho, double** u, double** f,double** fg, double** F, do
 		for (int j=0;j<3;j++)
 		elat[i][j]=e[i][j]*lat_c;
 	
-	for (int i=0;i<19;i++)
-		for (int j=0;j<19;j++)
-		M[i][j]*=M_c[i];
+	//for (int i=0;i<19;i++)
+	//	for (int j=0;j<19;j++)
+	//	M[i][j]*=M_c[i];
 	
-	Comput_MI(M,MI);
+	//Comput_MI(M,MI);
 	
 	ostringstream name5;
-	name5<<"LBM_checkpoint_fg_"<<mode_backup_ini<<"."<<rank<<".bin_input";
+	name5<<pfix<<"LBM_checkpoint_fg_"<<mode_backup_ini<<"."<<rank<<".bin_input";
  	ostringstream name4;
-	name4<<"LBM_checkpoint_f_"<<mode_backup_ini<<"."<<rank<<".bin_input";
+	name4<<pfix<<"LBM_checkpoint_f_"<<mode_backup_ini<<"."<<rank<<".bin_input";
 	ostringstream name3;
-	name3<<"LBM_checkpoint_psi_"<<mode_backup_ini<<"."<<rank<<".bin_input";
+	name3<<pfix<<"LBM_checkpoint_psi_"<<mode_backup_ini<<"."<<rank<<".bin_input";
  	ostringstream name2;
-	name2<<"LBM_checkpoint_velocity_"<<mode_backup_ini<<"."<<rank<<".bin_input";
+	name2<<pfix<<"LBM_checkpoint_velocity_"<<mode_backup_ini<<"."<<rank<<".bin_input";
 	ostringstream name;
-	name<<"LBM_checkpoint_rho_"<<mode_backup_ini<<"."<<rank<<".bin_input";
+	name<<pfix<<"LBM_checkpoint_rho_"<<mode_backup_ini<<"."<<rank<<".bin_input";
 	
 	 
 	fstream fin;
 	fin.open(name.str().c_str(),ios::in);
+	if (fin.fail())
+	        {
+	        cout<<"\n file open error on" << name.str().c_str()<<endl;
+	        exit(-1);
+	        }
+	        
 	fin.read((char *)(&rho[0]), sizeof(double)*(Count+1));
-        //	for(int i=1;i<=Count;i++)
-        //	        fin >> rho[i];
-  
+       
        fin.close();
        
    
 	fin.open(name2.str().c_str(),ios::in);
+	if (fin.fail())
+	        {
+	        cout<<"\n file open error on" << name2.str().c_str()<<endl;
+	        exit(-1);
+	        }
+	        
+	        
 	fin.read((char *)(&u[0][0]), sizeof(double)*(Count+1)*3);
-      //  	for(int i=1;i<=Count;i++)
-       // 	        fin >> u[i][0] >> u[i][1] >> u[i][2];
+     
   
        fin.close();
        
        fin.open(name3.str().c_str(),ios::in);
+       if (fin.fail())
+	        {
+	        cout<<"\n file open error on" << name3.str().c_str()<<endl;
+	        exit(-1);
+	        }
+	        
+	        
        fin.read((char *)(&rho_r[0]), sizeof(double)*(Count+1));
-       // 	for(int i=1;i<=Count;i++)
-       // 	        cout <<"   ddddddd  "<< rho_r[3]<<endl;
-  
+       
        fin.close();
        
        fin.open(name4.str().c_str(),ios::in);
+       if (fin.fail())
+	        {
+	        cout<<"\n file open error on" << name4.str().c_str()<<endl;
+	        exit(-1);
+	        }
+	        
+	        
 	fin.read((char *)(&f[0][0]), sizeof(double)*(Count+1)*19);
-       // 	for(int i=1;i<=Count;i++)
-       // 	        fin >> f[i][0] >> f[i][1] >> f[i][2] >> f[i][3] >> f[i][4] >> f[i][5] >>f[i][6] >> f[i][7] >> f[i][8] >> f[i][9] >> f[i][10] >> f[i][11] >> f[i][12] >> f[i][13] >> f[i][14] >> f[i][15] >> f[i][16] >>f[i][17] >> f[i][18] ;
-  
+       
        fin.close();
        
        fin.open(name5.str().c_str(),ios::in);
+       if (fin.fail())
+	        {
+	        cout<<"\n file open error on" << name5.str().c_str()<<endl;
+	        exit(-1);
+	        }
+	        
+	        
 	fin.read((char *)(&fg[0][0]), sizeof(double)*(Count+1)*19);
-        //	for(int i=1;i<=Count;i++)
-        //	        fin >> fg[i][0] >> fg[i][1] >> fg[i][2] >> fg[i][3] >> fg[i][4] >> fg[i][5] >>fg[i][6] >> fg[i][7] >> fg[i][8] >> fg[i][9] >> fg[i][10] >> fg[i][11] >> fg[i][12] >> fg[i][13] >> fg[i][14] >> fg[i][15] >> fg[i][16] >>fg[i][17] >> fg[i][18] ;
-  
+       
        fin.close();
 
 	
@@ -5183,9 +5212,7 @@ void Backup_init(double* rho, double** u, double** f,double** fg, double** F, do
 		
 		for (int lm=0;lm<19;lm++)
 			{
-			//f[i][lm]=feq(lm,rho[i],u_tmp);
-			//eu=elat[lm][0]*u[i][0]+elat[lm][1]*u[i][1]+elat[lm][2]*u[i][2];
-			//fg[i][lm]=w[lm]*rho_r[i]*(1+3*eu/c2);
+			
 			F[i][lm]=f[i][lm];Fg[i][lm]=fg[i][lm];
 			//fg[i][lm]=w[mi]*rho_r[ci]*(1+3*eu/c2+4.5*eu*eu/c4-1.5*uu/c2);
 			}

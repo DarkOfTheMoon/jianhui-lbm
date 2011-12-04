@@ -176,7 +176,8 @@ int NCHAR=128;
 int*** Solid;
 	float* Per_Int;
 	float* Por_Int;
-	
+char pfix[128];
+
 	
 int main(int argc , char *argv [])
 {	
@@ -194,7 +195,9 @@ int dif,ts,th,tm;
 int tse,the,tme;
 double elaps;
 
- 
+        strcpy(pfix,"./");
+        if (argc>2)
+                strcpy(pfix,argv[2]);
 
 	MPI_Barrier(MPI_COMM_WORLD);
 	start = MPI_Wtime();
@@ -3765,16 +3768,23 @@ void Backup_init(double* rho, double** u, double** f, double* PerC, double* PorC
 	
 	
  	ostringstream name4;
-	name4<<"LBM_checkpoint_f_"<<mode_backup_ini<<"."<<rank<<".bin_input";
+	name4<<pfix<<"LBM_checkpoint_f_"<<mode_backup_ini<<"."<<rank<<".bin_input";
 	
  	ostringstream name2;
-	name2<<"LBM_checkpoint_velocity_"<<mode_backup_ini<<"."<<rank<<".bin_input";
+	name2<<pfix<<"LBM_checkpoint_velocity_"<<mode_backup_ini<<"."<<rank<<".bin_input";
 	ostringstream name;
-	name<<"LBM_checkpoint_rho_"<<mode_backup_ini<<"."<<rank<<".bin_input";
+	name<<pfix<<"LBM_checkpoint_rho_"<<mode_backup_ini<<"."<<rank<<".bin_input";
 	
 	 
 	fstream fin;
 	fin.open(name.str().c_str(),ios::in);
+	if (fin.fail())
+	        {
+	        cout<<"\n file open error on" << name.str().c_str()<<endl;
+	        exit(-1);
+	        }
+	        
+	        
 	fin.read((char *)(&rho[0]), sizeof(double)*(Count+1));
         //	for(int i=1;i<=Count;i++)
         //	        fin >> rho[i];
@@ -3783,19 +3793,29 @@ void Backup_init(double* rho, double** u, double** f, double* PerC, double* PorC
        
    
 	fin.open(name2.str().c_str(),ios::in);
+	if (fin.fail())
+	        {
+	        cout<<"\n file open error on" << name2.str().c_str()<<endl;
+	        exit(-1);
+	        }
+	        
+	        
 	fin.read((char *)(&u[0][0]), sizeof(double)*(Count+1)*3);
-      //  	for(int i=1;i<=Count;i++)
-       // 	        fin >> u[i][0] >> u[i][1] >> u[i][2];
-  
+     
        fin.close();
        
        
        
        fin.open(name4.str().c_str(),ios::in);
+       if (fin.fail())
+	        {
+	        cout<<"\n file open error on" << name4.str().c_str()<<endl;
+	        exit(-1);
+	        }
+	        
+	        
 	fin.read((char *)(&f[0][0]), sizeof(double)*(Count+1)*19);
-       // 	for(int i=1;i<=Count;i++)
-       // 	        fin >> f[i][0] >> f[i][1] >> f[i][2] >> f[i][3] >> f[i][4] >> f[i][5] >>f[i][6] >> f[i][7] >> f[i][8] >> f[i][9] >> f[i][10] >> f[i][11] >> f[i][12] >> f[i][13] >> f[i][14] >> f[i][15] >> f[i][16] >>f[i][17] >> f[i][18] ;
-  
+      
        fin.close();
        
       

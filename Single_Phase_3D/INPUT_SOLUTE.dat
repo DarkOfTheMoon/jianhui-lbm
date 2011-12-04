@@ -44,7 +44,7 @@ phase.dat       	    	:Initial components distribution
 0 100				:Permeability calculation partially Starting point and Ending point in Z
 ====================BACKUP=PARAMETERS==========================
 -1		                   :BACKUP FREQUENCY (-1=NO BACKUP)
-0                               :INITIALIZATION WITH BACKUP DATA (0=OFF, 1=ON)
+2000                               :INITIALIZATION WITH BACKUP DATA (0=OFF, 1=ON)
 10000					:intial data for velocity (for ST only)
 3 3 12					:Number of peaks, width of the peak,starting coordinate (only for ST_6V_peaks)
 
@@ -52,3 +52,11 @@ INSTRUCTIONS OF PARAMETER INPUT
 0				:Constant Concentration BC or 0 flux BC (1=YES, 0=NO)
 0 0 0 0 0 0			:Zero Flux BC in xp xn yp yn zp zn (0=No, 1=Yes)
 Dispersion statistics: for SP_HS 1=X, 2=Y, 3=Z,  for ST codes, 1=Genreal, 2=every peak as well
+
+To use the checkpoint data to restart the simulation,
+You might need to specify the path of the checkpoint data
+The path sould be put after the name and the path of the data file.
+such as: mpirun -np 3 INPUT.dat /work/jy810/test/
+If not given, the default value is ./
+
+

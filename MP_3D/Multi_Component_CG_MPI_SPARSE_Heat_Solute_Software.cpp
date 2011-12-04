@@ -220,7 +220,7 @@ int NCHAR=128;
 int*** Solid;
 double*** Psi_local;
 double*** Psi_local2;
-
+char pfix[128];
 	
 int main(int argc , char *argv [])
 {	
@@ -243,6 +243,10 @@ double v_max,error_Per;
 char outp1[128]="psi";
 char outp2[128]="HS";
 
+
+        strcpy(pfix,"./");
+        if (argc>2)
+                strcpy(pfix,argv[2]);
 
 
 	MPI_Barrier(MPI_COMM_WORLD);
@@ -5859,62 +5863,103 @@ void Backup_init(double* rho, double** u, double** f,double* psi,double* rho_r, 
 	psi_solid=ContactAngle_parameter;
 	
 	ostringstream name5;
-	name5<<"LBM_checkpoint_fg_"<<mode_backup_ini<<"."<<rank<<".bin_input";
+	name5<<pfix<<"LBM_checkpoint_fg_"<<mode_backup_ini<<"."<<rank<<".bin_input";
  	ostringstream name4;
-	name4<<"LBM_checkpoint_f_"<<mode_backup_ini<<"."<<rank<<".bin_input";
+	name4<<pfix<<"LBM_checkpoint_f_"<<mode_backup_ini<<"."<<rank<<".bin_input";
 	ostringstream name3;
-	name3<<"LBM_checkpoint_psi_"<<mode_backup_ini<<"."<<rank<<".bin_input";
+	name3<<pfix<<"LBM_checkpoint_psi_"<<mode_backup_ini<<"."<<rank<<".bin_input";
  	ostringstream name2;
-	name2<<"LBM_checkpoint_velocity_"<<mode_backup_ini<<"."<<rank<<".bin_input";
+	name2<<pfix<<"LBM_checkpoint_velocity_"<<mode_backup_ini<<"."<<rank<<".bin_input";
 	ostringstream name;
-	name<<"LBM_checkpoint_rho_"<<mode_backup_ini<<"."<<rank<<".bin_input";
+	name<<pfix<<"LBM_checkpoint_rho_"<<mode_backup_ini<<"."<<rank<<".bin_input";
 	ostringstream name6;
-	name6<<"LBM_checkpoint_HS_"<<mode_backup_ini<<"."<<rank<<".bin_input";
+	name6<<pfix<<"LBM_checkpoint_HS_"<<mode_backup_ini<<"."<<rank<<".bin_input";
 	 ostringstream name7;
-	name7<<"LBM_checkpoint_rhor_"<<mode_backup_ini<<"."<<rank<<".bin_input";
+	name7<<pfix<<"LBM_checkpoint_rhor_"<<mode_backup_ini<<"."<<rank<<".bin_input";
 	ostringstream name8;
-	name8<<"LBM_checkpoint_rhob_"<<mode_backup_ini<<"."<<rank<<".bin_input";
+	name8<<pfix<<"LBM_checkpoint_rhob_"<<mode_backup_ini<<"."<<rank<<".bin_input";
 	
 	
 	fstream fin;
 	fin.open(name.str().c_str(),ios::in);
+	if (fin.fail())
+	        {
+	        cout<<"\n file open error on" << name.str().c_str()<<endl;
+	        exit(-1);
+	        }
+	        
 	fin.read((char *)(&rho[0]), sizeof(double)*(Count+1));
  
        fin.close();
        
    
 	fin.open(name2.str().c_str(),ios::in);
+	if (fin.fail())
+	        {
+	        cout<<"\n file open error on" << name2.str().c_str()<<endl;
+	        exit(-1);
+	        }
 	fin.read((char *)(&u[0][0]), sizeof(double)*(Count+1)*3);
       
        fin.close();
        
        fin.open(name3.str().c_str(),ios::in);
+       if (fin.fail())
+	        {
+	        cout<<"\n file open error on" << name3.str().c_str()<<endl;
+	        exit(-1);
+	        }
        fin.read((char *)(&psi[0]), sizeof(double)*(Count+1));
      
        fin.close();
        
        fin.open(name4.str().c_str(),ios::in);
+       if (fin.fail())
+	        {
+	        cout<<"\n file open error on" << name4.str().c_str()<<endl;
+	        exit(-1);
+	        }
 	fin.read((char *)(&f[0][0]), sizeof(double)*(Count+1)*19);
       
        fin.close();
        
        fin.open(name5.str().c_str(),ios::in);
+       if (fin.fail())
+	        {
+	        cout<<"\n file open error on" << name5.str().c_str()<<endl;
+	        exit(-1);
+	        }
 	fin.read((char *)(&fg[0][0]), sizeof(double)*(Count+1)*19);
         
        fin.close();
 
        fin.open(name6.str().c_str(),ios::in);
+       if (fin.fail())
+	        {
+	        cout<<"\n file open error on" << name6.str().c_str()<<endl;
+	        exit(-1);
+	        }
 	fin.read((char *)(&rhoh[0]), sizeof(double)*(Count+1));
         
        fin.close();
        
        
 	fin.open(name7.str().c_str(),ios::in);
+	if (fin.fail())
+	        {
+	        cout<<"\n file open error on" << name7.str().c_str()<<endl;
+	        exit(-1);
+	        }
 	fin.read((char *)(&rho_r[0]), sizeof(double)*(Count+1));
  
        fin.close();
        
        fin.open(name8.str().c_str(),ios::in);
+       if (fin.fail())
+	        {
+	        cout<<"\n file open error on" << name8.str().c_str()<<endl;
+	        exit(-1);
+	        }
 	fin.read((char *)(&rho_b[0]), sizeof(double)*(Count+1));
  
        fin.close();

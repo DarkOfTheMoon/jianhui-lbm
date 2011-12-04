@@ -25,18 +25,18 @@ phase2.dat			:Initial conditions of Heat/Solute
 0 0.0 0 0.0			:Constant Diffusive Flux BC in X direction (p,n)
 0 0.0 0 0.0			:Constant Diffusive Flux BC in Y direction
 0 0.0 0 0.0			:Constant Diffusive Flux BC in Z direction
-0.01    		       		:Viscosity (Component A, psi=1)
-0.01    		       		:Viscosity (Component B, psi=-1)
+0.1    		       		:Viscosity (Component A, psi=1)
+0.1    		       		:Viscosity (Component B, psi=-1)
 0.0439	    		        :Diffusion coefficient (Component A, psi=1)
 0.0439	    		        :Diffusion coefficient (Component B, psi=-1)
 0.0     		      	:Contact Angle Cos(Theta)(Positive=1 wetting, Negative -1 wetting)
-0.8e-2    		      	:Surface tension (Kappa)
+1.0e-2    		      	:Surface tension (Kappa)
 0.0 0.0 0.0			:initial velocity for x,y,z
 200	        	       	:Permeability (Single Phase mD)
 =========OUTPUT==CONTROL===================
 1		         	:Permeability writing (1=yes, 0=no)
 1                       	:Direction of Permeability Calculation (1=X, 2=Y, 3=Z)
-10		         	:Frequency of results writing (interval in time steps)
+50		         	:Frequency of results writing (interval in time steps)
 0               		:Memory Saving mode for output (0=No, 1=Yes,for large outputs, x,z opposite)
 200				:Frequency of velocity field writing (in vtk format, -1=no velocity writing)
 200				:Frequency of density field writing (in vtk format, -1=no density writing)
@@ -56,10 +56,16 @@ phase2.dat			:Initial conditions of Heat/Solute
 0 100				:Permeability calculation partially Starting point and Ending point in Z
 =======================BACKUP==CONTROLE===================
 -1		                   :BACKUP FREQUENCY (-1=NO BACKUP,0=Backup at the end of computation)
-1000                              :INITIALIZATION WITH BACKUP DATA (0=OFF, 1=ON)
+2000                              :INITIALIZATION WITH BACKUP DATA (0=OFF, 1=ON)
 
 
 INSTRUCTIONS OF PARAMETER INPUT
 If buffet is add near the geometry boundaries, initial satuation parameter is on and 
 partly permeability calculation is used, the default component in the buffet is set as 
 component A (1)
+
+To use the checkpoint data to restart the simulation,
+You might need to specify the path of the checkpoint data
+The path sould be put after the name and the path of the data file.
+such as: mpirun -np 3 INPUT.dat /work/jy810/test/
+If not given, the default value is ./

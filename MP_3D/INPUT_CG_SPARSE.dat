@@ -42,8 +42,8 @@ phase.dat       	    	:Initial components distribution
 0 100				:Permeability calculation partially Starting point and Ending point in Y
 0 100				:Permeability calculation partially Starting point and Ending point in Z
 ======================BACKUP==CONTROL====================
-2000		                   :BACKUP FREQUENCY (-1=NO BACKUP,0=Backup at the end of computation)
-0                              :INITIALIZATION WITH BACKUP DATA (0=OFF, 1=ON)
+-1		                   :BACKUP FREQUENCY (-1=NO BACKUP,0=Backup at the end of computation)
+2000                              :INITIALIZATION WITH BACKUP DATA (0=OFF, 1=ON)
 
 INSTRUCTIONS OF PARAMETER INPUT
 0.0556</frac{niu*dt}{dx^2}<0.25
@@ -51,3 +51,11 @@ INSTRUCTIONS OF PARAMETER INPUT
 If buffet is add near the geometry boundaries, initial satuation parameter is on and 
 partly permeability calculation is used, the default component in the buffet is set as 
 component A (1)
+
+
+To use the checkpoint data to restart the simulation,
+You might need to specify the path of the checkpoint data
+The path sould be put after the name and the path of the data file.
+such as: mpirun -np 3 INPUT.dat /work/jy810/test/
+If not given, the default value is ./
+

@@ -25,7 +25,14 @@ perm.dat		:Permeability and porosity data file
 ./		:OUTPUT PATH,DEFAULT: ./ (REMEMBER TO INCLUDE "/" AT THE END OF PATH)
 2              :PRESSURE AND VELOCITY BOUNDARY CONDITION OPTIONS: 0,1,2,3: EBC_S,EBC_D,TOLKE_BC,NEBC_D
 -1		:BACKUP FREQUENCY (-1=NO BACKUP)
-0               :USE BACKUP DATA (0=OFF, 1=ON)
+2000               :USE BACKUP DATA (0=OFF, 1=ON)
+
+
+To use the checkpoint data to restart the simulation,
+You might need to specify the path of the checkpoint data
+The path sould be put after the name and the path of the data file.
+such as: mpirun -np 3 INPUT.dat /work/jy810/test/
+If not given, the default value is ./
 
 
 

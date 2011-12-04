@@ -179,7 +179,7 @@ int NCHAR=128;
 
 int*** Solid;
 double*** Psi_local;
-
+char pfix[128];
 	
 int main(int argc , char *argv [])
 {	
@@ -201,7 +201,9 @@ double elaps;
 double Per_l[3],Per_g[3];
 double v_max;
 
-
+        strcpy(pfix,"./");
+        if (argc>2)
+                strcpy(pfix,argv[2]);
 
 
 	MPI_Barrier(MPI_COMM_WORLD);
@@ -463,12 +465,12 @@ if (Zoom>1)
 
 	if (mode_backup_ini==0)
 	{
-	        init(rho,u,f,fg,F,Fg,rho_r,rhor,forcex,forcey,forcez,Psi_local,SupInv);cout<<"aaaaaaaaa"<<endl;
+	        init(rho,u,f,fg,F,Fg,rho_r,rhor,forcex,forcey,forcez,Psi_local,SupInv);
 		Backup_input_v(sol_ini_n,rho,rho_r,u,f,fg);
 	}
 	else
 	        {
-	         Backup_init(rho,u,f,fg,F,Fg,rho_r,rhor,forcex,forcey,forcez,Psi_local,SupInv);cout<<"aaaaaaaaa"<<endl;
+	         Backup_init(rho,u,f,fg,F,Fg,rho_r,rhor,forcex,forcey,forcez,Psi_local,SupInv);
 		Backup_input_v(sol_ini_n,rho,rho_r,u,f,fg);              
 	        }
 
@@ -3617,7 +3619,7 @@ void Backup_input_v(int m,double* rho,double* psi, double** u, double** f, doubl
 
 	double* lsu= new double[Count*3];
 	ostringstream name;
-	name<<"Velocity_for_solute_"<<m<<"."<<rank<<".bin";
+	name<<pfix<<"Velocity_for_solute_"<<m<<"."<<rank<<".bin";
 	fstream file;
 	file.open(name.str().c_str(),ios_base::in);
 	
@@ -3730,6 +3732,11 @@ void Backup_init(double* rho, double** u, double** f,double** fg, double** F, do
 	
        
        fin.open(name3.str().c_str(),ios::in);
+       if (fin.fail())
+	        {
+	        cout<<"\n file open error on " << name3.str().c_str()<<endl;
+	        exit(-1);
+	        }
        fin.read((char *)(&rho_r[0]), sizeof(double)*(Count+1));
   
        fin.close();
@@ -3737,6 +3744,11 @@ void Backup_init(double* rho, double** u, double** f,double** fg, double** F, do
      
        
        fin.open(name5.str().c_str(),ios::in);
+       if (fin.fail())
+	        {
+	        cout<<"\n file open error on " << name5.str().c_str()<<endl;
+	        exit(-1);
+	        }
 	fin.read((char *)(&fg[0][0]), sizeof(double)*(Count+1)*19);
         
        fin.close();
