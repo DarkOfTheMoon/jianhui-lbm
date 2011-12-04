@@ -182,7 +182,7 @@ int NCHAR=128;
 
 int*** Solid;
 double*** Psi_local;
-
+char pfix[128];
 	
 int main(int argc , char *argv [])
 {	
@@ -204,8 +204,9 @@ double elaps;
 double Per_l[3],Per_g[3];
 double v_max;
 
-
-
+       strcpy(pfix,"./");
+        if (argc>2)
+                strcpy(pfix,argv[2]);
 
 	MPI_Barrier(MPI_COMM_WORLD);
 	start = MPI_Wtime();
@@ -3467,7 +3468,7 @@ void Backup_input_v(int m,double* rho,double* psi, double** u, double** f, doubl
 
 	double* lsu= new double[Count*3];
 	ostringstream name;
-	name<<"Velocity_for_solute_"<<m<<"."<<rank<<".bin";
+	name<<pfix<<"Velocity_for_solute_"<<m<<"."<<rank<<".bin";
 	fstream file;
 	file.open(name.str().c_str(),ios_base::in);
 	

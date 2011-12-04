@@ -3623,7 +3623,7 @@ void Backup_input_v(int m,double* rho,double* psi, double** u, double** f, doubl
 	
 	if (file.fail())
 	        {
-	        cout<<"\n file open error on" << name.str().c_str()<<endl;
+	        cout<<"\n file open error on " << name.str().c_str()<<endl;
 	        exit(-1);
 	        }
 	        
