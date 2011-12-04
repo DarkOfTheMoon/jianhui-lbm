@@ -3471,6 +3471,12 @@ void Backup_input_v(int m,double* rho,double* psi, double** u, double** f, doubl
 	fstream file;
 	file.open(name.str().c_str(),ios_base::in);
 	
+	
+	if (file.fail())
+	        {
+	        cout<<"\n file open error on" << name.str().c_str()<<endl;
+	        exit(-1);
+	        }
 	file.read((char *)(lsu),sizeof(double)*Count*3);
 	file.close();
 
