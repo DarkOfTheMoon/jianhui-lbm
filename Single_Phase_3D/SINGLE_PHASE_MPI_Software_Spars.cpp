@@ -4853,7 +4853,18 @@ for (int in_z=0;in_z<loop[divi];in_z++)
 	if (rank==0)
 	{
 	ofstream fin(name.str().c_str(),ios::app);
-	fin<<Perm[0]*reso*reso*1000<<" "<< (double)por_loc/vol_g <<endl;
+	switch(PerDIr)
+		{
+		case 1:
+			fin<<Perm[0]*reso*reso*1000<<" "<< (double)por_loc/vol_g <<endl;break;
+		case 2:
+			fin<<Perm[1]*reso*reso*1000<<" "<< (double)por_loc/vol_g <<endl;break;
+		case 3:
+			fin<<Perm[2]*reso*reso*1000<<" "<< (double)por_loc/vol_g <<endl;break;
+		default:
+			fin<<Perm[0]*reso*reso*1000<<" "<< (double)por_loc/vol_g <<endl;break;
+		}
+	//fin<<Perm[0]*reso*reso*1000<<" "<< (double)por_loc/vol_g <<endl;
 	fin.close();
 	}
 
