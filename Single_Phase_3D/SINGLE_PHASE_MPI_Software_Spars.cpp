@@ -319,10 +319,13 @@ fin.close();
 	MPI_Bcast(&per_yn,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&per_zp,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&per_zn,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&per_xn,1,MPI_INT,0,MPI_COMM_WORLD);
 
-	MPI_Bcast(&gperm,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&n_gperm1,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&gperm,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&n_gperm1,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&n_gperm2,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&n_gperm3,1,MPI_INT,0,MPI_COMM_WORLD);
-	MPI_Bcast(&n_gperm4,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&size_gperm1,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&n_gperm4,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&size_gperm1,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&size_gperm2,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&size_gperm3,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&size_gperm4,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&c0_gperm1,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&c1_gperm1,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&c2_gperm1,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&c0_gperm2,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&c1_gperm2,1,MPI_INT,0,MPI_COMM_WORLD);
