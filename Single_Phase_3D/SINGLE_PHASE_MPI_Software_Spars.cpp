@@ -177,6 +177,12 @@ double in_vis,p_xp,p_xn,p_yp,p_yn,p_zp,p_zn,dx_input,dt_input;
 double inivx,inivy,inivz,v_xp,v_xn,v_yp,v_yn,v_zp,v_zn;
 double error_perm;
 int par_per_x,par_per_y,par_per_z,per_xp,per_xn,per_yp,per_yn,per_zp,per_zn;
+int loop[4]={n_gperm1,n_gperm2,n_gperm3,n_gperm4};
+	int loop_size[4]={size_gperm1,size_gperm2,size_gperm3,size_gperm4};
+
+int n_gperm1,n_gperm2,n_gperm3,n_gperm4,gperm;
+int size_gperm1,size_gperm2,size_gperm3,size_gperm4;
+int c0_gperm1,c1_gperm1,c2_gperm1,c0_gperm2,c1_gperm2,c2_gperm2,c0_gperm3,c1_gperm3,c2_gperm3,c0_gperm4,c1_gperm4,c2_gperm4;
 
 char outputfile[128]="./";
 int NCHAR=128;
@@ -254,11 +260,19 @@ int tse,the,tme;
 //	fin >> backup_rho;                   		fin.getline(dummy, NCHAR);
 //	fin >> backup_velocity;                		fin.getline(dummy, NCHAR);
 //	fin >> backup_f;                        	fin.getline(dummy, NCHAR);
-	fin >> vel_sol;                                fin.getline(dummy, NCHAR);
+	fin >> vel_sol;                                	fin.getline(dummy, NCHAR);
 	
 	//fin >> EI;					fin.getline(dummy, NCHAR);
 	//fin >> q_p;					fin.getline(dummy, NCHAR);
-	fin.close();
+	fin.getline(dummy, NCHAR);
+	fin >> gperm;					fin.getline(dummy, NCHAR);
+	fin >> n_gperm1>>n_gperm2>>n_gperm3>>n_gperm4;	fin.getline(dummy, NCHAR);
+	fin >> size_gperm1>>size_gperm2>>size_gperm3>>size_gperm4; fin.getline(dummy, NCHAR);
+	fin >> c0_gperm1>>c1_gperm1>>c2_gperm1; 	fin.getline(dummy, NCHAR);	
+	fin >> c0_gperm2>>c1_gperm2>>c2_gperm2; 	fin.getline(dummy, NCHAR);
+	fin >> c0_gperm3>>c1_gperm3>>c2_gperm3; 	fin.getline(dummy, NCHAR);
+	fin >> c0_gperm4>>c1_gperm4>>c2_gperm4; 	fin.getline(dummy, NCHAR);
+fin.close();
 	
 	//cout<<NX<<"    asdfa "<<endl;
 	NX=NX-1;NY=NY-1;NZ=NZ-1;
@@ -305,6 +319,10 @@ int tse,the,tme;
 	MPI_Bcast(&per_yp,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&per_xp,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&per_yn,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&per_zp,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&per_zn,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&per_xn,1,MPI_INT,0,MPI_COMM_WORLD);
+
+	MPI_Bcast(&gperm,1,MPI_INT,0,MPI_COMM_WORLD);
+	
+	
 
 	
       
@@ -4653,8 +4671,8 @@ void Comput_Grop_Perm(double** u,double* Permia,int PerDIr,int* SupInv)
 	strcpy(File,outputfile);
 
 	//========================================
-	int loop[4]={1,1,2,4};
-	int loop_size[4]={512,256,128,64};
+	int loop[4]={n_gperm1,n_gperm2,n_gperm3,n_gperm4};
+	int loop_size[4]={size_gperm1,size_gperm2,size_gperm3,size_gperm4};
 	int loop_s[4][3]={{0,1,1},{128,129,129},{128,129,129},{128,129,129}};
 	//========================================
 
