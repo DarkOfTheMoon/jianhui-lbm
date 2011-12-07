@@ -177,8 +177,7 @@ double in_vis,p_xp,p_xn,p_yp,p_yn,p_zp,p_zn,dx_input,dt_input;
 double inivx,inivy,inivz,v_xp,v_xn,v_yp,v_yn,v_zp,v_zn;
 double error_perm;
 int par_per_x,par_per_y,par_per_z,per_xp,per_xn,per_yp,per_yn,per_zp,per_zn;
-int loop[4]={n_gperm1,n_gperm2,n_gperm3,n_gperm4};
-	int loop_size[4]={size_gperm1,size_gperm2,size_gperm3,size_gperm4};
+
 
 int n_gperm1,n_gperm2,n_gperm3,n_gperm4,gperm;
 int size_gperm1,size_gperm2,size_gperm3,size_gperm4;
@@ -320,9 +319,27 @@ fin.close();
 	MPI_Bcast(&per_yn,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&per_zp,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&per_zn,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&per_xn,1,MPI_INT,0,MPI_COMM_WORLD);
 
-	MPI_Bcast(&gperm,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&gperm,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&n_gperm1,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&n_gperm2,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&n_gperm3,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&n_gperm4,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&size_gperm1,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&size_gperm2,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&size_gperm3,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&c0_gperm1,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&c1_gperm1,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&c2_gperm1,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&c0_gperm2,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&c1_gperm2,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&c2_gperm2,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&c0_gperm3,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&c1_gperm3,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&c2_gperm3,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&c0_gperm4,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&c1_gperm4,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&c2_gperm4,1,MPI_INT,0,MPI_COMM_WORLD);
 	
 	
+
+Par_Geo=0;
+
+if (mirX==1)
+	NX=NX*2+1;
+if (mirY==1)
+	NY=NY*2+1;
 
 	
       
@@ -619,8 +636,8 @@ if (wr_per==1)
 			 error=Error(u,u0,&u_max,&u_ave);if (u_max>=10.0)	U_max_ref+=1;
 			error_perm=Comput_Perm(u,Permia,PerDir,SupInv); 
 			
-			
-			//Comput_Grop_Perm(u,Permia,PerDir,SupInv);
+			if ((gperm>0) and (n%gperm==0))
+			Comput_Grop_Perm(u,Permia,PerDir,SupInv);
 			
 			
 			 if (rank==0)
@@ -4673,9 +4690,13 @@ void Comput_Grop_Perm(double** u,double* Permia,int PerDIr,int* SupInv)
 	//========================================
 	int loop[4]={n_gperm1,n_gperm2,n_gperm3,n_gperm4};
 	int loop_size[4]={size_gperm1,size_gperm2,size_gperm3,size_gperm4};
-	int loop_s[4][3]={{0,1,1},{128,129,129},{128,129,129},{128,129,129}};
+	int loop_s[4][3]={{c0_gperm1,c1_gperm1,c2_gperm1},{c0_gperm2,c1_gperm2,c2_gperm2},{c0_gperm3,c1_gperm3,c2_gperm3},{c0_gperm4,c1_gperm4,c2_gperm4}};
 	//========================================
-
+	
+	
+	//=========================================
+	
+	//=========================================
 
 	MPI_Gather(&nx_l,1,MPI_INT,nx_g,1,MPI_INT,0,MPI_COMM_WORLD);
 
