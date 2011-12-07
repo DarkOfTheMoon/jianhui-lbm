@@ -4688,13 +4688,22 @@ void Comput_Grop_Perm(double** u,double* Permia,int PerDIr,int* SupInv)
 	strcpy(File,outputfile);
 
 	//========================================
-	int loop[4]={n_gperm1,n_gperm2,n_gperm3,n_gperm4};
-	int loop_size[4]={size_gperm1,size_gperm2,size_gperm3,size_gperm4};
-	int loop_s[4][3]={{c0_gperm1,c1_gperm1,c2_gperm1},{c0_gperm2,c1_gperm2,c2_gperm2},{c0_gperm3,c1_gperm3,c2_gperm3},{c0_gperm4,c1_gperm4,c2_gperm4}};
+	//int loop[4]={n_gperm1,n_gperm2,n_gperm3,n_gperm4};
+	//int loop_size[4]={size_gperm1,size_gperm2,size_gperm3,size_gperm4};
+	//int loop_s[4][3]={{c0_gperm1,c1_gperm1,c2_gperm1},{c0_gperm2,c1_gperm2,c2_gperm2},{c0_gperm3,c1_gperm3,c2_gperm3},{c0_gperm4,c1_gperm4,c2_gperm4}};
 	//========================================
 	
 	
 	//=========================================
+	int loop[4];
+	int loop_size[4];
+	int loop_s[4][3];
+	loop[0]=n_gperm1;loop[1]=n_gperm2;loop[2]=n_gperm3;loop[3]=n_gperm4;
+	loop_size[0]=size_gperm1;loop_size[1]=size_gperm2;loop_size[2]=size_gperm3;loop_size[3]=size_gperm4;
+	loop_s[0][0]=c0_gperm1;loop_s[0][1]=c1_gperm1;loop_s[0][2]=c2_gperm1;
+	loop_s[1][0]=c0_gperm2;loop_s[1][1]=c1_gperm2;loop_s[1][2]=c2_gperm2;
+	loop_s[2][0]=c0_gperm3;loop_s[2][1]=c1_gperm3;loop_s[2][2]=c2_gperm3;
+	loop_s[3][0]=c0_gperm4;loop_s[3][1]=c1_gperm4;loop_s[3][2]=c2_gperm4;
 	
 	//=========================================
 
