@@ -1,6 +1,6 @@
 =================SINGLE PHASE LATTICE BOLTZMANN CODE INPUT FILE================================================
 20-3-3_x.dat        :Geometry filename
-89 89 89                 :nx ny nz
+174 178 182                 :nx ny nz
 60000	                 :Maxmum time step
 19.997	                :x=1 (um) Resolution (for Permeability calculation, resolution/dx)
 0	        	       :Pressure/Velocity Boundary (1=Yes, 0=No)   Convergence accelerator (1=yes, 0=no)

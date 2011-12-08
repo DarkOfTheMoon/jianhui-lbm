@@ -14,19 +14,19 @@ int main (int argc , char * argv [])
 int nx=87;
 int ny=87;
 int nz=87;
-int dir=0;
+int dir=3;
 int sym_x=0;
 int sym_y=0;
 int sym_z=0;
-int add_buf_x_n=2;
-int add_buf_y_n=0;
-int add_buf_z_n=0;
+int add_buf_x_n=0;
+int add_buf_y_n=2;
+int add_buf_z_n=4;
 
 int add_buf_x_p=0;
 int add_buf_y_p=0;
 int add_buf_z_p=0;
 
-int Zoom=1; //1,2,3,4...
+int Zoom=2; //1,2,3,4...
 char poreFileName[128]="20-3-3.dat";
 char poreFileNameVTK[128]="20-3-3.vtk";
 char poreFileNameOut[128]="20-3-3_x.dat";
@@ -111,7 +111,7 @@ double pore;
 
 	
  	for (int i=1;i<ny1*Zoom;i++)
-               Solid_Int2[0][i]=Solid_Int2[0][i-1]+ny1*Zoom;
+               Solid_Int2[0][i]=Solid_Int2[0][i-1]+nz1*Zoom;
        
        for (int i=1;i<nx1*Zoom;i++)
        {
@@ -217,7 +217,7 @@ if (sym_z==1)
 	out<<"J.Yang Lattice Boltzmann Simulation 3D Single Phase-Solid-Density"<<endl;
 	out<<"binary"<<endl;
 	out<<"DATASET STRUCTURED_POINTS"<<endl;
-	out<<"DIMENSIONS         "<<nx1*Zoom<<"         "<<ny1*Zoom<<"         "<<nz1*Zoom<<endl;       ///*********
+	out<<"DIMENSIONS         "<<nz1*Zoom<<"         "<<ny1*Zoom<<"         "<<nx1*Zoom<<endl;       ///*********
 	out<<"ORIGIN 0 0 0"<<endl;
 	out<<"SPACING 1 1 1"<<endl;
 	out<<"POINT_DATA     "<<nx1*ny1*nz1*Zoom*Zoom*Zoom<<endl;				///*********
