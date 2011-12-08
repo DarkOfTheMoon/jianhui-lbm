@@ -44,6 +44,9 @@ phase.dat       	    	:Initial components distribution
 ======================BACKUP==CONTROL====================
 -1		                   :BACKUP FREQUENCY (-1=NO BACKUP,0=Backup at the end of computation)
 0                              :INITIALIZATION WITH BACKUP DATA (0=OFF, 1=ON)
+======================GEOMETRY READING=======================
+0		:Geometry Reading format, 0=decimal,1=binary
+
 
 INSTRUCTIONS OF PARAMETER INPUT
 0.0556</frac{niu*dt}{dx^2}<0.25

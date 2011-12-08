@@ -183,6 +183,8 @@ int NCHAR=128;
 int*** Solid;
 double*** Psi_local;
 char pfix[128];
+int decbin;
+
 	
 int main(int argc , char *argv [])
 {	
@@ -268,8 +270,9 @@ double v_max;
 //	fin >> backup_f;                        	fin.getline(dummy, NCHAR);
 //	fin >> backup_g;                        	fin.getline(dummy, NCHAR);
 	fin >> sol_ini_n;				fin.getline(dummy, NCHAR);
-	fin >> num_psi>>wid_psi>>start_psi;					fin.getline(dummy, NCHAR);
-	
+	fin >> num_psi>>wid_psi>>start_psi;		fin.getline(dummy, NCHAR);
+							fin.getline(dummy, NCHAR);
+	fin >> decbin;
 	
 	fin.close();
 	
@@ -877,8 +880,11 @@ int bufloc[mpi_size];
 	
 if (rank==0)
 {
+	fstream fin;
+	if (decbin==0)
+	{
 	FILE *ftest;
-	ifstream fin;
+	//ifstream fin;
 	
 	ftest = fopen(filename, "r");
 
@@ -888,12 +894,10 @@ if (rank==0)
 			") does not exist!!!!\n";
 		cout << " Please check the file\n\n";
 
-		exit(0);
+		exit(-1);
 	}
 	fclose(ftest);
-
 	Solid_rank0 = new int[(NX+1)*(NY+1)*(NZ+1)];
-	
 	fin.open(filename);
 	for(int k=0 ; k<=NZ ; k++)
 	for(int j=0 ; j<=NY ; j++)
@@ -916,6 +920,38 @@ if (rank==0)
 		        }
 	}
 	fin.close();
+
+	}
+	else
+	{
+	//cout<<"aaaaaaaaaaaafffffffffffsssssssssssss"<<endl;
+	fin.open(filename,ios::in);
+	if (fin.fail())
+	        {
+	        cout<<"\n file open error on " << filename<<endl;
+	        exit(-1);
+	        }
+	Solid_rank0 = new int[(NX+1)*(NY+1)*(NZ+1)];
+	fin.read((char *)(&Solid_rank0[0]), sizeof(int)*(NX+1)*(NY+1)*(NZ+1));
+	for(int k=0 ; k<=NZ ; k++)
+	for(int j=0 ; j<=NY ; j++)
+	for(int i=0 ; i<=NX ; i++)
+	
+	{
+		
+		pore=Solid_rank0[i*(NY+1)*(NZ+1)+j*(NZ+1)+k];
+		if (pore==0)
+		        {
+		                sum+=1;
+		                loc_por[i]+=1;
+		                if ((i>=per_xn) and (i<=per_xp) and (j>=per_yn) and (j<=per_yp) and (k>=per_zn) and (k<=per_zp))
+		                        sum2+=1;
+		        }
+	}
+	fin.close();
+	}
+	
+
 }
 
         MPI_Bcast(loc_por,NX+1,MPI_INT,0,MPI_COMM_WORLD);
