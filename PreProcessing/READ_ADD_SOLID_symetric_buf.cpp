@@ -244,6 +244,7 @@ if (sym_z==1)
 
 	//=================================================================
 	cout<<"Start writing DAT file"<<endl;
+	cout<<nx1*Zoom<<"         "<<ny1*Zoom<<"         "<<nz1*Zoom<<endl;
 	ostringstream name2;
 	name2<<poreFileNameOut;
 	//name<<"Clashach_z_sym_196x196x388_8.946.dat";
