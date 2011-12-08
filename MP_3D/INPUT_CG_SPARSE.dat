@@ -46,6 +46,14 @@ phase.dat       	    	:Initial components distribution
 0                              :INITIALIZATION WITH BACKUP DATA (0=OFF, 1=ON)
 ======================GEOMETRY READING=======================
 0		:Geometry Reading format, 0=decimal,1=binary
+======================PRESSURE OR BODAY FORCE SETTING (CHANGE WITH TIME)=============
+0 1			:0=OFF,1,2,3=ON,1=X,2=Y,3=Z;|| 1=PRESSURE,2=BODY FORCE
+-1 0.0 0.0 0.0		:ACT AT TIMESTEP n, PRESSURE N, PRESSURE P, BODYFORCE(1)
+-1 0.0 0.0 0.0		:ACT AT TIMESTEP n, PRESSURE N, PRESSURE P, BODYFORCE(1)
+-1 0.0 0.0 0.0		:ACT AT TIMESTEP n, PRESSURE N, PRESSURE P, BODYFORCE(1)
+-1 0.0 0.0 0.0		:ACT AT TIMESTEP n, PRESSURE N, PRESSURE P, BODYFORCE(1)
+-1 0.0 0.0 0.0		:ACT AT TIMESTEP n, PRESSURE N, PRESSURE P, BODYFORCE(1)
+
 
 
 INSTRUCTIONS OF PARAMETER INPUT
