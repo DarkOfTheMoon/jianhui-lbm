@@ -43,7 +43,7 @@ phase.dat       	    	:Initial components distribution
 0 100				:Permeability calculation partially Starting point and Ending point in Z
 ======================BACKUP==CONTROL====================
 -1		                   :BACKUP FREQUENCY (-1=NO BACKUP,0=Backup at the end of computation)
-2000                              :INITIALIZATION WITH BACKUP DATA (0=OFF, 1=ON)
+0                              :INITIALIZATION WITH BACKUP DATA (0=OFF, 1=ON)
 
 INSTRUCTIONS OF PARAMETER INPUT
 0.0556</frac{niu*dt}{dx^2}<0.25
