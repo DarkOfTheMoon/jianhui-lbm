@@ -175,6 +175,8 @@ void Backup(int ,double*, double*, double**, double**,double*,double*);
 
 void Parallelize_Geometry();
 
+void pressure_bodyforce_change();
+
 
 
 const int e[19][3]=
@@ -221,7 +223,10 @@ float*** Psi_local;
 char pfix[128];
 int decbin;
 
-
+int pressure_change,pre_chan_pb,pre_chan_1,pre_chan_2,pre_chan_3,pre_chan_4,pre_chan_5;
+double pre_chan_pn1,pre_chan_pn2,pre_chan_pn3,pre_chan_pn4,pre_chan_pn5;
+double pre_chan_pp1,pre_chan_pp2,pre_chan_pp3,pre_chan_pp4,pre_chan_pp5;
+double pre_chan_f1,pre_chan_f2,pre_chan_f3,pre_chan_f4,pre_chan_f5;
 
 int main(int argc , char *argv [])
 {	
@@ -301,7 +306,17 @@ double v_max,error_Per;
 	fin >> fre_backup;                        	fin.getline(dummy, NCHAR);
 	fin >>mode_backup_ini;                		fin.getline(dummy, NCHAR);
 							fin.getline(dummy, NCHAR);
-	fin >> decbin;
+	fin >> decbin;					fin.getline(dummy, NCHAR);
+							fin.getline(dummy, NCHAR);
+	fin >> pressure_change >>pre_chan_pb;		fin.getline(dummy, NCHAR);
+	fin >> pre_chan_1>> pre_chan_pn1 >> pre_chan_pp1>>pre_chan_f1;	fin.getline(dummy, NCHAR);
+	fin >> pre_chan_2>> pre_chan_pn2 >> pre_chan_pp2>>pre_chan_f2;	fin.getline(dummy, NCHAR);
+	fin >> pre_chan_3>> pre_chan_pn3 >> pre_chan_pp3>>pre_chan_f3;	fin.getline(dummy, NCHAR);
+	fin >> pre_chan_4>> pre_chan_pn4 >> pre_chan_pp4>>pre_chan_f4;	fin.getline(dummy, NCHAR);
+	fin >> pre_chan_5>> pre_chan_pn5 >> pre_chan_pp5>>pre_chan_f5;	fin.getline(dummy, NCHAR);
+
+
+
 //	fin >> backup_rho;                        	fin.getline(dummy, NCHAR);
 //	fin >> backup_velocity;                		fin.getline(dummy, NCHAR);
 //	fin >> backup_psi;                        	fin.getline(dummy, NCHAR);
@@ -363,6 +378,27 @@ double v_max,error_Per;
 	MPI_Bcast(&per_yp,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&per_xp,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&per_yn,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&per_zp,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&per_zn,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&per_xn,1,MPI_INT,0,MPI_COMM_WORLD);
+
+
+	MPI_Bcast(&pressure_change,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&pre_chan_pb,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&pre_chan_1,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&pre_chan_pn1,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Bcast(&pre_chan_pp1,1,MPI_DOUBLE,0,MPI_COMM_WORLD);MPI_Bcast(&pre_chan_f1,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Bcast(&pre_chan_2,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&pre_chan_pn2,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Bcast(&pre_chan_pp2,1,MPI_DOUBLE,0,MPI_COMM_WORLD);MPI_Bcast(&pre_chan_f2,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Bcast(&pre_chan_3,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&pre_chan_pn3,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Bcast(&pre_chan_pp3,1,MPI_DOUBLE,0,MPI_COMM_WORLD);MPI_Bcast(&pre_chan_f3,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Bcast(&pre_chan_4,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&pre_chan_pn4,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Bcast(&pre_chan_pp4,1,MPI_DOUBLE,0,MPI_COMM_WORLD);MPI_Bcast(&pre_chan_f4,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Bcast(&pre_chan_5,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&pre_chan_pn5,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Bcast(&pre_chan_pp5,1,MPI_DOUBLE,0,MPI_COMM_WORLD);MPI_Bcast(&pre_chan_f5,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+
+
+
+
+
+
+
+
 
 mirX=0;mirY=0;mirZ=0;
 mir=1;Zoom=1;
@@ -549,8 +585,69 @@ if (wr_per==1)
 	if ((stab==1) and (n==stab_time))
 		{gxs=gx;gys=gy;gzs=gz;}
 			
-//cout<<"       qgragf       "<<endl;
+	//cout<<"       qgragf       "<<endl;
 	collision(rho,u,f,F,psi,rho_r,rho_b,rhor,rhob,SupInv,Solid,Sl,Sr);
+
+	if (pressure_change>0)
+		pressure_bodyforce_change();
+	//==========================PRESSURE AND BODYFORCE CHANGE ALONG WITH TIME ==================
+	if (pressure_change>0)
+	{
+		if (pressure_change==1)
+		{
+		if (n==pre_chan_1)
+			if (pre_chan_pb==1)
+			{
+			p_xn=pre_chan_pn1;
+			p_xp=pre_chan_pp1;
+			}
+			else
+				gxs=pre_chan_f1;
+
+		if (n==pre_chan_1)
+			if (pre_chan_pb==1)
+			{
+			p_xn=pre_chan_pn1;
+			p_xp=pre_chan_pp1;
+			}
+			else
+				gxs=pre_chan_f1;
+
+		if (n==pre_chan_1)
+			if (pre_chan_pb==1)
+			{
+			p_xn=pre_chan_pn1;
+			p_xp=pre_chan_pp1;
+			}
+			else
+				gxs=pre_chan_f1;
+
+		if (n==pre_chan_1)
+			if (pre_chan_pb==1)
+			{
+			p_xn=pre_chan_pn1;
+			p_xp=pre_chan_pp1;
+			}
+			else
+				gxs=pre_chan_f1;
+
+		if (n==pre_chan_1)
+			if (pre_chan_pb==1)
+			{
+			p_xn=pre_chan_pn1;
+			p_xp=pre_chan_pp1;
+			}
+			else
+				gxs=pre_chan_f1;
+
+	 
+		}
+
+	}
+	//==========================================================================================
+
+
+
 
 
 	//periodic_streaming(f,F,SupInv,Solid,Sl,Sr,rho,u);	
@@ -787,6 +884,173 @@ if (wr_per==1)
 
 	
 }
+
+void pressure_bodyforce_change()
+{
+
+
+
+if (pressure_change==1)
+		{
+		if (n==pre_chan_1)
+			if (pre_chan_pb==1)
+			{
+			p_xn=pre_chan_pn1;
+			p_xp=pre_chan_pp1;
+			}
+			else
+				gxs=pre_chan_f1;
+
+		if (n==pre_chan_2)
+			if (pre_chan_pb==1)
+			{
+			p_xn=pre_chan_pn2;
+			p_xp=pre_chan_pp2;
+			}
+			else
+				gxs=pre_chan_f2;
+
+		if (n==pre_chan_3)
+			if (pre_chan_pb==1)
+			{
+			p_xn=pre_chan_pn3;
+			p_xp=pre_chan_pp3;
+			}
+			else
+				gxs=pre_chan_f3;
+
+		if (n==pre_chan_4)
+			if (pre_chan_pb==1)
+			{
+			p_xn=pre_chan_pn4;
+			p_xp=pre_chan_pp4;
+			}
+			else
+				gxs=pre_chan_f4;
+
+		if (n==pre_chan_5)
+			if (pre_chan_pb==1)
+			{
+			p_xn=pre_chan_pn5;
+			p_xp=pre_chan_pp5;
+			}
+			else
+				gxs=pre_chan_f5;
+
+
+	 
+		}
+
+if (pressure_change==2)
+		{
+		if (n==pre_chan_1)
+			if (pre_chan_pb==1)
+			{
+			p_yn=pre_chan_pn1;
+			p_yp=pre_chan_pp1;
+			}
+			else
+				gys=pre_chan_f1;
+
+		if (n==pre_chan_2)
+			if (pre_chan_pb==1)
+			{
+			p_yn=pre_chan_pn2;
+			p_yp=pre_chan_pp2;
+			}
+			else
+				gys=pre_chan_f2;
+
+		if (n==pre_chan_3)
+			if (pre_chan_pb==1)
+			{
+			p_yn=pre_chan_pn3;
+			p_yp=pre_chan_pp3;
+			}
+			else
+				gys=pre_chan_f3;
+
+		if (n==pre_chan_4)
+			if (pre_chan_pb==1)
+			{
+			p_yn=pre_chan_pn4;
+			p_yp=pre_chan_pp4;
+			}
+			else
+				gys=pre_chan_f4;
+
+		if (n==pre_chan_5)
+			if (pre_chan_pb==1)
+			{
+			p_yn=pre_chan_pn5;
+			p_yp=pre_chan_pp5;
+			}
+			else
+				gys=pre_chan_f5;
+
+
+	 
+		}
+
+
+if (pressure_change==3)
+		{
+		if (n==pre_chan_1)
+			if (pre_chan_pb==1)
+			{
+			p_zn=pre_chan_pn1;
+			p_zp=pre_chan_pp1;
+			}
+			else
+				gzs=pre_chan_f1;
+
+		if (n==pre_chan_2)
+			if (pre_chan_pb==1)
+			{
+			p_zn=pre_chan_pn2;
+			p_zp=pre_chan_pp2;
+			}
+			else
+				gzs=pre_chan_f2;
+
+		if (n==pre_chan_3)
+			if (pre_chan_pb==1)
+			{
+			p_zn=pre_chan_pn3;
+			p_zp=pre_chan_pp3;
+			}
+			else
+				gzs=pre_chan_f3;
+
+		if (n==pre_chan_4)
+			if (pre_chan_pb==1)
+			{
+			p_zn=pre_chan_pn4;
+			p_zp=pre_chan_pp4;
+			}
+			else
+				gzs=pre_chan_f4;
+
+		if (n==pre_chan_5)
+			if (pre_chan_pb==1)
+			{
+			p_zn=pre_chan_pn5;
+			p_zp=pre_chan_pp5;
+			}
+			else
+				gzs=pre_chan_f5;
+
+
+	 
+		}
+
+
+
+
+
+}
+
+
 
 
 int inverse(mat &a){
