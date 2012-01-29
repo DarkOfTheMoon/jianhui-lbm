@@ -35,11 +35,11 @@ for j=1:c
     end
 end
 
-for i=4:d-r-1
-    for j=c-r:c-r+0  %change pertubation
-        A(i,j)=1;
-    end
-end
+% for i=4:d-r-1
+%     for j=c-r:c-r+0  %change pertubation
+%         A(i,j)=1;
+%     end
+% end
 
 
 % =================GEOMETRY2=====================

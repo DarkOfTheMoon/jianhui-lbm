@@ -1,7 +1,7 @@
 =============INPUT FILE FOR 3D LATTICE BOLTZMANN MPI CODE--MULTI COMPONENT COLOR GRADIENT MODEL=======
-Emily_Squre_Pore_Junction.dat                	:Geometry filenameEmily_Berea_y_614_764_7.dat
+Junction.dat                	:Geometry filenameEmily_Berea_y_614_764_7.dat
 phase.dat       	    	:Initial components distribution
-192 201 8                 	:nx ny nz
+100 180 12                 	:nx ny nz
 20000		     		:Maximum time step
 4.9	             		:dx (um) Resolution (for Permeability calculation)
 0	        	      	:Pressure Or Velocity Boundary (1=YES, 0=No)

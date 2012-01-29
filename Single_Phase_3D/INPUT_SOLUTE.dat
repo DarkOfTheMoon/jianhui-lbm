@@ -1,6 +1,6 @@
 =============INPUT FILE FOR 3D LATTICE BOLTZMANN MPI CODE--Solute and heat transfer=======
 20-3-3_x.dat                  	:Geometry filenameEmily_Berea_y_614_764_7.dat
-phase.dat       	    	:Initial components distribution
+phase.dat       	    	:Initial components distribution (ST_Peaks do not need this option)
 89 89 89                 	:nx ny nz
 30000		     		:Maximum time step
 4.9	             		:dx (um) Resolution (for Permeability calculation)
