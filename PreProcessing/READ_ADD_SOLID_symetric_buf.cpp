@@ -32,7 +32,8 @@ char poreFileNameVTK[128]="20-3-3.vtk";
 char poreFileNameOut[128]="20-3-3_x.dat";
 //output VTK file,0=no, 1=yes
 int VTK_OUT=1;
-//=======================================
+//===========VTK AND OUT ARE ALL WRITTEN IN BINARY FORMAT===============
+//===========================================================
 
 
 
