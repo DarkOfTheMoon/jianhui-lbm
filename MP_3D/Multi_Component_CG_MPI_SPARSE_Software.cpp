@@ -741,13 +741,13 @@ if (wr_per==1)
 			switch(PerDir)
 				{
 				case 1:
-				finfs<<Per_l[0]*reso*reso*1000/Permeability<<endl;break;
+				finfs<<Per_l[0]*reso*reso*1000/Permeability<<" "<<S_l<<endl;break;
 				case 2:
-				finfs<<Per_l[1]*reso*reso*1000/Permeability<<endl;break;
+				finfs<<Per_l[1]*reso*reso*1000/Permeability<<" "<<S_l<<endl;break;
 				case 3:
-				finfs<<Per_l[2]*reso*reso*1000/Permeability<<endl;break;
+				finfs<<Per_l[2]*reso*reso*1000/Permeability<<" "<<S_l<<endl;break;
 				default:
-				finfs<<Per_l[0]*reso*reso*1000/Permeability<<endl;break;
+				finfs<<Per_l[0]*reso*reso*1000/Permeability<<" "<<S_l<<endl;break;
 				}
 			finfs.close();
 
@@ -755,13 +755,13 @@ if (wr_per==1)
 			switch(PerDir)
 				{
 				case 1:
-				finfs2<<Per_g[0]*reso*reso*1000/Permeability<<endl;break;
+				finfs2<<Per_g[0]*reso*reso*1000/Permeability<<" "<<1-S_l<<endl;break;
 				case 2:
-				finfs2<<Per_g[1]*reso*reso*1000/Permeability<<endl;break;
+				finfs2<<Per_g[1]*reso*reso*1000/Permeability<<" "<<1-S_l<<endl;break;
 				case 3:
-				finfs2<<Per_g[2]*reso*reso*1000/Permeability<<endl;break;
+				finfs2<<Per_g[2]*reso*reso*1000/Permeability<<" "<<1-S_l<<endl;break;
 				default:
-				finfs2<<Per_g[0]*reso*reso*1000/Permeability<<endl;break;
+				finfs2<<Per_g[0]*reso*reso*1000/Permeability<<" "<<1-S_l<<endl;break;
 				}
 			finfs2.close();
 			}
