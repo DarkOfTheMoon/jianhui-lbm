@@ -3601,7 +3601,7 @@ int ind;
 	
 	
 	   //cout<<"ssssssssssssss"<<endl;
-	        if (Sub_Dis==1)
+	        if (Sub_Dis==2)
 	                {
 	                     ostringstream name;
 	                     for (int psi_n=0;psi_n<num_psi;psi_n++)
