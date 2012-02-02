@@ -63,6 +63,9 @@ If buffet is add near the geometry boundaries, initial satuation parameter is on
 partly permeability calculation is used, the default component in the buffet is set as 
 component A (1)
 
+0 0				:Psi constant BC in X 0=OFF, 1=Ini psi, 2=Neibourghing,3=Rand
+if option3 is used, a saturation of preset saturation will be applied for the boundary
+
 
 To use the checkpoint data to restart the simulation,
 You might need to specify the path of the checkpoint data
