@@ -32,5 +32,5 @@ plot "$1Relative_Permeability_Component2.txt" u 1 w l title "Rel_Perm_2"
 
 set origin 0.666,0.5
 set size 0.333,0.5
-plot "Relative_Permeability_Component1.txt" u 2:1 title "Rel_Perm_2"
+plot "$1Relative_Permeability_Component1.txt" u 2:1 title "Rel_Perm_2"
 pause -1
