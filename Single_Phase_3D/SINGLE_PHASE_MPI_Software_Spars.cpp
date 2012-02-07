@@ -149,6 +149,9 @@ void Comput_Grop_Perm(double** ,double* ,int ,int* );
 
 void output_velocity_for_solute(int ,double* ,double** ,int ,int,int,int,int*** );
 
+void Comput_Perm_LOCAL(double** ,double* ,int);
+
+
 
 const int e[19][3]=
 {{0,0,0},{1,0,0,},{-1,0,0},{0,1,0},{0,-1,0},{0,0,1},{0,0,-1},{1,1,0},{-1,1,0},{1,-1,0},{-1,-1,0},{0,1,1},
@@ -199,6 +202,7 @@ int*** Solid;
 char pfix[128];
 int decbin;
 
+double Permia_LOCAL[3];
 
 int main(int argc , char *argv [])
 {	
@@ -576,7 +580,7 @@ char FileName4[128];strcpy(FileName4,outputfile);
 
 
 strcat(FileName,"Results.txt");
-strcat(FileName2,"Permeability.txt");
+strcat(FileName2,"Permeability_error_local_Perm.txt");
 strcat(FileName3,"bodyforce.txt");
 strcat(FileName4,"Velocity_ave_max.txt");
 //========================================================
@@ -638,6 +642,7 @@ if (wr_per==1)
 			 ofstream fin(FileName,ios::out);       
 			 fin<<"The"<<n-freRe<<"th computation result:"<<endl;
 			fin<<"The permiability is: "<<Permia[0]*reso*reso*1000<<", "<<Permia[1]*reso*reso*1000<<", "<<Permia[2]*reso*reso*1000<<endl;
+			fin<<"The LOCAL permiability is: "<<Permia_LOCAL[0]*reso*reso*1000<<", "<<Permia_LOCAL[1]*reso*reso*1000<<", "<<Permia_LOCAL[2]*reso*reso*1000<<endl;
 			fin<<"The relative error of permiability computing is: "<<error_perm<<endl;	
 			fin<<"The Maximum velocity is: "<<setprecision(6)<<u_max<<"   Re="<<Re<<"     Courant Number="<<u_max*dt/dx<<endl;
 			fin<<"The max relative error of velocity is: "
@@ -650,6 +655,7 @@ if (wr_per==1)
 
 			 error=Error(u,u0,&u_max,&u_ave);if (u_max>=10.0)	U_max_ref+=1;
 			error_perm=Comput_Perm(u,Permia,PerDir,SupInv); 
+			Comput_Perm_LOCAL(u,Permia_LOCAL,PerDir);
 			
 			if ((gperm>0) and (n%gperm==0))
 			Comput_Grop_Perm(u,Permia,PerDir,SupInv);
@@ -676,6 +682,7 @@ if (wr_per==1)
 			fin<<"The"<<n<<"th computation result:"<<endl;
 		//=============================================================================================
 			fin<<"The permiability is: "<<Permia[0]*reso*reso*1000<<", "<<Permia[1]*reso*reso*1000<<", "<<Permia[2]*reso*reso*1000<<endl;
+			fin<<"The LOCAL permiability is: "<<Permia_LOCAL[0]*reso*reso*1000<<", "<<Permia_LOCAL[1]*reso*reso*1000<<", "<<Permia_LOCAL[2]*reso*reso*1000<<endl;
 			fin<<"The relative error of permiability computing is: "<<error_perm<<endl;
 		//==============================================================================================
 
@@ -698,13 +705,13 @@ if (wr_per==1)
 			switch(PerDir)
 				{
 				case 1:
-				finfs<<Permia[0]*reso*reso*1000<<" "<<error_perm<<endl;break;
+				finfs<<Permia[0]*reso*reso*1000<<" "<<error_perm<<" "<<Permia_LOCAL[0]*reso*reso*1000<<endl;break;
 				case 2:
-				finfs<<Permia[1]*reso*reso*1000<<" "<<error_perm<<endl;break;
+				finfs<<Permia[1]*reso*reso*1000<<" "<<error_perm<<" "<<Permia_LOCAL[1]*reso*reso*1000<<endl;break;
 				case 3:
-				finfs<<Permia[2]*reso*reso*1000<<" "<<error_perm<<endl;break;
+				finfs<<Permia[2]*reso*reso*1000<<" "<<error_perm<<" "<<Permia_LOCAL[2]*reso*reso*1000<<endl;break;
 				default:
-				finfs<<Permia[0]*reso*reso*1000<<" "<<error_perm<<endl;break;
+				finfs<<Permia[0]*reso*reso*1000<<" "<<error_perm<<" "<<Permia_LOCAL[0]*reso*reso*1000<<endl;break;
 				}
 			finfs.close();
 			}
@@ -723,6 +730,7 @@ if (wr_per==1)
 				<<rho[(int)Count/2]<<endl;
 		//=============================================================================================
 			cout<<"The permiability is: "<<Permia[0]*reso*reso*1000<<", "<<Permia[1]*reso*reso*1000<<", "<<Permia[2]*reso*reso*1000<<endl;
+			cout<<"The LOCAL permiability is: "<<Permia_LOCAL[0]*reso*reso*1000<<", "<<Permia_LOCAL[1]*reso*reso*1000<<", "<<Permia_LOCAL[2]*reso*reso*1000<<endl;
 			cout<<"The relative error of permiability computing is: "<<error_perm<<endl;
 		//==============================================================================================
 
@@ -4491,6 +4499,62 @@ void Backup(int m,double* rho,double** u, double** f)
         
 	
 	
+}
+
+
+
+void Comput_Perm_LOCAL(double** u,double* Permia_local,int PerDIr)
+{
+
+	
+	int rank = MPI :: COMM_WORLD . Get_rank ();
+	int mpi_size=MPI :: COMM_WORLD . Get_size ();
+
+	double qx,qy,qz;
+	double perm_local[3];
+
+	double dp;
+	if (in_BC==0)
+	        dp=0;
+	else
+	switch(PerDIr)
+		{
+		case 1:
+			dp=abs(p_xp-p_xn)*c_s2/(NX+1)/dx;break;
+		case 2:
+			dp=abs(p_yp-p_yn)*c_s2/(NY+1)/dx;break;
+		case 3:
+			dp=abs(p_zp-p_zn)*c_s2/(NZ+1)/dx;break;
+		default:
+			dp=abs(p_xp-p_xn)*c_s2/(NX+1)/dx;
+		}
+
+
+	if (rank==mpi_size-1)
+	{
+	qx=0;qy=0;qz=0;
+	for (int j=0;j<=NY;j++)
+		for (int k=0;k<=NZ;k++)
+		if (Solid[nx_l-2][j][k]>0)
+		{
+		qx+=u[Solid[nx_l-2][j][k]][0];
+		qy+=u[Solid[nx_l-2][j][k]][1];
+		qz+=u[Solid[nx_l-2][j][k]][2];
+		}
+	perm_local[0]=qx/((per_yp-per_yn+1)*(per_zp-per_zn+1))*(in_vis)/(gx+dp);
+	perm_local[1]=qy/((per_xp-per_xn+1)*(per_zp-per_zn+1))*(in_vis)/(gy+dp);
+	perm_local[2]=qz/((per_xp-per_xn+1)*(per_yp-per_yn+1))*(in_vis)/(gz+dp);
+	
+	}
+
+	
+	MPI_Barrier(MPI_COMM_WORLD);
+	MPI_Bcast(&perm_local,3,MPI_DOUBLE,mpi_size-1,MPI_COMM_WORLD);
+
+	Permia_local[0]=perm_local[0];
+	Permia_local[1]=perm_local[1];
+	Permia_local[2]=perm_local[2];
+
 }
 
 double Comput_Perm(double** u,double* Permia,int PerDIr,int* SupInv)

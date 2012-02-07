@@ -177,6 +177,7 @@ void Parallelize_Geometry();
 
 void pressure_bodyforce_change();
 
+void Comput_Perm_LOCAL(double* ,double** ,double* ,double* ,int );
 
 
 const int e[19][3]=
@@ -223,10 +224,12 @@ float*** Psi_local;
 char pfix[128];
 int decbin;
 
+
 int pressure_change,pre_chan_pb,pre_chan_1,pre_chan_2,pre_chan_3,pre_chan_4,pre_chan_5;
 double pre_chan_pn1,pre_chan_pn2,pre_chan_pn3,pre_chan_pn4,pre_chan_pn5;
 double pre_chan_pp1,pre_chan_pp2,pre_chan_pp3,pre_chan_pp4,pre_chan_pp5;
 double pre_chan_f1,pre_chan_f2,pre_chan_f3,pre_chan_f4,pre_chan_f5;
+double rel_perm_psi;
 
 int main(int argc , char *argv [])
 {	
@@ -245,6 +248,9 @@ int tse,the,tme;
 double elaps;
 
 double Per_l[3],Per_g[3];
+double Per_l_LOCAL[3],Per_g_LOCAL[3];
+
+
 double v_max,error_Per;
 
         strcpy(pfix,"./");
@@ -298,6 +304,7 @@ double v_max,error_Per;
 	fin >> stab >> stab_time;			fin.getline(dummy, NCHAR);
 	fin >> ini_Sat;                                 fin.getline(dummy, NCHAR);
 	fin >> ini_buf;                                 fin.getline(dummy, NCHAR);
+	fin >> rel_perm_psi;				fin.getline(dummy, NCHAR);
 	fin >> par_per_x >> par_per_y >>par_per_z;	fin.getline(dummy, NCHAR);
 	fin >> per_xp >> per_xn;			fin.getline(dummy, NCHAR);
 	fin >> per_yp >> per_yn;			fin.getline(dummy, NCHAR);
@@ -391,7 +398,7 @@ double v_max,error_Per;
 	MPI_Bcast(&pre_chan_pp4,1,MPI_DOUBLE,0,MPI_COMM_WORLD);MPI_Bcast(&pre_chan_f4,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 	MPI_Bcast(&pre_chan_5,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&pre_chan_pn5,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 	MPI_Bcast(&pre_chan_pp5,1,MPI_DOUBLE,0,MPI_COMM_WORLD);MPI_Bcast(&pre_chan_f5,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
-
+	MPI_Bcast(&rel_perm_psi,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 
 
 
@@ -685,6 +692,8 @@ if (wr_per==1)
 				<<setiosflags(ios::scientific)<<error<<endl;
 			fin<<"The relative permeability of component 1 is "<<Per_l[0]*reso*reso*1000/Permeability<<", "<<Per_l[1]*reso*reso*1000/Permeability<<", "<<Per_l[2]*reso*reso*1000/Permeability<<endl;
 			fin<<"The relative permeability of component 2 is "<<Per_g[0]*reso*reso*1000/Permeability<<", "<<Per_g[1]*reso*reso*1000/Permeability<<", "<<Per_g[2]*reso*reso*1000/Permeability<<endl;
+			fin<<"The LOCAL relative permeability of component 1 is "<<Per_l_LOCAL[0]*reso*reso*1000/Permeability<<", "<<Per_l_LOCAL[1]*reso*reso*1000/Permeability<<", "<<Per_l_LOCAL[2]*reso*reso*1000/Permeability<<endl;
+			fin<<"The LOCAL relative permeability of component 2 is "<<Per_g_LOCAL[0]*reso*reso*1000/Permeability<<", "<<Per_g_LOCAL[1]*reso*reso*1000/Permeability<<", "<<Per_g_LOCAL[2]*reso*reso*1000/Permeability<<endl;
 			fin<<"Satuation of Component 1: "<<S_l<<", "<<"The satuation of Component 2: "<<1-S_l<<endl;
 			fin<<"The relative error of permiability computing is: "<<error_Per<<endl;
 			fin<<"Elapsed time is "<< the<<"h"<<tme<<"m"<<tse<<"s"<<endl;
@@ -697,6 +706,7 @@ if (wr_per==1)
 			error=Error(u,u0,&u_max,&u_ave);
 			if (u_max>=10.0)	U_max_ref+=1;
 			error_Per=Comput_Perm(psi,u,Per_l,Per_g,PerDir,SupInv);
+			Comput_Perm_LOCAL(psi,u,Per_l_LOCAL,Per_g_LOCAL,PerDir);
 			S_l=Comput_Saturation(psi,Solid,SupInv);
 			
 
@@ -727,6 +737,8 @@ if (wr_per==1)
 				<<setiosflags(ios::scientific)<<error<<endl;
 			fin<<"The relative permeability of component 1 is "<<Per_l[0]*reso*reso*1000/Permeability<<", "<<Per_l[1]*reso*reso*1000/Permeability<<", "<<Per_l[2]*reso*reso*1000/Permeability<<endl;
 			fin<<"The relative permeability of component 2 is "<<Per_g[0]*reso*reso*1000/Permeability<<", "<<Per_g[1]*reso*reso*1000/Permeability<<", "<<Per_g[2]*reso*reso*1000/Permeability<<endl;
+			fin<<"The LOCAL relative permeability of component 1 is "<<Per_l_LOCAL[0]*reso*reso*1000/Permeability<<", "<<Per_l_LOCAL[1]*reso*reso*1000/Permeability<<", "<<Per_l_LOCAL[2]*reso*reso*1000/Permeability<<endl;
+			fin<<"The LOCAL relative permeability of component 2 is "<<Per_g_LOCAL[0]*reso*reso*1000/Permeability<<", "<<Per_g_LOCAL[1]*reso*reso*1000/Permeability<<", "<<Per_g_LOCAL[2]*reso*reso*1000/Permeability<<endl;
 			fin<<"Satuation of Component 1: "<<S_l<<", "<<"The satuation of Component 2: "<<1-S_l<<endl;
 			fin<<"The relative error of permiability computing is: "<<error_Per<<endl;
 			fin<<"Elapsed time is "<< the<<"h"<<tme<<"m"<<tse<<"s"<<endl;
@@ -741,13 +753,13 @@ if (wr_per==1)
 			switch(PerDir)
 				{
 				case 1:
-				finfs<<Per_l[0]*reso*reso*1000/Permeability<<" "<<S_l<<endl;break;
+				finfs<<Per_l[0]*reso*reso*1000/Permeability<<" "<<S_l<<" "<<Per_l_LOCAL[0]*reso*reso*1000/Permeability<<endl;break;
 				case 2:
-				finfs<<Per_l[1]*reso*reso*1000/Permeability<<" "<<S_l<<endl;break;
+				finfs<<Per_l[1]*reso*reso*1000/Permeability<<" "<<S_l<<" "<<Per_l_LOCAL[1]*reso*reso*1000/Permeability<<endl;break;
 				case 3:
-				finfs<<Per_l[2]*reso*reso*1000/Permeability<<" "<<S_l<<endl;break;
+				finfs<<Per_l[2]*reso*reso*1000/Permeability<<" "<<S_l<<" "<<Per_l_LOCAL[2]*reso*reso*1000/Permeability<<endl;break;
 				default:
-				finfs<<Per_l[0]*reso*reso*1000/Permeability<<" "<<S_l<<endl;break;
+				finfs<<Per_l[0]*reso*reso*1000/Permeability<<" "<<S_l<<" "<<Per_l_LOCAL[0]*reso*reso*1000/Permeability<<endl;break;
 				}
 			finfs.close();
 
@@ -755,13 +767,13 @@ if (wr_per==1)
 			switch(PerDir)
 				{
 				case 1:
-				finfs2<<Per_g[0]*reso*reso*1000/Permeability<<" "<<1-S_l<<endl;break;
+				finfs2<<Per_g[0]*reso*reso*1000/Permeability<<" "<<1-S_l<<" "<<Per_g_LOCAL[0]*reso*reso*1000/Permeability<<endl;break;
 				case 2:
-				finfs2<<Per_g[1]*reso*reso*1000/Permeability<<" "<<1-S_l<<endl;break;
+				finfs2<<Per_g[1]*reso*reso*1000/Permeability<<" "<<1-S_l<<" "<<Per_g_LOCAL[1]*reso*reso*1000/Permeability<<endl;break;
 				case 3:
-				finfs2<<Per_g[2]*reso*reso*1000/Permeability<<" "<<1-S_l<<endl;break;
+				finfs2<<Per_g[2]*reso*reso*1000/Permeability<<" "<<1-S_l<<" "<<Per_g_LOCAL[2]*reso*reso*1000/Permeability<<endl;break;
 				default:
-				finfs2<<Per_g[0]*reso*reso*1000/Permeability<<" "<<1-S_l<<endl;break;
+				finfs2<<Per_g[0]*reso*reso*1000/Permeability<<" "<<1-S_l<<" "<<Per_g_LOCAL[0]*reso*reso*1000/Permeability<<endl;break;
 				}
 			finfs2.close();
 			}
@@ -791,6 +803,8 @@ if (wr_per==1)
 				<<setiosflags(ios::scientific)<<error<<endl;
 			cout<<"The relative permeability of component 1 is "<<Per_l[0]*reso*reso*1000/Permeability<<", "<<Per_l[1]*reso*reso*1000/Permeability<<", "<<Per_l[2]*reso*reso*1000/Permeability<<endl;
 			cout<<"The relative permeability of component 2 is "<<Per_g[0]*reso*reso*1000/Permeability<<", "<<Per_g[1]*reso*reso*1000/Permeability<<", "<<Per_g[2]*reso*reso*1000/Permeability<<endl;
+			cout<<"The LOCAL relative permeability of component 1 is "<<Per_l_LOCAL[0]*reso*reso*1000/Permeability<<", "<<Per_l_LOCAL[1]*reso*reso*1000/Permeability<<", "<<Per_l_LOCAL[2]*reso*reso*1000/Permeability<<endl;
+			cout<<"The LOCAL relative permeability of component 2 is "<<Per_g_LOCAL[0]*reso*reso*1000/Permeability<<", "<<Per_g_LOCAL[1]*reso*reso*1000/Permeability<<", "<<Per_g_LOCAL[2]*reso*reso*1000/Permeability<<endl;
 			cout<<"Satuation of Component 1: "<<S_l<<", "<<"The satuation of Component 2: "<<1-S_l<<endl;
 			cout<<"The relative error of permiability computing is: "<<error_Per<<endl;
 			cout<<"Elapsed time is "<< the<<"h"<<tme<<"m"<<tse<<"s"<<endl;
@@ -5083,6 +5097,92 @@ void output_psi(int m,double* psi,int MirX,int MirY,int MirZ,int mir,int*** Soli
 }
 
 
+
+
+void Comput_Perm_LOCAL(double* psi,double** u,double* Per_l,double* Per_g,int PerDIr)
+{
+
+
+	int rank = MPI :: COMM_WORLD . Get_rank ();
+	int mpi_size=MPI :: COMM_WORLD . Get_size ();
+
+
+	
+	double Perm_l[3];
+	double Perm_g[3];
+	
+	double Q_l[3]={0.0,0.0,0.0};
+	double Q_g[3]={0.0,0.0,0.0};
+	
+	double dp;
+	if (in_BC==0)
+	        dp=0;
+	else
+	switch(PerDIr)
+		{
+		case 1:
+			dp=abs(p_xp-p_xn)*c_s2/(NX+1)/dx;break;
+		case 2:
+			dp=abs(p_yp-p_yn)*c_s2/(NY+1)/dx;break;
+		case 3:
+			dp=abs(p_zp-p_zn)*c_s2/(NZ+1)/dx;break;
+		default:
+			dp=abs(p_xp-p_xn)*c_s2/(NX+1)/dx;
+		}
+		
+
+
+	if (rank==mpi_size-1)
+	{
+		
+	for (int j=0;j<=NY;j++)
+		for (int k=0;k<=NZ;k++)
+		if (Solid[nx_l-2][j][k]>0)
+		{
+			if (psi[Solid[nx_l-2][j][k]]>=rel_perm_psi)
+			{
+			Q_l[0]+=u[Solid[nx_l-2][j][k]][0];
+			Q_l[1]+=u[Solid[nx_l-2][j][k]][1];
+			Q_l[2]+=u[Solid[nx_l-2][j][k]][2];
+			}
+			if (psi[Solid[nx_l-2][j][k]]<=-rel_perm_psi)
+			{
+			Q_g[0]+=u[Solid[nx_l-2][j][k]][0];
+			Q_g[1]+=u[Solid[nx_l-2][j][k]][1];
+			Q_g[2]+=u[Solid[nx_l-2][j][k]][2];
+			}
+		}
+
+	Perm_l[0]=Q_l[0]/((per_yp-per_yn+1)*(per_zp-per_zn+1))*(niu_l)/(gx+dp);
+	Perm_l[1]=Q_l[1]/((per_xp-per_xn+1)*(per_zp-per_zn+1))*(niu_l)/(gy+dp);
+	Perm_l[2]=Q_l[2]/((per_xp-per_xn+1)*(per_yp-per_yn+1))*(niu_l)/(gz+dp);
+
+
+	Perm_g[0]=Q_g[0]/((per_yp-per_yn+1)*(per_zp-per_zn+1))*(niu_g)/(gx+dp);
+	Perm_g[1]=Q_g[1]/((per_xp-per_xn+1)*(per_zp-per_zn+1))*(niu_g)/(gy+dp);
+	Perm_g[2]=Q_g[2]/((per_xp-per_xn+1)*(per_yp-per_yn+1))*(niu_g)/(gz+dp);
+	
+	}
+	
+	cout<<Q_l[0]<<"   "<<Q_g[0]<<endl;
+
+	MPI_Barrier(MPI_COMM_WORLD);
+
+	MPI_Bcast(Perm_l,3,MPI_DOUBLE,mpi_size-1,MPI_COMM_WORLD);
+	MPI_Bcast(Perm_g,3,MPI_DOUBLE,mpi_size-1,MPI_COMM_WORLD);
+
+	
+		Per_l[0]=Perm_l[0];Per_g[0]=Perm_g[0];
+		Per_l[1]=Perm_l[1];Per_g[1]=Perm_g[1];
+		Per_l[2]=Perm_l[2];Per_g[2]=Perm_g[2];
+	
+	
+
+}
+
+
+
+
 double Comput_Perm(double* psi,double** u,double* Per_l,double* Per_g,int PerDIr, int* SupInv)
 {
 
@@ -5156,13 +5256,13 @@ double Comput_Perm(double* psi,double** u,double* Per_l,double* Per_g,int PerDIr
 		//cout<<si<<"  "<<per_xn<<"  "<<per_xp<<endl;
 		if ((si>=per_xn) and (si<=per_xp) and (sj>=per_yn) and (sj<=per_yp) and (sm>=per_zn) and (sm<=per_zp))
 		{
-	        if (psi[i]>0)
+	        if (psi[i]>=rel_perm_psi)
 		        {
 		                Q_l[0]+=u[i][0];
 		                Q_l[1]+=u[i][1];
 		                Q_l[2]+=u[i][2];
 		        }
-		else
+		if (psi[i]<=-rel_perm_psi)
 		        {
                                 Q_g[0]+=u[i][0];
                                 Q_g[1]+=u[i][1];
@@ -5176,13 +5276,14 @@ double Comput_Perm(double* psi,double** u,double* Per_l,double* Per_g,int PerDIr
 	}
 	else
 	for (int i=1;i<=Count;i++)
-	        if (psi[i]>0)
+		{
+	        if (psi[i]>=rel_perm_psi)
 		        {
 		                Q_l[0]+=u[i][0];
 		                Q_l[1]+=u[i][1];
 		                Q_l[2]+=u[i][2];
 		        }
-		else
+		if (psi[i]<=-rel_perm_psi)
 		        {
                                 Q_g[0]+=u[i][0];
                                 Q_g[1]+=u[i][1];
@@ -5190,6 +5291,7 @@ double Comput_Perm(double* psi,double** u,double* Per_l,double* Per_g,int PerDIr
 		        
 		        
 		        }
+		}
 
 
 
