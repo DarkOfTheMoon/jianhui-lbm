@@ -189,7 +189,7 @@ double error_perm;
 int par_per_x,par_per_y,par_per_z,per_xp,per_xn,per_yp,per_yn,per_zp,per_zn;
 
 
-int n_gperm1,n_gperm2,n_gperm3,n_gperm4,gperm;
+int n_gperm1,n_gperm2,n_gperm3,n_gperm4,gperm,loc_perm;
 int size_gperm1,size_gperm2,size_gperm3,size_gperm4;
 int c0_gperm1,c1_gperm1,c2_gperm1,c0_gperm2,c1_gperm2,c2_gperm2,c0_gperm3,c1_gperm3,c2_gperm3,c0_gperm4,c1_gperm4,c2_gperm4;
 
@@ -202,7 +202,7 @@ int*** Solid;
 char pfix[128];
 int decbin;
 
-double Permia_LOCAL[3];
+double Permia_LOCAL[3]={0.0,0.0,0.0};
 
 int main(int argc , char *argv [])
 {	
@@ -261,6 +261,7 @@ int tse,the,tme;
 	fin >> lattice_v >> dx_input >> dt_input;	fin.getline(dummy, NCHAR);
 	fin >> outputfile;				fin.getline(dummy, NCHAR);
 	fin >> Sub_BC;					fin.getline(dummy, NCHAR);
+	fin >> loc_perm;					fin.getline(dummy, NCHAR);
 	fin >> par_per_x >> par_per_y >>par_per_z;	fin.getline(dummy, NCHAR);
 	fin >> per_xp >> per_xn;			fin.getline(dummy, NCHAR);
 	fin >> per_yp >> per_yn;			fin.getline(dummy, NCHAR);
@@ -350,7 +351,7 @@ fin.close();
 	MPI_Bcast(&c2_gperm3,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&c0_gperm4,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&c1_gperm4,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&c2_gperm4,1,MPI_INT,0,MPI_COMM_WORLD);
-	
+	MPI_Bcast(&loc_perm,1,MPI_INT,0,MPI_COMM_WORLD);
 	
 
 Par_Geo=0;
@@ -655,6 +656,7 @@ if (wr_per==1)
 
 			 error=Error(u,u0,&u_max,&u_ave);if (u_max>=10.0)	U_max_ref+=1;
 			error_perm=Comput_Perm(u,Permia,PerDir,SupInv); 
+			if (loc_perm==1)
 			Comput_Perm_LOCAL(u,Permia_LOCAL,PerDir);
 			
 			if ((gperm>0) and (n%gperm==0))

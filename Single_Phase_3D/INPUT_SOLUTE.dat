@@ -1,8 +1,8 @@
 =============INPUT FILE FOR 3D LATTICE BOLTZMANN MPI CODE--Solute and heat transfer=======
-20-3-3_x.dat                  	:Geometry filenameEmily_Berea_y_614_764_7.dat
+LV60_106_128_128.dat                  	:Geometry filenameEmily_Berea_y_614_764_7.dat
 phase.dat       	    	:Initial components distribution (ST_Peaks do not need this option)
-89 89 89                 	:nx ny nz
-30000		     		:Maximum time step
+106 128 128                 	:nx ny nz
+2000		     		:Maximum time step
 4.9	             		:dx (um) Resolution (for Permeability calculation)
 0 	        	      	:Pressure Or Velocity Boundary (1=YES, 0=No)
 0.0 0.0				:Buoyancy Parameter (0= no buoyancy, reference_psi F=/rho*g+Bouyancy*(/psi-reference_psi)*g)
@@ -30,11 +30,11 @@ phase.dat       	    	:Initial components distribution (ST_Peaks do not need thi
 0               		:Memory Saving mode for output subroutains (0=No, 1=Yes,for large outputs, x,z opposite)
 -1				:Frequency of velocity field writing (in vtk format, -1=no velocity writing)
 -1				:Frequency of density field writing (in vtk format, -1=no density writing)
-2000				:Frequency of concentration writing (in vtk format, -1=no density writing)
-0 2000                        :Dispersion statistics (0=No,1,2,3=YES; Frequncy of writing)
+500				:Frequency of concentration writing (in vtk format, -1=no density writing)
+1 500                        :Dispersion statistics (0=No,1,2,3=YES; Frequncy of writing)
 ==============ADVANCE==PARAMETER==========
 0 1.0 2.0	              :Self define lattice velocity: 0=DEFAULT, dx, dt ((u_x+u_y+u_z)*dt/dx<=1 Courant Number)
-./   				:OUTPUT PATH,DEFAULT: ./ (REMEMBER TO INCLUDE "/" AT THE END OF PATH)
+./old_   				:OUTPUT PATH,DEFAULT: ./ (REMEMBER TO INCLUDE "/" AT THE END OF PATH)
 2              			:PRESSURE AND VELOCITY BOUNDARY CONDITION OPTIONS: 0,1,2,3: EBC_S,EBC_D,TOLKE_BC,NEBC_D
 1				:CONSTANT PSI AND FLUX BOUNDARY CONDITION OPTIONS: 0,1:Inamuro,GUO
 -1                              :Concentration initialization from the xth timesteps (-1=OFF)
@@ -45,8 +45,8 @@ phase.dat       	    	:Initial components distribution (ST_Peaks do not need thi
 ====================BACKUP=PARAMETERS==========================
 -1		                   :BACKUP FREQUENCY (-1=NO BACKUP)
 0                               :INITIALIZATION WITH BACKUP DATA (0=OFF, 1=ON)
-200				:intial data for velocity (for ST only)
-3 3 12				:Number of peaks, width,starting coordinate (only for ST_6V_peaks)
+500				:intial data for velocity (for ST only)
+3 3 16				:Number of peaks, width,starting coordinate (only for ST_6V_peaks)
 ======================GEOMETRY READING======================
 1		:Geometry Reading format, 0=decimal,1=binary
 
