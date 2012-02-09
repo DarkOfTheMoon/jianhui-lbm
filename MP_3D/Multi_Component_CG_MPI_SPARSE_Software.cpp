@@ -5164,7 +5164,7 @@ void Comput_Perm_LOCAL(double* psi,double** u,double* Per_l,double* Per_g,int Pe
 	
 	}
 	
-	cout<<Q_l[0]<<"   "<<Q_g[0]<<endl;
+	//cout<<Q_l[0]<<"   "<<Q_g[0]<<endl;
 
 	MPI_Barrier(MPI_COMM_WORLD);
 
