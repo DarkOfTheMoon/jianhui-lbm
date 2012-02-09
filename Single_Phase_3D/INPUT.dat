@@ -1,7 +1,7 @@
 =================SINGLE PHASE LATTICE BOLTZMANN CODE INPUT FILE================================================
 LV60_106_128_128.dat        :Geometry filename
 106 128 128                 :nx ny nz
-60000	                 :Maxmum time step
+1000	                 :Maxmum time step
 7.249	                :x=1 (um) Resolution (for Permeability calculation, resolution/dx)
 0	        	       :Pressure/Velocity Boundary (1=Yes, 0=No)   Convergence accelerator (1=yes, 0=no)
 2.0e-6 0.0 0.0          :body force for x,y,z
@@ -32,7 +32,7 @@ LV60_106_128_128.dat        :Geometry filename
 ======================BACKUP OPTIONS===========================
 -1		:BACKUP FREQUENCY (-1=NO BACKUP)
 0               :USE BACKUP DATA (0=OFF, 1=ON)
-500      :Velocity output for Solute transport every x timesteps (-1=NO)
+-1      :Velocity output for Solute transport every x timesteps (-1=NO)
 ======================GROP PERM PARAMETER =====================
 0		:GROP PERM OPTION (0=OFF, or Frequency of exacution)
 1 1 2 4		:NUMBERS OF SUBDOMAINS FOR SUB-PERM 1,2,3,4
