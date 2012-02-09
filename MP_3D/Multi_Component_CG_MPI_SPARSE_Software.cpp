@@ -201,12 +201,6 @@ const int RP[5]={1,7,9,11,13};
 const int LN[5]={2,8,10,12,14};
 //=========================================
 
-//======FOR==SWAP==STREAMING===========
-//SWAPE [LOCAL]-->LADD
-
-const int SWAPE_INV[19]={0,2,4,6,8,10,12,14,16,18,1,3,5,7,9,11,13,15,17};
-
-
 
 int n,nx_l,n_max,in_BC,PerDir,freRe,freDe,freVe,frePsi,Par_Geo,Par_nx,Par_ny,Par_nz;
 int Zoom,lattice_v,in_psi_BC,par_per_x,par_per_y,par_per_z;
@@ -1830,7 +1824,7 @@ int interi,interj,interk,ip,jp,kp;
 double c2,c4;
 double delta_rho=0.1;
 const double c_l=lat_c;
-int mi;
+
 
 	c2=lat_c*lat_c;c4=c2*c2;
 
@@ -2483,16 +2477,22 @@ m_inv_l[17]=+((double)0X1.C71C71C71C71CP-6)*1.0*m_l[0]+((double)0X1.555555555555
 m_inv_l[18]=+((double)0X1.C71C71C71C71CP-6)*1.0*m_l[0]+((double)0X1.5555555555555P-5)*1.0/(c_l*c_l)*m_l[1]+((double)0X1.C71C71C71C71CP-7)*1.0/(c_l*c_l*c_l*c_l)*m_l[2]+((double)-0X0P+0)*1.0/c_l*m_l[3]+((double)-0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[4]+((double)-0X1.5555555555555P-4)*1.0/(c_l)*m_l[5]+((double)-0X1.5555555555555P-5)*1.0/(c_l*c_l*c_l)*m_l[6]+((double)0X1.5555555555555P-4)*1.0/c_l*m_l[7]+((double)0X1.5555555555555P-5)*1.0/(c_l*c_l*c_l)*m_l[8]+((double)-0X1.5555555555556P-5)*1.0/(c_l*c_l)*m_l[9]+((double)-0X1.5555555555556P-5)*1.0/(c_l*c_l*c_l*c_l)*m_l[10]+((double)-0X0P+0)*1.0/(c_l*c_l)*m_l[11]+((double)-0X0P+0)*1.0/(c_l*c_l*c_l*c_l)*m_l[12]+((double)-0X0P+0)*1.0/(c_l*c_l)*m_l[13]+((double)-0X1P-2)*1.0/(c_l*c_l)*m_l[14]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[15]+((double)-0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[16]+((double)-0X1P-3)*1.0/(c_l*c_l*c_l)*m_l[17]+((double)-0X1P-3)*1.0/(c_l*c_l*c_l)*m_l[18];
 
 //====================
-		//for (int mis=0; mis<19; mis++)
-                //        f[ci][mis]=m_inv_l[mis];
+
+
+
+			//==============================================================================
+				
+		
+			
+
 
 		for (int mi=0; mi<19; mi++)
 			{
-			        //mi=SWAPE_INV[mis];
-			 
+			//sum=0;
+			//for (int mj=0; mj<19; mj++)
+			//	sum+=MI[mi][mj]*m_l[mj];
+
 			sum=m_inv_l[mi];
-			//==============================================================================
-				
 			
 			
 			//F[ci][mi]=0;
@@ -2504,20 +2504,13 @@ m_inv_l[18]=+((double)0X1.C71C71C71C71CP-6)*1.0*m_l[0]+((double)0X1.555555555555
 			if (ip<0) 
 				if (Sl[jp*(NZ+1)+kp]>0)
 				{
-				//sendl[(Sl[jp*(NZ+1)+kp]-1)*5+FLN[mi]]=sum;
+				sendl[(Sl[jp*(NZ+1)+kp]-1)*5+FLN[mi]]=sum;
 				//sendl_rhob[Sl[jp*(NZ+1)+kp]-1]+=g_b[lm];
 				//cout<<g_r[lm]<<"    1"<<endl;
-				sendl[(Sl[jp*(NZ+1)+kp]-1)*5+FLN[mi]]=sum;
-				 //if (mis<=9)
-				 //        f[ci][mi]=f[ci][LR[mi]];
-				 //        f[ci][LR[mi]]=sum;
 				}
 				else
 				{
 				F[ci][LR[mi]]=sum;
-				//if (mis<=9) 
-			         //         f[ci][mi]=f[ci][LR[mi]];
-				//f[ci][LR[mi]]=sum;
 				}
 					
 						
@@ -2526,46 +2519,24 @@ m_inv_l[18]=+((double)0X1.C71C71C71C71CP-6)*1.0*m_l[0]+((double)0X1.555555555555
 			if (ip>=nx_l)
 				if (Sr[jp*(NZ+1)+kp]>0)
 				{
-				//sendr[(Sr[jp*(NZ+1)+kp]-1)*5+FRP[mi]]=sum;
+				sendr[(Sr[jp*(NZ+1)+kp]-1)*5+FRP[mi]]=sum;
 				//sendr_rhob[Sr[jp*(NZ+1)+kp]-1]+=g_b[lm];
 				//cout<<g_r[lm]<<"    2"<<endl;
-				sendr[(Sr[jp*(NZ+1)+kp]-1)*5+FRP[mi]]=sum;
-				//if (mis<=9)
-				 //        f[ci][mi]=f[ci][LR[mi]];
-				 //        f[ci][LR[mi]]=sum;
 				}
 				else
 				{
 				F[ci][LR[mi]]=sum;
-				//     if (mis<=9) 
-				//                f[ci][mi]=f[ci][LR[mi]];
-				//f[ci][LR[mi]]=sum;      
 				}
 
 			if ((ip>=0) and (ip<nx_l)) 
 				if (Solid[ip][jp][kp]>0)
 				{
 				F[Solid[ip][jp][kp]][mi]=sum;
-				//if (mis<=9)
-				//        
-				//        {
-				          
-				 //                       
-				//                       f[ci][mi]=f[ci][LR[mi]];
-				//                        f[ci][LR[mi]]=f[Solid[ip][jp][kp]][mi];
-				//                        f[Solid[ip][jp][kp]][mi]=sum;
-				        
-				 //                
-				//
-				 //               }
+				
 				}
 				else
 				{
 				F[ci][LR[mi]]=sum;
-				//if (mis<=9) 
-				//                f[ci][mi]=f[ci][LR[mi]];
-				        
-				//        f[ci][LR[mi]]=sum;
 				}
 		//=======================G streaming=================================================
 		//for(int lm=0;lm<19;lm++)
@@ -5193,7 +5164,7 @@ void Comput_Perm_LOCAL(double* psi,double** u,double* Per_l,double* Per_g,int Pe
 	
 	}
 	
-	//cout<<Q_l[0]<<"   "<<Q_g[0]<<endl;
+	cout<<Q_l[0]<<"   "<<Q_g[0]<<endl;
 
 	MPI_Barrier(MPI_COMM_WORLD);
 

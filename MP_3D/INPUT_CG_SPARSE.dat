@@ -35,7 +35,7 @@ phase.dat       	    	:Initial components distribution
 ./				:OUTPUT PATH,DEFAULT: ./ (INCLUDE "/" AT THE END)
 2              			:PRESSURE AND VELOCITY BOUNDARY CONDITION OPTIONS: 0,1,2,3: EBC_S,EBC_D,TOLKE_BC,NEBC_D
 0  500				:MULTI-COMPONENT STABALIZER: (a,b) a=0=OFF, a=1=ON, BODY FORCE APPLIED AFTER b steps
-0                              :PRESET SATUATION, 0--1 initial component distri not needed, -1=OFF(for Component A,1)
+0.8                              :PRESET SATUATION, 0--1 initial component distri not needed, -1=OFF(for Component A,1)
 0				:PRESET VALUE FOR BUFFET AREA, 0=NO,1=COMP A,-1=COMP B (valid when preset satuation)
 0.8				:Relative permeability calcualtion 0..1 (psi>=value, cal the flux for Comp1)
 0 0 0				:Pemeability calculation Partially  (1=ON, 0=OFF)
