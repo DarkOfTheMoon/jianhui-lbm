@@ -59,7 +59,7 @@ void tests();
 
 void init_Sparse_read_rock_parallel( int*, int*);
 
-void init(int,double*, double**, double**,double**, double**, double*, double*,double*, double*, double*, double***,int*);
+void init(int,double*, double**, double**,double**, double**, double**, double*, double*,double*, double*, double*, double***,int*);
 
 void collision(double*,double** ,double** ,double**,double**,double**,  double* ,double* , double*, double*, double*, int* ,int***,int* ,int*);
 
@@ -113,7 +113,7 @@ void Backup_input_v(int ,double*, double*, double**, double**, double**);
 
 void Backup(int ,double*, double**, double**, double**, double***);
 
-void Backup_init(int ,double* , double** , double** ,double*** , double** , double** , double* , double* , double* , double* , double*** , int*);
+void Backup_init(int ,double* , double** , double** ,double*** , double** , double***, double** , double* , double* , double* , double* , double*** , int* );
 
 void psi_reset(double**,double** , double* , double* , double*** , int* );
 
@@ -149,13 +149,6 @@ const int SXN[5]={1,7,9,11,13};
 const int SXP[5]={2,8,10,12,14};
 
 //=========================================
-//======FOR==SWAP==STREAMING===========
-//SWAPE [LOCAL]-->LADD
-const int SWAPE_INV[7]={0,2,4,6,1,3,5};
-
-
-
-
 
 //int num_psi=3;
 int num_psi;
@@ -443,20 +436,20 @@ if (Zoom>1)
        }
        
        
-       //Fg = new double**[num_psi];
-	//for (int i=0;i<num_psi;i++)
-	//        Fg[i]= new double*[Count+1];
-       //Fg[0][0]= new double[num_psi*(Count+1)*7];
+       Fg = new double**[num_psi];
+	for (int i=0;i<num_psi;i++)
+	        Fg[i]= new double*[Count+1];
+       Fg[0][0]= new double[num_psi*(Count+1)*7];
        
-       //for (int i=1;i<=Count;i++)
-        //       Fg[0][i]=Fg[0][i-1]+7;
+       for (int i=1;i<=Count;i++)
+               Fg[0][i]=Fg[0][i-1]+7;
        
-      // for (int i=1;i<num_psi;i++)
-       //{
-      //         Fg[i][0]=Fg[i-1][0]+(Count+1)*7;
-      //         for (int j=1;j<=Count;j++)
-      //                 Fg[i][j]=Fg[i][j-1]+7;
-      // }
+       for (int i=1;i<num_psi;i++)
+       {
+               Fg[i][0]=Fg[i-1][0]+(Count+1)*7;
+               for (int j=1;j<=Count;j++)
+                       Fg[i][j]=Fg[i][j-1]+7;
+       }
 
 		
  
@@ -498,13 +491,13 @@ if (Zoom>1)
 if (mode_backup_ini==0)
 	{
 	for (int psi_n=0;psi_n<num_psi;psi_n++)
-	        init(psi_n,rho,  u,  f,fg[psi_n], F, rho_r[psi_n],  rhor,  forcex,  forcey,  forcez, Psi_local, SupInv);
+	        init(psi_n,rho,u,f,fg[psi_n],F,Fg[psi_n],rho_r[psi_n],rhor,forcex,forcey,forcez,Psi_local,SupInv);
 
 		Backup_input_v(sol_ini_n,rho,rho_r[0],u,f,fg[0]);
 	}
 	else
 	        {
-	        Backup_init(1,rho,u,f,fg,F,rho_r,rhor,forcex,forcey,forcez,Psi_local,SupInv);
+	        Backup_init(1,rho,u,f,fg,F,Fg,rho_r,rhor,forcex,forcey,forcez,Psi_local,SupInv);
 
 		Backup_input_v(sol_ini_n,rho,rho_r[0],u,f,fg[0]);
 	        }
@@ -560,7 +553,7 @@ if (wr_per==1)
 		collision(rho,u,f,F,fg[psi_n],Fg[psi_n],rho_r[psi_n],rhor,forcex,forcey,forcez,SupInv,Solid,Sl,Sr);
 
 
-		//comput_macro_variables(rho,u,u0,f,F,fg[psi_n],Fg[psi_n],rho_r[psi_n],rhor,forcex,forcey,forcez,SupInv,Solid,Psi_local);
+		comput_macro_variables(rho,u,u0,f,F,fg[psi_n],Fg[psi_n],rho_r[psi_n],rhor,forcex,forcey,forcez,SupInv,Solid,Psi_local);
 		}
  
 	//if (n==ini_psi)
@@ -1270,7 +1263,7 @@ void Suppliment(int* SupInv,int*** Solid)
 
 
 
-void init(int peak_n,double* rho, double** u, double** f,double** fg, double** F, double* rho_r, double* rhor, double* forcex, double* forcey, double* forcez, double*** Psi_local, int* SupInv)
+void init(int peak_n,double* rho, double** u, double** f,double** fg, double** F, double** Fg, double* rho_r, double* rhor, double* forcex, double* forcey, double* forcez, double*** Psi_local, int* SupInv)
 {	
       	int rank = MPI :: COMM_WORLD . Get_rank ();
 	int mpi_size=MPI :: COMM_WORLD . Get_size ();
@@ -1356,7 +1349,7 @@ void init(int peak_n,double* rho, double** u, double** f,double** fg, double** F
 			
 			eu=e2[lm][0]*u[ci][0]+e2[lm][1]*u[ci][1]+e2[lm][2]*u[ci][2];
 			fg[ci][lm]=1.0/6.0*rho_r[ci]*(1+3*eu);
-			//Fg[ci][lm]=fg[ci][lm];
+			Fg[ci][lm]=fg[ci][lm];
 			
 			}
                 	
@@ -1411,8 +1404,6 @@ double usqr,vsqr,eu,ef,cospsi,s_other;
 int i,j,m;
 int interi,interj,interk,ip,jp,kp;
 double c2,c4;
-int mi;
-
 
 	c2=lat_c*lat_c;c4=c2*c2;
 
@@ -1505,33 +1496,31 @@ MPI_Barrier(MPI_COMM_WORLD);
 
 			
 			uu=u[ci][0]*u[ci][0]+u[ci][1]*u[ci][1]+u[ci][2]*u[ci][2];
-			//rho_r[ci]=fg[ci][0]+fg[ci][1]+fg[ci][2]+fg[ci][3]+fg[ci][4]+fg[ci][5]+fg[ci][6];
-			rho_r[ci]=fg[ci][1]+fg[ci][2]+fg[ci][3]+fg[ci][4]+fg[ci][5]+fg[ci][6];
+		
+			
 			// ==================   m=Mf matrix calculation  =============================
 			// ==================   F_hat=(I-.5*S)MGuoF =====================================
-				for (int mis=1; mis<7; mis++)
+				for (int mi=1; mi<7; mi++)
 					{
 					
 
 
 
-				//eu=e2[mi][0]*u[ci][0]+e2[mi][1]*u[ci][1]+e2[mi][2]*u[ci][2];
+				eu=e2[mi][0]*u[ci][0]+e2[mi][1]*u[ci][1]+e2[mi][2]*u[ci][2];
 
                 	//=========================EVOLUTION OF G FOR SIMPLE BOUNDARY========================
                		//	g_r[mi]=fg[ci][mi]-(fg[ci][mi]-w[mi]*rho_r[ci]*(1+3*eu))/tau_s;
 			//=========================EVOLUTION OF G FOR COMPLEX BOUNDARY=======================
-                		g_r[mis]=fg[ci][mis]-(fg[ci][mis]-1.0/6.0*rho_r[ci]*(1+3*e2[mis][0]*u[ci][0]+e2[mis][1]*u[ci][1]+e2[mis][2]*u[ci][2]))/tau_s;
-				
+                		g_r[mi]=fg[ci][mi]-(fg[ci][mi]-1.0/6.0*rho_r[ci]*(1+3*eu))/tau_s;
 			//===================================================================================
 
 					}
 
-		for (int mis=1; mis<7; mis++)
-                        fg[ci][mis]=g_r[mis];
 
-		for (int mis=1; mis<7; mis++)
+
+		for (int mi=1; mi<7; mi++)
 			{
-			mi=SWAPE_INV[mis];
+			
 			ip=i+e2[mi][0];
 			jp=j+e2[mi][1];if (jp<0) {jp=NY;}; if (jp>NY) {jp=0;};
 			kp=m+e2[mi][2];if (kp<0) {kp=NZ;}; if (kp>NZ) {kp=0;};
@@ -1543,17 +1532,11 @@ MPI_Barrier(MPI_COMM_WORLD);
 				{
 				
 				sendl_s[Sl[jp*(NZ+1)+kp]-1]=g_r[mi];
-				if (mis<=3)
-				         fg[ci][mi]=fg[ci][LR[mi]];
-				         fg[ci][LR[mi]]=g_r[mi];
 				}
 				else
 				{
-				 if (mis<=3) 
-			                fg[ci][mi]=fg[ci][LR[mi]];
-					fg[ci][LR[mi]]=g_r[mi];
 				
-				
+				Fg[ci][LR[mi]]=g_r[mi];
 				
 				}
 					
@@ -1565,46 +1548,25 @@ MPI_Barrier(MPI_COMM_WORLD);
 				{
 				
 				sendr_s[Sr[jp*(NZ+1)+kp]-1]=g_r[mi];
-				if (mis<=3)
-				         fg[ci][mi]=fg[ci][LR[mi]];
-				         fg[ci][LR[mi]]=g_r[mi];
 				}
 				else
 				{
 				
-				//Fg[ci][LR[mi]]=g_r[mi];
+				Fg[ci][LR[mi]]=g_r[mi];
 				//rhor[ci]+=g_r[mi];
-				if (mis<=3) 
-				        fg[ci][mi]=fg[ci][LR[mi]];
-					fg[ci][LR[mi]]=g_r[mi];     
 				}
 
 			if ((ip>=0) and (ip<nx_l)) 
 				if (Solid[ip][jp][kp]>0)
 				{
 				
-				//Fg[Solid[ip][jp][kp]][mi]=fg[mi];
-				if (mis<=3)
-				        
-				        {//cout<<mis<<"   "<<e[mi][0]<<"  "<<e[mi][1]<<"  "<<e[mi][2]<<endl;
-				          
-				                        
-				                        fg[ci][mi]=fg[ci][LR[mi]];
-				                        fg[ci][LR[mi]]=fg[Solid[ip][jp][kp]][mi];
-				                        fg[Solid[ip][jp][kp]][mi]=g_r[mi];
-				        
-				                 
-				
-				                }
+				Fg[Solid[ip][jp][kp]][mi]=g_r[mi];
 				
 				}
 				else
 				{
-				if (mis<=3) 
-				                fg[ci][mi]=fg[ci][LR[mi]];
-				        
-				        fg[ci][LR[mi]]=g_r[mi];
-				//Fg[ci][LR[mi]]=g_r[mi];
+				
+				Fg[ci][LR[mi]]=g_r[mi];
 				//rhor[ci]+=g_r[mi];
 				}
 		//=======================G streaming=================================================
@@ -1664,13 +1626,13 @@ MPI_Barrier(MPI_COMM_WORLD);
 					if (recvl_s[(i-1)]>-10)
 				        {
 					
-					fg[i][RP]=recvl_s[(i-1)];
+					Fg[i][RP]=recvl_s[(i-1)];
 			        	}
 			for(j=Count-Gcr[rank]+1;j<=Count;j++)
 				
 					if (recvr_s[j-(Count-Gcr[rank]+1)]>-10)
 					{
-					fg[j][LN]=recvr_s[j-(Count-Gcr[rank]+1)];
+					Fg[j][LN]=recvr_s[j-(Count-Gcr[rank]+1)];
 			        	
 					}
 			
@@ -1698,7 +1660,9 @@ MPI_Barrier(MPI_COMM_WORLD);
 void comput_macro_variables( double* rho,double** u,double** u0,double** f,double** F,double** fg, double** Fg, double* rho_r, double* rhor , double* forcex, double* forcey, double* forcez,int* SupInv,int*** Solid,double*** Psi_local)
 {
 	
-	
+	int rank = MPI :: COMM_WORLD . Get_rank ();
+	int mpi_size=MPI :: COMM_WORLD . Get_size ();
+
 	for(int i=1;i<=Count;i++)	
                    
 			{
@@ -1710,7 +1674,7 @@ void comput_macro_variables( double* rho,double** u,double** u0,double** f,doubl
 					{
 					
 					
-					//fg[i][k]=Fg[i][k];
+					fg[i][k]=Fg[i][k];
 					
 					rho_r[i]+=fg[i][k];
 					
@@ -3771,7 +3735,7 @@ void Backup(int m,double* rho,double** psi, double** u, double** f, double*** g)
 
 }
 
-void Backup_init(int peak_n,double* rho, double** u, double** f,double*** fg, double** F, double** rho_r, double* rhor, double* forcex, double* forcey, double* forcez, double*** Psi_local, int* SupInv)
+void Backup_init(int peak_n,double* rho, double** u, double** f,double*** fg, double** F, double*** Fg, double** rho_r, double* rhor, double* forcex, double* forcey, double* forcez, double*** Psi_local, int* SupInv)
 {	
       	int rank = MPI :: COMM_WORLD . Get_rank ();
 	int mpi_size=MPI :: COMM_WORLD . Get_size ();
@@ -3843,10 +3807,10 @@ void Backup_init(int peak_n,double* rho, double** u, double** f,double*** fg, do
 
 
 
-	//for (int psi_n=0;psi_n<num_psi;psi_n++)
-	//for (int ci=1;ci<=Count;ci++)	
-	//		for (int lm=1;lm<7;lm++)
-	//		Fg[psi_n][ci][lm]=fg[psi_n][ci][lm];
+	for (int psi_n=0;psi_n<num_psi;psi_n++)
+	for (int ci=1;ci<=Count;ci++)	
+			for (int lm=1;lm<7;lm++)
+			Fg[psi_n][ci][lm]=fg[psi_n][ci][lm];
 			
 			
 
