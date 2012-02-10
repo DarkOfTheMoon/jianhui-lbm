@@ -1,25 +1,25 @@
 =============INPUT FILE FOR 3D LATTICE BOLTZMANN MPI CODE--MULTI COMPONENT COLOR GRADIENT MODEL=======
 BC.dat          	:Geometry filenameEmily_Berea_y_614_764_7.dat
 phase.dat       	    	:Initial components distribution
-60 60 3                 	:nx ny nz
+100 40 3                 	:nx ny nz
 30000		     		:Maximum time step
 7.249	             		:dx (um) Resolution (for Permeability calculation)
 0	        	      	:Pressure Or Velocity Boundary (1=YES, 0=No)
-0				:Psi constant BC
-3.0e-6 0.0 0.0	          	:body force for x,y,z
+1				:Psi constant BC
+7.0e-6 0.0 0.0	          	:body force for x,y,z
 0 1.0 0 1.0027	    		:Pressure Boundary in X direction ()p=c_s^2*/rho
 0 1.0 0 1.0	    		:Pressure Boundary in Y direction ()
 0 1.0 0 1.0	    		:Pressure Boundary in Z direction (Format detials can be found within this file)
 0 0.0 0 0.0	   		:Velocity Boundary in X direction (Format detials can be found within this file)
 0 0.0 0 0.07	   		:Velocity Boundary in Y direction (Format detials can be found within this file)
 0 0.0 0 0.07	   		:Velocity Boundary in Z direction (Format detials can be found within this file)
-0 0				:Psi constant BC in X 0=OFF, 1=Ini psi, 2=Neibourghing,3=Rand
+2 1				:Psi constant BC in X 0=OFF, 1=Ini psi, 2=Neibourghing,3=Rand
 0 0				:Psi constant BC in Y
 0 0				:Psi constant BC in Z
-0.07    		       		:Viscosity (Component A, psi=1)
-0.07    		       		:Viscosity (Component B, psi=-1)
+0.06    		       		:Viscosity (Component A, psi=1)
+0.06    		       		:Viscosity (Component B, psi=-1)
 0.8     		      	:Contact Angle Cos(Theta) (Positive=1 wetting, Negative -1 wetting)
-0.9e-2    		      	:Surface tension (Kappa)
+0.8e-2    		      	:Surface tension (Kappa)
 0.0 0.0 0.0			:initial velocity for x,y,z
 500	        	       	:Permeability (Single Phase mD)
 =========OUTPUT==CONTROL===================
@@ -35,16 +35,16 @@ phase.dat       	    	:Initial components distribution
 ./				:OUTPUT PATH,DEFAULT: ./ (INCLUDE "/" AT THE END)
 2              			:PRESSURE AND VELOCITY BOUNDARY CONDITION OPTIONS: 0,1,2,3: EBC_S,EBC_D,TOLKE_BC,NEBC_D
 0  500				:MULTI-COMPONENT STABALIZER: (a,b) a=0=OFF, a=1=ON, BODY FORCE APPLIED AFTER b steps
-0.8                              :PRESET SATUATION, 0--1 initial component distri not needed, -1=OFF(for Component A,1)
+-1                              :PRESET SATUATION, 0--1 initial component distri not needed, -1=OFF(for Component A,1)
 0				:PRESET VALUE FOR BUFFET AREA, 0=NO,1=COMP A,-1=COMP B (valid when preset satuation)
 0.8				:Relative permeability calcualtion 0..1 (psi>=value, cal the flux for Comp1)
-0 0 0				:Pemeability calculation Partially  (1=ON, 0=OFF)
-63 1				:Permeability calculation partially Starting point and Ending point in X
+1 0 0				:Pemeability calculation Partially  (1=ON, 0=OFF)
+99 3				:Permeability calculation partially Starting point and Ending point in X
 0 100				:Permeability calculation partially Starting point and Ending point in Y
 0 100				:Permeability calculation partially Starting point and Ending point in Z
 ======================BACKUP==CONTROL====================
 -1		                   :BACKUP FREQUENCY (-1=NO BACKUP,0=Backup at the end of computation)
-0                              :INITIALIZATION WITH BACKUP DATA (0=OFF, 1=ON)
+0                              :INITIALIZATION WITH BACKUP DATA (0=OFF, n>1=ON the time step of backup data)
 ======================GEOMETRY READING=======================
 0		:Geometry Reading format, 0=decimal,1=binary
 ======================PRESSURE OR BODAY FORCE SETTING (CHANGE WITH TIME)=============
@@ -74,3 +74,8 @@ The path sould be put after the name and the path of the data file.
 such as: mpirun -np 3 INPUT.dat /work/jy810/test/
 If not given, the default value is ./
 
+
+If backup f,rho,psi,rhob,rhor is used, PRESET VALUE FOR BUFFET AREA option
+can be used solely without the activation of PRESET SATUATION. 
+But the simulation is initialized normally, The PRESET VALUE FOR BUFFET AREA is actived
+only if PRESET SATUATION option is ON.

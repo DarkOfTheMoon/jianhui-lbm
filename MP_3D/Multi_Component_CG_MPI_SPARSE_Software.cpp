@@ -169,7 +169,7 @@ double feq(int,double, double[3]);
 
 void Suppliment(int*,int***);
 
-void Backup_init(double* , double** , double** ,double* ,double* , double* , double*, double* );
+void Backup_init(double* , double** , double** ,double* ,double* , double* , double*, double*, int* );
 
 void Backup(int ,double*, double*, double**, double**,double*,double*);
 
@@ -536,7 +536,7 @@ if (Zoom>1)
 	if (mode_backup_ini==0)
 	        init(rho,u,f,psi,rho_r,rho_b,rhor, rhob,SupInv);
 	else
-	      Backup_init(rho, u, f,psi,rho_r, rho_b, rhor, rhob);  
+	      Backup_init(rho, u, f,psi,rho_r, rho_b, rhor, rhob,SupInv);  
 
 if (rank==0)
 {
@@ -5463,13 +5463,32 @@ if ((par_per_x-1)*(par_per_y-1)*(par_per_z-1)==0)
 
 
 
-void Backup_init(double* rho, double** u, double** f,double* psi,double* rho_r, double* rho_b, double* rhor, double* rhob)
+void Backup_init(double* rho, double** u, double** f,double* psi,double* rho_r, double* rho_b, double* rhor, double* rhob,int* SupInv)
 {	
       
         int rank = MPI :: COMM_WORLD . Get_rank ();
 	int mpi_size=MPI :: COMM_WORLD . Get_size ();
+
+
+	int nx_g[mpi_size];
+	int disp[mpi_size];
 	
 	
+	MPI_Gather(&nx_l,1,MPI_INT,nx_g,1,MPI_INT,0,MPI_COMM_WORLD);
+	
+	
+	if (rank==0)
+		{
+		disp[0]=0;
+	
+		for (int i=1;i<mpi_size;i++)
+			disp[i]=disp[i-1]+nx_g[i-1];
+		
+		}
+
+	MPI_Bcast(disp,mpi_size,MPI_INT,0,MPI_COMM_WORLD);
+
+
 	double usqr,vsqr,eu;
 	double c2,c4;
 	
@@ -5488,7 +5507,7 @@ void Backup_init(double* rho, double** u, double** f,double* psi,double* rho_r, 
 	niu=in_vis;
 	tau_f=niu/(c_s2*dt)+0.5;
 	//tau_f=3.0*niu/dt+0.5;
-	
+	int loc_x,loc_y,loc_z;
 	
 	s_v=1/tau_f;
        
@@ -5640,10 +5659,36 @@ void Backup_init(double* rho, double** u, double** f,double* psi,double* rho_r, 
 			rhob[i]=0;
 		}
   
-       
-      
+
+
+
+  for (int i=1;i<=Count;i++)	
+			
+		{     
+      if ((par_per_x>0) or (par_per_y>0) or (par_per_z>0))
+			        {        
+			                loc_x=(int)(SupInv[i]/((NY+1)*(NZ+1)))+disp[rank];
+			                loc_y=(int)((SupInv[i]%((NY+1)*(NZ+1)))/(NZ+1));
+			                loc_z=SupInv[i]%(NZ+1);
+			                if (((loc_x<per_xn) or (loc_x>per_xp) or (loc_y<per_yn) or (loc_y>per_yp) or (loc_z<per_zn) or (loc_z>per_zp)) and ((ini_buf==-1) or (ini_buf==1)))
+			                {        
+			                        psi[i]=ini_buf;
+			                        rho_r[i]=(psi[i]*rho[i]+rho[i])/2;
+			                        rho_b[i]=rho[i]-rho_r[i];
+
+						//===============WARRNING==TEST==CODE========
+						Psi_local[(int)(SupInv[i]/((NY+1)*(NZ+1)))][loc_y][loc_z]=ini_buf;
+						//===========================================
+			                       
+			                }
+			                
+			                
+			        }
 	
-	
+		}
+
+
+
 	
 		       if (stab==1)
 				{gxs=0;gys=0;gzs=0;}
