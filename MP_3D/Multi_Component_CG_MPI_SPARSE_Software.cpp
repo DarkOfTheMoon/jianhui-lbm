@@ -176,8 +176,8 @@ void Backup(int ,double*, double*, double**, double**,double*,double*);
 void Parallelize_Geometry();
 
 void pressure_bodyforce_change();
-
 void Comput_Perm_LOCAL(double* ,double** ,double* ,double* ,int );
+
 
 
 const int e[19][3]=
@@ -399,6 +399,14 @@ double v_max,error_Per;
 	MPI_Bcast(&pre_chan_5,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&pre_chan_pn5,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 	MPI_Bcast(&pre_chan_pp5,1,MPI_DOUBLE,0,MPI_COMM_WORLD);MPI_Bcast(&pre_chan_f5,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 	MPI_Bcast(&rel_perm_psi,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+
+
+
+
+
+
+
+
 
 
 
@@ -753,13 +761,13 @@ if (wr_per==1)
 			switch(PerDir)
 				{
 				case 1:
-				finfs<<Per_l[0]*reso*reso*1000/Permeability<<" "<<S_l<<" "<<Per_l_LOCAL[0]*reso*reso*1000/Permeability<<endl;break;
+				finfs<<Per_l[0]*reso*reso*1000/Permeability<<" "<<S_l<<" "<<Per_l_LOCAL[0]*reso*reso*1000/Permeability<<" "<<1-S_l<<endl;break;
 				case 2:
-				finfs<<Per_l[1]*reso*reso*1000/Permeability<<" "<<S_l<<" "<<Per_l_LOCAL[1]*reso*reso*1000/Permeability<<endl;break;
+				finfs<<Per_l[1]*reso*reso*1000/Permeability<<" "<<S_l<<" "<<Per_l_LOCAL[1]*reso*reso*1000/Permeability<<" "<<1-S_l<<endl;break;
 				case 3:
-				finfs<<Per_l[2]*reso*reso*1000/Permeability<<" "<<S_l<<" "<<Per_l_LOCAL[2]*reso*reso*1000/Permeability<<endl;break;
+				finfs<<Per_l[2]*reso*reso*1000/Permeability<<" "<<S_l<<" "<<Per_l_LOCAL[2]*reso*reso*1000/Permeability<<" "<<1-S_l<<endl;break;
 				default:
-				finfs<<Per_l[0]*reso*reso*1000/Permeability<<" "<<S_l<<" "<<Per_l_LOCAL[0]*reso*reso*1000/Permeability<<endl;break;
+				finfs<<Per_l[0]*reso*reso*1000/Permeability<<" "<<S_l<<" "<<Per_l_LOCAL[0]*reso*reso*1000/Permeability<<" "<<1-S_l<<endl;break;
 				}
 			finfs.close();
 
@@ -767,13 +775,13 @@ if (wr_per==1)
 			switch(PerDir)
 				{
 				case 1:
-				finfs2<<Per_g[0]*reso*reso*1000/Permeability<<" "<<1-S_l<<" "<<Per_g_LOCAL[0]*reso*reso*1000/Permeability<<endl;break;
+				finfs2<<Per_g[0]*reso*reso*1000/Permeability<<" "<<1-S_l<<" "<<Per_g_LOCAL[0]*reso*reso*1000/Permeability<<" "<<S_l<<endl;break;
 				case 2:
-				finfs2<<Per_g[1]*reso*reso*1000/Permeability<<" "<<1-S_l<<" "<<Per_g_LOCAL[1]*reso*reso*1000/Permeability<<endl;break;
+				finfs2<<Per_g[1]*reso*reso*1000/Permeability<<" "<<1-S_l<<" "<<Per_g_LOCAL[1]*reso*reso*1000/Permeability<<" "<<S_l<<endl;break;
 				case 3:
-				finfs2<<Per_g[2]*reso*reso*1000/Permeability<<" "<<1-S_l<<" "<<Per_g_LOCAL[2]*reso*reso*1000/Permeability<<endl;break;
+				finfs2<<Per_g[2]*reso*reso*1000/Permeability<<" "<<1-S_l<<" "<<Per_g_LOCAL[2]*reso*reso*1000/Permeability<<" "<<S_l<<endl;break;
 				default:
-				finfs2<<Per_g[0]*reso*reso*1000/Permeability<<" "<<1-S_l<<" "<<Per_g_LOCAL[0]*reso*reso*1000/Permeability<<endl;break;
+				finfs2<<Per_g[0]*reso*reso*1000/Permeability<<" "<<1-S_l<<" "<<Per_g_LOCAL[0]*reso*reso*1000/Permeability<<" "<<S_l<<endl;break;
 				}
 			finfs2.close();
 			}
