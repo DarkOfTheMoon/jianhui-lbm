@@ -79,3 +79,8 @@ If backup f,rho,psi,rhob,rhor is used, PRESET VALUE FOR BUFFET AREA option
 can be used solely without the activation of PRESET SATUATION. 
 But the simulation is initialized normally, The PRESET VALUE FOR BUFFET AREA is actived
 only if PRESET SATUATION option is ON.
+
+
+Relative Perm file format:
+Averaged Relative Perm, saturation, local Relative Perm
+
