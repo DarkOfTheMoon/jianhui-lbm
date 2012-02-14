@@ -1,4 +1,4 @@
-A=load('2_General_disp_concentration_X_2600000.sta');
+A=load('2_General_disp_concentration_X_2000000.sta');
 n_0=350;
 u_ave=3.81794e-06;
 t=2600000;
