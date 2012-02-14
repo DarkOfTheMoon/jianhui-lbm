@@ -17,7 +17,7 @@ int total_number=11;
 double g[15]={1e-6,1e-6,1e-6,1e-6,1e-6,1e-6,2e-6,3e-6,4e-6,5e-6,6e-6,7e-6,8e-6,9e-6,1e-5};
 double diffu[15]={0.05,0.02,0.01,0.005,0.002,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001};
 
-double var1[11]={0.85,0.8,0.75,0.7,0.65,0.55,0.5,0.45,0.35,0.25,0.15};
+double var1[11];
         
  	char poreFileName[128]="INPUT_CG_";
 	char poreFileName2[128]="LV60_";
@@ -166,7 +166,7 @@ out<<"10000000		     		:Maximum time step"<<endl;
 out<<"7.249	             		:dx (um) Resolution (for Permeability calculation)"<<endl;
 out<<"0	        	      	:Pressure Or Velocity Boundary (1=YES, 0=No)"<<endl;
 out<<"1				:Psi constant BC"<<endl;
-out<<"1.0e-5 0.0 0.0	          	:body force for x,y,z"<<endl;
+out<<"1.0e-4 0.0 0.0	          	:body force for x,y,z"<<endl;
 out<<"0 1.0 0 1.0027	    		:Pressure Boundary in X direction ()p=c_s^2*/rho"<<endl;
 out<<"0 1.0 0 1.0	    		:Pressure Boundary in Y direction ()"<<endl;
 out<<"0 1.0 0 1.0	    	:Pressure Boundary in Z direction (Format detials can be found within this file)"<<endl;
@@ -176,10 +176,10 @@ out<<"0 0.0 0 0.07	   	:Velocity Boundary in Z direction (Format detials can be 
 out<<"2 1			:Psi constant BC in X 0=OFF, 1=Ini psi, 2=Neibourghing,3=Rand"<<endl;
 out<<"0 0				:Psi constant BC in Y"<<endl;
 out<<"0 0				:Psi constant BC in Z"<<endl;
-out<<"0.065    		       		:Viscosity (Component A, psi=1)"<<endl;
-out<<"0.065    		       		:Viscosity (Component B, psi=-1)"<<endl;
+out<<"0.05    		       		:Viscosity (Component A, psi=1)"<<endl;
+out<<"0.05    		       		:Viscosity (Component B, psi=-1)"<<endl;
 out<<"0.85     		      	:Contact Angle Cos(Theta) (Positive=1 wetting, Negative -1 wetting)"<<endl;
-out<<"0.8e-2    		      	:Surface tension (Kappa)"<<endl;
+out<<"0.7e-2    		      	:Surface tension (Kappa)"<<endl;
 out<<"0.0 0.0 0.0			:initial velocity for x,y,z"<<endl;
 out<<"18500	        	       	:Permeability (Single Phase mD)"<<endl;
 out<<"=========OUTPUT==CONTROL==================="<<endl;
@@ -195,7 +195,7 @@ out<<"0 1.0 4.0	              :Self define lattice velocity: 0=DEFAULT,dx, dt ((
 out<<"/work/jy810/Sandpack/LV60/"<<i<<"_	:OUTPUT PATH,DEFAULT: ./ (INCLUDE / AT THE END)"<<endl;
 out<<"2            :PRESSURE AND VELOCITY BOUNDARY CONDITION OPTIONS: 0,1,2,3: EBC_S,EBC_D,TOLKE_BC,NEBC_D"<<endl;
 out<<"1  1000	:MULTI-COMPONENT STABALIZER: (a,b) a=0=OFF, a=1=ON, BODY FORCE APPLIED AFTER b steps"<<endl;
-out<<var1[i]<<"               :PRESET SATUATION, 0--1 initial component distri not needed, -1=OFF(for Component A,1)"<<endl;
+out<<"-1               :PRESET SATUATION, 0--1 initial component distri not needed, -1=OFF(for Component A,1)"<<endl;
 out<<"1				:PRESET VALUE FOR BUFFET AREA, 0=NO,1=COMP A,-1=COMP B (valid when preset satuation)"<<endl;
 out<<"0.8				:Relative permeability calcualtion 0..1 (psi>=value, cal the flux for Comp1)"<<endl;
 out<<"1 0 0				:Pemeability calculation Partially  (1=ON, 0=OFF)"<<endl;
@@ -204,7 +204,7 @@ out<<"0 100				:Permeability calculation partially Starting point and Ending poi
 out<<"0 100				:Permeability calculation partially Starting point and Ending point in Z"<<endl;
 out<<"======================BACKUP==CONTROL===================="<<endl;
 out<<"-1		                   :BACKUP FREQUENCY (-1=NO BACKUP,0=Backup at the end of computation)"<<endl;
-out<<"0                              :INITIALIZATION WITH BACKUP DATA (0=OFF, 1=ON)"<<endl;
+out<<20000*(i+1)<<"                              :INITIALIZATION WITH BACKUP DATA (0=OFF, 1=ON)"<<endl;
 out<<"======================GEOMETRY READING======================="<<endl;
 out<<"1		:Geometry Reading format, 0=decimal,1=binary"<<endl;
 out<<"======================PRESSURE OR BODAY FORCE SETTING (CHANGE WITH TIME)============="<<endl;
@@ -242,11 +242,12 @@ out<<"#PBS -l select=4:ncpus=12:icib=true "<<endl;
 out<<"module load intel-suite mpi"<<endl;
 
 out<<"cp /work/jy810/Sandpack/LV60/*.dat ."<<endl;
-out<<"cp /work/jy810/Sandpack/LV60/*.inputdat ."<<endl;
+out<<"cp /work/jy810/Sandpack/LV60/*_"<<i*20000<<"*.bin_input ."<<endl;
 
 out<<endl;
 
 out<<"mpiexec /home/jy810/Multi_Component/MC_CG "<<poreFileName<<i<<".inputdat";
+out<<" /work/jy810/Sandpack/LV60/";
 out<<">/work/jy810/Sandpack/LV60/"<<i<<"_report.txt"<<endl;
 
 
