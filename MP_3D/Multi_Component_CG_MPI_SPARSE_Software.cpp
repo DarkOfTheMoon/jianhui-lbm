@@ -212,7 +212,7 @@ int vel_xp,vel_xn,vel_yp,vel_yn,vel_zp,vel_zn,Sub_BC,Out_Mode,mode_backup_ini,ps
 double in_vis,p_xp,p_xn,p_yp,p_yn,p_zp,p_zn,niu_l,niu_g,ContactAngle_parameter,CapA;
 double inivx,inivy,inivz,v_xp,v_xn,v_yp,v_yn,v_zp,v_zn,Re_l,Re_g,Capillary,ini_Sat,var_rho;
 double error_Per,Permeability,psi_solid,S_l,gxs,gys,gzs,c_s,c_s2,dx_input,dt_input,lat_c;
-
+int bodyforce_apply;
 
 char outputfile[128]="./";
 int NCHAR=128;
@@ -321,7 +321,7 @@ double v_max,error_Per;
 	fin >> pre_chan_3>> pre_chan_pn3 >> pre_chan_pp3>>pre_chan_f3;	fin.getline(dummy, NCHAR);
 	fin >> pre_chan_4>> pre_chan_pn4 >> pre_chan_pp4>>pre_chan_f4;	fin.getline(dummy, NCHAR);
 	fin >> pre_chan_5>> pre_chan_pn5 >> pre_chan_pp5>>pre_chan_f5;	fin.getline(dummy, NCHAR);
-
+	fin >> bodyforce_apply;					fin.getline(dummy, NCHAR);
 
 
 //	fin >> backup_rho;                        	fin.getline(dummy, NCHAR);
@@ -399,7 +399,7 @@ double v_max,error_Per;
 	MPI_Bcast(&pre_chan_5,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&pre_chan_pn5,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 	MPI_Bcast(&pre_chan_pp5,1,MPI_DOUBLE,0,MPI_COMM_WORLD);MPI_Bcast(&pre_chan_f5,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 	MPI_Bcast(&rel_perm_psi,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
-
+	MPI_Bcast(&bodyforce_apply,1,MPI_INT,0,MPI_COMM_WORLD);
 
 
 
@@ -2151,6 +2151,14 @@ if (rank==0)
 
 
 //==========================
+if (((bodyforce_apply==1) and (psi[ci]<rel_perm_psi)) or ((bodyforce_apply==-1) and (psi[ci]>-rel_perm_psi)))
+{
+GuoF[0]=0.0;GuoF[1]=0.0;GuoF[2]=0.0;GuoF[3]=0.0;GuoF[4]=0.0;GuoF[5]=0.0;GuoF[6]=0.0;GuoF[7]=0.0;
+GuoF[8]=0.0;GuoF[9]=0.0;GuoF[10]=0.0;GuoF[11]=0.0;GuoF[12]=0.0;GuoF[13]=0.0;GuoF[14]=0.0;GuoF[15]=0.0;
+GuoF[16]=0.0;GuoF[17]=0.0;GuoF[18]=0.0;
+}
+else
+{
 lm0=((+0.000*c_l-u[ci][0])*gxs+(+0.000*c_l-u[ci][1])*gys+(+0.000*c_l-u[ci][2])*gzs)/c_s2;
 lm1=(+0.000*c_l*u[ci][0]+(+0.000*c_l)*u[ci][1]+(+0.000*c_l)*u[ci][2])*(+0.000*c_l*gxs+(+0.000*c_l)*gys+(+0.000*c_l)*gzs)/(c_s2*c_s2);
 GuoF[0]=w[0]*(lm0+lm1);
@@ -2226,7 +2234,7 @@ GuoF[17]=w[17]*(lm0+lm1);
 lm0=((+0.000*c_l-u[ci][0])*gxs+(-1.000*c_l-u[ci][1])*gys+(+1.000*c_l-u[ci][2])*gzs)/c_s2;
 lm1=(+0.000*c_l*u[ci][0]+(-1.000*c_l)*u[ci][1]+(+1.000*c_l)*u[ci][2])*(+0.000*c_l*gxs+(-1.000*c_l)*gys+(+1.000*c_l)*gzs)/(c_s2*c_s2);
 GuoF[18]=w[18]*(lm0+lm1);
-
+}
 //====================
 
 			
