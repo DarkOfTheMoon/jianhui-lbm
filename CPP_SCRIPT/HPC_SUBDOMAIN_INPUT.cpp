@@ -243,6 +243,8 @@ out<<"#PBS -l select=4:ncpus=12:icib=true "<<endl;
 out<<"module load intel-suite mpi"<<endl;
 
 out<<"cp /work/jy810/Sandpack/LV60/*.dat ."<<endl;
+out<<"cp /work/jy810/Sandpack/LV60/*.inputdat ."<<endl;
+
 out<<"cp /work/jy810/Sandpack/LV60/*_"<<i*20000<<"*.bin_input ."<<endl;
 
 out<<endl;

@@ -606,6 +606,7 @@ if (wr_per==1)
 	if (pressure_change>0)
 		pressure_bodyforce_change();
 	//==========================PRESSURE AND BODYFORCE CHANGE ALONG WITH TIME ==================
+	/*
 	if (pressure_change>0)
 	{
 		if (pressure_change==1)
@@ -659,6 +660,7 @@ if (wr_per==1)
 		}
 
 	}
+	*/
 	//==========================================================================================
 
 
