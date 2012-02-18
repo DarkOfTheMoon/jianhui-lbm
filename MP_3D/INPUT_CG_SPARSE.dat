@@ -4,10 +4,10 @@ phase.dat       	    	:Initial components distribution
 200 16 3                 	:nx ny nz
 30000		     		:Maximum time step
 7.249	             		:dx (um) Resolution (for Permeability calculation)
-0	        	      	:Pressure Or Velocity Boundary (1=YES, 0=No)
+1	        	      	:Pressure Or Velocity Boundary (1=YES, 0=No)
 1				:Psi constant BC
-1.0e-4 0.0 0.0	          	:body force for x,y,z
-0 1.0 0 1.0027	    		:Pressure Boundary in X direction ()p=c_s^2*/rho
+0.0e-4 0.0 0.0	          	:body force for x,y,z
+1 1.0 1 1.0001	    		:Pressure Boundary in X direction ()p=c_s^2*/rho
 0 1.0 0 1.0	    		:Pressure Boundary in Y direction ()
 0 1.0 0 1.0	    		:Pressure Boundary in Z direction (Format detials can be found within this file)
 0 0.0 0 0.0	   		:Velocity Boundary in X direction (Format detials can be found within this file)
@@ -19,7 +19,7 @@ phase.dat       	    	:Initial components distribution
 0.02   		       		:Viscosity (Component A, psi=1)
 0.1    		       		:Viscosity (Component B, psi=-1)
 0.0     		      	:Contact Angle Cos(Theta) (Positive=1 wetting, Negative -1 wetting)
-0.6e-2    		      	:Surface tension (Kappa)
+0.7e-2    		      	:Surface tension (Kappa)
 0.0 0.0 0.0			:initial velocity for x,y,z
 500	        	       	:Permeability (Single Phase mD)
 =========OUTPUT==CONTROL===================
@@ -27,7 +27,7 @@ phase.dat       	    	:Initial components distribution
 1                       	:Direction of Permeability Calculation (1=X, 2=Y, 3=Z)
 50		         	:Frequency of results writing (interval in time steps)
 0               		:Memory Saving mode for output subroutains (0=No, 1=Yes,for large outputs, x,z opposite)
-2000				:Freqency of velocity field writing (in vtk format, -1=no velocity writing)
+-1				:Freqency of velocity field writing (in vtk format, -1=no velocity writing)
 -1				:Freqency of density field writing (in vtk format, -1=no density writing)
 1000				:Freqency of concentration writing (in vtk format, -1=no density writing)
 ==============ADVANCE==PARAMETER==========
@@ -36,9 +36,9 @@ phase.dat       	    	:Initial components distribution
 2              			:PRESSURE AND VELOCITY BOUNDARY CONDITION OPTIONS: 0,1,2,3: EBC_S,EBC_D,TOLKE_BC,NEBC_D
 0  500				:MULTI-COMPONENT STABALIZER: (a,b) a=0=OFF, a=1=ON, BODY FORCE APPLIED AFTER b steps
 -1                              :PRESET SATUATION, 0--1 initial component distri not needed, -1=OFF(for Component A,1)
-1				:PRESET VALUE FOR BUFFET AREA, 0=NO,1=COMP A,-1=COMP B (valid when preset satuation)
+0				:PRESET VALUE FOR BUFFET AREA, 0=NO,1=COMP A,-1=COMP B (valid when preset satuation)
 0.8				:Relative permeability calcualtion 0..1 (psi>=value, cal the flux for Comp1)
-1 0 0				:Pemeability calculation Partially  (1=ON, 0=OFF)
+0 0 0				:Pemeability calculation Partially  (1=ON, 0=OFF)
 99 3				:Permeability calculation partially Starting point and Ending point in X
 0 100				:Permeability calculation partially Starting point and Ending point in Y
 0 100				:Permeability calculation partially Starting point and Ending point in Z
@@ -48,9 +48,9 @@ phase.dat       	    	:Initial components distribution
 ======================GEOMETRY READING=======================
 0		:Geometry Reading format, 0=decimal,1=binary
 ======================PRESSURE OR BODAY FORCE SETTING (CHANGE WITH TIME)=============
-0 1			:0=OFF,1,2,3=ON,1=X,2=Y,3=Z;|| 1=PRESSURE,2=BODY FORCE
--1 0.0 0.0 0.0		:ACT AT TIMESTEP n, PRESSURE N, PRESSURE P, BODYFORCE(1)
--1 0.0 0.0 0.0		:ACT AT TIMESTEP n, PRESSURE N, PRESSURE P, BODYFORCE(2)
+1 1			:0=OFF,1,2,3=ON,1=X,2=Y,3=Z;|| 1=PRESSURE,2=BODY FORCE
+2002 1.0005 1.0 0.0		:ACT AT TIMESTEP n, PRESSURE N, PRESSURE P, BODYFORCE(1)
+5002 1.001 1.0 0.0		:ACT AT TIMESTEP n, PRESSURE N, PRESSURE P, BODYFORCE(2)
 -1 0.0 0.0 0.0		:ACT AT TIMESTEP n, PRESSURE N, PRESSURE P, BODYFORCE(3)
 -1 0.0 0.0 0.0		:ACT AT TIMESTEP n, PRESSURE N, PRESSURE P, BODYFORCE(4)
 -1 0.0 0.0 0.0		:ACT AT TIMESTEP n, PRESSURE N, PRESSURE P, BODYFORCE(5)
