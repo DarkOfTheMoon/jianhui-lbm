@@ -83,4 +83,7 @@ only if PRESET SATUATION option is ON.
 
 Relative Perm file format:
 Averaged Relative Perm, saturation, local Relative Perm, saturation of the other component
+for Relative Perm file component1
+Pressure of left and right hand side is also included at the end of every line.
+
 
