@@ -213,6 +213,8 @@ double in_vis,p_xp,p_xn,p_yp,p_yn,p_zp,p_zn,niu_l,niu_g,ContactAngle_parameter,C
 double inivx,inivy,inivz,v_xp,v_xn,v_yp,v_yn,v_zp,v_zn,Re_l,Re_g,Capillary,ini_Sat,var_rho;
 double error_Per,Permeability,psi_solid,S_l,gxs,gys,gzs,c_s,c_s2,dx_input,dt_input,lat_c;
 int bodyforce_apply;
+double p_xp_ori,p_xn_ori,p_yp_ori,p_yn_ori,p_zp_ori,p_zn_ori;
+
 
 char outputfile[128]="./";
 int NCHAR=128;
@@ -403,8 +405,9 @@ double v_max,error_Per;
 
 
 
-
-
+p_xn_ori=p_xn;p_xp_ori=p_xp;
+p_yn_ori=p_yn;p_yp_ori=p_yp;
+p_zn_ori=p_zn;p_zp_ori=p_zp;
 
 mirX=0;mirY=0;mirZ=0;
 mir=1;Zoom=1;
@@ -903,8 +906,9 @@ if (wr_per==1)
 void pressure_bodyforce_change()
 {
 
-
-
+	int rank = MPI :: COMM_WORLD . Get_rank ();
+	int mpi_size=MPI :: COMM_WORLD . Get_size ();
+/*
 if (pressure_change==1)
 		{
 		if (n==pre_chan_1)
@@ -1059,9 +1063,173 @@ if (pressure_change==3)
 	 
 		}
 
+*/
+
+if (pressure_change==1)
+		{
+		if (n<=pre_chan_1)
+			if (pre_chan_pb==1)
+			{
+			p_xn=p_xn_ori+(pre_chan_pn1-p_xn_ori)*(1-(double)(pre_chan_1-n)/pre_chan_1);
+			p_xp=p_xp_ori+(pre_chan_pp1-p_xp_ori)*(1-(double)(pre_chan_1-n)/pre_chan_1);
+			//if (rank==0)
+			//cout<<p_xn_ori<<"   "<<pre_chan_pn1<<"  "<<p_xn<<endl;
+			}
+			else
+				gxs=gx+(pre_chan_f1-gx)*(1-(double)(pre_chan_1-n)/pre_chan_1);
+
+		if ((n<=pre_chan_2) and (n>pre_chan_1))
+			if (pre_chan_pb==1)
+			{
+			
+			p_xn=pre_chan_pn1+(pre_chan_pn2-pre_chan_pn1)*(1-(double)(pre_chan_2-n)/(pre_chan_2-pre_chan_1));
+			p_xp=pre_chan_pp1+(pre_chan_pp2-pre_chan_pp1)*(1-(double)(pre_chan_2-n)/(pre_chan_2-pre_chan_1));
+			}
+			else
+				gxs=pre_chan_f1+(pre_chan_f2-pre_chan_f1)*(1-(double)(pre_chan_2-n)/(pre_chan_2-pre_chan_1));
+
+		if ((n<=pre_chan_3) and (n>pre_chan_2))
+			if (pre_chan_pb==1)
+			{
+			
+			p_xn=pre_chan_pn2+(pre_chan_pn3-pre_chan_pn2)*(1-(double)(pre_chan_3-n)/(pre_chan_3-pre_chan_2));
+			p_xp=pre_chan_pp2+(pre_chan_pp3-pre_chan_pp2)*(1-(double)(pre_chan_3-n)/(pre_chan_3-pre_chan_2));
+			}
+			else
+				gxs=pre_chan_f2+(pre_chan_f3-pre_chan_f2)*(1-(double)(pre_chan_3-n)/(pre_chan_3-pre_chan_2));
+
+		if ((n<=pre_chan_4) and (n>pre_chan_3))
+			if (pre_chan_pb==1)
+			{
+			p_xn=pre_chan_pn3+(pre_chan_pn4-pre_chan_pn3)*(1-(double)(pre_chan_4-n)/(pre_chan_4-pre_chan_3));
+			p_xp=pre_chan_pp3+(pre_chan_pp4-pre_chan_pp3)*(1-(double)(pre_chan_4-n)/(pre_chan_4-pre_chan_3));
+			}
+			else
+				gxs=pre_chan_f3+(pre_chan_f4-pre_chan_f3)*(1-(double)(pre_chan_4-n)/(pre_chan_4-pre_chan_3));
+
+		if ((n<=pre_chan_5) and (n>pre_chan_3))
+			if (pre_chan_pb==1)
+			{
+			p_xn=pre_chan_pn4+(pre_chan_pn5-pre_chan_pn4)*(1-(double)(pre_chan_5-n)/(pre_chan_5-pre_chan_4));
+			p_xp=pre_chan_pp4+(pre_chan_pp5-pre_chan_pp4)*(1-(double)(pre_chan_5-n)/(pre_chan_5-pre_chan_4));
+			}
+			else
+				gxs=pre_chan_f4+(pre_chan_f5-pre_chan_f4)*(1-(double)(pre_chan_5-n)/(pre_chan_5-pre_chan_4));
+
+
+	 
+		}
+
+if (pressure_change==2)
+		{
+		if (n<=pre_chan_1)
+			if (pre_chan_pb==1)
+			{
+			p_yn=p_yn_ori+(pre_chan_pn1-p_yn_ori)*(1-(double)(pre_chan_1-n)/pre_chan_1);
+			p_yp=p_yp_ori+(pre_chan_pp1-p_yp_ori)*(1-(double)(pre_chan_1-n)/pre_chan_1);
+			}
+			else
+				gys=gx+(pre_chan_f1-gx)*(1-(double)(pre_chan_1-n)/pre_chan_1);
+
+		if ((n<=pre_chan_2) and (n>pre_chan_1))
+			if (pre_chan_pb==1)
+			{
+			
+			p_yn=pre_chan_pn1+(pre_chan_pn2-pre_chan_pn1)*(1-(double)(pre_chan_2-n)/(pre_chan_2-pre_chan_1));
+			p_yp=pre_chan_pp1+(pre_chan_pp2-pre_chan_pp1)*(1-(double)(pre_chan_2-n)/(pre_chan_2-pre_chan_1));
+			}
+			else
+				gys=pre_chan_f1+(pre_chan_f2-pre_chan_f1)*(1-(double)(pre_chan_2-n)/(pre_chan_2-pre_chan_1));
+
+		if ((n<=pre_chan_3) and (n>pre_chan_2))
+			if (pre_chan_pb==1)
+			{
+			
+			p_yn=pre_chan_pn2+(pre_chan_pn3-pre_chan_pn2)*(1-(double)(pre_chan_3-n)/(pre_chan_3-pre_chan_2));
+			p_yp=pre_chan_pp2+(pre_chan_pp3-pre_chan_pp2)*(1-(double)(pre_chan_3-n)/(pre_chan_3-pre_chan_2));
+			}
+			else
+				gys=pre_chan_f2+(pre_chan_f3-pre_chan_f2)*(1-(double)(pre_chan_3-n)/(pre_chan_3-pre_chan_2));
+
+		if ((n<=pre_chan_4) and (n>pre_chan_3))
+			if (pre_chan_pb==1)
+			{
+			p_yn=pre_chan_pn3+(pre_chan_pn4-pre_chan_pn3)*(1-(double)(pre_chan_4-n)/(pre_chan_4-pre_chan_3));
+			p_yp=pre_chan_pp3+(pre_chan_pp4-pre_chan_pp3)*(1-(double)(pre_chan_4-n)/(pre_chan_4-pre_chan_3));
+			}
+			else
+				gys=pre_chan_f3+(pre_chan_f4-pre_chan_f3)*(1-(double)(pre_chan_4-n)/(pre_chan_4-pre_chan_3));
+
+		if ((n<=pre_chan_5) and (n>pre_chan_3))
+			if (pre_chan_pb==1)
+			{
+			p_yn=pre_chan_pn4+(pre_chan_pn5-pre_chan_pn4)*(1-(double)(pre_chan_5-n)/(pre_chan_5-pre_chan_4));
+			p_yp=pre_chan_pp4+(pre_chan_pp5-pre_chan_pp4)*(1-(double)(pre_chan_5-n)/(pre_chan_5-pre_chan_4));
+			}
+			else
+				gys=pre_chan_f4+(pre_chan_f5-pre_chan_f4)*(1-(double)(pre_chan_5-n)/(pre_chan_5-pre_chan_4));
+
+
+	 
+		}
+
+
+if (pressure_change==3)
+		{
+		
+		if (n<=pre_chan_1)
+			if (pre_chan_pb==1)
+			{
+			p_zn=p_zn_ori+(pre_chan_pn1-p_zn_ori)*(1-(double)(pre_chan_1-n)/pre_chan_1);
+			p_zp=p_zp_ori+(pre_chan_pp1-p_zp_ori)*(1-(double)(pre_chan_1-n)/pre_chan_1);
+			}
+			else
+				gzs=gx+(pre_chan_f1-gx)*(1-(double)(pre_chan_1-n)/pre_chan_1);
+
+		if ((n<=pre_chan_2) and (n>pre_chan_1))
+			if (pre_chan_pb==1)
+			{
+			
+			p_zn=pre_chan_pn1+(pre_chan_pn2-pre_chan_pn1)*(1-(double)(pre_chan_2-n)/(pre_chan_2-pre_chan_1));
+			p_zp=pre_chan_pp1+(pre_chan_pp2-pre_chan_pp1)*(1-(double)(pre_chan_2-n)/(pre_chan_2-pre_chan_1));
+			}
+			else
+				gzs=pre_chan_f1+(pre_chan_f2-pre_chan_f1)*(1-(double)(pre_chan_2-n)/(pre_chan_2-pre_chan_1));
+
+		if ((n<=pre_chan_3) and (n>pre_chan_2))
+			if (pre_chan_pb==1)
+			{
+			
+			p_zn=pre_chan_pn2+(pre_chan_pn3-pre_chan_pn2)*(1-(double)(pre_chan_3-n)/(pre_chan_3-pre_chan_2));
+			p_zp=pre_chan_pp2+(pre_chan_pp3-pre_chan_pp2)*(1-(double)(pre_chan_3-n)/(pre_chan_3-pre_chan_2));
+			}
+			else
+				gzs=pre_chan_f2+(pre_chan_f3-pre_chan_f2)*(1-(double)(pre_chan_3-n)/(pre_chan_3-pre_chan_2));
+
+		if ((n<=pre_chan_4) and (n>pre_chan_3))
+			if (pre_chan_pb==1)
+			{
+			p_zn=pre_chan_pn3+(pre_chan_pn4-pre_chan_pn3)*(1-(double)(pre_chan_4-n)/(pre_chan_4-pre_chan_3));
+			p_zp=pre_chan_pp3+(pre_chan_pp4-pre_chan_pp3)*(1-(double)(pre_chan_4-n)/(pre_chan_4-pre_chan_3));
+			}
+			else
+				gzs=pre_chan_f3+(pre_chan_f4-pre_chan_f3)*(1-(double)(pre_chan_4-n)/(pre_chan_4-pre_chan_3));
+
+		if ((n<=pre_chan_5) and (n>pre_chan_3))
+			if (pre_chan_pb==1)
+			{
+			p_zn=pre_chan_pn4+(pre_chan_pn5-pre_chan_pn4)*(1-(double)(pre_chan_5-n)/(pre_chan_5-pre_chan_4));
+			p_zp=pre_chan_pp4+(pre_chan_pp5-pre_chan_pp4)*(1-(double)(pre_chan_5-n)/(pre_chan_5-pre_chan_4));
+			}
+			else
+				gzs=pre_chan_f4+(pre_chan_f5-pre_chan_f4)*(1-(double)(pre_chan_5-n)/(pre_chan_5-pre_chan_4));
 
 
 
+
+
+
+		}
 
 }
 
