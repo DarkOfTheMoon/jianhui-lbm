@@ -233,6 +233,10 @@ double pre_chan_pp1,pre_chan_pp2,pre_chan_pp3,pre_chan_pp4,pre_chan_pp5;
 double pre_chan_f1,pre_chan_f2,pre_chan_f3,pre_chan_f4,pre_chan_f5;
 double rel_perm_psi;
 
+//=======VISCOSITY INTERPOLATION=============
+double wl,wg,lg0,l1,l2,g1,g2,delta;
+//===========================================
+
 int main(int argc , char *argv [])
 {	
 
@@ -251,6 +255,10 @@ double elaps;
 
 double Per_l[3],Per_g[3];
 double Per_l_LOCAL[3],Per_g_LOCAL[3];
+
+
+
+
 
 
 double v_max,error_Per;
@@ -431,13 +439,8 @@ if (Zoom>1)
 	NZ=(NZ+1)*Zoom-1;
 	}
 
-//if (Zoom>1)	
-//	reso=reso/Zoom;
 
 
-
-//	if (rank==para_size-1)
-//		nx_l+=(NX+1)%para_size;
 
 	double* Permia;
 	double* rho;
@@ -1761,6 +1764,21 @@ void init(double* rho, double** u, double** f,double* psi,double* rho_r, double*
 	double s_other=8*(2-s_v)/(8-s_v);
 	double u_tmp[3];
 
+
+
+	//=====VISCOSITY INTERPOLATION======================
+	delta=0.1;
+	wl=1.0/(niu_l/(c_s2*dt)+0.5);
+	wg=1.0/(niu_g/(c_s2*dt)+0.5);
+	lg0=2*wl*wg/(wl+wg);
+	l1=2*(wl-lg0)/delta;
+	l2=-l1/(2*delta);
+	g1=2*(lg0-wg)/delta;
+	g2=g1/(2*delta);
+	//=================================================
+
+
+
 	S[0]=0;
 	S[1]=s_v;
 	S[2]=s_v;
@@ -2427,10 +2445,28 @@ GuoF[18]=w[18]*(lm0+lm1);
 
 	//=======================================================================================		
 			
-			s_v=niu_g+(psi[ci]+1.0)/2.0*(niu_l-niu_g);
-			s_v=1.0/(s_v/(c_s2*dt)+0.5);
-			s_other=8*(2-s_v)/(8-s_v);
+			//s_v=niu_g+(psi[ci]+1.0)/2.0*(niu_l-niu_g);
+			//s_v=1.0/(s_v/(c_s2*dt)+0.5);
+			//s_other=8*(2-s_v)/(8-s_v);
 			
+
+		//================VISCOSITY INTERPOLATION============
+			if (psi[ci]>0)
+				if (psi[ci]>delta)
+				s_v=wl;
+				else
+				s_v=lg0+l1*psi[ci]+l2*psi[ci]*psi[ci];
+			else
+				if (psi[ci]<-delta)
+				s_v=wg;
+				else
+				s_v=lg0+g1*psi[ci]+g2*psi[ci]*psi[ci];					
+
+			s_other=8*(2-s_v)/(8-s_v);
+		//==================================================
+
+
+
 	//cout<<"@@@@@@@@@   "<<s_v<<"  "<<C[0]<<"   "<<C[1]<<"  "<<C[2]<<endl;
 	//cout<<"@@@@@@@@@   "<<s_v<<"  "<<ux<<"   "<<uy<<"  "<<uz<<"  "<<rho_r[ci]<<" "<<rho_b[ci]<<endl;
 	
