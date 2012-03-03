@@ -215,6 +215,10 @@ out<<"-1 0.0 0.0 0.0		:ACT AT TIMESTEP n, PRESSURE N, PRESSURE P, BODYFORCE(3)"<
 out<<"-1 0.0 0.0 0.0		:ACT AT TIMESTEP n, PRESSURE N, PRESSURE P, BODYFORCE(4)"<<endl;
 out<<"-1 0.0 0.0 0.0		:ACT AT TIMESTEP n, PRESSURE N, PRESSURE P, BODYFORCE(5)"<<endl;
 out<<"0			:BODY FORCE APPLIED ON 1:Phase1,0:BOTH,-1:Phase2"<<endl;
+out<<"=====================CAPILLARY PRESSURE MEASURMENTS================"<<endl;
+out<<"1 1 2000                     :0=OFF,1,2,3=ON,1=X,2=Y,3=Z;|| 1=PRESSURE,2=BODY FORCE; time steps of 1 changement"<<endl;
+out<<"1.0 0.993 6 10           :PRESSURE N,P; Changement times, terminal condition: no. output intervals"<<endl;                   
+out<<"1.0e-6                          :Error of Saturation stable condition"<<endl;
 out<<i<<endl;
 
 }

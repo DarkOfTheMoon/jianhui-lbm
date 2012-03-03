@@ -176,8 +176,10 @@ void Backup(int ,double*, double*, double**, double**,double*,double*);
 void Parallelize_Geometry();
 
 void pressure_bodyforce_change();
+
 void Comput_Perm_LOCAL(double* ,double** ,double* ,double* ,int );
 
+void pressure_capillary();
 
 
 const int e[19][3]=
@@ -235,7 +237,19 @@ double rel_perm_psi;
 
 //=======VISCOSITY INTERPOLATION=============
 double wl,wg,lg0,l1,l2,g1,g2,delta;
-//===========================================
+//=====================================
+
+//==========CAPILLARY PRESSURE  APPLY=========
+double S_l_r;
+int pressure_change2,pre_chan_pb2,interval_pre;
+double pre_chan_pns,pre_chan_pps,sat_cri_d;
+int chan_no,sat_cri;
+int error_sat=0;
+int start_pre_n=0;
+int num_interval=0;
+double pre_in,pre_ip;
+char FileName6[128];
+//=====================================
 
 int main(int argc , char *argv [])
 {	
@@ -332,8 +346,15 @@ double v_max,error_Per;
 	fin >> pre_chan_4>> pre_chan_pn4 >> pre_chan_pp4>>pre_chan_f4;	fin.getline(dummy, NCHAR);
 	fin >> pre_chan_5>> pre_chan_pn5 >> pre_chan_pp5>>pre_chan_f5;	fin.getline(dummy, NCHAR);
 	fin >> bodyforce_apply;					fin.getline(dummy, NCHAR);
-
-
+	                                                                                                                fin.getline(dummy, NCHAR);        
+	
+	//=============CAPILLARY PRESSURE  APPLY=================================                                                                                                                
+	fin >> pressure_change2 >> pre_chan_pb2 >> interval_pre;					fin.getline(dummy, NCHAR);
+	fin >> pre_chan_pns >> pre_chan_pps >> chan_no >> sat_cri;                 fin.getline(dummy, NCHAR);
+	fin >> sat_cri_d;                                                                                fin.getline(dummy, NCHAR);
+	//=======================================================================
+	
+	
 //	fin >> backup_rho;                        	fin.getline(dummy, NCHAR);
 //	fin >> backup_velocity;                		fin.getline(dummy, NCHAR);
 //	fin >> backup_psi;                        	fin.getline(dummy, NCHAR);
@@ -411,8 +432,20 @@ double v_max,error_Per;
 	MPI_Bcast(&rel_perm_psi,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 	MPI_Bcast(&bodyforce_apply,1,MPI_INT,0,MPI_COMM_WORLD);
 
+	//=============CAPILLARY PRESSURE APPLY================
+	MPI_Bcast(&pressure_change2,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&pre_chan_pb2,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&pre_chan_pps,1,MPI_DOUBLE,0,MPI_COMM_WORLD);MPI_Bcast(&pre_chan_pns,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Bcast(&interval_pre,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&chan_no,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&sat_cri,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&sat_cri_d,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	 if (pressure_change2==1)
+	         {pre_in=(pre_chan_pns-p_xn)/(double)(chan_no);pre_ip=(pre_chan_pps-p_xp)/(double)(chan_no);}
+	 if (pressure_change2==2)
+	         {pre_in=(pre_chan_pns-p_yn)/(double)(chan_no);pre_ip=(pre_chan_pps-p_yp)/(double)(chan_no);}
+	 if (pressure_change2==3)
+	         {pre_in=(pre_chan_pns-p_zn)/(double)(chan_no);pre_ip=(pre_chan_pps-p_zp)/(double)(chan_no);}
+	//==================================================
 
-
+	
 p_xn_ori=p_xn;p_xp_ori=p_xp;
 p_yn_ori=p_yn;p_yp_ori=p_yp;
 p_zn_ori=p_zn;p_zp_ori=p_zp;
@@ -569,9 +602,23 @@ strcat(FileName5,"Velocity_ave_max.txt");
 
 
 
+
+
+
 ofstream fins;	
 	fins.open(FileName,ios::trunc);
 	fins.close();
+	
+	
+//===========CAPILLARY PRESSURE APPLY============	
+strcpy(FileName6,outputfile);
+strcat(FileName6,"Capillary_Pressure.txt");
+fins.open(FileName6,ios::trunc);
+fins.close();
+//=========================================
+
+
+
 
 if (wr_per==1)
 	{
@@ -602,6 +649,10 @@ if (wr_per==1)
 
 	if (pressure_change>0)
 		pressure_bodyforce_change();
+	
+	if (pressure_change2>0)
+		pressure_capillary();
+	
 	//==========================PRESSURE AND BODYFORCE CHANGE ALONG WITH TIME ==================
 	/*
 	if (pressure_change>0)
@@ -687,6 +738,9 @@ if (wr_per==1)
 	
 	if(n%freRe==0)
 		{       
+		        
+		        
+		        
 			
 			if (rank==0)
 			{
@@ -714,6 +768,9 @@ if (wr_per==1)
 			if (u_max>=10.0)	U_max_ref+=1;
 			error_Per=Comput_Perm(psi,u,Per_l,Per_g,PerDir,SupInv);
 			Comput_Perm_LOCAL(psi,u,Per_l_LOCAL,Per_g_LOCAL,PerDir);
+			//==========CAPILLARY PRESSURE  APPLY=========
+			S_l_r=S_l;
+			//=====================================
 			S_l=Comput_Saturation(psi,Solid,SupInv);
 			
 
@@ -1237,6 +1294,115 @@ if (pressure_change==3)
 }
 
 
+void pressure_capillary()
+{
+
+	int rank = MPI :: COMM_WORLD . Get_rank ();
+	int mpi_size=MPI :: COMM_WORLD . Get_size ();
+
+	double error_sat_d;
+	
+	
+	
+//	if (n%freRe==0)
+//	        cout<<n<<"         ffffff"<<endl;
+	
+	
+        error_sat_d=(S_l_r-S_l)/S_l;
+        if ((error_sat_d<sat_cri_d) and (n%freRe==0) and (n>start_pre_n+interval_pre) and (num_interval<chan_no))
+        {
+                error_sat=error_sat+1;  
+                //cout<<n<<"         ffffff"<<"   "<<rank<<endl;
+                //MPI_Bcast(&error_sat,1,MPI_INT,0,MPI_COMM_WORLD);
+               // cout<<error_sat<<"  "<<sat_cri<<" "<<n<<"  "<<chan_no<<endl;
+               //cout<<n<<"   "<<start_pre_n<<endl;
+        }
+       // if (n%freRe==0)
+          //      cout<<n<<"         bbbbb"<<"   "<<rank<<endl;
+        //cout<<n<<"   "<<start_pre_n<<endl;
+        
+        if ((n<=start_pre_n+interval_pre) and (num_interval<chan_no))
+        {
+                if (pressure_change2==1)
+                {
+                        p_xn=p_xn_ori+pre_in*(1-(double)(start_pre_n+interval_pre-n)/interval_pre);
+                        p_xp=p_xp_ori+pre_ip*(1-(double)(start_pre_n+interval_pre-n)/interval_pre);
+                }
+                
+               if (pressure_change2==2)
+                {
+                        p_yn=p_yn_ori+pre_in*(1-(double)(start_pre_n+interval_pre-n)/interval_pre);
+                        p_yp=p_yp_ori+pre_ip*(1-(double)(start_pre_n+interval_pre-n)/interval_pre);
+                }
+                
+                if (pressure_change2==3)
+                {
+                        p_zn=p_zn_ori+pre_in*(1-(double)(start_pre_n+interval_pre-n)/interval_pre);
+                        p_zp=p_zp_ori+pre_ip*(1-(double)(start_pre_n+interval_pre-n)/interval_pre);
+                }
+                
+                
+                       
+        }
+        
+        
+        
+        
+         if (error_sat>=sat_cri)
+                                {
+                                error_sat=0;
+                               // cout<<n<<"      ssssssssssss"<<endl;
+                                start_pre_n=n;
+                                num_interval++;
+                                if (pressure_change2==1)
+                                        {
+                                                p_xn_ori=p_xn;
+                                                p_xp_ori=p_xp;
+                                                if (rank==0)
+                                                {
+                                                 ofstream finfcp(FileName6,ios::app);
+                                                 finfcp<<S_l<<" "<<1-S_l<<" "<<abs(p_xp-p_xn)/3<<endl;
+                                                 finfcp.close();
+                                                }
+                                        }
+                                        
+                                 if (pressure_change2==2)
+                                        {
+                                                p_yn_ori=p_yn;
+                                                p_yp_ori=p_yp;
+                                                if (rank==0)
+                                                {
+                                                ofstream finfcp(FileName6,ios::app);
+                                                 finfcp<<S_l<<" "<<1-S_l<<" "<<abs(p_yn-p_yp)/3<<endl;
+                                                 finfcp.close();
+                                                }
+                                                
+                                        }     
+                                        
+                                if (pressure_change2==3)
+                                        {
+                                                p_zn_ori=p_zn;
+                                                p_zp_ori=p_zp;
+                                                if (rank==0)
+                                                {
+                                                ofstream finfcp(FileName6,ios::app);
+                                                 finfcp<<S_l<<" "<<1-S_l<<" "<<abs(p_zn-p_zp)/3<<endl;
+                                                 finfcp.close();
+                                                }
+                                                
+                                                
+                                        } 
+                                        
+                                        
+                                  //      MPI_Bcast(&start_pre_n,1,MPI_INT,0,MPI_COMM_WORLD); 
+                                }        
+                                //cout<<p_xp<<"     "<<p_xn<<"   "<<n<<"    "<<rank<<endl;
+                                //cout<<endl;
+                                //MPI_Bcast(&start_pre_n,1,MPI_INT,0,MPI_COMM_WORLD);
+                                //if (n%freRe==0)
+                                   //                     cout<<n<<"         bbbbbbbb"<<endl;
+}
+    
 
 
 int inverse(mat &a){
@@ -5726,7 +5892,23 @@ void Backup_init(double* rho, double** u, double** f,double* psi,double* rho_r, 
        
 	double s_other=8*(2-s_v)/(8-s_v);
 	double u_tmp[3];
-
+	
+	
+	
+//=====VISCOSITY INTERPOLATION======================
+	delta=0.1;
+	wl=1.0/(niu_l/(c_s2*dt)+0.5);
+	wg=1.0/(niu_g/(c_s2*dt)+0.5);
+	lg0=2*wl*wg/(wl+wg);
+	l1=2*(wl-lg0)/delta;
+	l2=-l1/(2*delta);
+	g1=2*(lg0-wg)/delta;
+	g2=g1/(2*delta);
+//=================================================
+	
+	
+	
+	
 	S[0]=0;
 	S[1]=s_v;
 	S[2]=s_v;

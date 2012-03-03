@@ -58,7 +58,9 @@ plot "$1Relative_Permeability_Component1.txt" u 4:1 w l title "Rel_Perm1",\
 
 set origin 0.0,0.666
 set size 0.333,0.333
-plot "$1bodyforce.txt" u 1 w l title "saturation of 1",\
-"$1bodyforce.txt" u 2 w l title "saturation of 2"
+#plot "$1bodyforce.txt" u 1 w l title "saturation of 1",\
+#"$1bodyforce.txt" u 2 w l title "saturation of 2"
+plot "$1Capillary_Pressure.txt" u 1:3 title "Capillary pressure phase1"
+
 
 pause -1

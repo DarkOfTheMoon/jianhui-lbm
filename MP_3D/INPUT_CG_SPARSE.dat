@@ -1,25 +1,25 @@
 =============INPUT FILE FOR 3D LATTICE BOLTZMANN MPI CODE--MULTI COMPONENT COLOR GRADIENT MODEL=======
 BC.dat          	:Geometry filenameEmily_Berea_y_614_764_7.dat
 phase.dat       	    	:Initial components distribution
-50 30 3                 	:nx ny nz
-60000		     		:Maximum time step
+50 16 3                 	:nx ny nz
+1000000		     		:Maximum time step
 7.249	             		:dx (um) Resolution (for Permeability calculation)
-0	        	      	:Pressure Or Velocity Boundary (1=YES, 0=No)
-0				:Psi constant BC
-3.0e-6 0.0 0.0	          	:body force for x,y,z
-0 1.0 0 1.0000	    		:Pressure Boundary in X direction ()p=c_s^2*/rho
+1	        	      	:Pressure Or Velocity Boundary (1=YES, 0=No)
+1				:Psi constant BC
+0.0e-6 0.0 0.0	          	:body force for x,y,z
+1 1.0 1 1.0000	    		:Pressure Boundary in X direction ()p=c_s^2*/rho
 0 1.0 0 1.0	    		:Pressure Boundary in Y direction ()
 0 1.0 0 1.0	    		:Pressure Boundary in Z direction (Format detials can be found within this file)
 0 0.0 0 0.0	   		:Velocity Boundary in X direction (Format detials can be found within this file)
 0 0.0 0 0.07	   		:Velocity Boundary in Y direction (Format detials can be found within this file)
 0 0.0 0 0.07	   		:Velocity Boundary in Z direction (Format detials can be found within this file)
-0 0				:Psi constant BC in X 0=OFF, 1=Ini psi, 2=Neibourghing,3=Rand
+1 1				:Psi constant BC in X 0=OFF, 1=Ini psi, 2=Neibourghing,3=Rand
 0 0				:Psi constant BC in Y
 0 0				:Psi constant BC in Z
-0.1   		       		:Viscosity (Component A, psi=1)
-0.01    		       		:Viscosity (Component B, psi=-1)
-0.0     		      	:Contact Angle Cos(Theta) (Positive=1 wetting, Negative -1 wetting)
-0.8e-2    		      	:Surface tension (Kappa)
+0.02   		       		:Viscosity (Component A, psi=1)
+0.02    		       		:Viscosity (Component B, psi=-1)
+0.99     		      	:Contact Angle Cos(Theta) (Positive=1 wetting, Negative -1 wetting)
+0.7e-2    		      	:Surface tension (Kappa)
 0.0 0.0 0.0			:initial velocity for x,y,z
 500	        	       	:Permeability (Single Phase mD)
 =========OUTPUT==CONTROL===================
@@ -27,7 +27,7 @@ phase.dat       	    	:Initial components distribution
 1                       	:Direction of Permeability Calculation (1=X, 2=Y, 3=Z)
 50		         	:Frequency of results writing (interval in time steps)
 0               		:Memory Saving mode for output subroutains (0=No, 1=Yes,for large outputs, x,z opposite)
-1000				:Freqency of velocity field writing (in vtk format, -1=no velocity writing)
+-1				:Freqency of velocity field writing (in vtk format, -1=no velocity writing)
 -1				:Freqency of density field writing (in vtk format, -1=no density writing)
 -1				:Freqency of concentration writing (in vtk format, -1=no density writing)
 ==============ADVANCE==PARAMETER==========
@@ -38,8 +38,8 @@ phase.dat       	    	:Initial components distribution
 -1                              :PRESET SATUATION, 0--1 initial component distri not needed, -1=OFF(for Component A,1)
 0				:PRESET VALUE FOR BUFFET AREA, 0=NO,1=COMP A,-1=COMP B (valid when preset satuation)
 0.8				:Relative permeability calcualtion 0..1 (psi>=value, cal the flux for Comp1)
-0 0 0				:Pemeability calculation Partially  (1=ON, 0=OFF)
-99 3				:Permeability calculation partially Starting point and Ending point in X
+1 0 0				:Pemeability calculation Partially  (1=ON, 0=OFF)
+49 3				:Permeability calculation partially Starting point and Ending point in X
 0 100				:Permeability calculation partially Starting point and Ending point in Y
 0 100				:Permeability calculation partially Starting point and Ending point in Z
 ======================BACKUP==CONTROL====================
@@ -49,13 +49,27 @@ phase.dat       	    	:Initial components distribution
 0		:Geometry Reading format, 0=decimal,1=binary
 ======================PRESSURE OR BODAY FORCE SETTING (CHANGE WITH TIME)=============
 0 1			:0=OFF,1,2,3=ON,1=X,2=Y,3=Z;|| 1=PRESSURE,2=BODY FORCE
--1 1.0 0.9995 0.0		:ACT AT TIMESTEP n, PRESSURE N, PRESSURE P, BODYFORCE(1)
+-1 1.0 0.997 0.0		:ACT AT TIMESTEP n, PRESSURE N, PRESSURE P, BODYFORCE(1)
 -1 1.0 0.999 0.0		:ACT AT TIMESTEP n, PRESSURE N, PRESSURE P, BODYFORCE(2)
 -1 0.0 0.0 0.0		:ACT AT TIMESTEP n, PRESSURE N, PRESSURE P, BODYFORCE(3)
 -1 0.0 0.0 0.0		:ACT AT TIMESTEP n, PRESSURE N, PRESSURE P, BODYFORCE(4)
 -1 0.0 0.0 0.0		:ACT AT TIMESTEP n, PRESSURE N, PRESSURE P, BODYFORCE(5)
 0			:BODY FORCE APPLIED ON 1:Phase1,0:BOTH,-1:Phase2
+=====================CAPILLARY PRESSURE MEASURMENTS================
+1 1 2000                     :0=OFF,1,2,3=ON,1=X,2=Y,3=Z;|| 1=PRESSURE,2=BODY FORCE; time steps of 1 changement
+1.0 0.993 6 10           :PRESSURE N,P; Changement times, terminal condition: no. output intervals                   
+1.0e-6                          :Error of Saturation stable condition
 
+
+========
+temp:
+pressure_change2 pre_chan_pb2 interval_pre
+pre_chan_pns >> pre_chan_pps chan_no sat_cri
+sat_cri_d
+num_interval   
+error_sat=0;
+no_pre=0
+int error_sat;
 
 INSTRUCTIONS OF PARAMETER INPUT
 0.0556</frac{niu*dt}{dx^2}<0.25
