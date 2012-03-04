@@ -249,6 +249,7 @@ int start_pre_n=0;
 int num_interval=0;
 double pre_in,pre_ip;
 char FileName6[128];
+int ind_error_sat=0;
 //=====================================
 
 int main(int argc , char *argv [])
@@ -1308,15 +1309,26 @@ void pressure_capillary()
 //	        cout<<n<<"         ffffff"<<endl;
 	
 	
-        error_sat_d=(S_l_r-S_l)/S_l;
+        error_sat_d=abs((S_l_r-S_l)/S_l);
         if ((error_sat_d<sat_cri_d) and (n%freRe==0) and (n>start_pre_n+interval_pre) and (num_interval<chan_no))
         {
-                error_sat=error_sat+1;  
-                //cout<<n<<"         ffffff"<<"   "<<rank<<endl;
-                //MPI_Bcast(&error_sat,1,MPI_INT,0,MPI_COMM_WORLD);
-               // cout<<error_sat<<"  "<<sat_cri<<" "<<n<<"  "<<chan_no<<endl;
-               //cout<<n<<"   "<<start_pre_n<<endl;
+                if (ind_error_sat==1)
+                error_sat=error_sat+1;
+                else
+                {
+                error_sat=0;
+                ind_error_sat=1;
+                }
+                       
         }
+        else
+              if ((error_sat_d>=sat_cri_d) and (n%freRe==0) and (n>start_pre_n+interval_pre) and (num_interval<chan_no))  
+              {
+                      ind_error_sat=0;
+                      error_sat=0;
+              }
+        
+        
        // if (n%freRe==0)
           //      cout<<n<<"         bbbbb"<<"   "<<rank<<endl;
         //cout<<n<<"   "<<start_pre_n<<endl;
@@ -1351,6 +1363,7 @@ void pressure_capillary()
          if (error_sat>=sat_cri)
                                 {
                                 error_sat=0;
+                                ind_error_sat=0;
                                // cout<<n<<"      ssssssssssss"<<endl;
                                 start_pre_n=n;
                                 num_interval++;
@@ -1393,7 +1406,7 @@ void pressure_capillary()
                                                 
                                         } 
                                         
-                                        
+                                      
                                   //      MPI_Bcast(&start_pre_n,1,MPI_INT,0,MPI_COMM_WORLD); 
                                 }        
                                 //cout<<p_xp<<"     "<<p_xn<<"   "<<n<<"    "<<rank<<endl;
@@ -1401,6 +1414,10 @@ void pressure_capillary()
                                 //MPI_Bcast(&start_pre_n,1,MPI_INT,0,MPI_COMM_WORLD);
                                 //if (n%freRe==0)
                                    //                     cout<<n<<"         bbbbbbbb"<<endl;
+                                   
+                                   
+                                   
+                                 
 }
     
 
