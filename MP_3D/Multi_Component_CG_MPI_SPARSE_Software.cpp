@@ -5850,6 +5850,8 @@ if ((par_per_x-1)*(par_per_y-1)*(par_per_z-1)==0)
 	delete [] rbuf_l;
 	delete [] rbuf_g;
 	
+	MPI_Bcast(&S_l,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	
 	
 	return (S_l);
 			
