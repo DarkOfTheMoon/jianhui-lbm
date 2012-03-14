@@ -3318,13 +3318,21 @@ void comput_macro_variables( double* rho,double** u,double** u0,double** f,doubl
 			{
                            for(int j=0;j<=NY;j++)
                                    for (int k=0;k<=NZ;k++)
-				   if ((Solid[0][j][k]>0) and (Solid[1][j][k]))
+				   if (Solid[0][j][k]>0)
+				   if (Solid[1][j][k])
                                    {
                                    psi[Solid[0][j][k]]=psi[Solid[1][j][k]];
                                    rho_r[Solid[0][j][k]]=(psi[Solid[0][j][k]]*1.0+1.0)/2;
                                    rho_b[Solid[0][j][k]]=1.0-rho_r[Solid[0][j][k]];
                                    
                                    }
+                                   else
+                                           {
+                                             rho_r[Solid[0][j][k]]=(Psi_local[0][j][k]*1.0+1.0)/2;
+                                             rho_b[Solid[0][j][k]]=1.0-rho_r[Solid[0][j][k]];
+                                             psi[Solid[0][j][k]]=Psi_local[0][j][k];              
+                                                   
+                                           }
                         }
 			else
 			if (psi_xn==3)
@@ -3368,13 +3376,21 @@ void comput_macro_variables( double* rho,double** u,double** u0,double** f,doubl
 			{
                            for(int j=0;j<=NY;j++)
                                    for (int k=0;k<=NZ;k++)
-				   if ((Solid[nx_l-1][j][k]>0) and (Solid[nx_l-2][j][k]>0))
+				   if (Solid[nx_l-1][j][k]>0)
+				   if (Solid[nx_l-2][j][k]>0)
                                    {
                               
                                    psi[Solid[nx_l-1][j][k]]=psi[Solid[nx_l-2][j][k]];
                                    rho_r[Solid[nx_l-1][j][k]]=(psi[Solid[nx_l-1][j][k]]*1.0+1.0)/2;
                                    rho_b[Solid[nx_l-1][j][k]]=1.0-rho_r[Solid[nx_l-1][j][k]];
                                    }
+                                   else
+                                           {
+                                            rho_r[Solid[nx_l-1][j][k]]=(Psi_local[nx_l-1][j][k]*1.0+1.0)/2;
+                                            rho_b[Solid[nx_l-1][j][k]]=1.0-rho_r[Solid[nx_l-1][j][k]];
+                                            psi[Solid[nx_l-1][j][k]]=Psi_local[nx_l-1][j][k];       
+                                                   
+                                           }
                            } 
 			else 
 			if (psi_xp==3)	
@@ -3415,12 +3431,20 @@ void comput_macro_variables( double* rho,double** u,double** u0,double** f,doubl
                            {
                            for(int i=0;i<nx_l;i++)
                                    for (int k=0;k<=NZ;k++)
-				   if ((Solid[i][0][k]>0) and (Solid[i][1][k]>0))
+				   if (Solid[i][0][k]>0)
+				   if (Solid[i][1][k]>0)
                                    {
                                    psi[Solid[i][0][k]]=psi[Solid[i][1][k]];
                                    rho_r[Solid[i][0][k]]=(psi[Solid[i][0][k]]*1.0+1.0)/2;
                                    rho_b[Solid[i][0][k]]=1.0-rho_r[Solid[i][0][k]];
                                    }
+                                   else
+                                           {
+                                             rho_r[Solid[i][0][k]]=(Psi_local[i][0][k]*1.0+1.0)/2;
+                                             rho_b[Solid[i][0][k]]=1.0-rho_r[Solid[i][0][k]];
+                                             psi[Solid[i][0][k]]=Psi_local[i][0][k];      
+                                                   
+                                           }
                            }
 			else
 			if (psi_yn==3)
@@ -3460,13 +3484,20 @@ void comput_macro_variables( double* rho,double** u,double** u0,double** f,doubl
                            {
                            for(int i=0;i<nx_l;i++)
                                    for (int k=0;k<=NZ;k++)
-					if ((Solid[i][NY][k]>0) and (Solid[i][NY-1][k]>0))
+					if (Solid[i][NY][k]>0)
+					if (Solid[i][NY-1][k]>0)
                                    {
                                    
                                    psi[Solid[i][NY][k]]=psi[Solid[i][NY-1][k]];
                                    rho_r[Solid[i][NY][k]]=(psi[Solid[i][NY][k]]*1.0+1.0)/2;
                                    rho_b[Solid[i][NY][k]]=1.0-rho_r[Solid[i][NY][k]];
                                    }
+                                   else
+                                           {
+                                             rho_r[Solid[i][NY][k]]=(Psi_local[i][NY][k]*1.0+1.0)/2;
+                                             rho_b[Solid[i][NY][k]]=1.0-rho_r[Solid[i][NY][k]];
+                                             psi[Solid[i][NY][k]]=Psi_local[i][NY][k];       
+                                           }
                            } 
 				else
 				if (psi_yp==3)  
@@ -3507,13 +3538,20 @@ void comput_macro_variables( double* rho,double** u,double** u0,double** f,doubl
                            {
                            for(int i=0;i<nx_l;i++)
                                    for (int j=0;j<=NY;j++)
-					if ((Solid[i][j][0]>0) and (Solid[i][j][1]>0))
+					if (Solid[i][j][0]>0)
+					if (Solid[i][j][1]>0)
                                    {
                                    
                                    psi[Solid[i][j][0]]=psi[Solid[i][j][1]];
                                    rho_r[Solid[i][j][0]]=(psi[Solid[i][j][0]]*1.0+1.0)/2;
                                    rho_b[Solid[i][j][0]]=1.0-rho_r[Solid[i][j][0]];
                                    }
+                                   else
+                                           {
+                                            rho_r[Solid[i][j][0]]=(Psi_local[i][j][0]*1.0+1.0)/2;
+                                            rho_b[Solid[i][j][0]]=1.0-rho_r[Solid[i][j][0]];
+                                            psi[Solid[i][j][0]]=Psi_local[i][j][0];       
+                                           }
                            }
 			else 
 			if (psi_zn==3)
@@ -3553,13 +3591,20 @@ void comput_macro_variables( double* rho,double** u,double** u0,double** f,doubl
                            {
                            for(int i=0;i<nx_l;i++)
                                    for (int j=0;j<=NY;j++)
-					if ((Solid[i][j][NZ]>0) and (Solid[i][j][NZ-1]>0))
+					if (Solid[i][j][NZ]>0)
+					if (Solid[i][j][NZ-1]>0)
                                    {
                                    
                                    psi[Solid[i][j][NZ]]=psi[Solid[i][j][NZ-1]];
                                    rho_r[Solid[i][j][NZ]]=(psi[Solid[i][j][NZ]]*1.0+1.0)/2;
                                    rho_b[Solid[i][j][NZ]]=1.0-rho_r[Solid[i][j][NZ]];
                                    }
+                                   else
+                                           {
+                                           rho_r[Solid[i][j][NZ]]=(Psi_local[i][j][NZ]*1.0+1.0)/2;
+                                           rho_b[Solid[i][j][NZ]]=1.0-rho_r[Solid[i][j][NZ]];
+                                           psi[Solid[i][j][NZ]]=Psi_local[i][j][NZ];        
+                                           }
                            } 
 			else
 			if (psi_zp==3)  
