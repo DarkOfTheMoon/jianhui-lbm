@@ -22,7 +22,7 @@ double var1[11];
  	char poreFileName[128]="INPUT_CG_";
 	char poreFileName2[128]="LV60_";
  ostringstream name;
-for (int i=0;i<total_number;i++)
+for (int i=1;i<=total_number;i++)
 {
         
         name.str("");
@@ -165,21 +165,21 @@ out<<"309 302 302               	:nx ny nz"<<endl;
 out<<"10000000		     		:Maximum time step"<<endl;
 out<<"7.249	             		:dx (um) Resolution (for Permeability calculation)"<<endl;
 out<<"0	        	      	:Pressure Or Velocity Boundary (1=YES, 0=No)"<<endl;
-out<<"1				:Psi constant BC"<<endl;
-out<<"1.0e-4 0.0 0.0	          	:body force for x,y,z"<<endl;
+out<<"0				:Psi constant BC"<<endl;
+out<<"7.0e-6 0.0 0.0	          	:body force for x,y,z"<<endl;
 out<<"0 1.0 0 1.0027	    		:Pressure Boundary in X direction ()p=c_s^2*/rho"<<endl;
 out<<"0 1.0 0 1.0	    		:Pressure Boundary in Y direction ()"<<endl;
 out<<"0 1.0 0 1.0	    	:Pressure Boundary in Z direction (Format detials can be found within this file)"<<endl;
 out<<"0 0.0 0 0.0	   	:Velocity Boundary in X direction (Format detials can be found within this file)"<<endl;
 out<<"0 0.0 0 0.07	   	:Velocity Boundary in Y direction (Format detials can be found within this file)"<<endl;
 out<<"0 0.0 0 0.07	   	:Velocity Boundary in Z direction (Format detials can be found within this file)"<<endl;
-out<<"2 1			:Psi constant BC in X 0=OFF, 1=Ini psi, 2=Neibourghing,3=Rand"<<endl;
+out<<"0 0			:Psi constant BC in X 0=OFF, 1=Ini psi, 2=Neibourghing,3=Rand"<<endl;
 out<<"0 0				:Psi constant BC in Y"<<endl;
 out<<"0 0				:Psi constant BC in Z"<<endl;
-out<<"0.05    		       		:Viscosity (Component A, psi=1)"<<endl;
-out<<"0.05    		       		:Viscosity (Component B, psi=-1)"<<endl;
-out<<"0.85     		      	:Contact Angle Cos(Theta) (Positive=1 wetting, Negative -1 wetting)"<<endl;
-out<<"0.7e-2    		      	:Surface tension (Kappa)"<<endl;
+out<<"0.03    		       		:Viscosity (Component A, psi=1)"<<endl;
+out<<"0.03    		       		:Viscosity (Component B, psi=-1)"<<endl;
+out<<"0.87     		      	:Contact Angle Cos(Theta) (Positive=1 wetting, Negative -1 wetting)"<<endl;
+out<<"0.9e-2    		      	:Surface tension (Kappa)"<<endl;
 out<<"0.0 0.0 0.0			:initial velocity for x,y,z"<<endl;
 out<<"18500	        	       	:Permeability (Single Phase mD)"<<endl;
 out<<"=========OUTPUT==CONTROL==================="<<endl;
@@ -192,11 +192,11 @@ out<<"-1				:Freqency of density field writing (in vtk format, -1=no density wri
 out<<"-1				:Freqency of concentration writing (in vtk format, -1=no density writing)"<<endl;
 out<<"==============ADVANCE==PARAMETER=========="<<endl;
 out<<"0 1.0 4.0	              :Self define lattice velocity: 0=DEFAULT,dx, dt ((u_x+u_y+u_z)*dt/dx<=1 Courant Number)"<<endl;
-out<<"/work/jy810/Sandpack/LV60/"<<i<<"_	:OUTPUT PATH,DEFAULT: ./ (INCLUDE / AT THE END)"<<endl;
+out<<"/work/jy810/Sandpack/LV60/rel_"<<i<<"_	:OUTPUT PATH,DEFAULT: ./ (INCLUDE / AT THE END)"<<endl;
 out<<"2            :PRESSURE AND VELOCITY BOUNDARY CONDITION OPTIONS: 0,1,2,3: EBC_S,EBC_D,TOLKE_BC,NEBC_D"<<endl;
 out<<"1  1000	:MULTI-COMPONENT STABALIZER: (a,b) a=0=OFF, a=1=ON, BODY FORCE APPLIED AFTER b steps"<<endl;
-out<<"-1               :PRESET SATUATION, 0--1 initial component distri not needed, -1=OFF(for Component A,1)"<<endl;
-out<<"1				:PRESET VALUE FOR BUFFET AREA, 0=NO,1=COMP A,-1=COMP B (valid when preset satuation)"<<endl;
+out<<(double)1.0/total_number*i<<"               :PRESET SATUATION, 0--1, distri not needed, -1=OFF(for Comp A,1)"<<endl;
+out<<"0				:PRESET VALUE FOR BUFFET AREA, 0=NO,1=COMP A,-1=COMP B (valid when preset satuation)"<<endl;
 out<<"0.8				:Relative permeability calcualtion 0..1 (psi>=value, cal the flux for Comp1)"<<endl;
 out<<"1 0 0				:Pemeability calculation Partially  (1=ON, 0=OFF)"<<endl;
 out<<"308 9				:Permeability calculation partially Starting point and Ending point in X"<<endl;
@@ -204,7 +204,7 @@ out<<"0 100				:Permeability calculation partially Starting point and Ending poi
 out<<"0 100				:Permeability calculation partially Starting point and Ending point in Z"<<endl;
 out<<"======================BACKUP==CONTROL===================="<<endl;
 out<<"-1		                   :BACKUP FREQUENCY (-1=NO BACKUP,0=Backup at the end of computation)"<<endl;
-out<<20000*(i+1)<<"                              :INITIALIZATION WITH BACKUP DATA (0=OFF, 1=ON)"<<endl;
+out<<"0                              :INITIALIZATION WITH BACKUP DATA (0=OFF, 1=ON)"<<endl;
 out<<"======================GEOMETRY READING======================="<<endl;
 out<<"1		:Geometry Reading format, 0=decimal,1=binary"<<endl;
 out<<"======================PRESSURE OR BODAY FORCE SETTING (CHANGE WITH TIME)============="<<endl;
@@ -216,8 +216,8 @@ out<<"-1 0.0 0.0 0.0		:ACT AT TIMESTEP n, PRESSURE N, PRESSURE P, BODYFORCE(4)"<
 out<<"-1 0.0 0.0 0.0		:ACT AT TIMESTEP n, PRESSURE N, PRESSURE P, BODYFORCE(5)"<<endl;
 out<<"0			:BODY FORCE APPLIED ON 1:Phase1,0:BOTH,-1:Phase2"<<endl;
 out<<"=====================CAPILLARY PRESSURE MEASURMENTS================"<<endl;
-out<<"1 1 2000                     :0=OFF,1,2,3=ON,1=X,2=Y,3=Z;|| 1=PRESSURE,2=BODY FORCE; time steps of 1 changement"<<endl;
-out<<"1.0 0.993 6 10           :PRESSURE N,P; Changement times, terminal condition: no. output intervals"<<endl;                   
+out<<"0 1 2000                     :0=OFF,1,2,3=ON,1=X,2=Y,3=Z;|| 1=PRESSURE,2=BODY FORCE; time steps of 1 changement"<<endl;
+out<<"1.0 0.993 6 10           :PRESSURE N,P; Chan times, term condition: no. output intervals"<<endl;                   
 out<<"1.0e-6                          :Error of Saturation stable condition"<<endl;
 out<<i<<endl;
 
@@ -236,10 +236,10 @@ for (int i=0;i<total_number;i++)
 	out.open(name.str().c_str());
 	
 out<<"#!/bin/sh "<<endl;
-out<<"#PBS -N Sandp"<<i<<endl;
-out<<"#PBS -l walltime=190:00:00 "<<endl;
-out<<"#PBS -l select=4:ncpus=12:icib=true "<<endl;
-//out<<"#PBS -l select=6:ncpus=12 "<<endl;
+out<<"#PBS -N rel_perm"<<i<<endl;
+out<<"#PBS -l walltime=69:00:00 "<<endl;
+out<<"#PBS -l select=2:ncpus=12:icib=true "<<endl;
+//out<<"#PBS -l select=2:ncpus=12 "<<endl;
 
 
 
@@ -249,7 +249,7 @@ out<<"module load intel-suite mpi"<<endl;
 out<<"cp /work/jy810/Sandpack/LV60/*.dat ."<<endl;
 out<<"cp /work/jy810/Sandpack/LV60/*.inputdat ."<<endl;
 
-out<<"cp /work/jy810/Sandpack/LV60/*_"<<i*20000<<"*.bin_input ."<<endl;
+//out<<"cp /work/jy810/Sandpack/LV60/*_"<<i*20000<<"*.bin_input ."<<endl;
 
 out<<endl;
 

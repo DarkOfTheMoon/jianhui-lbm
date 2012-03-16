@@ -3319,7 +3319,7 @@ void comput_macro_variables( double* rho,double** u,double** u0,double** f,doubl
                            for(int j=0;j<=NY;j++)
                                    for (int k=0;k<=NZ;k++)
 				   if (Solid[0][j][k]>0)
-				   if (Solid[1][j][k])
+				   if (Solid[1][j][k]>0)
                                    {
                                    psi[Solid[0][j][k]]=psi[Solid[1][j][k]];
                                    rho_r[Solid[0][j][k]]=(psi[Solid[0][j][k]]*1.0+1.0)/2;
@@ -3377,7 +3377,7 @@ void comput_macro_variables( double* rho,double** u,double** u0,double** f,doubl
                            for(int j=0;j<=NY;j++)
                                    for (int k=0;k<=NZ;k++)
 				   if (Solid[nx_l-1][j][k]>0)
-				   if (Solid[nx_l-2][j][k]>0)
+				   if ((Solid[nx_l-2][j][k]>0) and (psi[Solid[nx_l-2][j][k]]>0.96))
                                    {
                               
                                    psi[Solid[nx_l-1][j][k]]=psi[Solid[nx_l-2][j][k]];
