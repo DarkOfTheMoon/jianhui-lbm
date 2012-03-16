@@ -5688,14 +5688,14 @@ void Comput_Perm_LOCAL(double* psi,double** u,double* Per_l,double* Per_g,int Pe
 			}
 		}
 
-	Perm_l[0]=Q_l[0]/((per_yp-per_yn+1)*(per_zp-per_zn+1))*(niu_l)/(gx+dp);
-	Perm_l[1]=Q_l[1]/((per_xp-per_xn+1)*(per_zp-per_zn+1))*(niu_l)/(gy+dp);
-	Perm_l[2]=Q_l[2]/((per_xp-per_xn+1)*(per_yp-per_yn+1))*(niu_l)/(gz+dp);
+	Perm_l[0]=Q_l[0]/((per_yp-per_yn+1)*(per_zp-per_zn+1))*(niu_l)/(gxs+dp);
+	Perm_l[1]=Q_l[1]/((per_xp-per_xn+1)*(per_zp-per_zn+1))*(niu_l)/(gys+dp);
+	Perm_l[2]=Q_l[2]/((per_xp-per_xn+1)*(per_yp-per_yn+1))*(niu_l)/(gzs+dp);
 
 
-	Perm_g[0]=Q_g[0]/((per_yp-per_yn+1)*(per_zp-per_zn+1))*(niu_g)/(gx+dp);
-	Perm_g[1]=Q_g[1]/((per_xp-per_xn+1)*(per_zp-per_zn+1))*(niu_g)/(gy+dp);
-	Perm_g[2]=Q_g[2]/((per_xp-per_xn+1)*(per_yp-per_yn+1))*(niu_g)/(gz+dp);
+	Perm_g[0]=Q_g[0]/((per_yp-per_yn+1)*(per_zp-per_zn+1))*(niu_g)/(gxs+dp);
+	Perm_g[1]=Q_g[1]/((per_xp-per_xn+1)*(per_zp-per_zn+1))*(niu_g)/(gys+dp);
+	Perm_g[2]=Q_g[2]/((per_xp-per_xn+1)*(per_yp-per_yn+1))*(niu_g)/(gzs+dp);
 	
 	}
 	
@@ -5856,13 +5856,13 @@ double Comput_Perm(double* psi,double** u,double* Per_l,double* Per_g,int PerDIr
 			Q_l[2]+=rbuf_l[i*3+2];
 			}
 
-		Perm_l[0]=Q_l[0]/((per_xp-per_xn+1)*(per_yp-per_yn+1)*(per_zp-per_zn+1))*(niu_l)/(gx+dp);
-		Perm_l[1]=Q_l[1]/((per_xp-per_xn+1)*(per_yp-per_yn+1)*(per_zp-per_zn+1))*(niu_l)/(gy+dp);
-		Perm_l[2]=Q_l[2]/((per_xp-per_xn+1)*(per_yp-per_yn+1)*(per_zp-per_zn+1))*(niu_l)/(gz+dp);
+		Perm_l[0]=Q_l[0]/((per_xp-per_xn+1)*(per_yp-per_yn+1)*(per_zp-per_zn+1))*(niu_l)/(gxs+dp);
+		Perm_l[1]=Q_l[1]/((per_xp-per_xn+1)*(per_yp-per_yn+1)*(per_zp-per_zn+1))*(niu_l)/(gys+dp);
+		Perm_l[2]=Q_l[2]/((per_xp-per_xn+1)*(per_yp-per_yn+1)*(per_zp-per_zn+1))*(niu_l)/(gzs+dp);
 
-		Perm_g[0]=Q_g[0]/((per_xp-per_xn+1)*(per_yp-per_yn+1)*(per_zp-per_zn+1))*(niu_g)/(gx+dp);
-		Perm_g[1]=Q_g[1]/((per_xp-per_xn+1)*(per_yp-per_yn+1)*(per_zp-per_zn+1))*(niu_g)/(gy+dp);
-		Perm_g[2]=Q_g[2]/((per_xp-per_xn+1)*(per_yp-per_yn+1)*(per_zp-per_zn+1))*(niu_g)/(gz+dp);
+		Perm_g[0]=Q_g[0]/((per_xp-per_xn+1)*(per_yp-per_yn+1)*(per_zp-per_zn+1))*(niu_g)/(gxs+dp);
+		Perm_g[1]=Q_g[1]/((per_xp-per_xn+1)*(per_yp-per_yn+1)*(per_zp-per_zn+1))*(niu_g)/(gys+dp);
+		Perm_g[2]=Q_g[2]/((per_xp-per_xn+1)*(per_yp-per_yn+1)*(per_zp-per_zn+1))*(niu_g)/(gzs+dp);
 
 
 		vxl=(Q_l[0]+Q_g[0])/((per_xp-per_xn+1)*(per_yp-per_yn+1)*(per_zp-per_zn+1));
