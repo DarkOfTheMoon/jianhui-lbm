@@ -13,13 +13,13 @@ phase.dat       	    	:Initial components distribution
 0 0.0 0 0.0	   		:Velocity Boundary in X direction (Format detials can be found within this file)
 0 0.0 0 0.07	   		:Velocity Boundary in Y direction (Format detials can be found within this file)
 0 0.0 0 0.07	   		:Velocity Boundary in Z direction (Format detials can be found within this file)
-1 1				:Psi constant BC in X 0=OFF, 1=Ini psi, 2=Neibourghing,3=Rand
+2 1				:Psi constant BC in X 0=OFF, 1=Ini psi, 2=Neibourghing,3=Rand
 0 0				:Psi constant BC in Y
 0 0				:Psi constant BC in Z
 0.02   		       		:Viscosity (Component A, psi=1)
 0.02    		       		:Viscosity (Component B, psi=-1)
-0.99     		      	:Contact Angle Cos(Theta) (Positive=1 wetting, Negative -1 wetting)
-0.7e-2    		      	:Surface tension (Kappa)
+0.9     		      	:Contact Angle Cos(Theta) (Positive=1 wetting, Negative -1 wetting)
+0.5e-2    		      	:Surface tension (Kappa)
 0.0 0.0 0.0			:initial velocity for x,y,z
 500	        	       	:Permeability (Single Phase mD)
 =========OUTPUT==CONTROL===================
@@ -48,15 +48,15 @@ phase.dat       	    	:Initial components distribution
 ======================GEOMETRY READING=======================
 0		:Geometry Reading format, 0=decimal,1=binary
 ======================PRESSURE OR BODAY FORCE SETTING (CHANGE WITH TIME)=============
-0 1			:0=OFF,1,2,3=ON,1=X,2=Y,3=Z;|| 1=PRESSURE,2=BODY FORCE
--1 1.0 0.997 0.0		:ACT AT TIMESTEP n, PRESSURE N, PRESSURE P, BODYFORCE(1)
+1 1			:0=OFF,1,2,3=ON,1=X,2=Y,3=Z;|| 1=PRESSURE,2=BODY FORCE
+3000 1.0025 1.0 0.0		:ACT AT TIMESTEP n, PRESSURE N, PRESSURE P, BODYFORCE(1)
 -1 1.0 0.999 0.0		:ACT AT TIMESTEP n, PRESSURE N, PRESSURE P, BODYFORCE(2)
 -1 0.0 0.0 0.0		:ACT AT TIMESTEP n, PRESSURE N, PRESSURE P, BODYFORCE(3)
 -1 0.0 0.0 0.0		:ACT AT TIMESTEP n, PRESSURE N, PRESSURE P, BODYFORCE(4)
 -1 0.0 0.0 0.0		:ACT AT TIMESTEP n, PRESSURE N, PRESSURE P, BODYFORCE(5)
 0			:BODY FORCE APPLIED ON 1:Phase1,0:BOTH,-1:Phase2
 =====================CAPILLARY PRESSURE MEASURMENTS================
-1 1 2000                     :0=OFF,1,2,3=ON,1=X,2=Y,3=Z;|| 1=PRESSURE,2=BODY FORCE; time steps of 1 changement
+0 1 2000                     :0=OFF,1,2,3=ON,1=X,2=Y,3=Z;|| 1=PRESSURE,2=BODY FORCE; time steps of 1 changement
 1.0 0.993 2e-5 6 10           :PRESSURE N,P; Changement times, terminal condition: no. output intervals                   
 1.0e-6                          :Error of Saturation stable condition
 
