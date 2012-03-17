@@ -12,14 +12,14 @@
 
 
 const int depth=6;
+const int nx=300;
+const int ny=300;
+const int nz=300;
 using namespace std; 
       
 int main (int argc , char * argv [])
 {
 
-int nx=300;
-int ny=300;
-int nz=300;
 
 int size[depth]={300,150,100,60,50,30};
 char poreFileName[128]="LV60.dat";
@@ -29,9 +29,37 @@ int num[depth];
 double ave[depth];
 double min[depth];
 double max[depth];
+double sigma[depth];
 
-int ls1,ls2,ls3;
+int ls1,ls2,ls3,sta2,sta3;
 double** porosity;
+
+
+//================
+if (ny>nx)
+        sta2=nx;
+else
+        sta2=ny;
+
+if (nz<sta2)
+        sta2=nz;
+
+sta3=sta2/10;
+//=================
+double* porosity2;
+double* porosity3;
+porosity2 = new double[sta2];
+porosity3 = new double[sta2];
+for (int i=0;i<sta2;i++)
+{
+        porosity2[i]=0.0;
+        porosity3[i]=0.0;
+       
+}
+
+//cout<<sta2<<"         "<<sta3<<endl;
+
+
 
 
 
@@ -119,6 +147,13 @@ double pore;
 			if (pore==1.0)
 			{
 			        sum+=1;
+			        
+			        for (int ii=sta3;ii<sta2;ii++)
+			                {
+			                        if ((i<ii) and (j<ii) and (k<ii))
+			                                porosity2[ii]+=1.0;
+			                }
+			               
 			        for (int ii=0;ii<depth;ii++)
 			                {
 			                        ls1=i/size[ii];
@@ -141,6 +176,7 @@ double pore;
 	{        max[i]=0.0;
 	        ave[i]=0.0;
 	        min[i]=1.0;
+	        sigma[i]=0.0;
 	}
 	
 	
@@ -158,15 +194,24 @@ double pore;
 		                        max[i]=porosity[i][j];
 		                
 		                ave[i]+=porosity[i][j];
+		                sigma[i]+=porosity[i][j]*porosity[i][j];
 		                
-		
 		  
 		        } 
 		        
 		        ave[i]/=num[i]*num[i]*num[i];
+		        sigma[i]/=num[i]*num[i]*num[i];
+		        sigma[i]-=ave[i]*ave[i];
+		        sigma[i]=sqrt(sigma[i]);
 		        }
 		        
 	
+		        for (int i=0;i<sta2;i++)
+		                porosity2[i]=1-porosity2[i]/(i*i*i);
+		        
+		        
+		        
+		        
 	cout<<"Porosity = "<<1-(double(sum)/(nx*ny*nz))<<endl;	
 	cout<<porosity[1][0]<<endl;
 	//cout<<sum<<endl;	
@@ -190,13 +235,22 @@ double pore;
 	
 	for (int i=0;i<depth;i++)
 		        //for (int j=0;j<num[i]*num[i]*num[i];j++)
-		        out<<size[i]<<" "<<ave[i]<<"  "<<min[i]<<"  "<<max[i]<<endl;
+		        out<<size[i]<<" "<<ave[i]<<"  "<<min[i]<<"  "<<max[i]<<" "<<sigma[i]<<endl;
 		
 		out.close();
 		
+	ostringstream name3;
+	name3<<outputname<<"_sub1";
+
+	out.open(name3.str().c_str());	
+	
+	for (int i=sta3;i<sta2;i++)
+		        //for (int j=0;j<num[i]*num[i]*num[i];j++)
+		        out<<i<<"  "<<porosity2[i]<<endl;
 		
+		out.close();	
 		
-		
+
 		
 }
 
