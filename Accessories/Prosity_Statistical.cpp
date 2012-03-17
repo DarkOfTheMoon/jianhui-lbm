@@ -21,7 +21,7 @@ int main (int argc , char * argv [])
 {
 
 
-int size[depth]={300,150,100,60,50,30};
+int size[depth]={300,150,120,100,60,50};
 char poreFileName[128]="LV60.dat";
 char outputname[128]="prosity_output.dat";
 
@@ -239,10 +239,22 @@ double pore;
 		
 		out.close();
 		
+		
 	ostringstream name3;
-	name3<<outputname<<"_sub1";
+	name3<<outputname<<"_sta2";
 
 	out.open(name3.str().c_str());	
+	
+	for (int i=0;i<depth;i++)
+		        if (num[i]>1)
+		        out<<size[i]<<"  "<<sigma[i]<<endl;
+		
+		out.close();
+		
+	ostringstream name4;
+	name4<<outputname<<"_sub";
+
+	out.open(name4.str().c_str());	
 	
 	for (int i=sta3;i<sta2;i++)
 		        //for (int j=0;j<num[i]*num[i]*num[i];j++)
