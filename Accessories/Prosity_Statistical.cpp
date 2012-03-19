@@ -20,7 +20,7 @@ using namespace std;
 int main (int argc , char * argv [])
 {
 
-
+double resolution=10.0; //in microns
 int size[depth]={300,150,120,100,60,50};
 char poreFileName[128]="LV60.dat";
 char outputname[128]="prosity_output.dat";
@@ -247,7 +247,7 @@ double pore;
 	
 	for (int i=0;i<depth;i++)
 		        if (num[i]>1)
-		        out<<size[i]<<"  "<<sigma[i]<<endl;
+		        out<<size[i]*resolution<<"  "<<sigma[i]<<endl;
 		
 		out.close();
 		
