@@ -1777,6 +1777,7 @@ MPI_Barrier(MPI_COMM_WORLD);
  
  
  if (rank==0)
+         if (ini_Sat<0)
 {       
         FILE *ftest;
 	ftest = fopen(filenamepsi, "r");
@@ -1810,9 +1811,11 @@ MPI_Barrier(MPI_COMM_WORLD);
 }
 
 
+
 	
-MPI_Barrier(MPI_COMM_WORLD);	
+        MPI_Barrier(MPI_COMM_WORLD);	
 	
+        if (ini_Sat<0)
         MPI_Scatterv(Psi_rank0,bufsize,bufloc,MPI_FLOAT,recv_psi,nx_l*(NY+1)*(NZ+1),MPI_FLOAT,0,MPI_COMM_WORLD);
 	        
 	        
@@ -1831,7 +1834,8 @@ MPI_Barrier(MPI_COMM_WORLD);
 //	                        recv_solid[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]=Solid_rank0[i*(NY+1)*(NZ+1)+j*(NZ+1)+k];
 //	                        recv_psi[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]=Psi_rank0[i*(NY+1)*(NZ+1)+j*(NZ+1)+k];
 //	                }
-	       delete [] Solid_rank0;	
+	       delete [] Solid_rank0;
+	       if (ini_Sat<0)
 	       delete [] Psi_rank0;  
 	
 	       
@@ -1839,7 +1843,8 @@ MPI_Barrier(MPI_COMM_WORLD);
 }
 
 
-
+if (ini_Sat<0)
+{
 	for (int i=0;i<nx_l;i++)
 	                for (int j=0;j<=NY;j++)
 	                for (int k=0;k<=NZ;k++)
@@ -1848,7 +1853,18 @@ MPI_Barrier(MPI_COMM_WORLD);
 	                Psi_local[i][j][k]=recv_psi[i*(NY+1)*(NZ+1)+j*(NZ+1)+k];
 	                
 	                }
-	           
+}
+else
+        {
+         for (int i=0;i<nx_l;i++)
+	                for (int j=0;j<=NY;j++)
+	                for (int k=0;k<=NZ;k++)
+	                {
+	                Solid[i][j][k]=recv_solid[i*(NY+1)*(NZ+1)+j*(NZ+1)+k];
+	            
+	                
+	                }       
+        }
 	 delete [] recv_psi;
 	 delete [] recv_solid;
        
