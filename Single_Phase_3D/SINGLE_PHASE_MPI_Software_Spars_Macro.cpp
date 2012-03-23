@@ -4,7 +4,7 @@
 #include<iomanip>
 #include<fstream>
 #include<sstream>
-#include<string>
+#include<string.h>
 #include<math.h> 
 # include "mpi.h"
 

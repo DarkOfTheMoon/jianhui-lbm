@@ -4,7 +4,7 @@
 #include<iomanip>
 #include<fstream>
 #include<sstream>
-#include<string>
+#include<string.h>
 #include<math.h> 
 # include "mpi.h"
 
@@ -347,9 +347,9 @@ double v_max,error_Per;
 	fin >> pre_chan_4>> pre_chan_pn4 >> pre_chan_pp4>>pre_chan_f4;	fin.getline(dummy, NCHAR);
 	fin >> pre_chan_5>> pre_chan_pn5 >> pre_chan_pp5>>pre_chan_f5;	fin.getline(dummy, NCHAR);
 	fin >> bodyforce_apply;					fin.getline(dummy, NCHAR);
-	                                                                                                                fin.getline(dummy, NCHAR);        
+	fin.getline(dummy, NCHAR);        
 	
-	//=============CAPILLARY PRESSURE  APPLY=================================                                                                                                                
+	//=============CAPILLARY PRESSURE APPLY=================================                                                                                                                
 	fin >> pressure_change2 >> pre_chan_pb2 >> interval_pre;					fin.getline(dummy, NCHAR);
 	fin >> pre_chan_pns >> pre_chan_pps >> pre_chan_fs >>chan_no >> sat_cri;                 fin.getline(dummy, NCHAR);
 	fin >> sat_cri_d;                                                                                fin.getline(dummy, NCHAR);
