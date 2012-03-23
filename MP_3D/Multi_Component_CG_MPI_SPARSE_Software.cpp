@@ -2219,6 +2219,7 @@ void init(double* rho, double** u, double** f,double* psi,double* rho_r, double*
 			                        psi[i]=ini_buf;
 			                        rho_r[i]=(psi[i]*rho[i]+rho[i])/2;
 			                        rho_b[i]=rho[i]-rho_r[i];
+			                        Psi_local[loc_x-disp[rank]][loc_y][loc_z]=ini_buf;
 			                       
 			                }
 			                
