@@ -26,7 +26,7 @@ int add_buf_x_p=0;
 int add_buf_y_p=0;
 int add_buf_z_p=0;
 
-int Zoom=2; //1,2,3,4...
+int Zoom=1; //1,2,3,4...
 char poreFileName[128]="20-3-3.dat";
 char poreFileNameVTK[128]="20-3-3.vtk";
 char poreFileNameOut[128]="20-3-3_x.dat";

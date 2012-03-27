@@ -1456,7 +1456,8 @@ void pressure_capillary()
                                                 if (rank==0)
                                                 {
                                                  ofstream finfcp(FileName6,ios::app);
-                                                 finfcp<<S_l<<" "<<1-S_l<<" "<<gxs*(per_xp-per_xn+1)<<endl;
+                                                 //finfcp<<S_l<<" "<<1-S_l<<" "<<gxs*(per_xp-per_xn+1)<<endl;
+						 finfcp<<S_l<<" "<<1-S_l<<" "<<gxs*(NX+1)<<endl;
                                                  finfcp.close();
                                                 }
                                                 
@@ -1469,7 +1470,8 @@ void pressure_capillary()
                                                 if (rank==0)
                                                 {
                                                 ofstream finfcp(FileName6,ios::app);
-                                                 finfcp<<S_l<<" "<<1-S_l<<" "<<gys*(per_yp-per_yn+1)<<endl;
+                                                 //finfcp<<S_l<<" "<<1-S_l<<" "<<gys*(per_yp-per_yn+1)<<endl;
+						finfcp<<S_l<<" "<<1-S_l<<" "<<gys*(NY+1)<<endl;
                                                  finfcp.close();
                                                 }
                                                 
@@ -1481,7 +1483,8 @@ void pressure_capillary()
                                                 if (rank==0)
                                                 {
                                                 ofstream finfcp(FileName6,ios::app);
-                                                 finfcp<<S_l<<" "<<1-S_l<<" "<<gzs*(per_zp-per_zn+1)<<endl;
+                                                 //finfcp<<S_l<<" "<<1-S_l<<" "<<gzs*(per_zp-per_zn+1)<<endl;
+						finfcp<<S_l<<" "<<1-S_l<<" "<<gzs*(NZ+1)<<endl;
                                                  finfcp.close();
                                                 }
                                                 
