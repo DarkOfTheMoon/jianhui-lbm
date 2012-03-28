@@ -87,6 +87,11 @@ But the simulation is initialized normally, The PRESET VALUE FOR BUFFET AREA is 
 only if PRESET SATUATION option is ON.
 
 
+If PRESET VALUE FOR BUFFET AREA option is on, and partially permeability calculation option is also on,
+The Initial value of boundary of the buffet will be changed to the preset value for buffet area. So when the 
+color boundary is applied, the option 1: use initial value, will take the preset value for the boundary which located in 
+buffet area
+
 Relative Perm file format:
 Averaged Relative Perm, saturation, local Relative Perm, saturation of the other component
 for Relative Perm file component1
