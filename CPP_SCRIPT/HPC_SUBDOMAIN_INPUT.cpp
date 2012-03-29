@@ -13,7 +13,7 @@ int main (int argc , char * argv [])
 
 
 
-int total_number=11;
+int total_number=9;
 double g[15]={1e-6,1e-6,1e-6,1e-6,1e-6,1e-6,2e-6,3e-6,4e-6,5e-6,6e-6,7e-6,8e-6,9e-6,1e-5};
 double diffu[15]={0.05,0.02,0.01,0.005,0.002,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001};
 
@@ -195,7 +195,7 @@ out<<"0 1.0 4.0	              :Self define lattice velocity: 0=DEFAULT,dx, dt ((
 out<<"/work/jy810/Sandpack/LV60/rel_"<<i<<"_	:OUTPUT PATH,DEFAULT: ./ (INCLUDE / AT THE END)"<<endl;
 out<<"2            :PRESSURE AND VELOCITY BOUNDARY CONDITION OPTIONS: 0,1,2,3: EBC_S,EBC_D,TOLKE_BC,NEBC_D"<<endl;
 out<<"1  1000	:MULTI-COMPONENT STABALIZER: (a,b) a=0=OFF, a=1=ON, BODY FORCE APPLIED AFTER b steps"<<endl;
-out<<(double)1.0/total_number*i<<"               :PRESET SATUATION, 0--1, distri not needed, -1=OFF(for Comp A,1)"<<endl;
+out<<(double)1.0/(total_number+1)*i<<"               :PRESET SATUATION, 0--1, distri not needed, -1=OFF(for Comp A,1)"<<endl;
 out<<"0				:PRESET VALUE FOR BUFFET AREA, 0=NO,1=COMP A,-1=COMP B (valid when preset satuation)"<<endl;
 out<<"0.8				:Relative permeability calcualtion 0..1 (psi>=value, cal the flux for Comp1)"<<endl;
 out<<"1 0 0				:Pemeability calculation Partially  (1=ON, 0=OFF)"<<endl;
@@ -227,7 +227,7 @@ out<<i<<endl;
 
 
 //======================SCRIPT WRITTING========================================
-for (int i=0;i<total_number;i++)
+for (int i=1;i<0total_number;i++)
 {
         
         name.str("");
