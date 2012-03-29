@@ -70,7 +70,7 @@ for (int i=1;i<=total_number;i++)
 	out<<"0 100           :Dispersion statistics (0=No,1=X direction, 2=Y, 3=Z;Frequncy of writing)"<<endl;
         out<<"==============ADVANCE==PARAMETER=========="<<endl;
         out<<"0 0.25 1.0	:Self define lattice velocity"<<endl;
-        out<<"./scr_"<<i<<".		:OUTPUT PATH,DEFAULT"<<endl;
+        out<<"./scr<<i<<"_"		:OUTPUT PATH,DEFAULT"<<endl;
         out<<"1              :PRESSURE AND VELOCITY BOUNDARY CONDITION"<<endl;
 	out<<"1			:CONSTANT PSI AND FLUX BOUNDARY CONDITION OPTIONS: 0,1:Inamuro,GUO"<<endl;
 	out<<"2000                 :Concentration initialization from the xth timesteps (-1=OFF)"<<endl;
@@ -124,7 +124,7 @@ out<<"-1		:Frequency of velocity field writing (in vtk format, -1=no velocity wr
 out<<"-1		:Frequency of density field writing (in vtk format, -1=no density writing)"<<endl;
 out<<"==============ADVANCE==PARAMETER=========="<<endl;
 out<<"0 1.0 2.0	:Self define lattice velocity: 0=DEFAULT, dx, dt ((u_x+u_y+u_z)*dt/dx<=1 Courant Number)"<<endl;
-out<<"./		:OUTPUT PATH,DEFAULT: ./ (REMEMBER TO INCLUDE / AT THE END OF PATH)"<<endl;
+out<<"./sp_"<<i<<"_		:OUTPUT PATH,DEFAULT: ./ (REMEMBER TO INCLUDE / AT THE END OF PATH)"<<endl;
 out<<"2              :PRESSURE AND VELOCITY BOUNDARY CONDITION OPTIONS: 0,1,2,3: EBC_S,EBC_D,TOLKE_BC,NEBC_D"<<endl;
 out<<"1				:LOCAL PERM CALCULATION (0=NO, 1=YES)"<<endl;
 out<<"0 0 0				:Pemeability calculation Partially "<<endl; 

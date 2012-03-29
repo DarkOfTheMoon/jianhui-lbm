@@ -61,16 +61,31 @@ for (int i=1;i<=total_number;i++)
 	                fin.getline(dummy, NCHAR);        //       The30800th computation result:     
 	                fin.getline(dummy, NCHAR);        //The Maximum velocity is: 0.0120153   Re_l=1.52508   Re_g=1.52508
 	                fin.getline(dummy, NCHAR);           // Courant Number=0.0120153	 Capillary Num=0.0076254
-	                fin.getline(dummy, NCHAR);        //The max relative error of velocity is: 7.971677e-01
-	                fin>> chd >> chd>>chd>>chd >> chd>>chd>>chd>>var2;fin.getline(dummy, NCHAR);         //   The relative permeability of component 1 is -3.992098e+00, -3.079636e-03, 1.535446e-07
-	                fin >>chd >> chd>>chd>>chd >> chd>>chd>>chd>> var3;fin.getline(dummy, NCHAR);        //The relative permeability of component 2 is 2.143594e+02, 1.349168e-02, -5.743910e-05
+	                fin>> chd >> chd>>chd>>chd >> chd>>chd>>chd>>var2;fin.getline(dummy, NCHAR);        //The max relative error of velocity is: 7.971677e-01
+	                fin >>chd >> chd>>chd>>chd >> chd>>chd>>chd>> var3;fin.getline(dummy, NCHAR);         //   The relative permeability of component 1 is -3.992098e+00, -3.079636e-03, 1.535446e-07
+	                fin.getline(dummy, NCHAR);        //The relative permeability of component 2 is 2.143594e+02, 1.349168e-02, -5.743910e-05
 	                fin.getline(dummy, NCHAR);            //The LOCAL relative permeability of component 1 is -1.108770e+01, -8.600400e-03, -3.606825e-08
 	                fin.getline(dummy, NCHAR);        //The LOCAL relative permeability of component 2 is 2.432098e+02, 1.871785e-02, -4.650501e-06
-	                 fin>> chd>>chd>>chd >> chd>>var1;fin.getline(dummy, NCHAR);    //  Satuation of Component 1: 8.510638e-02, The satuation of Component 2: 9.148936e-0
+	                fin>> chd>>chd>>chd >> chd>>var1;fin.getline(dummy, NCHAR);    //  Satuation of Component 1: 8.510638e-02, The satuation of Component 2: 9.148936e-0
+	                fin.getline(dummy, NCHAR);        //The relative error of permiability computing is: 3.423860e-03
+	                fin.getline(dummy, NCHAR);            //Elapsed time is 0h3m22s
+	                fin.getline(dummy, NCHAR);        //The expected completion time is 1h46m20s
+			fin.getline(dummy, NCHAR);
+			
+	                fin.getline(dummy, NCHAR);        //       The30800th computation result:     
+	                fin.getline(dummy, NCHAR);        //The Maximum velocity is: 0.0120153   Re_l=1.52508   Re_g=1.52508
+	                fin.getline(dummy, NCHAR);           // Courant Number=0.0120153	 Capillary Num=0.0076254
+	                fin.getline(dummy, NCHAR);        //The max relative error of velocity is: 7.971677e-01
+	                fin.getline(dummy, NCHAR);         //   The relative permeability of component 1 is -3.992098e+00, -3.079636e-03, 1.535446e-07
+	                fin.getline(dummy, NCHAR);        //The relative permeability of component 2 is 2.143594e+02, 1.349168e-02, -5.743910e-05
+	                fin.getline(dummy, NCHAR);            //The LOCAL relative permeability of component 1 is -1.108770e+01, -8.600400e-03, -3.606825e-08
+	                fin.getline(dummy, NCHAR);        //The LOCAL relative permeability of component 2 is 2.432098e+02, 1.871785e-02, -4.650501e-06
+	                fin.getline(dummy, NCHAR);    //  Satuation of Component 1: 8.510638e-02, The satuation of Component 2: 9.148936e-0
 	                fin.getline(dummy, NCHAR);        //The relative error of permiability computing is: 3.423860e-03
 	                fin.getline(dummy, NCHAR);            //Elapsed time is 0h3m22s
 	                fin.getline(dummy, NCHAR);        //The expected completion time is 1h46m20s
 
+			
 	                ofstream out(poreFileName,ios::app);
 	                out<<var1<<" "<<var2<<" "<<var3<<endl;
 	                out.close();
