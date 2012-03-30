@@ -227,7 +227,7 @@ out<<i<<endl;
 
 
 //======================SCRIPT WRITTING========================================
-for (int i=1;i<0total_number;i++)
+for (int i=1;i<=total_number;i++)
 {
         
         name.str("");
