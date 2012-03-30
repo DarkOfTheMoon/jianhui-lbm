@@ -25,7 +25,8 @@ int add_buf_z_n=4;
 int add_buf_x_p=0;
 int add_buf_y_p=0;
 int add_buf_z_p=0;
-
+int add_porous_plate=0;
+int porous_position=206; //-1=defualt position,end of the geometry, or give a positive value
 int Zoom=1; //1,2,3,4...
 char poreFileName[128]="20-3-3.dat";
 char poreFileNameVTK[128]="20-3-3.vtk";
@@ -199,6 +200,16 @@ if (sym_z==1)
 				for (cj=0;cj<Zoom;cj++)
 				for (ck=0;ck<Zoom;ck++) 
 					Solid_Int2[i*Zoom+ci][j*Zoom+cj][k*Zoom+ck] = 0;
+
+
+	if (add_porous_plate==1)
+		for(int k=0 ; k<nz1*Zoom ; k=k++)				///*********
+		for(int j=0 ; j<ny1*Zoom; j=j++)
+			if (((k%2==1) and (j%2==0)) or ((k%2==0) and (j%2==1)))
+			if (porous_position<0)
+				Solid_Int2[nx1*Zoom-1][j][k]=1;
+			else
+				Solid_Int2[porous_position][j][k]=1;
 
 
 
