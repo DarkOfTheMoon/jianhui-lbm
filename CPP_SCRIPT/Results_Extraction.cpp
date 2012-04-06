@@ -14,7 +14,7 @@ int main (int argc , char * argv [])
 
 
 int total_number=5;
-char prefix[128]="rel_";
+char prefix[128]="rel_";    //prefix<<i<<"_Results.txt"
 char poreFileName[128]="Summary.outdat";
 
 

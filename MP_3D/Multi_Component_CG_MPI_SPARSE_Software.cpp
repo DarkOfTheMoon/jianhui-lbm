@@ -181,6 +181,9 @@ void Comput_Perm_LOCAL(double* ,double** ,double* ,double* ,int );
 
 void pressure_capillary();
 
+//==========Least Square Fitting=========================
+void Least_Square_Rel_Perm(double, double);
+//===============================================
 
 const int e[19][3]=
 {{0,0,0},{1,0,0},{-1,0,0},{0,1,0},{0,-1,0},{0,0,1},{0,0,-1},{1,1,0},{-1,-1,0},{1,-1,0},{-1,1,0},{1,0,1},
@@ -216,6 +219,14 @@ double inivx,inivy,inivz,v_xp,v_xn,v_yp,v_yn,v_zp,v_zn,Re_l,Re_g,Capillary,ini_S
 double error_Per,Permeability,psi_solid,S_l,gxs,gys,gzs,c_s,c_s2,dx_input,dt_input,lat_c;
 int bodyforce_apply;
 double p_xp_ori,p_xn_ori,p_yp_ori,p_yn_ori,p_zp_ori,p_zn_ori;
+
+//===============Least Square Fitting=====================
+int least_square,num_least_square;
+double* Per_l_ls;
+double* Per_g_ls;
+double rel_per_l_ls,rel_per_g_ls;
+//================================================
+
 
 
 char outputfile[128]="./";
@@ -270,7 +281,6 @@ double elaps;
 
 double Per_l[3],Per_g[3];
 double Per_l_LOCAL[3],Per_g_LOCAL[3];
-
 
 
 
@@ -354,6 +364,11 @@ double v_max,error_Per;
 	fin >> pre_chan_pns >> pre_chan_pps >> pre_chan_fs >>chan_no >> sat_cri;                 fin.getline(dummy, NCHAR);
 	fin >> sat_cri_d;                                                                                fin.getline(dummy, NCHAR);
 	//=======================================================================
+	
+	
+	//=======================Least Square Fitting====================
+	fin.getline(dummy, NCHAR);
+	fin >> least_square >> num_least_square;                          fin.getline(dummy, NCHAR);
 	
 	
 //	fin >> backup_rho;                        	fin.getline(dummy, NCHAR);
@@ -460,6 +475,20 @@ double v_max,error_Per;
 	        }
 	//==================================================
 
+	//==================Least Square Fitting=====================
+	MPI_Bcast(&least_square,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&num_least_square,1,MPI_INT,0,MPI_COMM_WORLD);
+	Per_l_ls= new double[num_least_square];
+	Per_g_ls= new double[num_least_square];
+	for (int i=0;i<num_least_square;i++)
+	        {
+	                Per_l_ls[i]=0;
+	                Per_g_ls[i]=0;
+	        }
+	//===================================================
+	
+	
+	
 	
 p_xn_ori=p_xn;p_xp_ori=p_xp;
 p_yn_ori=p_yn;p_yp_ori=p_yp;
@@ -673,68 +702,7 @@ if (wr_per==1)
 	if (pressure_change2>0)
 		pressure_capillary();
 	
-	//==========================PRESSURE AND BODYFORCE CHANGE ALONG WITH TIME ==================
-	/*
-	if (pressure_change>0)
-	{
-		if (pressure_change==1)
-		{
-		if (n==pre_chan_1)
-			if (pre_chan_pb==1)
-			{
-			p_xn=pre_chan_pn1;
-			p_xp=pre_chan_pp1;
-			}
-			else
-				gxs=pre_chan_f1;
-
-		if (n==pre_chan_1)
-			if (pre_chan_pb==1)
-			{
-			p_xn=pre_chan_pn1;
-			p_xp=pre_chan_pp1;
-			}
-			else
-				gxs=pre_chan_f1;
-
-		if (n==pre_chan_1)
-			if (pre_chan_pb==1)
-			{
-			p_xn=pre_chan_pn1;
-			p_xp=pre_chan_pp1;
-			}
-			else
-				gxs=pre_chan_f1;
-
-		if (n==pre_chan_1)
-			if (pre_chan_pb==1)
-			{
-			p_xn=pre_chan_pn1;
-			p_xp=pre_chan_pp1;
-			}
-			else
-				gxs=pre_chan_f1;
-
-		if (n==pre_chan_1)
-			if (pre_chan_pb==1)
-			{
-			p_xn=pre_chan_pn1;
-			p_xp=pre_chan_pp1;
-			}
-			else
-				gxs=pre_chan_f1;
-
-	 
-		}
-
-	}
-	*/
-	//==========================================================================================
-
-
-
-
-
+	
 	//periodic_streaming(f,F,SupInv,Solid,Sl,Sr,rho,u);	
 	
 	if ((stab==0) or ((stab==1) and (n>=stab_time)))
@@ -793,7 +761,20 @@ if (wr_per==1)
 			//=====================================
 			S_l=Comput_Saturation(psi,Solid,SupInv);
 			
-
+			//=====================Least Sqare Fitting======================
+			if (least_square>0)
+			        if (PerDir==1)
+			        Least_Square_Rel_Perm(Per_l[0]*reso*reso*1000/Permeability,Per_g[0]*reso*reso*1000/Permeability);
+			        else
+			                if (PerDir==2)
+			                Least_Square_Rel_Perm(Per_l[1]*reso*reso*1000/Permeability,Per_g[1]*reso*reso*1000/Permeability);
+			                else
+			                        Least_Square_Rel_Perm(Per_l[2]*reso*reso*1000/Permeability,Per_g[2]*reso*reso*1000/Permeability);
+			                
+			   //========================================================             
+			                
+			                
+			
 			if (rank==0)
 			{
 			ofstream fin(FileName,ios::app);
@@ -832,18 +813,18 @@ if (wr_per==1)
 		//==============================================================================================
 			
 		if (wr_per==1)
-			{
+			{  
 			ofstream finfs(FileName2,ios::app);
 			switch(PerDir)
 				{
 				case 1:
-				finfs<<Per_l[0]*reso*reso*1000/Permeability<<" "<<S_l<<" "<<Per_l_LOCAL[0]*reso*reso*1000/Permeability<<" "<<1-S_l<<" "<<p_xn<<" "<<p_xp<<" "<<gxs<<endl;break;
+				finfs<<Per_l[0]*reso*reso*1000/Permeability<<" "<<S_l<<" "<<Per_l_LOCAL[0]*reso*reso*1000/Permeability<<" "<<1-S_l<<" "<<p_xn<<" "<<p_xp<<" "<<gxs<<" "<<rel_per_l_ls<<endl;break;
 				case 2:
-				finfs<<Per_l[1]*reso*reso*1000/Permeability<<" "<<S_l<<" "<<Per_l_LOCAL[1]*reso*reso*1000/Permeability<<" "<<1-S_l<<" "<<p_yn<<" "<<p_yp<<" "<<gys<<endl;break;
+				finfs<<Per_l[1]*reso*reso*1000/Permeability<<" "<<S_l<<" "<<Per_l_LOCAL[1]*reso*reso*1000/Permeability<<" "<<1-S_l<<" "<<p_yn<<" "<<p_yp<<" "<<gys<<" "<<rel_per_l_ls<<endl;break;
 				case 3:
-				finfs<<Per_l[2]*reso*reso*1000/Permeability<<" "<<S_l<<" "<<Per_l_LOCAL[2]*reso*reso*1000/Permeability<<" "<<1-S_l<<" "<<p_zn<<" "<<p_zp<<" "<<gzs<<endl;break;
+				finfs<<Per_l[2]*reso*reso*1000/Permeability<<" "<<S_l<<" "<<Per_l_LOCAL[2]*reso*reso*1000/Permeability<<" "<<1-S_l<<" "<<p_zn<<" "<<p_zp<<" "<<gzs<<" "<<rel_per_l_ls<<endl;break;
 				default:
-				finfs<<Per_l[0]*reso*reso*1000/Permeability<<" "<<S_l<<" "<<Per_l_LOCAL[0]*reso*reso*1000/Permeability<<" "<<1-S_l<<" "<<p_xn<<" "<<p_xp<<" "<<gxs<<endl;break;
+				finfs<<Per_l[0]*reso*reso*1000/Permeability<<" "<<S_l<<" "<<Per_l_LOCAL[0]*reso*reso*1000/Permeability<<" "<<1-S_l<<" "<<p_xn<<" "<<p_xp<<" "<<gxs<<" "<<rel_per_l_ls<<endl;break;
 				}
 			finfs.close();
 
@@ -851,13 +832,13 @@ if (wr_per==1)
 			switch(PerDir)
 				{
 				case 1:
-				finfs2<<Per_g[0]*reso*reso*1000/Permeability<<" "<<1-S_l<<" "<<Per_g_LOCAL[0]*reso*reso*1000/Permeability<<" "<<S_l<<endl;break;
+				finfs2<<Per_g[0]*reso*reso*1000/Permeability<<" "<<1-S_l<<" "<<Per_g_LOCAL[0]*reso*reso*1000/Permeability<<" "<<S_l<<" "<<rel_per_g_ls<<endl;break;
 				case 2:
-				finfs2<<Per_g[1]*reso*reso*1000/Permeability<<" "<<1-S_l<<" "<<Per_g_LOCAL[1]*reso*reso*1000/Permeability<<" "<<S_l<<endl;break;
+				finfs2<<Per_g[1]*reso*reso*1000/Permeability<<" "<<1-S_l<<" "<<Per_g_LOCAL[1]*reso*reso*1000/Permeability<<" "<<S_l<<" "<<rel_per_g_ls<<endl;break;
 				case 3:
-				finfs2<<Per_g[2]*reso*reso*1000/Permeability<<" "<<1-S_l<<" "<<Per_g_LOCAL[2]*reso*reso*1000/Permeability<<" "<<S_l<<endl;break;
+				finfs2<<Per_g[2]*reso*reso*1000/Permeability<<" "<<1-S_l<<" "<<Per_g_LOCAL[2]*reso*reso*1000/Permeability<<" "<<S_l<<" "<<rel_per_g_ls<<endl;break;
 				default:
-				finfs2<<Per_g[0]*reso*reso*1000/Permeability<<" "<<1-S_l<<" "<<Per_g_LOCAL[0]*reso*reso*1000/Permeability<<" "<<S_l<<endl;break;
+				finfs2<<Per_g[0]*reso*reso*1000/Permeability<<" "<<1-S_l<<" "<<Per_g_LOCAL[0]*reso*reso*1000/Permeability<<" "<<S_l<<" "<<rel_per_g_ls<<endl;break;
 				}
 			finfs2.close();
 			}
@@ -983,167 +964,64 @@ if (wr_per==1)
 	
 }
 
+
+
+
+void Least_Square_Rel_Perm(double per_l, double per_g)
+{
+        
+        double sum_l,sum_g,xsum,x1_l,x1_g,sum2_l,sum2_g,sumb,x0_l,x0_g;
+       
+        for (int i=num_least_square-1;i>0;i--)
+        {        
+                Per_l_ls[i]=Per_l_ls[i-1];
+                Per_g_ls[i]=Per_g_ls[i-1];
+        }
+        Per_l_ls[0]=per_l;
+        Per_g_ls[0]=per_g;
+        
+        xsum=0.0;sum_l=0.0;sum_g=0.0;
+       for (int i=0;i<num_least_square;i++)
+               {
+                       xsum+=(double) i;
+                       sum_l+=Per_l_ls[i];
+                       sum_g+=Per_g_ls[i];
+               }
+        
+               sum_l/=(double)num_least_square;
+               sum_g/=(double)num_least_square;
+               xsum/=(double)num_least_square;
+            
+               
+            sum2_l=0.0;sum2_g=0.0;sumb=0.0;
+            for (int i=0;i<num_least_square;i++)
+                    {
+                            sum2_l+=(i-xsum)*(Per_l_ls[i]-sum_l);
+                            sum2_g+=(i-xsum)*(Per_g_ls[i]-sum_g);
+                            sumb+=(i-xsum)*(i-xsum);
+                    } 
+                    
+                    x1_l=sum2_l/sumb;
+                    x1_g=sum2_g/sumb;
+                    x0_l=sum_l-x1_l*xsum;
+                    x0_g=sum_g-x1_g*xsum;
+                    
+                    rel_per_l_ls=x0_l;
+                    rel_per_g_ls=x0_g;
+                   
+                    
+                   
+                    
+}
+
+
+
+
 void pressure_bodyforce_change()
 {
 
 	int rank = MPI :: COMM_WORLD . Get_rank ();
 	int mpi_size=MPI :: COMM_WORLD . Get_size ();
-/*
-if (pressure_change==1)
-		{
-		if (n==pre_chan_1)
-			if (pre_chan_pb==1)
-			{
-			p_xn=pre_chan_pn1;
-			p_xp=pre_chan_pp1;
-			}
-			else
-				gxs=pre_chan_f1;
-
-		if (n==pre_chan_2)
-			if (pre_chan_pb==1)
-			{
-			p_xn=pre_chan_pn2;
-			p_xp=pre_chan_pp2;
-			}
-			else
-				gxs=pre_chan_f2;
-
-		if (n==pre_chan_3)
-			if (pre_chan_pb==1)
-			{
-			p_xn=pre_chan_pn3;
-			p_xp=pre_chan_pp3;
-			}
-			else
-				gxs=pre_chan_f3;
-
-		if (n==pre_chan_4)
-			if (pre_chan_pb==1)
-			{
-			p_xn=pre_chan_pn4;
-			p_xp=pre_chan_pp4;
-			}
-			else
-				gxs=pre_chan_f4;
-
-		if (n==pre_chan_5)
-			if (pre_chan_pb==1)
-			{
-			p_xn=pre_chan_pn5;
-			p_xp=pre_chan_pp5;
-			}
-			else
-				gxs=pre_chan_f5;
-
-
-	 
-		}
-
-if (pressure_change==2)
-		{
-		if (n==pre_chan_1)
-			if (pre_chan_pb==1)
-			{
-			p_yn=pre_chan_pn1;
-			p_yp=pre_chan_pp1;
-			}
-			else
-				gys=pre_chan_f1;
-
-		if (n==pre_chan_2)
-			if (pre_chan_pb==1)
-			{
-			p_yn=pre_chan_pn2;
-			p_yp=pre_chan_pp2;
-			}
-			else
-				gys=pre_chan_f2;
-
-		if (n==pre_chan_3)
-			if (pre_chan_pb==1)
-			{
-			p_yn=pre_chan_pn3;
-			p_yp=pre_chan_pp3;
-			}
-			else
-				gys=pre_chan_f3;
-
-		if (n==pre_chan_4)
-			if (pre_chan_pb==1)
-			{
-			p_yn=pre_chan_pn4;
-			p_yp=pre_chan_pp4;
-			}
-			else
-				gys=pre_chan_f4;
-
-		if (n==pre_chan_5)
-			if (pre_chan_pb==1)
-			{
-			p_yn=pre_chan_pn5;
-			p_yp=pre_chan_pp5;
-			}
-			else
-				gys=pre_chan_f5;
-
-
-	 
-		}
-
-
-if (pressure_change==3)
-		{
-		if (n==pre_chan_1)
-			if (pre_chan_pb==1)
-			{
-			p_zn=pre_chan_pn1;
-			p_zp=pre_chan_pp1;
-			}
-			else
-				gzs=pre_chan_f1;
-
-		if (n==pre_chan_2)
-			if (pre_chan_pb==1)
-			{
-			p_zn=pre_chan_pn2;
-			p_zp=pre_chan_pp2;
-			}
-			else
-				gzs=pre_chan_f2;
-
-		if (n==pre_chan_3)
-			if (pre_chan_pb==1)
-			{
-			p_zn=pre_chan_pn3;
-			p_zp=pre_chan_pp3;
-			}
-			else
-				gzs=pre_chan_f3;
-
-		if (n==pre_chan_4)
-			if (pre_chan_pb==1)
-			{
-			p_zn=pre_chan_pn4;
-			p_zp=pre_chan_pp4;
-			}
-			else
-				gzs=pre_chan_f4;
-
-		if (n==pre_chan_5)
-			if (pre_chan_pb==1)
-			{
-			p_zn=pre_chan_pn5;
-			p_zp=pre_chan_pp5;
-			}
-			else
-				gzs=pre_chan_f5;
-
-
-	 
-		}
-
-*/
 
 if (pressure_change==1)
 		{
