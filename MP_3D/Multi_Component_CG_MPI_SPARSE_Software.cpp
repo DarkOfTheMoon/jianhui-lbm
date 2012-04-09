@@ -741,8 +741,8 @@ if (wr_per==1)
 				<<setiosflags(ios::scientific)<<error<<endl;
 			fin<<"The relative permeability of component 1 is "<<Per_l[0]*reso*reso*1000/Permeability<<", "<<Per_l[1]*reso*reso*1000/Permeability<<", "<<Per_l[2]*reso*reso*1000/Permeability<<endl;
 			fin<<"The relative permeability of component 2 is "<<Per_g[0]*reso*reso*1000/Permeability<<", "<<Per_g[1]*reso*reso*1000/Permeability<<", "<<Per_g[2]*reso*reso*1000/Permeability<<endl;
-			fin<<"The LOCAL relative permeability of component 1 is "<<Per_l_LOCAL[0]*reso*reso*1000/Permeability<<", "<<Per_l_LOCAL[1]*reso*reso*1000/Permeability<<", "<<Per_l_LOCAL[2]*reso*reso*1000/Permeability<<endl;
-			fin<<"The LOCAL relative permeability of component 2 is "<<Per_g_LOCAL[0]*reso*reso*1000/Permeability<<", "<<Per_g_LOCAL[1]*reso*reso*1000/Permeability<<", "<<Per_g_LOCAL[2]*reso*reso*1000/Permeability<<endl;
+			fin<<"The LEAST SQUARED relative permeability of component 1 is "<<rel_per_l_ls<<endl;
+			fin<<"The LEAST SQUARED relative permeability of component 2 is "<<rel_per_g_ls<<endl;
 			fin<<"Satuation of Component 1: "<<S_l<<", "<<"The satuation of Component 2: "<<1-S_l<<endl;
 			fin<<"The relative error of permiability computing is: "<<error_Per<<endl;
 			fin<<"Elapsed time is "<< the<<"h"<<tme<<"m"<<tse<<"s"<<endl;
@@ -802,8 +802,10 @@ if (wr_per==1)
 				<<setiosflags(ios::scientific)<<error<<endl;
 			fin<<"The relative permeability of component 1 is "<<Per_l[0]*reso*reso*1000/Permeability<<", "<<Per_l[1]*reso*reso*1000/Permeability<<", "<<Per_l[2]*reso*reso*1000/Permeability<<endl;
 			fin<<"The relative permeability of component 2 is "<<Per_g[0]*reso*reso*1000/Permeability<<", "<<Per_g[1]*reso*reso*1000/Permeability<<", "<<Per_g[2]*reso*reso*1000/Permeability<<endl;
-			fin<<"The LOCAL relative permeability of component 1 is "<<Per_l_LOCAL[0]*reso*reso*1000/Permeability<<", "<<Per_l_LOCAL[1]*reso*reso*1000/Permeability<<", "<<Per_l_LOCAL[2]*reso*reso*1000/Permeability<<endl;
-			fin<<"The LOCAL relative permeability of component 2 is "<<Per_g_LOCAL[0]*reso*reso*1000/Permeability<<", "<<Per_g_LOCAL[1]*reso*reso*1000/Permeability<<", "<<Per_g_LOCAL[2]*reso*reso*1000/Permeability<<endl;
+			//fin<<"The LOCAL relative permeability of component 1 is "<<Per_l_LOCAL[0]*reso*reso*1000/Permeability<<", "<<Per_l_LOCAL[1]*reso*reso*1000/Permeability<<", "<<Per_l_LOCAL[2]*reso*reso*1000/Permeability<<endl;
+			//fin<<"The LOCAL relative permeability of component 2 is "<<Per_g_LOCAL[0]*reso*reso*1000/Permeability<<", "<<Per_g_LOCAL[1]*reso*reso*1000/Permeability<<", "<<Per_g_LOCAL[2]*reso*reso*1000/Permeability<<endl;
+			fin<<"The LEAST SQUARED relative permeability of component 1 is "<<rel_per_l_ls<<endl;
+			fin<<"The LEAST SQUARED relative permeability of component 2 is "<<rel_per_g_ls<<endl;
 			fin<<"Satuation of Component 1: "<<S_l<<", "<<"The satuation of Component 2: "<<1-S_l<<endl;
 			fin<<"The relative error of permiability computing is: "<<error_Per<<endl;
 			fin<<"Elapsed time is "<< the<<"h"<<tme<<"m"<<tse<<"s"<<endl;
@@ -868,8 +870,10 @@ if (wr_per==1)
 				<<setiosflags(ios::scientific)<<error<<endl;
 			cout<<"The relative permeability of component 1 is "<<Per_l[0]*reso*reso*1000/Permeability<<", "<<Per_l[1]*reso*reso*1000/Permeability<<", "<<Per_l[2]*reso*reso*1000/Permeability<<endl;
 			cout<<"The relative permeability of component 2 is "<<Per_g[0]*reso*reso*1000/Permeability<<", "<<Per_g[1]*reso*reso*1000/Permeability<<", "<<Per_g[2]*reso*reso*1000/Permeability<<endl;
-			cout<<"The LOCAL relative permeability of component 1 is "<<Per_l_LOCAL[0]*reso*reso*1000/Permeability<<", "<<Per_l_LOCAL[1]*reso*reso*1000/Permeability<<", "<<Per_l_LOCAL[2]*reso*reso*1000/Permeability<<endl;
-			cout<<"The LOCAL relative permeability of component 2 is "<<Per_g_LOCAL[0]*reso*reso*1000/Permeability<<", "<<Per_g_LOCAL[1]*reso*reso*1000/Permeability<<", "<<Per_g_LOCAL[2]*reso*reso*1000/Permeability<<endl;
+			//cout<<"The LOCAL relative permeability of component 1 is "<<Per_l_LOCAL[0]*reso*reso*1000/Permeability<<", "<<Per_l_LOCAL[1]*reso*reso*1000/Permeability<<", "<<Per_l_LOCAL[2]*reso*reso*1000/Permeability<<endl;
+			//cout<<"The LOCAL relative permeability of component 2 is "<<Per_g_LOCAL[0]*reso*reso*1000/Permeability<<", "<<Per_g_LOCAL[1]*reso*reso*1000/Permeability<<", "<<Per_g_LOCAL[2]*reso*reso*1000/Permeability<<endl;
+			cout<<"The LEAST SQUARED relative permeability of component 1 is "<<rel_per_l_ls<<endl;
+			cout<<"The LEAST SQUARED relative permeability of component 2 is "<<rel_per_g_ls<<endl;
 			cout<<"Satuation of Component 1: "<<S_l<<", "<<"The satuation of Component 2: "<<1-S_l<<endl;
 			cout<<"The relative error of permiability computing is: "<<error_Per<<endl;
 			cout<<"Elapsed time is "<< the<<"h"<<tme<<"m"<<tse<<"s"<<endl;
