@@ -224,7 +224,7 @@ double p_xp_ori,p_xn_ori,p_yp_ori,p_yn_ori,p_zp_ori,p_zn_ori;
 int least_square,num_least_square;
 double* Per_l_ls;
 double* Per_g_ls;
-double rel_per_l_ls,rel_per_g_ls;
+double rel_per_l_ls,rel_per_g_ls,slopl,slopg;
 //================================================
 
 
@@ -834,13 +834,13 @@ if (wr_per==1)
 			switch(PerDir)
 				{
 				case 1:
-				finfs2<<Per_g[0]*reso*reso*1000/Permeability<<" "<<1-S_l<<" "<<Per_g_LOCAL[0]*reso*reso*1000/Permeability<<" "<<S_l<<" "<<rel_per_g_ls<<endl;break;
+				finfs2<<Per_g[0]*reso*reso*1000/Permeability<<" "<<1-S_l<<" "<<Per_g_LOCAL[0]*reso*reso*1000/Permeability<<" "<<S_l<<" "<<rel_per_g_ls<<" "<<slopl<<" "<<slopg<<endl;break;
 				case 2:
-				finfs2<<Per_g[1]*reso*reso*1000/Permeability<<" "<<1-S_l<<" "<<Per_g_LOCAL[1]*reso*reso*1000/Permeability<<" "<<S_l<<" "<<rel_per_g_ls<<endl;break;
+				finfs2<<Per_g[1]*reso*reso*1000/Permeability<<" "<<1-S_l<<" "<<Per_g_LOCAL[1]*reso*reso*1000/Permeability<<" "<<S_l<<" "<<rel_per_g_ls<<" "<<slopl<<" "<<slopg<<endl;break;
 				case 3:
-				finfs2<<Per_g[2]*reso*reso*1000/Permeability<<" "<<1-S_l<<" "<<Per_g_LOCAL[2]*reso*reso*1000/Permeability<<" "<<S_l<<" "<<rel_per_g_ls<<endl;break;
+				finfs2<<Per_g[2]*reso*reso*1000/Permeability<<" "<<1-S_l<<" "<<Per_g_LOCAL[2]*reso*reso*1000/Permeability<<" "<<S_l<<" "<<rel_per_g_ls<<" "<<slopl<<" "<<slopg<<endl;break;
 				default:
-				finfs2<<Per_g[0]*reso*reso*1000/Permeability<<" "<<1-S_l<<" "<<Per_g_LOCAL[0]*reso*reso*1000/Permeability<<" "<<S_l<<" "<<rel_per_g_ls<<endl;break;
+				finfs2<<Per_g[0]*reso*reso*1000/Permeability<<" "<<1-S_l<<" "<<Per_g_LOCAL[0]*reso*reso*1000/Permeability<<" "<<S_l<<" "<<rel_per_g_ls<<" "<<slopl<<" "<<slopg<<endl;break;
 				}
 			finfs2.close();
 			}
@@ -968,7 +968,12 @@ if (wr_per==1)
 	
 }
 
+/*
+void Rel_Perm_Imb_Dra()
+{
 
+}
+*/
 
 
 void Least_Square_Rel_Perm(double per_l, double per_g)
@@ -1012,7 +1017,8 @@ void Least_Square_Rel_Perm(double per_l, double per_g)
                     
                     rel_per_l_ls=x0_l;
                     rel_per_g_ls=x0_g;
-                   
+                    
+                    slopl=x1_l;slopg=x1_g;
                     
                    
                     
