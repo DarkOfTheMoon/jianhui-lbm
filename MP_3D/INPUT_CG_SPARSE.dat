@@ -61,7 +61,8 @@ phase.dat       	    	:Initial components distribution
 1.0e-6                          :Error of Saturation stable condition
 ======================Least Square Fitting for Relative Permeability=============
 1 10                            :0=OFF,1=ON; number of Fitting points;  
-
+=======================Relative Permeability with Imbibition and Drainage process Control==========
+-1 8 10e-3 5                :0=OFF,1=Imb,2=Drai;No.of data points; equil cond for least square rel_perm; time steps
 
 
 ========
@@ -99,5 +100,19 @@ Relative Perm file format:
 Averaged Relative Perm, saturation, local Relative Perm, saturation, least squre rel_perm of the other component2
 for Relative Perm file component1
 Averaged Relative Perm, saturation, local Relative Perm, saturation, Pressure of left and right hand side, and bodyforce, least square rel_perm is also included at the end of every line.
+
+
+Relative permeability measument with Imbibition and Drainage process control function:
+NOTE: Component1 is assumed as wetting phase: contact angle should be positive
+Should identify the injection direction by give approperiate value for 
+0 0				:Psi constant BC in X 0=OFF, 1=Ini psi, 2=Neibourghing,3=Rand:value=line38
+0 0				:Psi constant BC in Y
+0 0				:Psi constant BC in Z
+Least Square fitting should be swiched on and fitting points should be set properly
+1 2000                            :0=OFF,1=ON; number of Fitting points;
+After injection wetting/non-wetting phase and S_w reach equilibrium, the program will wait 2000*Frequency of results writing
+(interval in time steps), then check if the relative permeability has converged/slop is flat. 
+
+
 
 

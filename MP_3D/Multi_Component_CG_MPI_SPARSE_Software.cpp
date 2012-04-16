@@ -185,6 +185,11 @@ void pressure_capillary();
 void Least_Square_Rel_Perm(double, double);
 //===============================================
 
+//=============Rel_Perm_Imb_Drai======================
+void Rel_Perm_Imb_Dra();
+//===============================================
+
+
 const int e[19][3]=
 {{0,0,0},{1,0,0},{-1,0,0},{0,1,0},{0,-1,0},{0,0,1},{0,0,-1},{1,1,0},{-1,-1,0},{1,-1,0},{-1,1,0},{1,0,1},
 {-1,0,-1},{1,0,-1},{-1,0,1},{0,1,1},{0,-1,-1},{0,1,-1},{0,-1,1}};
@@ -226,6 +231,15 @@ double* Per_l_ls;
 double* Per_g_ls;
 double rel_per_l_ls,rel_per_g_ls,slopl,slopg;
 //================================================
+
+//=============Rel_Perm_Imb_Drai======================
+int rel_perm_id_mode,rel_perm_id_ids,rel_perm_id_time,rel_perm_id_cri;
+int rel_perm_id_dir,rel_perm_chan_num,rel_perm_id_time,cri_rells_n;
+double* rel_perm_sw;
+double pre_rell,pre_relg,cri_rells;
+char FileName7[128];
+//===============================================
+
 
 
 
@@ -369,6 +383,13 @@ double v_max,error_Per;
 	//=======================Least Square Fitting====================
 	fin.getline(dummy, NCHAR);
 	fin >> least_square >> num_least_square;                          fin.getline(dummy, NCHAR);
+	//=======================================================
+	
+	
+	//=======================Rel_Perm_Imb_Drai====================
+	fin.getline(dummy, NCHAR);
+	fin >>rel_perm_id_dir>>rel_perm_chan_num>>cri_rells>>cri_rells_n;                          fin.getline(dummy, NCHAR);
+	//=======================================================
 	
 	
 //	fin >> backup_rho;                        	fin.getline(dummy, NCHAR);
@@ -486,6 +507,22 @@ double v_max,error_Per;
 	                Per_g_ls[i]=0;
 	        }
 	//===================================================
+	
+	
+	//==================Rel_Perm_Imb_Drai=====================
+	MPI_Bcast(&rel_perm_id_dir,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&rel_perm_chan_num,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&cri_rells_n,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&cri_rells,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	rel_perm_sw=new double[rel_perm_chan_num];
+	if (rel_perm_id_dir==1)
+	        for (i=0;i<rel_perm_chan_num;i++)
+	                rel_perm_sw[i]=(double)(i+1)*(1.0/(rel_perm_chan_num+1));
+	 if (rel_perm_id_dir==2)
+	        for (i=0;i<rel_perm_chan_num;i++)
+	                rel_perm_sw[i]=(double)(rel_perm_chan_num-i)*(1.0/(rel_perm_chan_num+1));
+	//===================================================
+	
 	
 	
 	
@@ -666,7 +703,12 @@ fins.open(FileName6,ios::trunc);
 fins.close();
 //=========================================
 
-
+//===========Rel_Perm_Imb_Drai============	
+strcpy(FileName7,outputfile);
+strcat(FileName7,"Imb_Drai_Rel_Perm.txt");
+fins.open(FileName7,ios::trunc);
+fins.close();
+//=========================================
 
 
 if (wr_per==1)
@@ -761,6 +803,11 @@ if (wr_per==1)
 			//=====================================
 			S_l=Comput_Saturation(psi,Solid,SupInv);
 			
+			//=============Rel_Perm_Imb_Drai=================
+			pre_rell=rel_per_l_ls;
+			pre_relg=rel_per_g_ls;
+			//===========================================
+			
 			//=====================Least Sqare Fitting======================
 			if (least_square>0)
 			        if (PerDir==1)
@@ -770,7 +817,7 @@ if (wr_per==1)
 			                Least_Square_Rel_Perm(Per_l[1]*reso*reso*1000/Permeability,Per_g[1]*reso*reso*1000/Permeability);
 			                else
 			                        Least_Square_Rel_Perm(Per_l[2]*reso*reso*1000/Permeability,Per_g[2]*reso*reso*1000/Permeability);
-			                
+			           
 			   //========================================================             
 			                
 			                
@@ -968,12 +1015,71 @@ if (wr_per==1)
 	
 }
 
-/*
+//=============Rel_Perm_Imb_Drai======================
+//int rel_perm_id_mode,rel_perm_id_ids,rel_perm_id_cri;
+//int rel_perm_id_dir,rel_perm_chan_num;
+//double* rel_perm_sw;
+//double pre_rell,pre_relg;cri_rells
+//===============================================
+
 void Rel_Perm_Imb_Dra()
 {
-
+        
+        //ofstream finfs(FileName2,ios::app);
+       
+        
+        if (rel_perm_id_mode==1)
+                {
+                        if ((rel_perm_id_dir==1) and (S_l>rel_perm_sw[rel_perm_id_ids]))
+                        {
+                                rel_perm_id_mode=2;
+                                in_psi_BC=0;    
+                                rel_perm_id_time=0;
+                                rel_perm_id_cri=0;
+                        }
+                        
+                      if ((rel_perm_id_dir==2) and (S_l<rel_perm_sw[rel_perm_id_ids]))
+                        {
+                                rel_perm_id_mode=2;
+                                in_psi_BC=0;    
+                                rel_perm_id_time=0; 
+                                rel_perm_id_cri=0;
+                        }          
+                        
+                }
+                
+            if ((rel_perm_id_mode==2)
+                    rel_perm_time+=1;
+            
+       if ((rel_perm_id_mode==2) and (rel_perm_id_time>num_least_square))
+               {
+                    if ((abs(rel_per_l_ls-pre_rell)/pre_rell<cri_rells) and (abs(rel_per_g_ls-pre_relg)/pre_relg<cri_rells))
+                            {
+                                    rel_perm_id_cri+=1;
+                            }
+                            else
+                                    {
+                                            rel_perm_id_cri=0;
+                                    }
+                                    
+                      if ((rel_perm_id_cri>=cri_rells_n) and (rel_perm_id_ids<rel_perm_chan_num))              
+                              {
+                                 ofstream finfsrel(FileName7,ios::app);
+                                 finfsrel<<S_l<<rel_perm_l_ls<<rel_perm_g_ls<<endl;
+                                 finfsrel.close();
+                                 rel_perm_id_ids+=1;
+                                if (rel_perm_id_ids<rel_perm_chan_num) 
+                                        {
+                                           rel_perm_id_mode=1;
+                                           in_psi_BC=1;
+                                           ini_Sat=rel_perm_sw[rel_perm_id_ids];
+                                        }
+                              }
+                           
+               }
+                
 }
-*/
+
 
 
 void Least_Square_Rel_Perm(double per_l, double per_g)
@@ -2020,7 +2126,22 @@ void init(double* rho, double** u, double** f,double* psi,double* rho_r, double*
 	Comput_MI(M,MI);
 
 	}
-
+       
+	/*
+	//=============Rel_Perm_Imb_Drai======================
+int rel_perm_id_mode,rel_perm_id_ids,rel_perm_id_time,rel_perm_id_cri;
+int rel_perm_id_dir,rel_perm_chan_num,rel_perm_id_time,cri_rells_n;
+double* rel_perm_sw;
+double pre_rell,pre_relg,cri_rells;
+char FileName7[128];
+//===============================================
+	*/
+	
+	rel_perm_id_ids=0;
+	rel_perm_id=1;
+	in_psi_BC=1;
+	ini_Sat=rel_perm_sw[0];
+	
 	
 
 	psi_solid=ContactAngle_parameter;
