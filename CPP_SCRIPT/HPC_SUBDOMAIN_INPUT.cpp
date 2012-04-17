@@ -221,6 +221,9 @@ out<<"1.0 0.993 1.0e-6 6 10           :PRESSURE N,P; Chan times, (term condition
 out<<"1.0e-6                          :Error of Saturation stable condition"<<endl;
 out<<"======================Least Square Fitting for Relative Permeability============="<<endl;
 out<<"0 10                            :0=OFF,1=ON; number of Fitting points;"<<endl;  
+out<<"===============Relative Permeability with Imbibition and Drainage process Control=========="<<endl;
+out<<"0 5 10e-3 5                :0=OFF,1=Imb,2=Drai;No.of data points; (equil cond for least square rel_perm, time steps)"<<endl;
+out<<"0 1e-5                    :Apply diff force for injec 0=OFF,1=ON,value for injection (to overcome the min cap pres)"<<endl;
 out<<i<<endl;
 
 }
