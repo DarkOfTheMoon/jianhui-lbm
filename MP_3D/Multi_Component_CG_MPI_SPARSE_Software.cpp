@@ -234,9 +234,9 @@ double rel_per_l_ls,rel_per_g_ls,slopl,slopg;
 
 //=============Rel_Perm_Imb_Drai======================
 int rel_perm_id_mode,rel_perm_id_ids,rel_perm_id_time,rel_perm_id_cri;
-int rel_perm_id_dir,rel_perm_chan_num,rel_perm_id_time,cri_rells_n;
+int rel_perm_id_dir,rel_perm_chan_num,cri_rells_n,rel_perm_bodyf_mode;
 double* rel_perm_sw;
-double pre_rell,pre_relg,cri_rells;
+double pre_rell,pre_relg,cri_rells,rel_perm_bodyf;
 char FileName7[128];
 //===============================================
 
@@ -389,6 +389,7 @@ double v_max,error_Per;
 	//=======================Rel_Perm_Imb_Drai====================
 	fin.getline(dummy, NCHAR);
 	fin >>rel_perm_id_dir>>rel_perm_chan_num>>cri_rells>>cri_rells_n;                          fin.getline(dummy, NCHAR);
+	fin >>rel_perm_bodyf_mode >> rel_perm_bodyf;                                                          fin.getline(dummy, NCHAR);
 	//=======================================================
 	
 	
@@ -513,13 +514,15 @@ double v_max,error_Per;
 	MPI_Bcast(&rel_perm_id_dir,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&rel_perm_chan_num,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&cri_rells_n,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&rel_perm_bodyf_mode,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&cri_rells,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Bcast(&rel_perm_bodyf,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 	rel_perm_sw=new double[rel_perm_chan_num];
 	if (rel_perm_id_dir==1)
-	        for (i=0;i<rel_perm_chan_num;i++)
+	        for (int i=0;i<rel_perm_chan_num;i++)
 	                rel_perm_sw[i]=(double)(i+1)*(1.0/(rel_perm_chan_num+1));
 	 if (rel_perm_id_dir==2)
-	        for (i=0;i<rel_perm_chan_num;i++)
+	        for (int i=0;i<rel_perm_chan_num;i++)
 	                rel_perm_sw[i]=(double)(rel_perm_chan_num-i)*(1.0/(rel_perm_chan_num+1));
 	//===================================================
 	
@@ -817,11 +820,21 @@ if (wr_per==1)
 			                Least_Square_Rel_Perm(Per_l[1]*reso*reso*1000/Permeability,Per_g[1]*reso*reso*1000/Permeability);
 			                else
 			                        Least_Square_Rel_Perm(Per_l[2]*reso*reso*1000/Permeability,Per_g[2]*reso*reso*1000/Permeability);
-			           
-			   //========================================================             
-			                
-			                
-			
+			    MPI_Bcast(&rel_per_l_ls,1,MPI_DOUBLE,0,MPI_COMM_WORLD); 
+			    MPI_Bcast(&rel_per_g_ls,1,MPI_DOUBLE,0,MPI_COMM_WORLD); 
+			   //======================================================== 
+			   
+			   
+	
+			 //=============Rel_Perm_Imb_Drai=================        
+			 if (rel_perm_id_dir>0)
+			         Rel_Perm_Imb_Dra();               
+			 //===========================================
+			 
+			 
+			 
+			 
+			 
 			if (rank==0)
 			{
 			ofstream fin(FileName,ios::app);
@@ -1025,17 +1038,24 @@ if (wr_per==1)
 void Rel_Perm_Imb_Dra()
 {
         
-        //ofstream finfs(FileName2,ios::app);
-       
+        
+        int rank = MPI :: COMM_WORLD . Get_rank ();
+	int mpi_size=MPI :: COMM_WORLD . Get_size ();
+	
+	
+        //ofstream finfs(FileName2,ios::app);rel_perm_sw[rel_perm_id_ids]
+       //cout<<rel_perm_id_ids<<"      @@@    "<<in_psi_BC<<"        "<<rel_perm_sw[rel_perm_id_ids]<<"          "<<ini_Sat<<endl;
         
         if (rel_perm_id_mode==1)
                 {
+                       
                         if ((rel_perm_id_dir==1) and (S_l>rel_perm_sw[rel_perm_id_ids]))
                         {
                                 rel_perm_id_mode=2;
                                 in_psi_BC=0;    
                                 rel_perm_id_time=0;
                                 rel_perm_id_cri=0;
+                                gxs=gx;gys=gy;gzs=gz;
                         }
                         
                       if ((rel_perm_id_dir==2) and (S_l<rel_perm_sw[rel_perm_id_ids]))
@@ -1044,15 +1064,22 @@ void Rel_Perm_Imb_Dra()
                                 in_psi_BC=0;    
                                 rel_perm_id_time=0; 
                                 rel_perm_id_cri=0;
+                                gxs=gx;gys=gy;gzs=gz;
                         }          
                         
                 }
                 
-            if ((rel_perm_id_mode==2)
-                    rel_perm_time+=1;
-            
+            if (rel_perm_id_mode==2)
+            {
+                    rel_perm_id_time+=1;
+                    //cout<<rel_perm_id_time<<"     "<<rel_perm_id_cri<<"      "<<abs(rel_per_l_ls-pre_rell)/pre_rell<<endl;
+            }
+           
        if ((rel_perm_id_mode==2) and (rel_perm_id_time>num_least_square))
                {
+                       
+                       
+                       
                     if ((abs(rel_per_l_ls-pre_rell)/pre_rell<cri_rells) and (abs(rel_per_g_ls-pre_relg)/pre_relg<cri_rells))
                             {
                                     rel_perm_id_cri+=1;
@@ -1061,23 +1088,43 @@ void Rel_Perm_Imb_Dra()
                                     {
                                             rel_perm_id_cri=0;
                                     }
+                          
+                                    
+                                    
                                     
                       if ((rel_perm_id_cri>=cri_rells_n) and (rel_perm_id_ids<rel_perm_chan_num))              
                               {
-                                 ofstream finfsrel(FileName7,ios::app);
-                                 finfsrel<<S_l<<rel_perm_l_ls<<rel_perm_g_ls<<endl;
-                                 finfsrel.close();
+                                      if (rank==0)
+                                      {
+                                              ofstream finfsrel(FileName7,ios::app);
+                                              finfsrel<<S_l<<"  "<<rel_per_l_ls<<"  "<<rel_per_g_ls<<endl;
+                                              finfsrel.close();
+                                      }
+                                      
                                  rel_perm_id_ids+=1;
                                 if (rel_perm_id_ids<rel_perm_chan_num) 
                                         {
                                            rel_perm_id_mode=1;
                                            in_psi_BC=1;
                                            ini_Sat=rel_perm_sw[rel_perm_id_ids];
+                                           
+                                           
+                                           if (rel_perm_bodyf_mode==1)
+                                           {
+                                                   if (PerDir==1)
+                                                           gxs=rel_perm_bodyf;
+                                                   if (PerDir==2)
+                                                           gys=rel_perm_bodyf;
+                                                   if (PerDir==3)
+                                                           gzs=rel_perm_bodyf;
                                         }
-                              }
+                                        
+                                        
+                                        
+                                        }
                            
-               }
-                
+                              }
+               } 
 }
 
 
@@ -1203,7 +1250,7 @@ if (pressure_change==2)
 			p_yp=p_yp_ori+(pre_chan_pp1-p_yp_ori)*(1-(double)(pre_chan_1-n)/pre_chan_1);
 			}
 			else
-				gys=gx+(pre_chan_f1-gx)*(1-(double)(pre_chan_1-n)/pre_chan_1);
+				gys=gx+(pre_chan_f1-gy)*(1-(double)(pre_chan_1-n)/pre_chan_1);
 
 		if ((n<=pre_chan_2) and (n>pre_chan_1))
 			if (pre_chan_pb==1)
@@ -1258,7 +1305,7 @@ if (pressure_change==3)
 			p_zp=p_zp_ori+(pre_chan_pp1-p_zp_ori)*(1-(double)(pre_chan_1-n)/pre_chan_1);
 			}
 			else
-				gzs=gx+(pre_chan_f1-gx)*(1-(double)(pre_chan_1-n)/pre_chan_1);
+				gzs=gx+(pre_chan_f1-gz)*(1-(double)(pre_chan_1-n)/pre_chan_1);
 
 		if ((n<=pre_chan_2) and (n>pre_chan_1))
 			if (pre_chan_pb==1)
@@ -2127,22 +2174,71 @@ void init(double* rho, double** u, double** f,double* psi,double* rho_r, double*
 
 	}
        
-	/*
-	//=============Rel_Perm_Imb_Drai======================
-int rel_perm_id_mode,rel_perm_id_ids,rel_perm_id_time,rel_perm_id_cri;
-int rel_perm_id_dir,rel_perm_chan_num,rel_perm_id_time,cri_rells_n;
-double* rel_perm_sw;
-double pre_rell,pre_relg,cri_rells;
-char FileName7[128];
-//===============================================
-	*/
+
 	
+//=============Rel_Perm_Imb_Drai======================
+
+	
+	if (rel_perm_id_dir>0)
+	{
 	rel_perm_id_ids=0;
-	rel_perm_id=1;
+	rel_perm_id_mode=1;
 	in_psi_BC=1;
 	ini_Sat=rel_perm_sw[0];
 	
+
 	
+	if (PerDir==1)
+	        {       
+	                if (rel_perm_id_dir==1)
+	                {
+	                        for (int j=0;j<=NY;j++)
+	                        for (int k=0;k<=NZ;k++)
+	                        {Psi_local[0][j][k]=1;Psi_local[nx_l-1][j][k]=1;}
+	                }else
+	                        {
+	                         for (int j=0;j<=NY;j++)
+	                        for (int k=0;k<=NZ;k++)
+	                        {Psi_local[0][j][k]=-1;Psi_local[nx_l-1][j][k]=-1;}       
+	                        }
+	        }
+	  if (PerDir==2)
+	        {       
+	                if (rel_perm_id_dir==1)
+	                {
+	                        for (int i=0;i<nx_l;i++)
+	                        for (int k=0;k<=NZ;k++)
+	                        {Psi_local[i][0][k]=1;Psi_local[i][NY][k]=1;}
+	                }else
+	                        {
+	                         for (int i=0;i<nx_l;i++)
+	                        for (int k=0;k<=NZ;k++)
+	                        {Psi_local[i][0][k]=-1;Psi_local[i][NY][k]=-1;}       
+	                        }
+	        }     
+	        
+	  if (PerDir==3)
+	        {       
+	                if (rel_perm_id_dir==1)
+	                {
+	                        for (int i=0;i<nx_l;i++)
+	                        for (int j=0;j<=NY;j++)
+	                        {Psi_local[i][j][0]=1;Psi_local[i][j][NZ]=1;}
+	                }else
+	                        {
+	                         for (int i=0;i<nx_l;i++)
+	                        for (int j=0;j<=NY;j++)
+	                        {Psi_local[i][j][0]=-1;Psi_local[i][j][NZ]=-1;}       
+	                        }
+	        }       
+	        
+	        
+	}
+//==================================================
+
+
+
+
 
 	psi_solid=ContactAngle_parameter;
 
@@ -2240,9 +2336,17 @@ char FileName7[128];
 					
 	}       
 	
-
-	
-
+//===================Rel_Perm_Imb_Drai======================
+if ((rel_perm_bodyf_mode==1) and (rel_perm_id_dir>0))
+                  {
+                          if (PerDir==1)
+                                  gxs=rel_perm_bodyf;
+                          if (PerDir==2)
+                                  gys=rel_perm_bodyf;
+                          if (PerDir==3)
+                                  gzs=rel_perm_bodyf;
+                  }	
+//=====================================================
 	 	
 }
 
