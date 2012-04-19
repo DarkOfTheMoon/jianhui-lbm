@@ -5,7 +5,7 @@ phase.dat       	    	:Initial components distribution
 1000000		     		:Maximum time step
 4.9	             		:dx (um) Resolution (for Permeability calculation)
 0	        	      	:Pressure Or Velocity Boundary (1=YES, 0=No)
-1				:Psi constant BC
+0				:Psi constant BC
 1.0e-6 0.0 0.0	          	:body force for x,y,z
 0 1.0 0 1.0000	    		:Pressure Boundary in X direction ()p=c_s^2*/rho
 0 1.0 0 1.0	    		:Pressure Boundary in Y direction ()
@@ -35,7 +35,7 @@ phase.dat       	    	:Initial components distribution
 ./				:OUTPUT PATH,DEFAULT: ./ (INCLUDE "/" AT THE END)
 2              			:PRESSURE AND VELOCITY BOUNDARY CONDITION OPTIONS: 0,1,2,3: EBC_S,EBC_D,TOLKE_BC,NEBC_D
 0  500				:MULTI-COMPONENT STABALIZER: (a,b) a=0=OFF, a=1=ON, BODY FORCE APPLIED AFTER b steps
-0.67                              :PRESET SATUATION, 0--1 initial component distri not needed, -1=OFF(for Component A,1)
+-1                              :PRESET SATUATION, 0--1 initial component distri not needed, -1=OFF(for Component A,1)
 0				:PRESET VALUE FOR BUFFET AREA, 0=NO,1=COMP A,-1=COMP B (valid when preset satuation)
 0.0				:Relative permeability calcualtion 0..1 (psi>=value, cal the flux for Comp1)
 0 0 0				:Pemeability calculation Partially  (1=ON, 0=OFF)
@@ -62,9 +62,9 @@ phase.dat       	    	:Initial components distribution
 ======================Least Square Fitting for Relative Permeability=============
 1 30                            :0=OFF,1=ON; number of Fitting points;  
 =======================Relative Permeability with Imbibition and Drainage process Control==========
-2 5 10e-3 5                :0=OFF,1=Imb,2=Drai;No.of data points; (equil cond for least square rel_perm, time steps)
+1 5 1e-1 5                :0=OFF,1=Imb,2=Drai;No.of data points; (equil cond for least square rel_perm, time steps)
 1 1e-5                            :Apply diff force for injec 0=OFF,1=ON,value for injection (to overcome the min cap pres)
-
+1                             :0=OFF,1=ON EXPORT BINARY FLUID DISTRIBUTION psi (CAN BE USED FOR OTHER SIMULATIONS INPUTS)
 ========
 
 INSTRUCTIONS OF PARAMETER INPUT
@@ -112,7 +112,18 @@ Least Square fitting should be swiched on and fitting points should be set prope
 1 2000                            :0=OFF,1=ON; number of Fitting points;
 After injection wetting/non-wetting phase and S_w reach equilibrium, the program will wait 2000*Frequency of results writing
 (interval in time steps), then check if the relative permeability has converged/slop is flat. 
+This module can also be used to generate initial distributions for binary fluid simulation,
+to use this function, set 
+1                            :0=OFF,1=ON EXPORT BINARY FLUID DISTRIBUTION psi (CAN BE USED FOR OTHER SIMULATIONS INPUTS)
+NOTE: if you don't need the export function, keep it 0, otherwise the relative permeability function will not work properly.
 
 
+then, set 
+1 5 1e-1 20                :0=OFF,1=Imb,2=Drai;No.of data points; (equil cond for least square rel_perm, time steps)
+1 1e-5                            :Apply diff force for injec 0=OFF,1=ON,value for injection (to overcome the min cap pres)
+the equilibrium condition for rel_perm should be big enough (eg. 1e-1) to save time (the once targeted saturation has been reached, export it, then start increasing or dcreasing again)
+and set least square check length short:
+1 30                            :0=OFF,1=ON; number of Fitting points;  
+Once the targeted saturation has been reached, the program will wait 30*output frequency time steps, then export the distribution.
 
 

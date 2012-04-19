@@ -186,7 +186,9 @@ void Least_Square_Rel_Perm(double, double);
 //===============================================
 
 //=============Rel_Perm_Imb_Drai======================
-void Rel_Perm_Imb_Dra();
+void Rel_Perm_Imb_Dra(double*);
+
+void output_psi_rel_perm(double ,double* ,int***);
 //===============================================
 
 
@@ -234,7 +236,7 @@ double rel_per_l_ls,rel_per_g_ls,slopl,slopg;
 
 //=============Rel_Perm_Imb_Drai======================
 int rel_perm_id_mode,rel_perm_id_ids,rel_perm_id_time,rel_perm_id_cri;
-int rel_perm_id_dir,rel_perm_chan_num,cri_rells_n,rel_perm_bodyf_mode;
+int rel_perm_id_dir,rel_perm_chan_num,cri_rells_n,rel_perm_bodyf_mode,rel_perm_output_psi;
 double* rel_perm_sw;
 double pre_rell,pre_relg,cri_rells,rel_perm_bodyf;
 char FileName7[128];
@@ -390,6 +392,7 @@ double v_max,error_Per;
 	fin.getline(dummy, NCHAR);
 	fin >>rel_perm_id_dir>>rel_perm_chan_num>>cri_rells>>cri_rells_n;                          fin.getline(dummy, NCHAR);
 	fin >>rel_perm_bodyf_mode >> rel_perm_bodyf;                                                          fin.getline(dummy, NCHAR);
+	fin >> rel_perm_output_psi;                                                         fin.getline(dummy, NCHAR);
 	//=======================================================
 	
 	
@@ -517,6 +520,8 @@ double v_max,error_Per;
 	MPI_Bcast(&rel_perm_bodyf_mode,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&cri_rells,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 	MPI_Bcast(&rel_perm_bodyf,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Bcast(&rel_perm_output_psi,1,MPI_INT,0,MPI_COMM_WORLD);
+	
 	rel_perm_sw=new double[rel_perm_chan_num];
 	if (rel_perm_id_dir==1)
 	        for (int i=0;i<rel_perm_chan_num;i++)
@@ -828,7 +833,7 @@ if (wr_per==1)
 	
 			 //=============Rel_Perm_Imb_Drai=================        
 			 if (rel_perm_id_dir>0)
-			         Rel_Perm_Imb_Dra();               
+			         Rel_Perm_Imb_Dra(psi);               
 			 //===========================================
 			 
 			 
@@ -1035,7 +1040,7 @@ if (wr_per==1)
 //double pre_rell,pre_relg;cri_rells
 //===============================================
 
-void Rel_Perm_Imb_Dra()
+void Rel_Perm_Imb_Dra(double* psi)
 {
         
         
@@ -1072,8 +1077,44 @@ void Rel_Perm_Imb_Dra()
             if (rel_perm_id_mode==2)
             {
                     rel_perm_id_time+=1;
-                    //cout<<rel_perm_id_time<<"     "<<rel_perm_id_cri<<"      "<<abs(rel_per_l_ls-pre_rell)/pre_rell<<endl;
+                    
+                    //=============export psi=================================
+                    if ((rel_perm_id_time>=num_least_square) and (rel_perm_output_psi==1))
+                    {
+                            
+                     //export psi  ouput_psi_rel_perm
+                     
+                     output_psi_rel_perm(rel_perm_sw[rel_perm_id_ids],psi,Solid);
+                     
+                     rel_perm_id_ids+=1;
+                                if (rel_perm_id_ids<rel_perm_chan_num) 
+                                        {
+                                           rel_perm_id_mode=1;
+                                           in_psi_BC=1;
+                                           ini_Sat=rel_perm_sw[rel_perm_id_ids];
+                                           
+                                           
+                                           if (rel_perm_bodyf_mode==1)
+                                           {
+                                                   if (PerDir==1)
+                                                           gxs=rel_perm_bodyf;
+                                                   if (PerDir==2)
+                                                           gys=rel_perm_bodyf;
+                                                   if (PerDir==3)
+                                                           gzs=rel_perm_bodyf;
+                                        }
+                                        
+                                        
+                                        
+                                        }
+                                        
+                    }             
+             //===================================================
+             
+             
+             
             }
+            
            
        if ((rel_perm_id_mode==2) and (rel_perm_id_time>num_least_square))
                {
@@ -5609,6 +5650,102 @@ void output_psi_b(int m,double* psi,int MirX,int MirY,int MirZ,int mir,int*** So
 //			lss+=rbuf_rho[i];
 //		cout<<lss<<endl;
 	//cout<<SumCount<<endl;
+	
+	if (rank==root_rank)
+		{		
+		delete [] rbuf_psi;
+		}
+	delete [] nx_g;
+	delete [] disp;
+	delete [] psi_storage;
+
+		
+}
+
+
+
+void output_psi_rel_perm(double m,double* psi,int*** Solid)
+{
+       
+	int rank = MPI :: COMM_WORLD . Get_rank ();
+	const int mpi_size=MPI :: COMM_WORLD . Get_size ();
+	const int root_rank=0;
+	
+
+	int* nx_g = new int[mpi_size];
+	int* disp = new int[mpi_size];
+
+	
+	MPI_Gather(&nx_l,1,MPI_INT,nx_g,1,MPI_INT,root_rank,MPI_COMM_WORLD);
+	
+	
+	if (rank==root_rank)
+		{
+		disp[0]=0;
+		for (int i=0;i<mpi_size;i++)
+			nx_g[i]*=(NY+1)*(NZ+1);
+
+		for (int i=1;i<mpi_size;i++)
+			disp[i]=disp[i-1]+nx_g[i-1];
+		}
+	
+
+	double* rbuf_psi;
+	double* psi_storage = new double[nx_l*(NY+1)*(NZ+1)];
+
+
+	for (int i=0;i<nx_l;i++)
+		for (int j=0;j<=NY;j++)
+			for(int k=0;k<=NZ;k++)
+			{
+			if (Solid[i][j][k]>0)
+				psi_storage[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]=psi[Solid[i][j][k]];
+			else
+				psi_storage[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]=0.0;
+			}
+
+	if (rank==root_rank)
+		rbuf_psi= new double[(NX+1)*(NY+1)*(NZ+1)];
+
+	
+	
+	MPI_Gatherv(psi_storage,nx_l*(NY+1)*(NZ+1),MPI_DOUBLE,rbuf_psi,nx_g,disp,MPI_DOUBLE,root_rank,MPI_COMM_WORLD);
+
+	
+	int NX0=NX+1;
+	int NY0=NY+1;
+	int NZ0=NZ+1;
+
+	
+
+
+	//cout<<"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"<<endl;
+	//cout<<"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"<<endl;
+	
+	
+	if (rank==root_rank)
+	{
+	
+	ostringstream name;
+	if (rel_perm_id_dir==1)
+	        name<<outputfile<<"PSI_imb_S_w_"<<m<<".ini_dat";
+	else
+	        name<<outputfile<<"PSI_drai_S_w_"<<m<<".ini_dat";
+	
+	ofstream out;
+	out.open(name.str().c_str());
+
+
+        for(int k=0;k<NZ0;k++)
+      		for(int j=0; j<NY0; j++)
+			for(int i=0;i<NX0;i++)
+				out<<setprecision(preci)<<rbuf_psi[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]<<" ";
+
+	out.close();
+				
+	}
+	
+
 	
 	if (rank==root_rank)
 		{		
