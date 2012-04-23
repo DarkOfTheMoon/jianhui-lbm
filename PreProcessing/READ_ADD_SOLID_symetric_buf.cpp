@@ -11,16 +11,17 @@ using namespace std;
 int main (int argc , char * argv [])
 {
 
-int nx=87;
-int ny=87;
-int nz=87;
-int dir=3;
-int sym_x=0;
+int nx=90;
+int ny=90;
+int nz=90;
+int dir=4; 	//0,1,2 x,y,z add extra solid boundaries, 
+		//3,no BCs, 4,5,6: solid the most outside to form a BC,flow dirc:x,y,z
+int sym_x=1;
 int sym_y=0;
 int sym_z=0;
 int add_buf_x_n=0;
-int add_buf_y_n=2;
-int add_buf_z_n=4;
+int add_buf_y_n=0;
+int add_buf_z_n=0;
 
 int add_buf_x_p=0;
 int add_buf_y_p=0;
@@ -28,7 +29,7 @@ int add_buf_z_p=0;
 int add_porous_plate=0;
 int porous_position=206; //-1=defualt position,end of the geometry, or give a positive value
 int Zoom=1; //1,2,3,4...
-char poreFileName[128]="20-3-3.dat";
+char poreFileName[128]="maxd20-3-3.dat";
 char poreFileNameVTK[128]="20-3-3.vtk";
 char poreFileNameOut[128]="20-3-3_x.dat";
 //output VTK file,0=no, 1=yes
@@ -40,7 +41,7 @@ int VTK_OUT=1;
 
 
 
-int pls[4][3]={{0,2,2},{2,0,2},{2,2,0},{0,0,0}};
+int pls[7][3]={{0,2,2},{2,0,2},{2,2,0},{0,0,0},{0,0,0},{0,0,0}};
 
 int sum=0;
 
@@ -143,7 +144,7 @@ double pore;
 			//if (pore == 1.0) 	{Solid[ci-1][cj-1][ck-1] = 1;sum++;}
 			if (pore == 1.0) 	{Solid[i][j][k] = 1;sum++;}
 			
-			
+		
 			
 			
 		}
@@ -152,8 +153,66 @@ double pore;
 		
 	
 	cout<<"Porosity = "<<1-(double(sum)/(nx*ny*nz))<<endl;	
-	//cout<<sum<<endl;	
-		
+	//cout<<sum<<endl;
+	
+	if (dir==4)
+	{
+		for (int i=0;i<nx;i++)
+			{
+			for (int j=0;j<ny;j++)
+				{
+				Solid[i][j][0]=1;
+				Solid[i][j][nz-1]=1;
+				}
+			for (int k=0;k<nz;k++)
+				{
+				Solid[i][0][k]=1;
+				Solid[i][ny-1][k]=1;
+				}
+			}
+	}	
+
+if (dir==5)
+	{
+		for (int j=0;j<ny;j++)
+			{
+			for (int i=0;i<nx;i++)
+				{
+				Solid[i][j][0]=1;
+				Solid[i][j][nz-1]=1;
+				}
+			for (int k=0;k<nz;k++)
+				{
+				Solid[0][j][k]=1;
+				Solid[nx-1][j][k]=1;
+				}
+			}
+	}	
+
+
+if (dir==6)
+	{
+		for (int k=0;k<nz;k++)
+			{
+			for (int j=0;j<ny;j++)
+				{
+				Solid[0][j][k]=1;
+				Solid[nx-1][j][k]=1;
+				}
+			for (int i=0;i<nx;i++)
+				{
+				Solid[i][0][k]=1;
+				Solid[i][ny-1][k]=1;
+				}
+			}
+	}	
+
+
+
+
+
+
+
 		
 	// Reading pore geometry
 	for(k=pls[dir][2]/2 ; k<nz+pls[dir][2]/2 ; k++)				///*********
