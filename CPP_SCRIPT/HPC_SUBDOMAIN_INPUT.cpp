@@ -224,6 +224,7 @@ out<<"0 10                            :0=OFF,1=ON; number of Fitting points;"<<e
 out<<"===============Relative Permeability with Imbibition and Drainage process Control=========="<<endl;
 out<<"0 5 10e-3 5                :0=OFF,1=Imb,2=Drai;No.of data points; (equil cond for least square rel_perm, time steps)"<<endl;
 out<<"0 1e-5                    :Apply diff force for injec 0=OFF,1=ON,value for injection (to overcome the min cap pres)"<<endl;
+out<<"0			:psi export"<<endl;
 out<<i<<endl;
 
 }
