@@ -1083,7 +1083,7 @@ void Rel_Perm_Imb_Dra(double* psi)
                     {
                             
                      //export psi  ouput_psi_rel_perm
-                     
+                     if (rel_perm_id_ids<=rel_perm_chan_num-1)
                      output_psi_rel_perm(rel_perm_sw[rel_perm_id_ids],psi,Solid);
                      
                      rel_perm_id_ids+=1;
