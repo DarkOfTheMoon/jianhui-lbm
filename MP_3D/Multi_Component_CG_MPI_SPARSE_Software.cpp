@@ -899,20 +899,20 @@ if (wr_per==1)
 			switch(PerDir)
 				{
 				case 1:
-				finfs2<<Per_g[0]*reso*reso*1000/Permeability<<" "<<1-S_l<<" "<<Per_g_LOCAL[0]*reso*reso*1000/Permeability<<" "<<S_l<<" "<<rel_per_g_ls<<" "<<slopl<<" "<<slopg<<endl;break;
+				finfs2<<Per_g[0]*reso*reso*1000/Permeability<<" "<<1-S_l<<" "<<Per_g_LOCAL[0]*reso*reso*1000/Permeability<<" "<<S_l<<" "<<rel_per_g_ls<<" "<<slopl<<" "<<endl;break;
 				case 2:
-				finfs2<<Per_g[1]*reso*reso*1000/Permeability<<" "<<1-S_l<<" "<<Per_g_LOCAL[1]*reso*reso*1000/Permeability<<" "<<S_l<<" "<<rel_per_g_ls<<" "<<slopl<<" "<<slopg<<endl;break;
+				finfs2<<Per_g[1]*reso*reso*1000/Permeability<<" "<<1-S_l<<" "<<Per_g_LOCAL[1]*reso*reso*1000/Permeability<<" "<<S_l<<" "<<rel_per_g_ls<<" "<<slopl<<" "<<endl;break;
 				case 3:
-				finfs2<<Per_g[2]*reso*reso*1000/Permeability<<" "<<1-S_l<<" "<<Per_g_LOCAL[2]*reso*reso*1000/Permeability<<" "<<S_l<<" "<<rel_per_g_ls<<" "<<slopl<<" "<<slopg<<endl;break;
+				finfs2<<Per_g[2]*reso*reso*1000/Permeability<<" "<<1-S_l<<" "<<Per_g_LOCAL[2]*reso*reso*1000/Permeability<<" "<<S_l<<" "<<rel_per_g_ls<<" "<<slopl<<" "<<endl;break;
 				default:
-				finfs2<<Per_g[0]*reso*reso*1000/Permeability<<" "<<1-S_l<<" "<<Per_g_LOCAL[0]*reso*reso*1000/Permeability<<" "<<S_l<<" "<<rel_per_g_ls<<" "<<slopl<<" "<<slopg<<endl;break;
+				finfs2<<Per_g[0]*reso*reso*1000/Permeability<<" "<<1-S_l<<" "<<Per_g_LOCAL[0]*reso*reso*1000/Permeability<<" "<<S_l<<" "<<rel_per_g_ls<<" "<<slopl<<" "<<endl;break;
 				}
 			finfs2.close();
 			}
 
 			//==========for bodyforce output===========
 			ofstream finf3(FileName3,ios::app);
-			finf3<<S_l<<" "<<1-S_l<<endl;
+			finf3<<S_l<<" "<<1-S_l<<" "<<abs((S_l_r-S_l)/S_l)<<endl;
 			finf3.close();
 			ofstream finf5(FileName5,ios::app);
 			finf5<<u_ave<<" "<<u_max<<"  "<<error<<endl;
