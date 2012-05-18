@@ -1,12 +1,12 @@
 =============INPUT FILE FOR 3D LATTICE BOLTZMANN MPI CODE--MULTI COMPONENT COLOR GRADIENT MODEL=======
 BC.dat          	:Geometry filename
 phase.dat       	    	:Initial components distribution
-50 16 3                 	:nx ny nz
+50 50 3                 	:nx ny nz
 1000000		     		:Maximum time step
 7.0	             		:dx (um) Resolution (for Permeability calculation)
 0	        	      	:Pressure Or Velocity Boundary (1=YES, 0=No)
 0				:Psi constant BC
-1.0e-6 0.0 0.0	          	:body force for x,y,z
+0.0e-6 0.0 0.0	          	:body force for x,y,z
 0 1.0 0 1.0000	    		:Pressure Boundary in X direction ()p=c_s^2*/rho
 0 1.0 0 1.0	    		:Pressure Boundary in Y direction ()
 0 1.0 0 1.0	    		:Pressure Boundary in Z direction (Format detials can be found within this file)
@@ -16,10 +16,10 @@ phase.dat       	    	:Initial components distribution
 0 0				:Psi constant BC in X 0=OFF, 1=Ini psi, 2=Neibourghing,3=Rand:value=line38
 0 0				:Psi constant BC in Y
 0 0				:Psi constant BC in Z
-0.05   		       		:Viscosity (Component A, psi=1)
-0.05    		       		:Viscosity (Component B, psi=-1)
+0.1   		       		:Viscosity (Component A, psi=1)
+0.1    		       		:Viscosity (Component B, psi=-1)
 0.7     		      	:Contact Angle Cos(Theta) (Positive=1 wetting, Negative -1 wetting)
-1.2e-2    		      	:Surface tension (Kappa)
+1.0e-2    		      	:Surface tension (Kappa)
 0.0 0.0 0.0			:initial velocity for x,y,z
 702398.7        	       	:Permeability (Single Phase mD)
 =========OUTPUT==CONTROL===================
@@ -27,15 +27,15 @@ phase.dat       	    	:Initial components distribution
 1                       	:Direction of Permeability Calculation (1=X, 2=Y, 3=Z)
 50		         	:Frequency of results writing (interval in time steps)
 0               		:Memory Saving mode for output subroutains (0=No, 1=Yes,for large outputs, x,z opposite)
-5000				:Freqency of velocity field writing (in vtk format, -1=no velocity writing)
--1				:Freqency of density field writing (in vtk format, -1=no density writing)
-5000				:Freqency of concentration writing (in vtk format, -1=no density writing)
+1000				:Freqency of velocity field writing (in vtk format, -1=no velocity writing)
+1000				:Freqency of density field writing (in vtk format, -1=no density writing)
+1000				:Freqency of concentration writing (in vtk format, -1=no density writing)
 ==============ADVANCE==PARAMETER==========
 0 1.0 4.0	              :Self define lattice velocity: 0=DEFAULT, dx, dt ((u_x+u_y+u_z)*dt/dx<=1 Courant Number)
 ./test1_				:OUTPUT PATH,DEFAULT: ./ (INCLUDE "/" AT THE END)
 2              			:PRESSURE AND VELOCITY BOUNDARY CONDITION OPTIONS: 0,1,2,3: EBC_S,EBC_D,TOLKE_BC,NEBC_D
 0  500				:MULTI-COMPONENT STABALIZER: (a,b) a=0=OFF, a=1=ON, BODY FORCE APPLIED AFTER b steps
-0.5                              :PRESET SATUATION, 0--1 initial component distri not needed, -1=OFF(for Component A,1)
+-1                              :PRESET SATUATION, 0--1 initial component distri not needed, -1=OFF(for Component A,1)
 0				:PRESET VALUE FOR BUFFET AREA, 0=NO,1=COMP A,-1=COMP B (valid when preset satuation)
 0.92				:Relative permeability calcualtion 0..1 (psi>=value, cal the flux for Comp1)
 0 0 0				:Pemeability calculation Partially  (1=ON, 0=OFF)

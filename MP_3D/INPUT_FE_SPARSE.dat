@@ -1,8 +1,8 @@
 =============INPUT FILE FOR 3D LATTICE BOLTZMANN MPI CODE--MULTI COMPONENT FREE ENERGY MODEL=======
 BC.dat      		:Geometry filename
 phase.dat       	:Initial components distribution
-100 10 10       		:nx ny nz
-10000	        	:Maxmum time step
+50 50 3       		:nx ny nz
+100000	        	:Maxmum time step
 0.001          		:dx (um) Resolution (for relative Permeability calculation)
 0		        :Pressure or Velocity BC mode (0=Periodic BC,1=Pressure or Velocity BC)
 0 0 0                 	:mirroring option for x,y,z (1=yes, 0=no)
@@ -16,18 +16,18 @@ phase.dat       	:Initial components distribution
 0.1			:Viscosity (Component A 1)
 0.1			:Viscosity (Component B -1)
 -0.4			:Contact Angle Cos(Theta)
-0.04			:Surface tension (Kappa)
-0.4			:Mobility
+0.03			:Surface tension (Kappa)
+0.1			:Mobility
 0.0 0.0 0.0		:initial velocity for x,y,z
 200			:Permeability (Single Phase mD)
 =========OUTPUT==CONTROL===================
 0			:Permeability writing (1=yes, 0=no)
 1               	:Direction of Permeability Calculation (1=X, 2=Y, 3=Z)
 0               	:Memory Saving output writting mode (1=Yes, 0=No)
-20			:Frequency of results writing (interval in time steps)
-200			:Frequency of velocity field writing (in vtk format, -1=no velocity writing)
-200			:Frequency of density field writing (in vtk format, -1=no density writing)
-200			:Frequency of concentration writing (in vtk format, -1=no density writing)
+50			:Frequency of results writing (interval in time steps)
+1000			:Frequency of velocity field writing (in vtk format, -1=no velocity writing)
+1000			:Frequency of density field writing (in vtk format, -1=no density writing)
+1000			:Frequency of concentration writing (in vtk format, -1=no density writing)
 0			:Mirroring part output (0=No,1=YES)
 ==============ADVANCE==PARAMETER==========
 0 50 30 3 		:ONLY USE PART OF THE ORIGINAL GEOMETRY (1=YES,0=NO,NX,NY,NZ)

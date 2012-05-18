@@ -2463,6 +2463,11 @@ double c2,c4;
 double delta_rho=0.1;
 const double c_l=lat_c;
 
+//===========test==pertubation==============
+double cb[19]={-1.0/3.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0,1.0/36.0};
+//==========================================
+
+
 
 	c2=lat_c*lat_c;c4=c2*c2;
 
@@ -2692,6 +2697,8 @@ if (rank==0)
 		
 			//-------------------------------------------------------------------------
 			
+			
+			
 			if (interi<0)
 			{
 			        if (Sl[interj*(NZ+1)+interk]>0)
@@ -2886,13 +2893,16 @@ GuoF[18]=w[18]*(lm0+lm1);
 			meq[14]=rho_0*uy*uz+0.5*CapA*cc*(ny*nz);
 			meq[15]=rho_0*ux*uz+0.5*CapA*cc*(nx*nz);
 	//========================================================================================
-	//		meq[0]=var_rho;meq[3]=rho_0*ux;meq[5]=rho_0*uy;meq[7]=rho_0*uz;
-	//		meq[1]=-CapA*cc;
-	//		meq[9]=0.5*CapA*cc*(2*nx*nx-ny*ny-nz*nz);
-	//		meq[11]=0.5*CapA*cc*(ny*ny-nz*nz);
-	//		meq[13]=0.5*CapA*cc*(nx*ny);
-	//		meq[14]=0.5*CapA*cc*(ny*nz);
-	//		meq[15]=0.5*CapA*cc*(nx*nz);
+
+	
+	//=========================================================================================
+	//		meq[0]=rho[ci];meq[3]=rho_0*ux;meq[5]=rho_0*uy;meq[7]=rho_0*uz;
+	//		meq[1]=rho_0*(ux*ux+uy*uy+uz*uz);
+	//		meq[9]=rho_0*(2*ux*ux-uy*uy-uz*uz);
+	//		meq[11]=rho_0*(uy*uy-uz*uz);
+	//		meq[13]=rho_0*ux*uy;
+	//		meq[14]=rho_0*uy*uz;
+	//		meq[15]=rho_0*ux*uz;
 
 	//=======================================================================================		
 			
@@ -3147,7 +3157,17 @@ m_inv_l[18]=+((double)0X1.C71C71C71C71CP-6)*1.0*m_l[0]+((double)0X1.555555555555
 			//==============================================================================
 				
 		
-			
+		//==========================TEST==NEW PERTUBATION===============================
+		//===========WARRING: ONLY BE USED IF LATTICE VELOCITY=1 DT=DX=1===================
+		//if (cc>0)
+		//for (int mi=0;mi<19;mi++)
+		//	{sum=9.0*CapA/4.0*s_v/2*cc*(w[mi]*(e[mi][0]*C[0]+e[mi][1]*C[1]+e[mi][2]*C[2])*(e[mi][0]*C[0]+e[mi][1]*C[1]+e[mi][2]*C[2])/(cc*cc)-cb[mi]);
+		//	m_inv_l[mi]+=sum;
+		//	//cout<<sum<<"    "<<endl;
+		//	}
+
+	
+		//==============================================================================
 
 
 		for (int mi=0; mi<19; mi++)
@@ -3434,6 +3454,13 @@ void comput_macro_variables( double* rho,double** u,double** u0,double** f,doubl
 	srand((unsigned)time(0)+rank);
 	double rand_double,psi_rand;
 
+//=============PSI FILETER==================
+double cpc=0.98;
+double psitemp;
+//==========================================
+
+
+
 	for(int i=1;i<=Count;i++)	
                    
 			{
@@ -3466,7 +3493,20 @@ void comput_macro_variables( double* rho,double** u,double** u0,double** f,doubl
 				
 				
 				psi[i]=(rho_r[i]-rho_b[i])/(rho_r[i]+rho_b[i]);
-				
+			
+			/*	
+			//==================PSI FILTER=============================
+			psitemp=(psi[i]+1)/2;
+			psitemp=psitemp>cpc/2?psitemp:cpc/2;
+			psitemp=psitemp<1-cpc/2?psitemp:1-cpc/2;
+			psitemp-=cpc/2;
+			psitemp=psitemp*(1.0/(1-cpc))*2-1;
+			//cout<<psi[i]<<"        "<<psitemp<<endl;
+			psi[i]=psitemp;
+			//=========================================================
+			*/
+
+		
 			}
 			
 		
@@ -5566,6 +5606,8 @@ void output_psi_b(int m,double* psi,int MirX,int MirY,int MirZ,int mir,int*** So
 	int* nx_g = new int[mpi_size];
 	int* disp = new int[mpi_size];
 
+
+
 	
 	MPI_Gather(&nx_l,1,MPI_INT,nx_g,1,MPI_INT,root_rank,MPI_COMM_WORLD);
 	
@@ -5634,12 +5676,13 @@ void output_psi_b(int m,double* psi,int MirX,int MirY,int MirZ,int mir,int*** So
 	out<<"POINT_DATA     "<<NX0*NY0*NZ0<<endl;
 	out<<"SCALARS sample_scalars double"<<endl;
 	out<<"LOOKUP_TABLE default"<<endl;
-
+	
+	
         for(int k=0;k<NZ0;k++)
       		for(int j=0; j<NY0; j++)
 			for(int i=0;i<NX0;i++)
 				out<<setprecision(preci)<<rbuf_psi[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]<<endl;
-
+	
 	out.close();
 				
 	}
