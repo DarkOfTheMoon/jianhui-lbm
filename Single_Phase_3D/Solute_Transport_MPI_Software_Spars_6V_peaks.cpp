@@ -25,7 +25,7 @@ using namespace std;
 const int Q=19;          
 
 
-double u_max,u_ave,gx,gy,gz,porosity;
+double u_max,u_ave,gx,gy,gz,porosity,u_ave2;
 
 //----------
 double s_e;
@@ -65,7 +65,7 @@ void collision(double*,double** ,double** ,double**,double**,double**,  double* 
 
 void comput_macro_variables(double* ,double**,double** ,double** ,double** ,double**, double**, double*, double*,double*, double*, double* ,int* ,int***,double***);
 
-double Error(double** ,double** ,double*, double*);
+double Error(double** ,double** ,double*, double*,double*);
 
 void boundary_velocity(int,double,int , double ,int ,double ,int ,double ,int ,double ,int ,double ,double** ,double**,double* ,double** ,int*** );
 
@@ -575,7 +575,7 @@ if (wr_per==1)
 			fin<<"Peclet Number="<<u_max*dx/niu_s<<"     Courant Number="<<u_max*dt/dx<<endl;
 			//fin<<"The max relative error of velocity is: "
 			//	<<setiosflags(ios::scientific)<<error<<endl;
-				fin<<"The averaged velocity is: "<<u_ave<<endl;
+			fin<<"The darcy velocity is: "<<u_ave<<"        The average velocity is: "<<u_ave2<<endl;
 			
 			fin<<"Elapsed time is "<< the<<"h"<<tme<<"m"<<tse<<"s"<<endl;
 			fin<<"The expected completion time is "<<th<<"h"<<tm<<"m"<<ts<<"s"<<endl;
@@ -583,7 +583,7 @@ if (wr_per==1)
 			fin.close();
 			}
 
-			error=Error(u,u0,&u_max,&u_ave);
+			error=Error(u,u0,&u_max,&u_ave,&u_ave2);
 			if (u_max>=10.0)	U_max_ref+=1;
 			
 			//error_perm=Comput_Perm(u,Permia,PerDir,SupInv);
@@ -610,7 +610,7 @@ if (wr_per==1)
 			fin<<"Peclet Number="<<u_max*dx/niu_s<<"     Courant Number="<<u_max*dt/dx<<endl;
 			//fin<<"The max relative error of velocity is: "
 			//	<<setiosflags(ios::scientific)<<error<<endl;
-				fin<<"The averaged velocity is: "<<u_ave<<endl;
+				fin<<"The darcy velocity is: "<<u_ave<<"        The average velocity is: "<<u_ave2<<endl;
 			
 			fin<<"Elapsed time is "<< the<<"h"<<tme<<"m"<<tse<<"s"<<endl;
 			fin<<"The expected completion time is "<<th<<"h"<<tm<<"m"<<ts<<"s"<<endl;
@@ -658,7 +658,7 @@ if (wr_per==1)
 			
 			cout<<"The Maximum velocity is: "<<setprecision(6)<<u_max<<"   Re="<<Re<<endl;
 			cout<<"Peclet Number="<<u_max*dx/niu_s<<"     Courant Number="<<u_max*dt/dx<<endl;
-			cout<<"The averaged velocity is: "<<u_ave<<endl;
+			cout<<"The darcy velocity is: "<<u_ave<<"        The average velocity is: "<<u_ave2<<endl;
 			
 			
 			//cout<<"The relative error of permiability computing is: "<<error_perm<<endl;
@@ -2203,15 +2203,17 @@ for (int j=0;j<=NY;j++)
 
 
 
-double Error(double** u,double** u0,double *v_max,double* u_average)
+double Error(double** u,double** u0,double *v_max,double* u_average,double* u_average2)
 {	
 	int rank = MPI :: COMM_WORLD . Get_rank ();
 	int mpi_size=MPI :: COMM_WORLD . Get_size ();
-	double *rbuf,*um,*uave,u_compt;
+	double *rbuf,*um,*uave,u_compt,*uave1,*uave2,*uave3;
+	double u_compt1,u_compt2,u_compt3;
 	double temp1,temp2,temp3;
-	temp1=0;
-	temp2=0;
-	temp3=0;
+	double temp4,temp5,temp6;
+	temp1=0;temp4=0;
+	temp2=0;temp5=0;
+	temp3=0;temp6=0;
 	double error_in;
 	double u_max1;
 	
@@ -2219,6 +2221,7 @@ double Error(double** u,double** u0,double *v_max,double* u_average)
 	rbuf=new double[mpi_size];
 	um = new double[mpi_size];
 	uave = new double[mpi_size];
+	uave1 = new double[mpi_size];uave2 = new double[mpi_size];uave3 = new double[mpi_size];
 	u_max1=0;
 	*v_max=0;
 
@@ -2235,6 +2238,7 @@ for(int i=1; i<Count; i++)
 			//temp1+=(u[i][0]-u0[i][0])*(u[i][0]-u0[i][0])+(u[i][1]-u0[i][1])*(u[i][1]-u0[i][1])+(u[i][2]-u0[i][2])*(u[i][2]-u0[i][2]);
 			//temp2 += u[i][0]*u[i][0]+u[i][1]*u[i][1]+u[i][2]*u[i][2];	
 			temp3+=sqrt(u[i][0]*u[i][0]+u[i][1]*u[i][1]+u[i][2]*u[i][2]);
+			temp4+=u[i][0];temp5+=u[i][1];temp6+=u[i][2];
 			if (u[i][0]*u[i][0]+u[i][1]*u[i][1]+u[i][2]*u[i][2]>u_max1)
 				u_max1=u[i][0]*u[i][0]+u[i][1]*u[i][1]+u[i][2]*u[i][2];
 			
@@ -2252,6 +2256,10 @@ for(int i=1; i<Count; i++)
 	MPI_Gather(&u_max1,1,MPI_DOUBLE,um,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 
 	MPI_Gather(&temp3,1,MPI_DOUBLE,uave,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	
+	MPI_Gather(&temp4,1,MPI_DOUBLE,uave1,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Gather(&temp5,1,MPI_DOUBLE,uave2,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Gather(&temp6,1,MPI_DOUBLE,uave3,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 
 	u_compt=0;
 	if (rank==0)
@@ -2262,11 +2270,19 @@ for(int i=1; i<Count; i++)
 		if (um[i]>*v_max)
 			*v_max=um[i];
 		u_compt+=uave[i];
-
+		
+		u_compt1+=uave1[i];
+		u_compt2+=uave2[i];
+		u_compt3+=uave3[i];
 		}
-
+		u_compt1/=(NX+1)*(NY+1)*(NZ+1)*porosity;
+		u_compt2/=(NX+1)*(NY+1)*(NZ+1)*porosity;
+		u_compt3/=(NX+1)*(NY+1)*(NZ+1)*porosity;
+		
 	u_compt/=(NX+1)*(NY+1)*(NZ+1);
 	*u_average=u_compt;
+	
+	*u_average2=sqrt(u_compt1*u_compt1+u_compt2*u_compt2+u_compt3*u_compt3);
 	
 	delete [] rbuf;
 	delete [] um;
