@@ -54,14 +54,14 @@ dt=1;                                                           %***************
 % nx=100;                         %NX in LBM        
 % delta_x=L_r/(nx*dx);                    %length  m/lu    resolution
 %----------------------------------------------
-delta_x=4.9e-6/dx;                   %Resolution in (m)
+delta_x=5.0e-6/dx;                   %Resolution in (m)
 %-------------------------------------------
 
 rho_r=1000;             %Real density (kg/m^3)                  ********************** 
 G_r=9.8;                      %Real Gravity (m/s^2)             ************************
 sigma_r=0.0238;                 %Real surface tension (N/m)         ********************        
-niu_r=1e-6;                     %Real viscosity(m/s^2)          *********************
-niu_s=0.016;                     %lattice viscosity       ***********************
+niu_r=0.00092/730;                     %Real viscosity(m/s^2)          *********************
+niu_s=0.02;                     %lattice viscosity       ***********************
 
 
 rho_s=1;                %lattice density
