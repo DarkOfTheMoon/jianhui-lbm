@@ -16,8 +16,8 @@ phase.dat       	    	:Initial components distribution
 0 0				:Psi constant BC in X 0=OFF, 1=Ini psi, 2=Neibourghing,3=Rand:value=line38
 0 0				:Psi constant BC in Y
 0 0				:Psi constant BC in Z
-0.1   		       		:Viscosity (Component A, psi=1)
-0.1    		       		:Viscosity (Component B, psi=-1)
+0.05   		       		:Viscosity (Component A, psi=1)
+0.05   		       		:Viscosity (Component B, psi=-1)
 0.7     		      	:Contact Angle Cos(Theta) (Positive=1 wetting, Negative -1 wetting)
 1.0e-2    		      	:Surface tension (Kappa)
 0.0e-3 0.0 0.0			:initial velocity for x,y,z
@@ -37,7 +37,7 @@ phase.dat       	    	:Initial components distribution
 1  500				:MULTI-COMPONENT STABALIZER: (a,b) a=0=OFF, a=1=ON, BODY FORCE APPLIED AFTER b steps
 -1                              :PRESET SATUATION, 0--1 initial component distri not needed, -1=OFF(for Component A,1)
 0				:PRESET VALUE FOR BUFFET AREA, 0=NO,1=COMP A,-1=COMP B (valid when preset satuation)
-0.92				:Relative permeability calcualtion 0..1 (psi>=value, cal the flux for Comp1)
+0.92			:Relative permeability calcualtion 0..1 (psi>=value, cal the flux for Comp1)
 0 0 0				:Pemeability calculation Partially  (1=ON, 0=OFF)
 49 3				:Permeability calculation partially Starting point and Ending point in X
 0 100				:Permeability calculation partially Starting point and Ending point in Y
