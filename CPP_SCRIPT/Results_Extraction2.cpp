@@ -6,42 +6,20 @@
 #include<sstream>
 #include<string>
 
-
-
 using namespace std; 
       
 int main (int argc , char * argv [])
 {
 
-const int imax=300000;
-int num;
-       int le_num;
-       if (argc>2)
-               le_num=atoi(argv[2]);
-       else
-               le_num=1500;
+
 
 int total_number=5;
-char prefix[128];    //prefix<<i<<"_Results.txt"
-strcpy(prefix,argv[1]);
-
+char prefix[128]="rel_";    //prefix<<i<<"_Results.txt"
 char poreFileName[128]="Summary.outdat";
-char poreFileNameles[128]="Summary_Least_Square.outdat";
-char poreFileNameave[128]="Summary_Ave.outdat";
+char poreFileName2[128]="Summary_Least_Square.outdat";
 
-char rel1file[128];
-char rel2file[128];
-
-float rel1[imax];
-float rel2[imax];
-char ls[128];
-char ls2[128];
-char index[128];
-       
 
 float var1,var2,var3,var4,var5;	
-float ave1,ave2;
-
 var1=0;var2=0;var3=0;
 char chd[128];
 int testd;
@@ -59,10 +37,7 @@ ofstream fins;
 	fins.open(poreFileName,ios::trunc);
 	fins.close();
 	
-	fins.open(poreFileNameles,ios::trunc);
-	fins.close();
-	
-	fins.open(poreFileNameave,ios::trunc);
+	fins.open(poreFileName2,ios::trunc);
 	fins.close();
 	
 for (int i=1;i<=total_number;i++)
@@ -75,7 +50,7 @@ for (int i=1;i<=total_number;i++)
 
 	if(ftest == NULL)
 	{
-		cout << "\n The pore geometry file (" << name.str().c_str() <<
+		cout << "\n The pore geometry file (" << poreFileName <<
 			") does not exist!!!!\n";
 		cout << " Please check the file\n\n";
 
@@ -117,150 +92,21 @@ for (int i=1;i<=total_number;i++)
 	                fin.getline(dummy, NCHAR);            //Elapsed time is 0h3m22s
 	                fin.getline(dummy, NCHAR);        //The expected completion time is 1h46m20s
 
-			/*
+			
 	                ofstream out(poreFileName,ios::app);
 	                out<<var1<<" "<<var2<<" "<<var3<<endl;
 	                out.close();
 	                
 	            
 	                
-	                ofstream out2(poreFileNameles,ios::app);
+	                ofstream out2(poreFileName2,ios::app);
 	                out2<<var1<<" "<<var4<<" "<<var5<<endl;
 	                out2.close();
-	                */
+	                
 	                fin.close();
 	            
 	                
 	        }
-	        
-	        
-	        
-	        
-	 name.str("");
-	name<<prefix<<i<<"_Relative_Permeability_Component1.txt";
-	
-	ftest = fopen(name.str().c_str(), "r");
-
-	if(ftest == NULL)
-	{
-		cout << "\n The pore geometry file (" <<name.str().c_str() <<
-			") does not exist!!!!\n";
-		cout << " Please check the file\n\n";
-
-		exit(0);
-	}
-	
-	                fclose(ftest);
-	             strcpy(rel1file,prefix);
-	             sprintf(index, "%d", i);
-	             strcat(rel1file,index);
-	             strcat(rel1file,"_Relative_Permeability_Component1.txt");
-	             fin.open(rel1file);
-	
-	
-	num=0;
-	while ((!fin.eof()) and (num<imax))
-		{	
-			fin >>ls; fin.getline(dummy, NCHAR);
-			rel1[num] =   atof(ls);
-			//cout<<num<<"   @     "<<rel1[num]<<" "<<ls<<" "<<rel1file<<endl;
-			
-			num++;
-			
-		}
-	fin.close();   
-	
-	        
-	        
-	        
-	        //=================================
-	name.str("");
-	name<<prefix<<i<<"_Relative_Permeability_Component2.txt";
-	
-	ftest = fopen(name.str().c_str(), "r");
-
-	if(ftest == NULL)
-	{
-		cout << "\n The pore geometry file (" << name.str().c_str() <<
-			") does not exist!!!!\n";
-		cout << " Please check the file\n\n";
-
-		exit(0);
-	}
-	
-	                fclose(ftest);
-	             strcpy(rel2file,prefix);
-	             sprintf(index, "%d", i);
-	             strcat(rel2file,index);
-	             strcat(rel2file,"_Relative_Permeability_Component2.txt");
-	          
-	             fin.open(rel2file);
-	
-	
-	num=0;
-	while ((!fin.eof()) and (num<imax))
-		{	
-			fin >>ls; fin.getline(dummy, NCHAR);
-			rel2[num] =   atof(ls);
-			//cout<<num<<"        "<<rel1[num]<<"   "<<name.str().c_str()<<endl;
-			num++;
-			
-		}
-	fin.close();   
-	       
-	        
-	        
-	        
-	        
-	        double tb1,yb1,x11,x01,lst1,lsb1;
-	  double tb2,yb2,x12,x02,lst2,lsb2;
-	        ave1=0;ave2=0; tb1=0;yb1=0;tb2=0;yb2=0;
-	for (int j=num-le_num;j<num;j++)
-	        {
-	                ave1+=rel1[j];ave2+=rel2[j];
-	                tb1+=j;tb2+=j;
-	                //cout<<rel1[j]<<endl;
-	        }
-	        tb1/=le_num;tb2/=le_num;
-	        ave1/=le_num;ave2/=le_num;
-	        yb1=ave1;yb2=ave2;
-	        lst1=0;lsb1=0;lst2=0;lsb2=0;
-	        for (int j=num-le_num;j<num;j++)
-	        {
-	                lst1+=(j-tb1)*(rel1[j]-yb1);
-	                lsb1+=(j-tb1)*(j-tb1);
-	                lst2+=(j-tb2)*(rel2[j]-yb2);
-	                lsb2+=(j-tb2)*(j-tb2);
-	                
-	        }
-	        
-	                                x11=lst1/lsb1;
-	                          x01=yb1-x11*tb1;
-	                          x12=lst2/lsb2;
-	                          x02=yb2-x12*tb2;
-	                          
-	                          var4=x01+x11*(num-1);
-	                          var5=x02+x12*(num-1);
-	                          
-	               ofstream out(poreFileName,ios::app);
-	                out<<var1<<" "<<var2<<" "<<var3<<endl;
-	                out.close();
-	                
-	            
-	                
-	                ofstream out2(poreFileNameles,ios::app);
-	                out2<<var1<<" "<<var4<<" "<<var5<<endl;
-	                out2.close();
-	                
-	                
-	                ofstream out3(poreFileNameave,ios::app);
-	                out3<<var1<<" "<<ave1<<" "<<ave2<<endl;
-	                out3.close();
-	                
-	                          
-	                          
-	        
-	        
 	
 }
 

@@ -145,8 +145,8 @@ int main(int argc , char *argv [])
 	                          x01=yb1-x11*tb1;
 	                          x12=lst2/lsb2;
 	                          x02=yb2-x12*tb2;
-	                   rel_new1[i]=x01+x11*i;  
-	                   rel_new2[i]=x02+x12*i;
+	                   rel_new1[i]=x01+x11*(i+le_num-1);  
+	                   rel_new2[i]=x02+x12*(i+le_num-1);
 	                   dev1[i]/=le_num;dev2[i]/=le_num;
 	                   dev1[i]=sqrt(dev1[i]);
 	                    dev2[i]=sqrt(dev2[i]);
