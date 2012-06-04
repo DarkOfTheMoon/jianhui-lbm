@@ -29,7 +29,7 @@ using namespace std;
 int main(int argc , char *argv [])
 {
         
-       const int imax=200000;
+       const int imax=300000;
        int le_num;
        if (argc>2)
                le_num=atoi(argv[2]);
@@ -49,6 +49,10 @@ int main(int argc , char *argv [])
         int NCHAR=128;char dummy[128+1];
         float rel1[imax];
         float rel2[imax];
+        float ave1[imax];//regeional
+        float ave2[imax];
+        float dev1[imax];
+        float dev2[imax];
         char ls[128];
         int num;
         
@@ -112,20 +116,30 @@ int main(int argc , char *argv [])
 	  rel_new1= new double[num-le_num];
 	  rel_new2=new double[num-le_num];
 	  for (int i=0;i<num-le_num;i++)
-	          {
+	          {        
+	                  dev1[i]=0;dev2[i]=0;
 	                  tb1=0;yb1=0;tb2=0;yb2=0;
 	                  for (int j=i;j<i+le_num;j++)
-	                          {tb1+=j;yb1+=rel1[j];tb2+=j;yb2+=rel2[j];}
+	                          {
+	                                  tb1+=j;yb1+=rel1[j];tb2+=j;yb2+=rel2[j];
+	                                 
+	                          }
 	                  tb1/=le_num;yb1/=le_num;
 	                  lst1=0;lsb1=0;lst2=0;lsb2=0;
 	                   tb2/=le_num;yb2/=le_num;
-	               
+	                  
+	                   ave1[i]=yb1;ave2[i]=yb2;
+	                   
+	                   
 	                  for (int j=i;j<i+le_num;j++)
 	                          {
 	                                  lst1+=(j-tb1)*(rel1[j]-yb1);
 	                                  lsb1+=(j-tb1)*(j-tb1);
 	                                  lst2+=(j-tb2)*(rel2[j]-yb2);
 	                                  lsb2+=(j-tb2)*(j-tb2);
+	                                  dev1[i]+=(rel1[i]-yb1)*(rel1[i]-yb1);
+	                                  dev2[i]+=(rel2[i]-yb2)*(rel2[i]-yb2);
+	                                  
 	                          }
 	                          x11=lst1/lsb1;
 	                          x01=yb1-x11*tb1;
@@ -133,6 +147,9 @@ int main(int argc , char *argv [])
 	                          x02=yb2-x12*tb2;
 	                   rel_new1[i]=x01+x11*i;  
 	                   rel_new2[i]=x02+x12*i;
+	                   dev1[i]/=le_num;dev2[i]/=le_num;
+	                   dev1[i]=sqrt(dev1[i]);
+	                    dev2[i]=sqrt(dev2[i]);
 	                          
 	          }
 	        
@@ -143,7 +160,7 @@ int main(int argc , char *argv [])
 	out.open(name.str().c_str());
 	
 	for (int i=0;i<num-le_num;i++)
-	        out<<rel_new1[i]<<" "<<rel_new2[i]<<endl;
+	        out<<rel_new1[i]<<" "<<rel_new2[i]<<" "<<ave1[i]<<" "<<ave2[i]<<" "<<dev1[i]<<" "<<dev2[i]<<endl;
 	
 	
 	out.close();
