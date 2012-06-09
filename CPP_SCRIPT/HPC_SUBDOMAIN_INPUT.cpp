@@ -197,7 +197,7 @@ out<<"2            :PRESSURE AND VELOCITY BOUNDARY CONDITION OPTIONS: 0,1,2,3: E
 out<<"1  1000	:MULTI-COMPONENT STABALIZER: (a,b) a=0=OFF, a=1=ON, BODY FORCE APPLIED AFTER b steps"<<endl;
 out<<(double)1.0/(total_number+1)*i<<"               :PRESET SATUATION, 0--1, distri not needed, -1=OFF(for Comp A,1)"<<endl;
 out<<"0				:PRESET VALUE FOR BUFFET AREA, 0=NO,1=COMP A,-1=COMP B (valid when preset satuation)"<<endl;
-out<<"0.8				:Relative permeability calcualtion 0..1 (psi>=value, cal the flux for Comp1)"<<endl;
+out<<"0.8 0.92				:Relative permeability calcualtion 0..1 (psi>=value, cal the flux for Comp1)"<<endl;
 out<<"1 0 0				:Pemeability calculation Partially  (1=ON, 0=OFF)"<<endl;
 out<<"308 9				:Permeability calculation partially Starting point and Ending point in X"<<endl;
 out<<"0 100				:Permeability calculation partially Starting point and Ending point in Y"<<endl;
