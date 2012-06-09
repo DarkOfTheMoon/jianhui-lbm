@@ -260,7 +260,7 @@ int pressure_change,pre_chan_pb,pre_chan_1,pre_chan_2,pre_chan_3,pre_chan_4,pre_
 double pre_chan_pn1,pre_chan_pn2,pre_chan_pn3,pre_chan_pn4,pre_chan_pn5;
 double pre_chan_pp1,pre_chan_pp2,pre_chan_pp3,pre_chan_pp4,pre_chan_pp5;
 double pre_chan_f1,pre_chan_f2,pre_chan_f3,pre_chan_f4,pre_chan_f5;
-double rel_perm_psi;
+double rel_perm_psi,rel_perm_psi2;
 
 //=======VISCOSITY INTERPOLATION=============
 double wl,wg,lg0,l1,l2,g1,g2,delta;
@@ -355,7 +355,7 @@ double v_max,error_Per;
 	fin >> stab >> stab_time;			fin.getline(dummy, NCHAR);
 	fin >> ini_Sat;                                 fin.getline(dummy, NCHAR);
 	fin >> ini_buf;                                 fin.getline(dummy, NCHAR);
-	fin >> rel_perm_psi;				fin.getline(dummy, NCHAR);
+	fin >> rel_perm_psi>>rel_perm_psi2;				fin.getline(dummy, NCHAR);
 	fin >> par_per_x >> par_per_y >>par_per_z;	fin.getline(dummy, NCHAR);
 	fin >> per_xp >> per_xn;			fin.getline(dummy, NCHAR);
 	fin >> per_yp >> per_yn;			fin.getline(dummy, NCHAR);
@@ -470,7 +470,7 @@ double v_max,error_Per;
 	MPI_Bcast(&pre_chan_pp4,1,MPI_DOUBLE,0,MPI_COMM_WORLD);MPI_Bcast(&pre_chan_f4,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 	MPI_Bcast(&pre_chan_5,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&pre_chan_pn5,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 	MPI_Bcast(&pre_chan_pp5,1,MPI_DOUBLE,0,MPI_COMM_WORLD);MPI_Bcast(&pre_chan_f5,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
-	MPI_Bcast(&rel_perm_psi,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Bcast(&rel_perm_psi,1,MPI_DOUBLE,0,MPI_COMM_WORLD);MPI_Bcast(&rel_perm_psi2,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 	MPI_Bcast(&bodyforce_apply,1,MPI_INT,0,MPI_COMM_WORLD);
 
 	//=============CAPILLARY PRESSURE APPLY================
@@ -2788,7 +2788,7 @@ if (rank==0)
 
 
 //==========================
-if (((bodyforce_apply==1) and (psi[ci]<rel_perm_psi)) or ((bodyforce_apply==-1) and (psi[ci]>-rel_perm_psi)))
+if (((bodyforce_apply==1) and (psi[ci]<rel_perm_psi)) or ((bodyforce_apply==-1) and (psi[ci]>-rel_perm_psi2)))
 {
 GuoF[0]=0.0;GuoF[1]=0.0;GuoF[2]=0.0;GuoF[3]=0.0;GuoF[4]=0.0;GuoF[5]=0.0;GuoF[6]=0.0;GuoF[7]=0.0;
 GuoF[8]=0.0;GuoF[9]=0.0;GuoF[10]=0.0;GuoF[11]=0.0;GuoF[12]=0.0;GuoF[13]=0.0;GuoF[14]=0.0;GuoF[15]=0.0;
@@ -5993,7 +5993,7 @@ void Comput_Perm_LOCAL(double* psi,double** u,double* Per_l,double* Per_g,int Pe
 			Q_l[1]+=u[Solid[nx_l-2][j][k]][1];
 			Q_l[2]+=u[Solid[nx_l-2][j][k]][2];
 			}
-			if (psi[Solid[nx_l-2][j][k]]<=-rel_perm_psi)
+			if (psi[Solid[nx_l-2][j][k]]<=-rel_perm_psi2)
 			{
 			Q_g[0]+=u[Solid[nx_l-2][j][k]][0];
 			Q_g[1]+=u[Solid[nx_l-2][j][k]][1];
@@ -6110,7 +6110,7 @@ double Comput_Perm(double* psi,double** u,double* Per_l,double* Per_g,int PerDIr
 		                Q_l[1]+=u[i][1];
 		                Q_l[2]+=u[i][2];
 		        }
-		if (psi[i]<=-rel_perm_psi)
+		if (psi[i]<=-rel_perm_psi2)
 		        {
                                 Q_g[0]+=u[i][0];
                                 Q_g[1]+=u[i][1];
@@ -6131,7 +6131,7 @@ double Comput_Perm(double* psi,double** u,double* Per_l,double* Per_g,int PerDIr
 		                Q_l[1]+=u[i][1];
 		                Q_l[2]+=u[i][2];
 		        }
-		if (psi[i]<=-rel_perm_psi)
+		if (psi[i]<=-rel_perm_psi2)
 		        {
                                 Q_g[0]+=u[i][0];
                                 Q_g[1]+=u[i][1];
