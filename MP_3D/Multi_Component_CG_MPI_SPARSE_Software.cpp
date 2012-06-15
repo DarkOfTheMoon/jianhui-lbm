@@ -3487,9 +3487,9 @@ double psitemp;
 				rho_b[i]=rhob[i];
 				rhor[i]=0;
 				rhob[i]=0;
-				u[i][0]=(u[i][0]+dt*gxs)/rho[i];
-				u[i][1]=(u[i][1]+dt*gys)/rho[i];
-				u[i][2]=(u[i][2]+dt*gzs)/rho[i];
+				u[i][0]=(u[i][0]+dt*gxs/2)/rho[i];
+				u[i][1]=(u[i][1]+dt*gys/2)/rho[i];
+				u[i][2]=(u[i][2]+dt*gzs/2)/rho[i];
 				
 				
 				psi[i]=(rho_r[i]-rho_b[i])/(rho_r[i]+rho_b[i]);

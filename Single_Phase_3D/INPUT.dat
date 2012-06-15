@@ -1,11 +1,11 @@
 =================SINGLE PHASE LATTICE BOLTZMANN CODE INPUT FILE================================================
 BC.dat        :Geometry filename
-100 60 3                 :nx ny nz
+30 30 3                 :nx ny nz
 100000	                 :Maxmum time step
-7.249	                :x=1 (um) Resolution (for Permeability calculation, resolution/dx)
-1	        	       :Pressure/Velocity Boundary (1=Yes, 0=No)   Convergence accelerator (1=yes, 0=no)
-0.0e-6 0.0 0.0          :body force for x,y,z
-1 1.0 1 1.003 	:Pressure Boundary in X direction (Format detials can be found within this file)p=c_s^2*/rho
+7.0	                :x=1 (um) Resolution (for Permeability calculation, resolution/dx)
+0	        	       :Pressure/Velocity Boundary (1=Yes, 0=No)   Convergence accelerator (1=yes, 0=no)
+1.0e-6 0.0 0.0          :body force for x,y,z
+0 1.0 0 1.003 	:Pressure Boundary in X direction (Format detials can be found within this file)p=c_s^2*/rho
 0 1.0 0 1.0	:Pressure Boundary in Y direction (Format detials can be found within this file)
 0 1.0 0 1.0	:Pressure Boundary in Z direction (Format detials can be found within this file)
 0 0.0 0 0.07	:Velocity Boundary in X direction (Format detials can be found within this file)
@@ -18,8 +18,8 @@ BC.dat        :Geometry filename
 1               :Direction of Permeability Calculation (1=X, 2=Y, 3=Z)
 50		:Frequency of results writing (interval in time steps)
 0               :Memory Saving mode for output subroutains (0=No, 1=Yes, recommended for large outputs)
-500		:Frequency of velocity field writing (in vtk format, -1=no velocity writing)
-500		:Frequency of density field writing (in vtk format, -1=no density writing)
+5000		:Frequency of velocity field writing (in vtk format, -1=no velocity writing)
+5000		:Frequency of density field writing (in vtk format, -1=no density writing)
 ==============ADVANCE==PARAMETER==========
 0 1.0 2.0	:Self define lattice velocity: 0=DEFAULT, dx, dt ((u_x+u_y+u_z)*dt/dx<=1 Courant Number)
 ./		:OUTPUT PATH,DEFAULT: ./ (REMEMBER TO INCLUDE "/" AT THE END OF PATH)
