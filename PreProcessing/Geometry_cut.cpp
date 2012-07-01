@@ -11,20 +11,20 @@ using namespace std;
 int main (int argc , char * argv [])
 {
 
-int nx=128;
-int ny=128;
-int nz=128;
+int nx=350;
+int ny=350;
+int nz=350;
 int dir=3;
 int sym_x=0;
 int sym_y=0;
 int sym_z=0;
 
 int xn=20;
-int xp=120;
+int xp=320;
 int yn=0;
-int yp=128;
+int yp=300;
 int zn=0;
-int zp=128;
+int zp=300;
 
 
 
@@ -34,7 +34,7 @@ int sum=0;
 
 bool*** Solid_Int;
 bool*** Solid;
-char poreFileName[128]="128.all";
+char poreFileName[128]="MtGambier_nb5.dat";
 
 	FILE *ftest;
 	ifstream fin;
@@ -83,21 +83,21 @@ double pore;
 	}
 		
 		
-	//for(k=0 ; k<nz ; k++)				///*********
-	//for(j=0 ; j<ny ; j++)
-	//for(i=0 ; i<nx ; i++)				///*********
+	for(k=0 ; k<nz ; k++)				///*********
+	for(j=0 ; j<ny ; j++)
+	for(i=0 ; i<nx ; i++)				///*********
 
 
-	while (!fin.eof())                                        //**********
+	//while (!fin.eof())                                        //**********
 		{	
-			fin >> ci >> cj>> ck>>pore;
-			//fin >> pore;
+			//fin >> ci >> cj>> ck>>pore;
+			fin >> pore;
 			
-			if (pore == 0.0)	{Solid[ci-1][cj-1][ck-1] = 0;}
-			//if (pore == 0.0)	{Solid[i][j][k] = 0;}
+			//if (pore == 0.0)	{Solid[ci-1][cj-1][ck-1] = 0;}
+			if (pore == 0.0)	{Solid[i][j][k] = 0;}
 			
-			if (pore == 1.0) 	{Solid[ci-1][cj-1][ck-1] = 1;sum++;}
-			//if (pore == 1.0) 	{Solid[i][j][k] = 1;sum++;}
+			//if (pore == 1.0) 	{Solid[ci-1][cj-1][ck-1] = 1;sum++;}
+			if (pore == 1.0) 	{Solid[i][j][k] = 1;sum++;}
 			
 			
 			
@@ -148,11 +148,11 @@ if (sym_z==1)
 	//cout<<sum<<endl;
 
 	ostringstream name;
-	name<<poreFileName<<"_cut.vtk";
+	name<<poreFileName<<"_cut.dat";
 	ofstream out;
 	out.open(name.str().c_str());
 	
-	
+	/*
 	out<<"# vtk DataFile Version 2.0"<<endl;
 	out<<"J.Yang Lattice Boltzmann Simulation 3D Single Phase-Solid-Density"<<endl;
 	out<<"ASCII"<<endl;
@@ -163,7 +163,7 @@ if (sym_z==1)
 	out<<"POINT_DATA     "<<(xp-xn)*(yp-yn)*(zp-zn)<<endl;				///*********
 	out<<"SCALARS sample_scalars float"<<endl;
 	out<<"LOOKUP_TABLE default"<<endl;
-	
+	*/
 	
 	
 	for(k=zn ; k<zp ; k++)						///*********
