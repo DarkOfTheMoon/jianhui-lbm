@@ -17,7 +17,7 @@ int nx=400;
 int ny=400;
 int nz=400;
 int nxref,nyref,nzref;
-int divnumori=12;
+int divnumori=36;
 int divnum;
 int oddval=1;
 int evennum=0;
