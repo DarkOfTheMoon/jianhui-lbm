@@ -217,7 +217,31 @@ double*** Psi_local;
 char pfix[128];
 int decbin;	
 
+//================MPI TRANSFER INITIALIZATION=====================
+	int* Gcl;
+	int* Gcr;
 
+	
+	double* sendl_s;
+	double* sendr_s;
+	
+	
+	double* sendl;
+	double* sendr;
+
+	double* recvl;
+	double* recvr;
+
+
+	
+	double* recvl_s;
+	double* recvr_s;
+	
+
+
+
+
+//=========================================================
 
 int main(int argc , char *argv [])
 {	
@@ -229,6 +253,11 @@ double start , finish,remain;
 
 int rank = MPI :: COMM_WORLD . Get_rank ();
 int para_size=MPI :: COMM_WORLD . Get_size ();
+//**********************
+int mpi_size=para_size;
+//***********************
+
+
 
 int dif,th,tm,ts;
 
@@ -587,6 +616,109 @@ if (wr_per==1)
 
 	fins.open(FileName4,ios::out);
 	fins.close();
+	
+	
+	//==============MPI TRANSFER INITIALIZATION===================
+	
+	Gcl = new int[mpi_size];
+	Gcr = new int[mpi_size];
+
+	
+	MPI_Gather(&cl,1,MPI_INT,Gcl,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(Gcl,mpi_size,MPI_INT,0,MPI_COMM_WORLD);
+
+	MPI_Gather(&cr,1,MPI_INT,Gcr,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(Gcr,mpi_size,MPI_INT,0,MPI_COMM_WORLD);
+
+	
+
+	recvl= new double[Gcl[rank]*5];
+	recvr = new double[Gcr[rank]*5];
+
+
+	
+	recvl_s= new double[Gcl[rank]*5];
+	recvr_s = new double[Gcr[rank]*5];
+	
+
+if (rank==0)
+		{
+		
+		sendl_s = new double[Gcr[mpi_size-1]*5];
+		sendr_s = new double[Gcl[rank+1]*5];
+
+		sendl = new double[Gcr[mpi_size-1]*5];
+		sendr = new double[Gcl[rank+1]*5];
+
+
+		for (int ka=0;ka<Gcr[mpi_size-1];ka++)
+				for (int kb=0;kb<5;kb++)
+				{sendl[ka*5+kb]=-1;sendl_s[ka*5+kb]=-1;}
+		                
+		 for (int ka=0;ka<Gcl[rank+1];ka++)
+		                for (int kb=0;kb<5;kb++)
+				{sendr[ka*5+kb]=-1;sendr_s[ka*5+kb]=-1;}
+  
+		
+		
+		}	
+		else
+		if (rank==mpi_size-1)
+			{
+			
+			sendl_s = new double[Gcr[rank-1]*5];
+			sendr_s = new double[Gcl[0]*5];
+			
+			sendl = new double[Gcr[rank-1]*5];
+			sendr = new double[Gcl[0]*5];
+
+
+			for (int ka=0;ka<Gcr[rank-1];ka++)
+				for (int kb=0;kb<5;kb++)
+				{sendl[ka*5+kb]=-1;sendl_s[ka*5+kb]=-1;}
+		                
+
+		        for (int ka=0;ka<Gcl[0];ka++)
+				for (int kb=0;kb<5;kb++)
+			   	{sendr[ka*5+kb]=-1;sendr_s[ka*5+kb]=-1;}
+			
+			
+			}
+			else
+			{
+			
+			sendl_s = new double[Gcr[rank-1]*5];
+			sendr_s = new double[Gcl[rank+1]*5];
+			
+			sendl = new double[Gcr[rank-1]*5];
+			sendr = new double[Gcl[rank+1]*5];
+
+			for (int ka=0;ka<Gcr[rank-1];ka++)
+				for (int kb=0;kb<5;kb++)
+				{sendl[ka*5+kb]=-1;sendl_s[ka*5+kb]=-1;}
+
+		        for (int ka=0;ka<Gcl[rank+1];ka++)
+				for (int kb=0;kb<5;kb++)
+				{sendr[ka*5+kb]=-1;sendr_s[ka*5+kb]=-1;}
+			
+			}
+
+	
+	
+	
+	
+	//===================================================
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	for(n=0;n<=n_max;n++)
 	{
@@ -1549,6 +1681,9 @@ double c2,c4;
 
 	c2=lat_c*lat_c;c4=c2*c2;
 
+	
+	
+	/*
 	int* Gcl = new int[mpi_size];
 	int* Gcr = new int[mpi_size];
 
@@ -1574,16 +1709,16 @@ double c2,c4;
 	
 	double* recvl_s= new double[Gcl[rank]*5];
 	double* recvr_s = new double[Gcr[rank]*5];
-	
+	*/
 
 if (rank==0)
 		{
 		
-		sendl_s = new double[Gcr[mpi_size-1]*5];
-		sendr_s = new double[Gcl[rank+1]*5];
+//		sendl_s = new double[Gcr[mpi_size-1]*5];
+//		sendr_s = new double[Gcl[rank+1]*5];
 
-		sendl = new double[Gcr[mpi_size-1]*5];
-		sendr = new double[Gcl[rank+1]*5];
+//		sendl = new double[Gcr[mpi_size-1]*5];
+//		sendr = new double[Gcl[rank+1]*5];
 
 
 		for (int ka=0;ka<Gcr[mpi_size-1];ka++)
@@ -1601,11 +1736,11 @@ if (rank==0)
 		if (rank==mpi_size-1)
 			{
 			
-			sendl_s = new double[Gcr[rank-1]*5];
-			sendr_s = new double[Gcl[0]*5];
+//			sendl_s = new double[Gcr[rank-1]*5];
+//			sendr_s = new double[Gcl[0]*5];
 			
-			sendl = new double[Gcr[rank-1]*5];
-			sendr = new double[Gcl[0]*5];
+//			sendl = new double[Gcr[rank-1]*5];
+//			sendr = new double[Gcl[0]*5];
 
 
 			for (int ka=0;ka<Gcr[rank-1];ka++)
@@ -1622,11 +1757,11 @@ if (rank==0)
 			else
 			{
 			
-			sendl_s = new double[Gcr[rank-1]*5];
-			sendr_s = new double[Gcl[rank+1]*5];
+//			sendl_s = new double[Gcr[rank-1]*5];
+//			sendr_s = new double[Gcl[rank+1]*5];
 			
-			sendl = new double[Gcr[rank-1]*5];
-			sendr = new double[Gcl[rank+1]*5];
+//			sendl = new double[Gcr[rank-1]*5];
+//			sendr = new double[Gcl[rank+1]*5];
 
 			for (int ka=0;ka<Gcr[rank-1];ka++)
 				for (int kb=0;kb<5;kb++)
@@ -2148,7 +2283,7 @@ m_inv_l[18]=+((double)0X1.C71C71C71C71CP-6)*1.0*m_l[0]+((double)0X1.555555555555
 			
 		
 			
-	
+	/*
 	delete [] Gcl;
 	delete [] Gcr;
 	delete [] sendl_s;
@@ -2160,7 +2295,7 @@ m_inv_l[18]=+((double)0X1.C71C71C71C71CP-6)*1.0*m_l[0]+((double)0X1.555555555555
 	delete [] sendr;
 	delete [] recvl;
 	delete [] recvr;
-
+	*/
 	
 	
 

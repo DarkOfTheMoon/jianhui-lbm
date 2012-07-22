@@ -1,7 +1,7 @@
 =============INPUT FILE FOR 3D LATTICE BOLTZMANN MPI CODE--Solute and heat transfer=======
 BC.dat                  	:Geometry filenameEmily_Berea_y_614_764_7.dat
 phase.dat       	    	:Initial components distribution (ST_Peaks do not need this option)
-60 30 3                 	:nx ny nz
+30 30 3                 	:nx ny nz
 2000000		     		:Maximum time step
 4.9	             		:dx (um) Resolution (for Permeability calculation)
 0 	        	      	:Pressure Or Velocity Boundary (1=YES, 0=No)
@@ -45,8 +45,8 @@ phase.dat       	    	:Initial components distribution (ST_Peaks do not need thi
 ====================BACKUP=PARAMETERS==========================
 -1		                   :BACKUP FREQUENCY (-1=NO BACKUP)
 0                               :INITIALIZATION WITH BACKUP DATA (0=OFF, 1=ON)
-35000				:intial data for velocity (for ST only)
-1 3 16				:Number of peaks, width,starting coordinate (only for ST_6V_peaks)
+10000				:intial data for velocity (for ST only)
+2 2 6				:Number of peaks, width,starting coordinate (only for ST_6V_peaks)
 ======================GEOMETRY READING======================
 0		:Geometry Reading format, 0=decimal,1=binary
 

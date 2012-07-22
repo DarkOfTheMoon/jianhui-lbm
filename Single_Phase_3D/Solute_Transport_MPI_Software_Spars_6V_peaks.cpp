@@ -185,7 +185,23 @@ double*** Psi_local;
 char pfix[128];
 int decbin;
 
+//===========INITIALIZATION=======================
+        int* Gcl;
+	int* Gcr;
+
+	double* sendl_s;
+	double* sendr_s;
+
+	double* recvl_s;
+	double* recvr_s;
 	
+
+//============================================
+
+
+
+
+
 int main(int argc , char *argv [])
 {	
 
@@ -196,6 +212,12 @@ double start , finish,remain;
 
 int rank = MPI :: COMM_WORLD . Get_rank ();
 int para_size=MPI :: COMM_WORLD . Get_size ();
+
+//**********************
+int mpi_size=para_size;
+//***********************
+
+
 
 int dif,th,tm,ts;
 
@@ -543,6 +565,88 @@ if (wr_per==1)
 
 	fins.open(FileName4,ios::out);
 	fins.close();
+	
+	
+	//===================MPI INITIALIZATION===================
+	
+	Gcl = new int[mpi_size];
+	Gcr = new int[mpi_size];
+
+	
+	MPI_Gather(&cl,1,MPI_INT,Gcl,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(Gcl,mpi_size,MPI_INT,0,MPI_COMM_WORLD);
+
+	MPI_Gather(&cr,1,MPI_INT,Gcr,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(Gcr,mpi_size,MPI_INT,0,MPI_COMM_WORLD);
+
+
+	recvl_s= new double[Gcl[rank]];
+	recvr_s = new double[Gcr[rank]];
+	
+
+if (rank==0)
+		{
+		
+		sendl_s = new double[Gcr[mpi_size-1]];
+		sendr_s = new double[Gcl[rank+1]];
+
+		
+
+
+		for (int ka=0;ka<Gcr[mpi_size-1];ka++)
+				sendl_s[ka]=-100;
+		                
+		 for (int ka=0;ka<Gcl[rank+1];ka++)
+		               sendr_s[ka]=-100;
+  
+		
+		
+		}	
+		else
+		if (rank==mpi_size-1)
+			{
+			
+			sendl_s = new double[Gcr[rank-1]];
+			sendr_s = new double[Gcl[0]];
+			
+			
+
+			for (int ka=0;ka<Gcr[rank-1];ka++)
+				sendl_s[ka]=-100;
+		                
+
+		        for (int ka=0;ka<Gcl[0];ka++)
+				sendr_s[ka]=-100;
+			
+			
+			}
+			else
+			{
+			
+			sendl_s = new double[Gcr[rank-1]];
+			sendr_s = new double[Gcl[rank+1]];
+			
+			
+
+			for (int ka=0;ka<Gcr[rank-1];ka++)
+				sendl_s[ka]=-100;
+
+		        for (int ka=0;ka<Gcl[rank+1];ka++)
+				sendr_s[ka]=-100;
+			
+			}
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	//==================================================
+	
 	
 	for(n=0;n<=n_max;n++)
 	{
@@ -1638,14 +1742,14 @@ MPI_Barrier(MPI_COMM_WORLD);
 			
 		
 			
-	
+	/*
 	delete [] Gcl;
 	delete [] Gcr;
 	delete [] sendl_s;
 	delete [] sendr_s;
 	delete [] recvl_s;
 	delete [] recvr_s;		
-	
+	*/
 	
 
 	

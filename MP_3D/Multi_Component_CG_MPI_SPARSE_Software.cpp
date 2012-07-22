@@ -243,6 +243,35 @@ char FileName7[128];
 //===============================================
 
 
+//===============MPI TRANSFER INITIALIZATION=============
+        int* Gcl;
+        int* Gcr;
+
+        double* recvl_psi;
+	double* recvr_psi;
+	double* sendl_rhor;
+	double* sendr_rhor;
+	double* sendl_rhob;
+	double* sendr_rhob;
+	
+	double* sendl;
+	double* sendr;
+
+	double* recvl;
+	double* recvr;
+
+
+	double* sendl_psi;
+	double* sendr_psi;
+	double* recvl_rhor;
+	double* recvr_rhor ;
+	double* recvl_rhob;
+	double* recvr_rhob;
+
+//=================================================
+
+
+
 
 
 char outputfile[128]="./";
@@ -289,6 +318,11 @@ double start , finish,remain;
 
 int rank = MPI :: COMM_WORLD . Get_rank ();
 int para_size=MPI :: COMM_WORLD . Get_size ();
+//**********************
+int mpi_size=para_size;
+//***********************
+
+
 
 int dif,th,tm,ts;
 
@@ -735,6 +769,137 @@ if (wr_per==1)
 	fins.open(FileName5,ios::out);
 	fins.close();
 
+	
+	
+	//=============MPI TRANSFER INITIALIZATION====================
+	
+	Gcl = new int[mpi_size];
+	Gcr = new int[mpi_size];
+
+	
+	MPI_Gather(&cl,1,MPI_INT,Gcl,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(Gcl,mpi_size,MPI_INT,0,MPI_COMM_WORLD);
+
+	MPI_Gather(&cr,1,MPI_INT,Gcr,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(Gcr,mpi_size,MPI_INT,0,MPI_COMM_WORLD);
+
+	
+
+	recvl= new double[Gcl[rank]*5];
+	recvr = new double[Gcr[rank]*5];
+
+
+	sendl_psi = new double[Gcl[rank]];
+	sendr_psi = new double[Gcr[rank]];
+	recvl_rhor= new double[Gcl[rank]];
+	recvr_rhor = new double[Gcr[rank]];
+	recvl_rhob= new double[Gcl[rank]];
+	recvr_rhob = new double[Gcr[rank]];
+
+if (rank==0)
+		{
+		recvl_psi = new double[Gcr[mpi_size-1]];
+		recvr_psi = new double[Gcl[rank+1]];
+		sendl_rhor = new double[Gcr[mpi_size-1]];
+		sendr_rhor = new double[Gcl[rank+1]];
+		sendl_rhob = new double[Gcr[mpi_size-1]];
+		sendr_rhob = new double[Gcl[rank+1]];
+		sendl = new double[Gcr[mpi_size-1]*5];
+		sendr = new double[Gcl[rank+1]*5];
+
+
+		for (int ka=0;ka<Gcr[mpi_size-1];ka++)
+		        {
+		                sendl_rhor[ka]=0;sendl_rhob[ka]=0;
+				for (int kb=0;kb<5;kb++)
+				sendl[ka*5+kb]=0;
+		                
+		        }
+		 for (int ka=0;ka<Gcl[rank+1];ka++)
+		        {
+		                sendr_rhor[ka]=0;sendr_rhob[ka]=0;
+		                for (int kb=0;kb<5;kb++)
+				sendr[ka*5+kb]=0;
+		        }       
+		
+		
+		}	
+		else
+		if (rank==mpi_size-1)
+			{
+			recvl_psi = new double[Gcr[rank-1]];
+			recvr_psi = new double[Gcl[0]];
+			sendl_rhor = new double[Gcr[rank-1]];
+			sendr_rhor = new double[Gcl[0]];
+			sendl_rhob = new double[Gcr[rank-1]];
+			sendr_rhob = new double[Gcl[0]];
+			sendl = new double[Gcr[rank-1]*5];
+			sendr = new double[Gcl[0]*5];
+
+
+			for (int ka=0;ka<Gcr[rank-1];ka++)
+		        {
+		                sendl_rhor[ka]=0;sendl_rhob[ka]=0;
+				for (int kb=0;kb<5;kb++)
+				sendl[ka*5+kb]=0;
+		                
+		        }
+		        for (int ka=0;ka<Gcl[0];ka++)
+		        {
+		                sendr_rhor[ka]=0;sendr_rhob[ka]=0;
+				for (int kb=0;kb<5;kb++)
+				sendr[ka*5+kb]=0;
+		                
+		        }       
+			
+			
+			}
+			else
+			{
+			recvl_psi = new double[Gcr[rank-1]];
+			recvr_psi = new double[Gcl[rank+1]];
+			sendl_rhor = new double[Gcr[rank-1]];
+			sendr_rhor = new double[Gcl[rank+1]];
+			sendl_rhob = new double[Gcr[rank-1]];
+			sendr_rhob = new double[Gcl[rank+1]];
+			sendl = new double[Gcr[rank-1]*5];
+			sendr = new double[Gcl[rank+1]*5];
+
+			for (int ka=0;ka<Gcr[rank-1];ka++)
+		        {
+		                sendl_rhor[ka]=0;sendl_rhob[ka]=0;
+				for (int kb=0;kb<5;kb++)
+				sendl[ka*5+kb]=0;
+		                
+		        }
+		        for (int ka=0;ka<Gcl[rank+1];ka++)
+		        {
+		                sendr_rhor[ka]=0;sendr_rhob[ka]=0;
+				for (int kb=0;kb<5;kb++)
+				sendr[ka*5+kb]=0;
+			}
+			
+			}
+			
+			
+/*
+			for(i=1;i<=Gcl[rank];i++)
+			        {
+			        sendl_psi[i-1]=psi[i];
+			        }
+			for(j=Count-Gcr[rank]+1;j<=Count;j++)
+			        {
+				sendr_psi[j-(Count-Gcr[rank]+1)]=psi[j];
+				}
+
+*/	
+	
+	
+	
+	//=====================================================
+	
+	
+	
 	
 	
 	for(n=0;n<=n_max;n++)
@@ -2471,7 +2636,7 @@ double cb[19]={-1.0/3.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.
 
 	c2=lat_c*lat_c;c4=c2*c2;
 
-
+/*
 	int* Gcl = new int[mpi_size];
 	int* Gcr = new int[mpi_size];
 
@@ -2502,17 +2667,17 @@ double cb[19]={-1.0/3.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.
 	double* recvr_rhor = new double[Gcr[rank]];
 	double* recvl_rhob= new double[Gcl[rank]];
 	double* recvr_rhob = new double[Gcr[rank]];
-
+*/
 if (rank==0)
 		{
-		recvl_psi = new double[Gcr[mpi_size-1]];
-		recvr_psi = new double[Gcl[rank+1]];
-		sendl_rhor = new double[Gcr[mpi_size-1]];
-		sendr_rhor = new double[Gcl[rank+1]];
-		sendl_rhob = new double[Gcr[mpi_size-1]];
-		sendr_rhob = new double[Gcl[rank+1]];
-		sendl = new double[Gcr[mpi_size-1]*5];
-		sendr = new double[Gcl[rank+1]*5];
+//		recvl_psi = new double[Gcr[mpi_size-1]];
+//		recvr_psi = new double[Gcl[rank+1]];
+//		sendl_rhor = new double[Gcr[mpi_size-1]];
+//		sendr_rhor = new double[Gcl[rank+1]];
+//		sendl_rhob = new double[Gcr[mpi_size-1]];
+//		sendr_rhob = new double[Gcl[rank+1]];
+//		sendl = new double[Gcr[mpi_size-1]*5];
+//		sendr = new double[Gcl[rank+1]*5];
 
 
 		for (int ka=0;ka<Gcr[mpi_size-1];ka++)
@@ -2534,14 +2699,14 @@ if (rank==0)
 		else
 		if (rank==mpi_size-1)
 			{
-			recvl_psi = new double[Gcr[rank-1]];
-			recvr_psi = new double[Gcl[0]];
-			sendl_rhor = new double[Gcr[rank-1]];
-			sendr_rhor = new double[Gcl[0]];
-			sendl_rhob = new double[Gcr[rank-1]];
-			sendr_rhob = new double[Gcl[0]];
-			sendl = new double[Gcr[rank-1]*5];
-			sendr = new double[Gcl[0]*5];
+	//		recvl_psi = new double[Gcr[rank-1]];
+	//		recvr_psi = new double[Gcl[0]];
+	//		sendl_rhor = new double[Gcr[rank-1]];
+	//		sendr_rhor = new double[Gcl[0]];
+	//		sendl_rhob = new double[Gcr[rank-1]];
+	//		sendr_rhob = new double[Gcl[0]];
+	//		sendl = new double[Gcr[rank-1]*5];
+	//		sendr = new double[Gcl[0]*5];
 
 
 			for (int ka=0;ka<Gcr[rank-1];ka++)
@@ -2563,14 +2728,14 @@ if (rank==0)
 			}
 			else
 			{
-			recvl_psi = new double[Gcr[rank-1]];
-			recvr_psi = new double[Gcl[rank+1]];
-			sendl_rhor = new double[Gcr[rank-1]];
-			sendr_rhor = new double[Gcl[rank+1]];
-			sendl_rhob = new double[Gcr[rank-1]];
-			sendr_rhob = new double[Gcl[rank+1]];
-			sendl = new double[Gcr[rank-1]*5];
-			sendr = new double[Gcl[rank+1]*5];
+//			recvl_psi = new double[Gcr[rank-1]];
+//			recvr_psi = new double[Gcl[rank+1]];
+//			sendl_rhor = new double[Gcr[rank-1]];
+//			sendr_rhor = new double[Gcl[rank+1]];
+//			sendl_rhob = new double[Gcr[rank-1]];
+//			sendr_rhob = new double[Gcl[rank+1]];
+//			sendl = new double[Gcr[rank-1]*5];
+//			sendr = new double[Gcl[rank+1]*5];
 
 			for (int ka=0;ka<Gcr[rank-1];ka++)
 		        {
@@ -3399,7 +3564,7 @@ m_inv_l[18]=+((double)0X1.C71C71C71C71CP-6)*1.0*m_l[0]+((double)0X1.555555555555
 			
 			
 			
-			
+/*			
 	delete [] recvl_psi;
 	delete [] recvr_psi;
 	delete [] sendr_psi;
@@ -3418,7 +3583,7 @@ m_inv_l[18]=+((double)0X1.C71C71C71C71CP-6)*1.0*m_l[0]+((double)0X1.555555555555
 	delete [] sendr;
 	delete [] recvl;
 	delete [] recvr;
-
+*/
 	
 	
 
