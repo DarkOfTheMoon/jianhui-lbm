@@ -13,13 +13,13 @@ using namespace std;
 int main (int argc , char * argv [])
 {
 
-int nx=400;
-int ny=400;
-int nz=400;
+int nx=90;
+int ny=90;
+int nz=90;
 int nxref,nyref,nzref;
-int divnumori=36;
+int divnumori=3;
 int divnum;
-int oddval=1;
+int oddval=0;
 int evennum=0;
 double oddpor;
 int dir;
@@ -28,7 +28,7 @@ int sumin,numgeonum;
 int* sum_loc;
 
 
-char poreFileName[128]="Berea.dat";
+char poreFileName[128]="maxd20-3-3.dat";
 char poreFileNameVTK[128]="20-3-3.vtk";
 divnum=divnumori;
 while (divnum%2==0)
@@ -217,7 +217,9 @@ double pore;
 	              for (int j=0;j<ny;j++)
 	              for (int i=0;i<nx;i++)
 	                      if (Solid[i][j][k]==0)
-	                              Solid[i][j][k]==1;
+	                              Solid[i][j][k]=1;
+	                      else
+	                              Solid[i][j][k]=-1;
 	                }
 	
 	
@@ -330,6 +332,10 @@ double pore;
 	
 	  }
 	    
+	
+	//============decomposition complete=======================
+	
+	//==================================================
 	
 	
 	
