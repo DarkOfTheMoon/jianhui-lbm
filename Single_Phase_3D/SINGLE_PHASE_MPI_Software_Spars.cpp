@@ -4366,6 +4366,15 @@ if (mir==0)
 		}
 
 
+/*
+	ostringstream name2;
+	name2<<"LBM_velocity_"<<m<<".out";
+	ofstream out2(name2.str().c_str());
+	for (int i=0;i<=NX;i++)
+		out2<<rbuf_v[i*(NY+1)*(NZ+1)*3+1*(NZ+1)*3+1*3+2]<<endl;
+
+	out2.close();
+*/
 //=================================================================	
 	}
 
