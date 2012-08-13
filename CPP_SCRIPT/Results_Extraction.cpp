@@ -1,3 +1,17 @@
+/*
+
+TO USE THE CODE
+g++ Results_Extraction.cpp -o test
+./test rel_ 2000
+
+then the code will extract datas from rel_1_Reslts.txt, rel_2_results.txt ..... rel_10_Results.txt
+from the most recent 2000 time step
+
+
+*/
+
+
+
 #include<iostream>
 #include<cmath>
 #include<cstdlib>

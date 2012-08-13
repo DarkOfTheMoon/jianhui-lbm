@@ -129,3 +129,24 @@ and set least square check length short:
 Once the targeted saturation has been reached, the program will wait 30*output frequency time steps, then export the distribution.
 
 
+====================
+PLOT SCRIPT USE
+sh multi_phase_gnuplot.sh rel_2_ 
+will plot rel_2_Results.txt and relavent datas (rel perm, saturation, pressure, velocities)
+
+TO USE THE CODE Least_Square_Rel_Perm.cpp and new_plot.sh:
+compile the code with g++ Least...cpp -o test
+run the code 
+./test rel_34_ 5000
+rel_34_ is the prefix, 5000 is the length of least square fitting
+
+then use 
+sh new_plot.sh rel_34_
+to visulize the resutls
+
+TO USE THE CODE Results_Extraction.cpp
+g++ Results_Extraction.cpp -o test
+./test rel_ 2000
+
+then the code will extract datas from rel_1_Reslts.txt, rel_2_results.txt ..... rel_10_Results.txt
+from the most recent 2000 time step

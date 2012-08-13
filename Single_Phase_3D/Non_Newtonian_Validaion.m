@@ -1,4 +1,4 @@
-nx_ori=20;
+nx_ori=50;
 x=[];
 for i=-0.5:1:nx_ori-2+0.5;
     x=[x;i];
@@ -9,8 +9,8 @@ x(1)=0;
 x(nx)=nx_ori-2;
 
 G=1e-6;
-m=0.001;
-n=0.5;
+m=10;
+n=1.5;
 L=nx_ori-2;
 y=[];
 for i=1:nx
@@ -26,7 +26,7 @@ plot (x,y);
 
 %==========================================
 hold on
-dat=load('LBM_velocity_12000.out');
+dat=load('LBM_velocity_46000.out');
 [nx,ny]=size(dat);
 
 %====MAX NORMALISE==========
