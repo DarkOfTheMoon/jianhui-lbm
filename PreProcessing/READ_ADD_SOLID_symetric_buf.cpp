@@ -14,20 +14,20 @@ int main (int argc , char * argv [])
 int nx=90;
 int ny=90;
 int nz=90;
-int dir=4; 	//0,1,2 x,y,z add extra solid boundaries, 
+int dir=3; 	//0,1,2 x,y,z add extra solid boundaries, 
 		//3,no BCs, 4,5,6: solid the most outside to form a BC,flow dirc:x,y,z
-int sym_x=1;
+int sym_x=0;
 int sym_y=0;
 int sym_z=0;
 int add_buf_x_n=0;
 int add_buf_y_n=0;
 int add_buf_z_n=0;
 
-int add_buf_x_p=0;
+int add_buf_x_p=10;
 int add_buf_y_p=0;
 int add_buf_z_p=0;
-int add_porous_plate=0;
-int porous_position=206; //-1=defualt position,end of the geometry, or give a positive value
+int add_porous_plate=2; //0=OFF, 1=fine plate,pore size1, pore size2, 3=posr size3
+int porous_position=-1; //-1=defualt position,end of the geometry, or give a positive value
 int Zoom=1; //1,2,3,4...
 char poreFileName[128]="maxd20-3-3.dat";
 char poreFileNameVTK[128]="20-3-3.vtk";
@@ -269,9 +269,26 @@ if (sym_z==1)
 				Solid_Int2[nx1*Zoom-1][j][k]=1;
 			else
 				Solid_Int2[porous_position][j][k]=1;
-
-
-
+			
+	if (add_porous_plate==2)
+		for(int k=0 ; k<nz1*Zoom ; k=k++)				///*********
+		for(int j=0 ; j<ny1*Zoom; j=j++)
+			if ((k%3==0) or (j%3==2))
+			if (porous_position<0)
+				Solid_Int2[nx1*Zoom-1][j][k]=1;
+			else
+				Solid_Int2[porous_position][j][k]=1;
+			
+	if (add_porous_plate==3)
+		for(int k=0 ; k<nz1*Zoom ; k=k++)				///*********
+		for(int j=0 ; j<ny1*Zoom; j=j++)
+			if ((k%4==0) or (j%4==2))
+			if (porous_position<0)
+				Solid_Int2[nx1*Zoom-1][j][k]=1;
+			else
+				Solid_Int2[porous_position][j][k]=1;	
+			
+			
 	if (VTK_OUT==1)
 	{
 	cout<<"Start writing VTK file"<<endl;
