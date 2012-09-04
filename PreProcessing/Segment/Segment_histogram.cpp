@@ -14,13 +14,15 @@ int main (int argc , char * argv [])
 int nx=300;
 int ny=300;
 int nz=1;
-
+int mode=2; //1=two phases, 2=three phases
 char poreFileName[128]="300x300_3phaseket-filtxt.txt";
 char poreFileNameVTK[128]="segment.vtk";
 char poreFileNameOut[128]="segment.dat";
 //output VTK file,0=no, 1=yes
 int VTK_OUT=1;
 int local_min=10; //half of local min
+int peak_check_length=10;
+int histo_find_accuricy=20;
 //===========VTK AND OUT ARE ALL WRITTEN IN BINARY FORMAT===============
 //===========================================================
 
@@ -39,7 +41,8 @@ double his2[256];
 double his3[256];
 double his4[256];
 double his5[256];
-
+int peak1,peak2,peak3;
+int val1,val2,val3;
 
 
 	FILE *ftest;
@@ -92,12 +95,17 @@ int pore;
 		
 	
 
-for (i=0;i<256;i++)
-	{histo[i]=0;his1[i]=0.0;his4[i]=0.0;}
+//for (i=0;i<256;i++)
+//	{histo[i]=0;his1[i]=0.0;his2[i]=0.0;his4[i]=0.0;}
 
 
 
-	for(k=0 ; k<nz ; k++)				///*********
+	for(k=0 ; k<nz ; k++)		
+	{        
+	 for (i=0;i<256;i++)
+	{histo[i]=0;his1[i]=0.0;his2[i]=0.0;his4[i]=0.0;}       
+	        
+	        
 	for(j=0 ; j<ny ; j++)
 	for(i=0 ; i<nx ; i++)				///*********
 
@@ -124,15 +132,15 @@ for (i=0;i<256;i++)
 		
 	for (i=1;i<255;i++)
 		{
-		his1[i]=histo[i+1]-histo[i];
+		//his1[i]=histo[i+1]-histo[i];
 		his2[i]=(histo[i+1]-histo[i-1])/2;
-		his3[i]=(histo[i+1]+histo[i-1]-2*histo[i]);
+		//his3[i]=(histo[i+1]+histo[i-1]-2*histo[i]);
 		}
 	
-	//for (i=1;i<255;i++)
-	for (i=2;i<254;i++)
+	for (i=1;i<255;i++)
+	//for (i=2;i<254;i++)
 		his1[i]=(his2[i-1]+his2[i]+his2[i+1])/3;
-		his1[i]=(his2[i-2]+his2[i-1]+his2[i]+his2[i+1]+his2[i+2])/5;
+		//his1[i]=(his2[i-2]+his2[i-1]+his2[i]+his2[i+1]+his2[i+2])/5;
 
 double max_val=0.0;	
 double max_val2=0.0;
@@ -161,6 +169,68 @@ int sum1;
 		his4[i]=sum1;
 		}
 
+		//========FIND PEAKS=================
+		
+		        peak1=0;peak2=0;peak3=0;
+		for (i=0;i<256-peak_check_length;i++)
+		          if ((his3[i]==histo[i]) and (his3[i]>0))
+		          {        sum1=0;
+		                  for (j=1;j<peak_check_length;j++)
+		                          if (his3[j+i]!=his3[i])
+		                          sum1=1;
+		                  if (sum1==0)
+		                          if (peak1==0)
+		                                  peak1=i;
+		                          else
+		                                  if (peak2==0)
+		                                          peak2=i;
+		                                  else
+		                                          peak3=i;
+		          }
+		
+		
+		
+		cout<<peak1<<"        "<<peak2<<"        "<<peak3<<endl;
+		
+		
+		for (i=0;i<256;i++)
+		        his2[i]=his4[i]-histo[i];
+		
+		val1=256;val2=256;val3=256;
+		for (i=0;i<256;i++)
+		        {
+		                if ((his2[i]==0) and (abs(i-(peak1+(peak2-peak1)/2))<histo_find_accuricy))
+		                        val1=i;
+		                
+		                if ((his2[i]==0) and (abs(i-(peak2+(peak3-peak2)/2))<histo_find_accuricy))
+		                        val2=i;
+		        }
+		
+	
+	for(j=0 ; j<ny ; j++)
+	for(i=0 ; i<nx ; i++)	
+	if (seg[i][j][k]<val1)
+	        seg[i][j][k]=0;
+	        else
+	                if (seg[i][j][k]<val2)
+	                seg[i][j][k]=1;
+	                else
+	                       seg[i][j][k]=2;
+		        
+		        
+		        
+		        
+		        
+		        
+		        
+		        
+	}	
+	//=========================================
+
+
+
+
+	
 	if (VTK_OUT==1)
 	{
 	cout<<"Start writing VTK file"<<endl;
@@ -190,6 +260,15 @@ int sum1;
 	cout<<k<<endl;
 	for (j=0;j<ny;j++)
 	for (i=0;i<nx;i++)
+/*	
+        if (seg[i][j][k]<val1)
+	        out<<0<<" ";
+	        else
+	                if (seg[i][j][k]<val2)
+	                out<<1<<" ";
+	                else
+	                        out<<2<<" ";
+*/	  
 		out<<seg[i][j][k]<<" ";
 	}
 	
@@ -199,6 +278,7 @@ int sum1;
 	out.close();
 
 	cout<<"VTK file ouput COMPLETE"<<endl;
+	cout<<endl;
 	}
 
 
@@ -236,7 +316,7 @@ int sum1;
 	name3<<"histo_test2.dat";
 	out3.open(name3.str().c_str());
 	for (i=0;i<256;i++)
-		out3<<his2[i]<<endl;
+		out3<<his1[i]<<endl;
 	
 	out3.close();
 
@@ -245,7 +325,7 @@ int sum1;
 	name3<<"histo_test3.dat";
 	out3.open(name3.str().c_str());
 	for (i=0;i<256;i++)
-		out3<<his1[i]<<endl;
+		out3<<his3[i]<<endl;
 	
 	out3.close();
 
