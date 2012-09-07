@@ -21,4 +21,4 @@ plot (a3);
 % plotyy(x,a2,x,a3);
 
 figure
-plot (a4);
+plotyy (x,a1-a4,x,a1);
