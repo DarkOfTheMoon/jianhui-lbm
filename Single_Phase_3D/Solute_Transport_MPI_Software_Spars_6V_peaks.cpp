@@ -1511,6 +1511,8 @@ double c2,c4;
 
 	c2=lat_c*lat_c;c4=c2*c2;
 
+
+/*
 	int* Gcl = new int[mpi_size];
 	int* Gcr = new int[mpi_size];
 
@@ -1521,18 +1523,20 @@ double c2,c4;
 	MPI_Gather(&cr,1,MPI_INT,Gcr,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(Gcr,mpi_size,MPI_INT,0,MPI_COMM_WORLD);
 
+*/
+
 	
-	double* sendl_s;
-	double* sendr_s;
+//	double* sendl_s;
+//	double* sendr_s;
 	
 	
 	
 
 	
-	double* recvl_s= new double[Gcl[rank]];
-	double* recvr_s = new double[Gcr[rank]];
+//	double* recvl_s= new double[Gcl[rank]];
+//	double* recvr_s = new double[Gcr[rank]];
 	
-
+/*
 if (rank==0)
 		{
 		
@@ -1586,7 +1590,7 @@ if (rank==0)
 			}
 
 
-		
+*/		
 MPI_Barrier(MPI_COMM_WORLD);
 
 
@@ -2391,6 +2395,9 @@ for(int i=1; i<Count; i++)
 	delete [] rbuf;
 	delete [] um;
 	delete [] uave;
+	delete [] uave1;delete [] uave2;delete [] uave3;
+	
+
 
 	//MPI_Barrier(MPI_COMM_WORLD);
 
