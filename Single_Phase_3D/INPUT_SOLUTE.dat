@@ -44,7 +44,7 @@ phase.dat       	    	:Initial components distribution (ST_Peaks do not need thi
 0 100				:Permeability calculation partially Starting point and Ending point in Z
 ====================BACKUP=PARAMETERS==========================
 -1		                   :BACKUP FREQUENCY (-1=NO BACKUP)
-200                               :INITIALIZATION WITH BACKUP DATA (0=OFF, 1=ON)
+0                               :INITIALIZATION WITH BACKUP DATA (0=OFF, 1=ON)
 10000				:intial data for velocity (for ST only)
 2 2 6				:Number of peaks, width,starting coordinate (only for ST_6V_peaks)
 ======================GEOMETRY READING======================
