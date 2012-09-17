@@ -44,7 +44,7 @@ phase.dat       	    	:Initial components distribution (ST_Peaks do not need thi
 0 100				:Permeability calculation partially Starting point and Ending point in Z
 ====================BACKUP=PARAMETERS==========================
 -1		                   :BACKUP FREQUENCY (-1=NO BACKUP)
-0                               :INITIALIZATION WITH BACKUP DATA (0=OFF, 1=ON)
+200                               :INITIALIZATION WITH BACKUP DATA (0=OFF, 1=ON)
 10000				:intial data for velocity (for ST only)
 2 2 6				:Number of peaks, width,starting coordinate (only for ST_6V_peaks)
 ======================GEOMETRY READING======================
@@ -60,5 +60,13 @@ You might need to specify the path of the checkpoint data
 The path sould be put after the name and the path of the data file.
 such as: mpirun -np 3 INPUT.dat /work/jy810/test/
 If not given, the default value is ./
+
+===================================================
+if ST_6V_peaks is used and checkpoint data is to be used for initialization,
+eg. 200                               :INITIALIZATION WITH BACKUP DATA (0=OFF, 1=ON)
+when run the simulation, additional prefix is needed:
+mpirun -np 3 INPUT_SOLUTE.dat /work/jy810/test/velocity_ /work/jy810/test/checkpoint_
+the checkpoint_LBM_checkpoint_psi_200.2.bin_input...... will be loaded
+===================================================
 
 

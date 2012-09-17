@@ -183,6 +183,7 @@ int NCHAR=128;
 int*** Solid;
 double*** Psi_local;
 char pfix[128];
+char pfix2[128];
 int decbin;
 
 //===========INITIALIZATION=======================
@@ -229,8 +230,13 @@ double Per_l[3],Per_g[3];
 double v_max;
 
        strcpy(pfix,"./");
+	strcpy(pfix2,"./");
+
         if (argc>2)
                 strcpy(pfix,argv[2]);
+
+	if (argc>3)
+		strcpy(pfix2,argv[3]);
 
 	MPI_Barrier(MPI_COMM_WORLD);
 	start = MPI_Wtime();
@@ -3638,7 +3644,7 @@ void Backup_input_v(int m,double* rho,double* psi, double** u, double** f, doubl
 	
 	if (file.fail())
 	        {
-	        cout<<"\n file open error on" << name.str().c_str()<<endl;
+	        cout<<"\n file open error on " << name.str().c_str()<<endl;
 	        exit(-1);
 	        }
 	file.read((char *)(lsu),sizeof(double)*Count*3);
@@ -3896,9 +3902,9 @@ void Backup_init(int peak_n,double* rho, double** u, double** f,double*** fg, do
 	double u_tmp[3];
 
 	ostringstream name5;
-	name5<<pfix<<"LBM_checkpoint_fg_"<<mode_backup_ini<<"."<<rank<<".bin_input";
+	name5<<pfix2<<"LBM_checkpoint_fg_"<<mode_backup_ini<<"."<<rank<<".bin_input";
  	ostringstream name3;
-	name3<<pfix<<"LBM_checkpoint_psi_"<<mode_backup_ini<<"."<<rank<<".bin_input";
+	name3<<pfix2<<"LBM_checkpoint_psi_"<<mode_backup_ini<<"."<<rank<<".bin_input";
  	
 	
 	 
@@ -3908,7 +3914,7 @@ void Backup_init(int peak_n,double* rho, double** u, double** f,double*** fg, do
        
        if (fin.fail())
 	        {
-	        cout<<"\n file open error on" << name3.str().c_str()<<endl;
+	        cout<<"\n file open error on " << name3.str().c_str()<<endl;
 	        exit(-1);
 	        }
 	        
@@ -3922,7 +3928,7 @@ void Backup_init(int peak_n,double* rho, double** u, double** f,double*** fg, do
        
        if (fin.fail())
 	        {
-	        cout<<"\n file open error on" << name5.str().c_str()<<endl;
+	        cout<<"\n file open error on " << name5.str().c_str()<<endl;
 	        exit(-1);
 	        }
 	fin.read((char *)(&fg[0][0][0]), sizeof(double)*num_psi*(Count+1)*7);
