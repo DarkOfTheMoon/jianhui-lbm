@@ -13,9 +13,9 @@ int main (int argc , char * argv [])
 
 int nx=370;
 int ny=370;
-int nz=1;
+int nz=300;
 int mode=2; //1=two phases, 2=three phases
-char poreFileName[128]="2phase240.txt";
+char poreFileName[128]="Filename.txt";
 char poreFileNameVTK[128]="segment.vtk";
 char poreFileNameOut[128]="segment.dat";
 //output VTK file,0=no, 1=yes
@@ -125,11 +125,30 @@ int pore;
 			
 			seg[i][j][k]=pore;
 			
-			histo[pore]+=1;
+			//histo[pore]+=1;
 		}
-		
-	//fin.close();
-		
+	}	
+	fin.close();
+	
+
+for(k=0 ; k<nz ; k++)		
+	{ 
+	        for (i=0;i<256;i++)
+	                {histo[i]=0;his1[i]=0.0;his2[i]=0.0;his4[i]=0.0;his5[i];}       
+	                
+	                for(j=0 ; j<ny ; j++)
+	                for(i=0 ; i<nx ; i++)				///*********
+	                {	
+			
+			histo[seg[i][j][k]]+=1;
+			}
+
+
+
+
+
+
+	
 	for (i=10;i<256-10;i++)
 		{
 		//his1[i]=histo[i+1]-histo[i];
@@ -264,35 +283,38 @@ double max_val2=0.0;
 
     	peak1=peak1s_cor;peak2=peak2s_cor;peak3=peak3s_cor;
 	
-    	if (peak1==0)
+    	
+    	
+    	
+    	if (peak2-peak1<20)
     	        {
     	                peak1=peak2;
     	                peak2=0;peak2s=0;
-    	                for (i=peak1;i<200;i++)
-		{
-		if ((his5[i]==histo[i]) and (histo[i]>0))
-		{
-		        sum1=0;
-		        for (j=0;j<=peak_check_length-3;j++)
-			if (abs(his5[i]-his5[i+j])>flat_check_histo)
-			{
-			sum1=1;
+    	                for (i=peak1+20;i<200;i++)
+    	                {
+    	                        if ((his5[i]==histo[i]) and (histo[i]>0))
+    	                        {
+    	                                sum1=0;
+    	                                for (j=0;j<=peak_check_length-3;j++)
+    	                                        if (abs(his5[i]-his5[i+j])>flat_check_histo)
+    	                                        {
+    	                                                sum1=1;
 			
-			}
-		}
-		else
-		        sum1=1;
+    	                                        }
+    	                        }
+    	                        else
+    	                                sum1=1;
 		
-		if (sum1==0)
-			{//cout<<his5[i]<<"	@@@@@@@ "<<i<<endl;
-			if ((peak2s==0) and (his5[i]>histo[peak1]))
-				{
-				peak2s=his5[i];peak2=i;
-				}
+    	                        if (sum1==0)
+    	                        {//cout<<his5[i]<<"	@@@@@@@ "<<i<<endl;
+    	                                if ((peak2s==0) and (his5[i]>histo[peak1]))
+    	                                {
+    	                                        peak2s=his5[i];peak2=i;
+    	                                }
 				
 					
-			}
-		}
+    	                        }
+    	                }
     	                
     	                
     	        }
@@ -363,7 +385,7 @@ double max_val2=0.0;
 		        
 	}	
 	//=========================================
-fin.close();
+//fin.close();
 
 
 
