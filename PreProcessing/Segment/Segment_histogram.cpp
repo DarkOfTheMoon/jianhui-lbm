@@ -15,7 +15,7 @@ int nx=370;
 int ny=370;
 int nz=1;
 int mode=2; //1=two phases, 2=three phases
-char poreFileName[128]="2phase250.txt";
+char poreFileName[128]="2phase240.txt";
 char poreFileNameVTK[128]="segment.vtk";
 char poreFileNameOut[128]="segment.dat";
 //output VTK file,0=no, 1=yes
@@ -173,36 +173,6 @@ double max_val2=0.0;
 
 
 
-	//----------peak search mode 1--------------------
-	/*
-	for (i=0;i<256;i++)
-		{
-		if (histo[i]>max_val)
-			max_val=histo[i];
-		//if (histo[255-i]>max_val2)
-		//	max_val2=histo[i];
-		his3[i]=max_val;//his4[i]=max_val2;
-		}
-
-
-		        peak1=0;peak2=0;peak3=0;
-		for (i=0;i<256-peak_check_length;i++)
-		          if ((his3[i]==histo[i]) and (his3[i]>0))
-		          {        sum1=0;
-		                  for (j=1;j<peak_check_length;j++)
-		                          if (his3[j+i]!=his3[i])
-		                          sum1=1;
-		                  if (sum1==0)
-		                          if (peak1==0)
-		                                  peak1=i;
-		                          else
-		                                  if (peak2==0)
-		                                          peak2=i;
-		                                  else
-		                                          peak3=i;
-		          }
-	*/
-	//------------------------------------------------
 
 
 
@@ -289,25 +259,43 @@ double max_val2=0.0;
 	//	{sum1=peak3s_cor;peak3s_cor=peak2s_cor;peak2s_cor=sum1;}
 	if (peak2s_cor<peak1s_cor)
 		{sum1=peak2s_cor;peak2s_cor=peak1s_cor;peak1s_cor=sum1;}
-	//if (peak3s_cor>peak2s_cor)
-	//	{sum1=peak3s_cor;peak3s_cor=peak2s_cor;peak2s_cor=sum1;}
+	
 
 
     	peak1=peak1s_cor;peak2=peak2s_cor;peak3=peak3s_cor;
-	/*	for (i=0;i<256;i++)
-		          if (((peak1s==histo[i]) or (peak2s==histo[i]) or (peak3s==histo[i])))
-		          {        cout<<histo[i]<<"	"<<i<<endl;
-		                          if (peak1==0)
-		                                  peak1=i;
-		                          else
-		                                  if (peak2==0)
-		                                          peak2=i;
-		                                  else
-		                                          peak3=i;
-		          }
-	*/
-	//---------------------------------------------
-
+	
+    	if (peak1==0)
+    	        {
+    	                peak1=peak2;
+    	                peak2=0;peak2s=0;
+    	                for (i=peak1;i<200;i++)
+		{
+		if ((his5[i]==histo[i]) and (histo[i]>0))
+		{
+		        sum1=0;
+		        for (j=0;j<=peak_check_length-3;j++)
+			if (abs(his5[i]-his5[i+j])>flat_check_histo)
+			{
+			sum1=1;
+			
+			}
+		}
+		else
+		        sum1=1;
+		
+		if (sum1==0)
+			{//cout<<his5[i]<<"	@@@@@@@ "<<i<<endl;
+			if ((peak2s==0) and (his5[i]>histo[peak1]))
+				{
+				peak2s=his5[i];peak2=i;
+				}
+				
+					
+			}
+		}
+    	                
+    	                
+    	        }
 
 
 	for (i=local_min;i<256-local_min;i++)
@@ -320,27 +308,7 @@ double max_val2=0.0;
 		his4[i]=sum1;
 		}
 
-		//========FIND PEAKS  =================
-		/*
-		        peak1=0;peak2=0;peak3=0;
-		for (i=0;i<256-peak_check_length;i++)
-		          if ((his3[i]==histo[i]) and (his3[i]>0))
-		          {        sum1=0;
-		                  for (j=1;j<peak_check_length;j++)
-		                          if (his3[j+i]!=his3[i])
-		                          sum1=1;
-		                  if (sum1==0)
-		                          if (peak1==0)
-		                                  peak1=i;
-		                          else
-		                                  if (peak2==0)
-		                                          peak2=i;
-		                                  else
-		                                          peak3=i;
-		          }
-*/
-		//===================================================
-		
+	
 		
 		cout<<"========PEAKS==============="<<k<<endl;
 		cout<<peak1<<"        "<<peak2<<"        "<<peak3<<endl;
@@ -369,34 +337,7 @@ double max_val2=0.0;
 		                      val2=i;
 		        }
 		   
-		/*        
-		for (i=0;i<256;i++)
-		        {
-		                //cout<<his2[i]<<" "<<i<<" "<<peak1+(peak2-peak1)/2<<" "<<peak2+(peak3-peak2)/2<<endl;
-		                if ((his2[i]==0) and (abs(i-(peak1+(peak2-peak1)/2))<histo_find_accuricy))
-		                        val1=i;
-		                
-		                if ((his2[i]==0) and (abs(i-(peak2+(peak3-peak2)/2))<histo_find_accuricy))
-		                        val2=i;
-		        }
-		*/
-		        
-		/*
-		sum1=0;
-		for (i=-local_min;i<local_min+1;i++)
-			if (histo[val1+i]>sum1)
-				sum1=histo[val1+i];
-		//cout<<sum1<<endl;
-
 		
-		sum2=-1;
-		for (i=peak2;i>0;i--)
-			if ((sum2<0) and (histo[i]<sum1))
-				sum2=i;
-		val1=sum2;
-		*/	
-
-		//val1=val1+int((val2-val1)*solid_part_shift_percentage);
 	
 	cout<<"===========Segment Vals================"<<endl;
 	cout<<val1<<"	"<<val2<<endl;
