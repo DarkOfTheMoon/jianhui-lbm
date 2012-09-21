@@ -15,7 +15,7 @@ int nx=370;
 int ny=370;
 int nz=1;
 int mode=2; //1=two phases, 2=three phases
-char poreFileName[128]="Filename.txt";
+char poreFileName[128]="2phase251.txt";
 char poreFileNameVTK[128]="segment.vtk";
 char poreFileNameOut[128]="segment.dat";
 //output VTK file,0=no, 1=yes
@@ -226,7 +226,9 @@ double max_val2=0.0;
 		}
 	peak2s=0;peak1s=0;
 	
-	for (i=peak_check_length;i<peak3s_cor-20;i++)
+	//!!!!!warning ending point for peak2 search 
+//=====================================================================
+	for (i=peak_check_length;i<200;i++)
 		{
 		if ((his5[i]==histo[i]) and (histo[i]>0))
 		{
@@ -358,8 +360,10 @@ double max_val2=0.0;
 		                                val1=-1;
 		                }
 		        }
-		        
-		for (i=peak3-10;i>peak2;i--)
+
+	//!!!!!!!warning  val search starting point or radius		        
+//====================================================================
+		for (i=peak2+16;i>peak2;i--)
 		        {
 		              if ((his1[i]<6) and (val2<0))
 		                      val2=i;

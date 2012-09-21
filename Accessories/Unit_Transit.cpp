@@ -23,9 +23,9 @@ double la_den=1.0;		//lattice density
 
 
 
-double la_ift=0.005;		//lattice surface tension
+double la_ift=0.5e-2;		//lattice surface tension
 double la_vis=0.05;		//lattice viscosity
-double la_pressure=2.2e-5*220;	//lattice pressure
+double la_pressure=5.5e-5*270;	//lattice pressure
 double la_dx2=1.0;		//lattice length
 double la_dt2=1.0;		//lattice time
 double la_v=1e-5;		//lattice velocity
