@@ -2101,7 +2101,13 @@ if (ini_Sat<0)
 	                {
 	                Solid[i][j][k]=recv_solid[i*(NY+1)*(NZ+1)+j*(NZ+1)+k];
 	                Psi_local[i][j][k]=recv_psi[i*(NY+1)*(NZ+1)+j*(NZ+1)+k];
-	                
+			
+			//=====================
+			if (Psi_local[i][j][k]>1)
+				Psi_local[i][j][k]=1;
+			if (Psi_local[i][j][k]<-1)
+				Psi_local[i][j][k]=-1;
+	                //=====================
 	                }
 }
 else
