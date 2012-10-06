@@ -45,10 +45,17 @@ plot "$1Relative_Permeability_Component1.txt" u 8 w l title "Rel_Perm1 Least Squ
 
 set origin 0.666,0.333
 set size 0.333,0.333
+set yrange [-1.0:1.0]
 #plot "$1Relative_Permeability_Component1.txt" u 2:1 w l title "Rel_Perm1",\
 #"$1Relative_Permeability_Component2.txt" u 4:1 w l title "Rel_Perm2"
-plot "$1Imb_Drai_Rel_Perm.txt" u 1:2 w lp title "Rel_Perm1_ImbDrai",\
-"$1Imb_Drai_Rel_Perm.txt" u 1:3 w lp title "Rel_Perm2_ImbDrai"
+#plot "$1Imb_Drai_Rel_Perm.txt" u 1:2 w lp title "Rel_Perm1_ImbDrai",\
+#"$1Imb_Drai_Rel_Perm.txt" u 1:3 w lp title "Rel_Perm2_ImbDrai"
+plot "$1Relative_Permeability_Component1.txt" u 1 w l title "Rel_Perm1",\
+"$1Relative_Permeability_Component2.txt" u 1 w l title "Rel_Perm2"
+unset yrange
+set yrange restore
+set autoscale
+
 
 set origin 0.333,0.666
 set size 0.333,0.333
@@ -56,6 +63,7 @@ set size 0.333,0.333
 #"$1Relative_Permeability_Component2.txt" u 2:3 w l title "LOCAL_Rel_Perm2"
 plot "$1Relative_Permeability_Component1.txt" u 3 w l title "LOCAL_Rel_Perm1",\
 "$1Relative_Permeability_Component2.txt" u 3 w l title "LOCAL_Rel_Perm2"
+
 
 
 
