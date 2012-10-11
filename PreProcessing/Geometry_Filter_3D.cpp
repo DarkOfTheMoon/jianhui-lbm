@@ -198,9 +198,9 @@ double pore;
 	for (int j=0;j<ny;j++)
 	for (int i=0;i<nx;i++)
 		if (Solid[i][j][k]==2)
-			out2<<"1 ";
-		else
 			out2<<"0 ";
+		else
+			out2<<"1 ";
 		//out<<Solid[i][j][k]<<" ";
 	}
 	
