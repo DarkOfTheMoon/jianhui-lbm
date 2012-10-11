@@ -1,0 +1,5 @@
+==========INPUT FILE FOR GEOMETRY FILTER (REMOVE ISOLATED PORES)=======================
+ftb_test.roc			:Source Geometry file name (Geometry needed to be filtered)
+131 131 131			:size of geometry nx,ny,nz
+20-3-3.vtk			:Filtered VTK file name 
+ftb.dat	:Filtered Data file name (used for claculation)

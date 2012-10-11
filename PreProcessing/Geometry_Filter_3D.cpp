@@ -12,22 +12,43 @@ using namespace std;
 
 int main (int argc , char * argv [])
 {
+//ifstream fin(argv[1]);
+int NCHAR=128;
+	char     filename[128], dummy[128+1];
+	int      dummyInt;
 
-int nx=400;
-int ny=400;
-int nz=400;
+
+
+
+
+int nx,ny,nz;
+
+
 
 const int e[18][3]=
 {{1,0,0,},{-1,0,0},{0,1,0},{0,-1,0},{0,0,1},{0,0,-1},{1,1,0},{-1,1,0},{1,-1,0},{-1,-1,0},{0,1,1},
 {0,-1,1},{0,1,-1},{0,-1,-1},{1,0,1},{-1,0,1},{1,0,-1},{-1,0,-1}};
 
-char poreFileName[128]="estiallades.dat";
-//char poreFileName[128]="ftb_test.roc";
-char poreFileNameVTK[128]="20-3-3.vtk";
-char poreFileNameOut[128]="estiallades_filtered.dat";
+char poreFileName[128];
+
+char poreFileNameVTK[128];
+char poreFileNameOut[128];
 int mark,ii,jj,kk,loop,sum2;
 
 int sum=0;
+
+ifstream fins(argv[1]);
+							fins.getline(dummy, NCHAR);
+	fins >> poreFileName;				fins.getline(dummy, NCHAR);
+	fins >> nx>> ny>>nz;				fins.getline(dummy, NCHAR);
+	fins >> poreFileNameVTK;				fins.getline(dummy, NCHAR);
+	fins >> poreFileNameOut;				fins.getline(dummy, NCHAR);
+
+
+fins.close();	
+
+
+
 
 
 
@@ -85,9 +106,10 @@ double pore;
 			
 			//if (pore == 0.0)	{Solid[ci-1][cj-1][ck-1] = 0;}
 			if (pore == 0.0)	{Solid[i][j][k] = 0;sum++;}
-			
+			else
 			//if (pore == 1.0) 	{Solid[ci-1][cj-1][ck-1] = 1;sum++;}
-			if (pore == 1.0) 	{Solid[i][j][k] = 1;}
+			//if (pore == 1.0) 	
+				{Solid[i][j][k] = 1;}
 			
 		
 			
