@@ -145,6 +145,9 @@ out<<"128 129 129	:STARTING COORDINATES OF SUB-PERM 3"<<endl;
 out<<"128 129 129	:STARTING COORDINATES OF SUB-PERM 4"<<endl;
 out<<"======================GEOMETRY READING======================="<<endl;
 out<<"1		:Geometry Reading format, 0=decimal,1=binary"<<endl;
+out<<"======================Non-Newtonian Module======================"<<endl;
+out<<"0               :0=OFF, 1=ON"<<endl;
+out<<"0.001 0.25        :mu,n: apparent viscosity=mu*gama_dot^(n-1)"<<endl;
 out<<i<<endl;
 */
 

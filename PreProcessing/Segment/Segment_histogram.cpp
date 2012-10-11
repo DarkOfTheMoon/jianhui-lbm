@@ -11,15 +11,16 @@ using namespace std;
 int main (int argc , char * argv [])
 {
 
-int nx=370;
-int ny=370;
-int nz=300;
+int nx=300;
+int ny=300;
+int nz=220;
 int mode=2; //1=two phases, 2=three phases
 char poreFileName[128]="Filename.txt";
 char poreFileNameVTK[128]="segment.vtk";
-char poreFileNameOut[128]="segment.dat";
+char poreFileNameOut1[128]="segment_300x300x220.dat";
+char poreFileNameOut2[128]="phase.dat";
 //output VTK file,0=no, 1=yes
-int VTK_OUT=1;
+
 int ImageJ_sequence=1;
 int local_min=5; //half of local min
 int peak_check_length=10;
@@ -27,6 +28,9 @@ int area_max_radius=10;
 int flat_check_histo=20;
 int linear_fitting_radius=6;
 //double solid_part_shift_percentage=0.3;
+int VTK_OUT=1;
+int DAT_writting=1;
+int TXT_sequence_writting=0;
 //===========VTK AND OUT ARE ALL WRITTEN IN BINARY FORMAT===============
 //===========================================================
 
@@ -388,7 +392,7 @@ double max_val2=0.0;
 //fin.close();
 
 
-
+	
 	
 	if (VTK_OUT==1)
 	{
@@ -440,37 +444,84 @@ double max_val2=0.0;
 	cout<<endl;
 	}
 
-
+	ostringstream name2;ofstream out2;
 	//=================================================================
-	cout<<"Start writing cal DAT file"<<endl;
+	if (DAT_writting==1)
+	{
+	cout<<"Start writing cal DAT1 file"<<endl;
 	cout<<nx<<"         "<<ny<<"         "<<nz<<endl;
-	ostringstream name2;
-	name2<<poreFileNameOut;
+	
+	name2<<poreFileNameOut1;
 	//name<<"Clashach_z_sym_196x196x388_8.946.dat";
-	ofstream out2;
+	
 	out2.open(name2.str().c_str());
 	
-	//for (k=0;k<nz;k++)
-	//{
-	/*
+		for (k=0;k<nz;k++)
+		{
+	
 	        //cout<<k<<endl;
-	for (j=0;j<ny;j++)
-	{
-		for (i=0;i<nx;i++)
-		out2<<seg[i][j][k]<<" ";
-		out2<<endl;
-	}
-	*/
-	out2.write((char *)(&seg[0][0][0]), sizeof(int)*nx*ny*nz); 
-	//}
+		for (j=0;j<ny;j++)
+		{
+			for (i=0;i<nx;i++)
+			if (seg[i][j][k]==2)
+				out2<<1<<" ";
+			else
+				out2<<0<<" ";
+			//out2<<seg[i][j][k]<<" ";
+			out2<<endl;
+		}
+	
+		//out2.write((char *)(&seg[0][0][0]), sizeof(int)*nx*ny*nz); 
+		}
 	out2.close();
-	cout<<"DAT file ouput complete"<<endl;
-	
+	cout<<"DAT1 file ouput complete"<<endl;
 	cout<<endl;
+
+	cout<<"Start writing cal DAT2 file"<<endl;
+	cout<<nx<<"         "<<ny<<"         "<<nz<<endl;
+	name2.str("");
+	name2<<poreFileNameOut2;
+	
+	
+	out2.open(name2.str().c_str());
+	
+		for (k=0;k<nz;k++)
+		{
+	
+	        //cout<<k<<endl;
+		for (j=0;j<ny;j++)
+		{
+			for (i=0;i<nx;i++)
+			{
+			if (k<10)
+				out2<<seg[i][j][k]*2-1<<" ";
+			else
+				out2<<1<<" ";
+ 
+			
+			}
+			out2<<endl;
+		}
+	
+		//out2.write((char *)(&seg[0][0][0]), sizeof(int)*nx*ny*nz); 
+		}
+	out2.close();
+	cout<<"DAT2 file ouput complete"<<endl;
+	cout<<endl;
+
+
+	
+
 	cout<<"----------------------"<<endl;
+	}
+
+
+	
+	
+
+	if (TXT_sequence_writting==1)
+	{
 	cout<<"Start writing TXT file"<<endl;
-	
-	
 	for (k=0;k<nz;k++)
 	{
 	//cout<<k<<endl;
@@ -480,19 +531,21 @@ double max_val2=0.0;
 	out2.open(name2.str().c_str());
 	
 
-	for (j=0;j<ny;j++)
-	{
-		for (i=0;i<nx;i++)
-		out2<<seg[i][j][k]<<" ";
-		out2<<endl;
-	}
-	out2.close();
-	}
+		for (j=0;j<ny;j++)
+		{
+			for (i=0;i<nx;i++)
+			out2<<seg[i][j][k]<<" ";
+			out2<<endl;
+		}
+		out2.close();
+		}
 	
 
 	cout<<"TXT files ouput complete"<<endl;
 	cout<<"----------------------"<<endl;
 	cout<<endl;
+	}
+
 
 
 

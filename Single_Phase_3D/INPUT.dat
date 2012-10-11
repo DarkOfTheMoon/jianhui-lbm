@@ -22,7 +22,7 @@ BC.dat        :Geometry filename
 2000		:Frequency of density field writing (in vtk format, -1=no density writing)
 ==============ADVANCE==PARAMETER==========
 0 1.0 2.0	:Self define lattice velocity: 0=DEFAULT, dx, dt ((u_x+u_y+u_z)*dt/dx<=1 Courant Number)
-./		:OUTPUT PATH,DEFAULT: ./ (REMEMBER TO INCLUDE "/" AT THE END OF PATH)
+./1_		:OUTPUT PATH,DEFAULT: ./ (REMEMBER TO INCLUDE "/" AT THE END OF PATH)
 2              :PRESSURE AND VELOCITY BOUNDARY CONDITION OPTIONS: 0,1,2,3: EBC_S,EBC_D,TOLKE_BC,NEBC_D
 1				:LOCAL PERM CALCULATION (0=NO, 1=YES)
 0 0 0				:Pemeability calculation Partially  
@@ -44,7 +44,7 @@ BC.dat        :Geometry filename
 ======================GEOMETRY READING=======================
 0		:Geometry Reading format, 0=decimal,1=binary
 ======================Non-Newtonian Module======================
-0               :0=OFF, 1=ON
+1               :0=OFF, 1=ON
 0.001 0.25        :mu,n: apparent viscosity=mu*gama_dot^(n-1)
 
 
