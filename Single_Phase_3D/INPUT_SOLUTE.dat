@@ -29,7 +29,7 @@ phase.dat       	    	:Initial components distribution (ST_Peaks do not need thi
 200		         	:Frequency of results writing (interval in time steps)
 0               		:Memory Saving mode for output subroutains (0=No, 1=Yes,for large outputs, x,z opposite)
 -1				:Frequency of velocity field writing (in vtk format, -1=no velocity writing)
--1				:Frequency of density field writing (in vtk format, -1=no density writing)
+-1				:Frequency of density field writing (in vtk format, 0=Only Geometry)
 1000				:Frequency of concentration writing (in vtk format, -1=no density writing)
 1 1000                        :Dispersion statistics (0=No,1,2,3=YES; Frequncy of writing)
 ==============ADVANCE==PARAMETER==========

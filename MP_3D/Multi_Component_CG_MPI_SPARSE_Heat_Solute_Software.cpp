@@ -532,6 +532,8 @@ if (Zoom>1)
 
 	MPI_Barrier(MPI_COMM_WORLD);
 	
+
+	if ((freVe>=0) or (freDe>=0))
 	if (Out_Mode==1)
 		Geometry(Solid);
 	else
@@ -750,13 +752,13 @@ if (wr_per==1)
 			cout<<endl;
 			}
 			
-			if ((freDe>=0) and (n%freDe==0))
+			if ((freDe>0) and (n%freDe==0))
 				if (Out_Mode==1)
 					output_density(n,rho,mirX,mirY,mirZ,mir,Solid);
 				else
 					output_density_b(n,rho,mirX,mirY,mirZ,mir,Solid);
 
-			if ((freVe>=0) and (n%freVe==0))
+			if ((freVe>0) and (n%freVe==0))
 				if (Out_Mode==1)
 					output_velocity(n,rho,u,mirX,mirY,mirZ,mir,Solid);
 				else
