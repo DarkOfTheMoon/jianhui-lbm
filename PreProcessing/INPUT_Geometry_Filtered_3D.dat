@@ -3,3 +3,12 @@ ftb_test.roc			:Source Geometry file name (Geometry needed to be filtered)
 131 131 131			:size of geometry nx,ny,nz
 20-3-3.vtk			:Filtered VTK file name 
 ftb.dat	:Filtered Data file name (used for claculation)
+
+Note:
+The source data should be comprised with 0 and a positive integal (eg 1 or 255)
+the order is 
+for z
+   for y
+       for x
+
+

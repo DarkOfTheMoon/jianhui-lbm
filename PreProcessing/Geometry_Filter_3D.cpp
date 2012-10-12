@@ -89,7 +89,14 @@ double pore;
 	       }
 	}
 		
-	
+	cout<<endl;
+	cout<<"=================================================================\n";
+	cout<<"		    Preprocessing Module-Remove isolated pores\n";
+	cout<<"	Jianhui Yang - All right reserved	OCT2012	\n";
+	cout<<"=================================================================\n";
+	cout<<endl;
+	cout<<"Start reading source geometry file"<<endl;
+
 
 
 
