@@ -44,7 +44,7 @@ BC.dat        :Geometry filename
 ======================GEOMETRY READING=======================
 0		:Geometry Reading format, 0=decimal,1=binary
 ======================Non-Newtonian Module======================
-1               :0=OFF, 1=ON
+0               :0=OFF, 1=ON
 0.001 0.25        :mu,n: apparent viscosity=mu*gama_dot^(n-1)
 
 
