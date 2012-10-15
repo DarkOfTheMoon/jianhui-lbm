@@ -135,9 +135,23 @@ double pore;
 	for (int i=0;i<nx;i++)
 		for (int j=0;j<ny;j++)
 			for (int k=0;k<nz;k++)
-			if (((i==0) or (i==nx-1) or (j==0) or (j==ny-1) or (k==0) or (k==nz-1)) and (Solid[i][j][k]==0))
-			{Solid[i][j][k]=2;sum--;}
-
+			if ((i==0) and (Solid[i][j][k]==0))
+				{Solid[i][j][k]=2;sum--;}
+			else
+				if ((i==nx-1) and (Solid[i][j][k]==0))
+					{Solid[i][j][k]=3;sum--;}
+				else
+					if ((j==0) and (Solid[i][j][k]==0))
+						{Solid[i][j][k]=4;sum--;}
+					else
+						if ((j==ny-1) and (Solid[i][j][k]==0))
+							{Solid[i][j][k]=5;sum--;}
+						else
+							if ((k==0) and (Solid[i][j][k]==0))
+								{Solid[i][j][k]=6;sum--;}
+							else
+								if ((k==nz-1) and (Solid[i][j][k]==0))
+									{Solid[i][j][k]=7;sum--;}
 	
 	loop=0;mark=1;
 	while (mark>0)
@@ -147,23 +161,60 @@ double pore;
 	for (int i=0;i<nx;i++)
 		for (int j=0;j<ny;j++)
 			for (int k=0;k<nz;k++)
-			if (Solid[i][j][k]==2)
+			if (Solid[i][j][k]>1)
 				for (int ls=0;ls<18;ls++)
 				{
 				ii=i+e[ls][0];
 				jj=j+e[ls][1];
 				kk=k+e[ls][2];
-	
-				if ((ii>=0) and (ii<nx) and (jj>=0) and (jj<ny) and (kk>=0) and (kk<nz) and (Solid[ii][jj][kk]==0))
-				{Solid[ii][jj][kk]=2;sum--;mark++;}
+				
+				if ((ii>=0) and (ii<nx) and (jj>=0) and (jj<ny) and (kk>=0) and (kk<nz))
+				{
+					if (Solid[ii][jj][kk]==0)
+						{Solid[ii][jj][kk]=Solid[i][j][k];sum--;mark++;}
+					if ((Solid[ii][jj][kk]>1) and (Solid[ii][jj][kk]!=Solid[i][j][k]))
+						{Solid[i][j][k]=10;}	
+				}			
+
+
 				}
 
 				
 	}
 			
-
 	
-	cout<<"The residule sum="<<sum<<"	ratio="<<double(sum/sum2)<<endl;
+	
+	cout<<"The residule sum="<<sum<<"	ratio="<<double(sum)/double(sum2)<<endl;
+
+
+	cout<<endl;
+	cout<<"Start searching isolated pores on boundaries"<<endl;
+	//sum2=sum;
+	
+	loop=0;mark=1;
+	while (mark>0)
+	{
+	loop++;cout<<loop<<"	The residule sum="<<sum<<"	ratio="<<double(sum)/double(sum2)<<endl;
+	mark=0;
+	for (int i=0;i<nx;i++)
+		for (int j=0;j<ny;j++)
+			for (int k=0;k<nz;k++)
+			if (Solid[i][j][k]==10)
+				for (int ls=0;ls<18;ls++)
+				{
+				ii=i+e[ls][0];
+				jj=j+e[ls][1];
+				kk=k+e[ls][2];
+				
+				if ((ii>=0) and (ii<nx) and (jj>=0) and (jj<ny) and (kk>=0) and (kk<nz) and (Solid[ii][jj][kk]>1) and (Solid[ii][jj][kk]<10))
+				{Solid[ii][jj][kk]=10;sum--;mark++;}
+
+				}
+
+				
+	}
+
+		
 	//============decomposition complete=======================
 	
 	//==================================================
@@ -203,7 +254,16 @@ double pore;
 	//cout<<k<<endl;
 	for (int j=0;j<ny;j++)
 	for (int i=0;i<nx;i++)
-		out<<Solid[i][j][k]<<" ";
+		if (Solid[i][j][k]==1)
+		out<<"2 ";
+			else
+			if (Solid[i][j][k]==10)
+			out<<"0 ";
+			else
+			out<<"1 ";
+			
+			
+		//out<<Solid[i][j][k]<<" ";
 	}
 	
 
@@ -221,12 +281,17 @@ double pore;
 	//name<<"Clashach_z_sym_196x196x388_8.946.dat";
 	ofstream out2;
 	out2.open(name2.str().c_str());
+
+
+	//for (int i=0;i<nx;i++)
+	//for (int j=0;j<ny;j++)
+
 	for (int k=0;k<nz;k++)
 	{
 	//cout<<k<<endl;
 	for (int j=0;j<ny;j++)
 	for (int i=0;i<nx;i++)
-		if (Solid[i][j][k]==2)
+		if (Solid[i][j][k]==10)
 			out2<<"0 ";
 		else
 			out2<<"1 ";
