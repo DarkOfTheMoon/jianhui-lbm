@@ -36,6 +36,7 @@ char poreFileNameOut[128];
 int mark,ii,jj,kk,loop,sum2;
 
 int sum=0;
+int sum3;
 
 ifstream fins(argv[1]);
 							fins.getline(dummy, NCHAR);
@@ -130,7 +131,7 @@ double pore;
 	
 	sum2=sum;
 
-
+	sum3=sum;
 
 	for (int i=0;i<nx;i++)
 		for (int j=0;j<ny;j++)
@@ -153,6 +154,8 @@ double pore;
 								if ((k==nz-1) and (Solid[i][j][k]==0))
 									{Solid[i][j][k]=7;sum--;}
 	
+
+	
 	loop=0;mark=1;
 	while (mark>0)
 	{
@@ -171,9 +174,14 @@ double pore;
 				if ((ii>=0) and (ii<nx) and (jj>=0) and (jj<ny) and (kk>=0) and (kk<nz))
 				{
 					if (Solid[ii][jj][kk]==0)
-						{Solid[ii][jj][kk]=Solid[i][j][k];sum--;mark++;}
+						{Solid[ii][jj][kk]=Solid[i][j][k];sum--;mark++;if (Solid[i][j][k]==10) sum3--;}
 					if ((Solid[ii][jj][kk]>1) and (Solid[ii][jj][kk]!=Solid[i][j][k]))
-						{Solid[i][j][k]=10;}	
+						{
+						if (Solid[i][j][k]<10)
+							sum3--;
+						Solid[i][j][k]=10;
+						
+						}	
 				}			
 
 
@@ -181,10 +189,20 @@ double pore;
 
 				
 	}
-			
 	
+
+	/*	
+	int testsum=0;	
+	for (int i=0;i<nx;i++)
+		for (int j=0;j<ny;j++)
+			for (int k=0;k<nz;k++)
+				if (Solid[i][j][k]==10)
+				testsum++;
+				cout<<testsum<<"  "<<sum3<<"	"<<sum2<<"	@@@@@@@@@@@@@@	"<<(double(testsum)/(nx*ny*nz))<<endl;
+	*/
 	
 	cout<<"The residule sum="<<sum<<"	ratio="<<double(sum)/double(sum2)<<endl;
+	cout<<"Initial seed for boundary seraching, sum="<<sum3<<"   ratio="<<double(sum3)/double(sum2)<<endl;
 
 
 	cout<<endl;
@@ -194,7 +212,7 @@ double pore;
 	loop=0;mark=1;
 	while (mark>0)
 	{
-	loop++;cout<<loop<<"	The residule sum="<<sum<<"	ratio="<<double(sum)/double(sum2)<<endl;
+	loop++;cout<<loop<<"	The residule sum="<<sum3<<"	ratio="<<double(sum3)/double(sum2)<<endl;
 	mark=0;
 	for (int i=0;i<nx;i++)
 		for (int j=0;j<ny;j++)
@@ -207,14 +225,14 @@ double pore;
 				kk=k+e[ls][2];
 				
 				if ((ii>=0) and (ii<nx) and (jj>=0) and (jj<ny) and (kk>=0) and (kk<nz) and (Solid[ii][jj][kk]>1) and (Solid[ii][jj][kk]<10))
-				{Solid[ii][jj][kk]=10;sum--;mark++;}
+				{Solid[ii][jj][kk]=10;sum3--;mark++;}
 
 				}
 
 				
 	}
 
-		
+	cout<<"The residule sum="<<sum3<<"	ratio="<<double(sum3)/double(sum2)<<endl;	
 	//============decomposition complete=======================
 	
 	//==================================================
@@ -254,6 +272,7 @@ double pore;
 	//cout<<k<<endl;
 	for (int j=0;j<ny;j++)
 	for (int i=0;i<nx;i++)
+		/*
 		if (Solid[i][j][k]==1)
 		out<<"2 ";
 			else
@@ -261,9 +280,9 @@ double pore;
 			out<<"0 ";
 			else
 			out<<"1 ";
+		*/	
 			
-			
-		//out<<Solid[i][j][k]<<" ";
+		out<<Solid[i][j][k]<<" ";
 	}
 	
 
