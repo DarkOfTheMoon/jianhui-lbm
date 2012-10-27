@@ -129,6 +129,12 @@ and set least square check length short:
 Once the targeted saturation has been reached, the program will wait 30*output frequency time steps, then export the distribution.
 
 
+===========================
+Static Relative Permeability calculation:
+capillary number 1e-5 is recommanded, it gives good convergence and stability
+
+===========================
+
 ====================
 PLOT SCRIPT USE
 sh multi_phase_gnuplot.sh rel_2_ 
