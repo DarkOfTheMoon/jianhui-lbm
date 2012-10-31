@@ -26,10 +26,14 @@ int yp=200;
 int zn=20;
 int zp=200;
 
+
 int input_vtk=1;	//0=NO,1=YES
-int output_vtk=1;	
-char poreFileName[128]="psi2_LBM_psi_200000.vtk";
-char outputFileName[128]="sys_cut_phase.vtk";
+int output=1;		//export processed file? 
+int output_vtk=1;
+	
+char poreFileName[128]="psi2_LBM_psi_800000.vtk";
+
+char outputFileName[128]="sys_cut_phase_0.31.vtk";
 
 
 
@@ -47,7 +51,7 @@ nz2=zp-zn;
 
 
 
-int sum=0;
+
 
 double*** Solid_Int;
 double*** Solid;
@@ -146,7 +150,8 @@ double pore;
 	//cout<<"Porosity = "<<1-(double(sum)/(nx2*ny2*nz2))<<endl;	
 	//cout<<sum<<endl;	
 		
-		
+	int sum=0;
+	int sum2=0;	
 	// Reading pore geometry
 	for(k=0 ; k<nz2 ; k++)				///*********
 	for(j=0 ; j<ny2 ; j++)
@@ -154,9 +159,17 @@ double pore;
 
 	{
 	        Solid_Int[i][j][k]=Solid[i][j][k];
+
+		if ((Solid[i][j][k]>0.00001) or (Solid[i][j][k]<-0.0001))
+			sum++;
+		
+		if (Solid[i][j][k]>0.2)
+			sum2++;
 	        
 	        
 	}
+
+	cout<<"Saturation of component 1 is "<<(double)sum2/sum<<endl;
 
 	if (sym_x==1)
 	for(k=0 ; k<nz2 ; k++)				///*********
@@ -180,7 +193,8 @@ if (sym_z==1)
 
 
 
-
+	if (output==1)
+	{
 	//cout<<sum<<endl;
 	cout<<"Start writting output file"<<endl;
 	cout<<endl;
@@ -208,12 +222,18 @@ if (sym_z==1)
 	for(k=0 ; k<nz2*(sym_z+1) ; k++)						///*********
 		for(j=0 ; j<ny2*(sym_y+1) ; j++)					///*********
 			for(i=0 ; i<nx2*(sym_x+1); i++)				///*********		
-			out<<Solid_Int[i][j][k]<<endl;
+			if (Solid_Int[i][j][k]>=0.0)
+				out<<1.0<<endl;
+			else
+				out<<-1.0<<endl;
+				
+				//out<<Solid_Int[i][j][k]<<endl;
 			
 
 
 
 	out.close();
+	}
 
 cout<<nx2*(sym_x+1)<<"         "<<ny2*(sym_y+1)<<"         "<<nz2*(sym_z+1)<<endl;
 
