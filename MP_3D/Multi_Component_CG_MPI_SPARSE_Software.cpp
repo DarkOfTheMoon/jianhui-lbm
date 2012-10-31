@@ -236,9 +236,9 @@ double rel_per_l_ls,rel_per_g_ls,slopl,slopg;
 
 //=============Rel_Perm_Imb_Drai======================
 int rel_perm_id_mode,rel_perm_id_ids,rel_perm_id_time,rel_perm_id_cri;
-int rel_perm_id_dir,rel_perm_chan_num,cri_rells_n,rel_perm_bodyf_mode,rel_perm_output_psi;
+int rel_perm_id_dir,rel_perm_chan_num,rel_perm_bodyf_mode,rel_perm_output_psi;
 double* rel_perm_sw;
-double pre_rell,pre_relg,cri_rells,rel_perm_bodyf;
+double pre_rell,pre_relg,rel_perm_bodyf;
 char FileName7[128];
 //===============================================
 
@@ -424,8 +424,8 @@ double v_max,error_Per;
 	
 	//=======================Rel_Perm_Imb_Drai====================
 	fin.getline(dummy, NCHAR);
-	fin >>rel_perm_id_dir>>rel_perm_chan_num>>cri_rells>>cri_rells_n;                          fin.getline(dummy, NCHAR);
-	fin >>rel_perm_bodyf_mode >> rel_perm_bodyf;                                                          fin.getline(dummy, NCHAR);
+	fin >>rel_perm_id_dir>>rel_perm_chan_num;                          fin.getline(dummy, NCHAR);
+	fin >>rel_perm_bodyf_mode >> rel_perm_bodyf;                       fin.getline(dummy, NCHAR);
 	fin >> rel_perm_output_psi;                                                         fin.getline(dummy, NCHAR);
 	//=======================================================
 	
@@ -550,9 +550,7 @@ double v_max,error_Per;
 	//==================Rel_Perm_Imb_Drai=====================
 	MPI_Bcast(&rel_perm_id_dir,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&rel_perm_chan_num,1,MPI_INT,0,MPI_COMM_WORLD);
-	MPI_Bcast(&cri_rells_n,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&rel_perm_bodyf_mode,1,MPI_INT,0,MPI_COMM_WORLD);
-	MPI_Bcast(&cri_rells,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 	MPI_Bcast(&rel_perm_bodyf,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 	MPI_Bcast(&rel_perm_output_psi,1,MPI_INT,0,MPI_COMM_WORLD);
 	
@@ -1221,25 +1219,28 @@ void Rel_Perm_Imb_Dra(double* psi)
         //ofstream finfs(FileName2,ios::app);rel_perm_sw[rel_perm_id_ids]
        //cout<<rel_perm_id_ids<<"      @@@    "<<in_psi_BC<<"        "<<rel_perm_sw[rel_perm_id_ids]<<"          "<<ini_Sat<<endl;
         
+
+//	cout<<rel_perm_id_mode<<"	"<<S_l<<"	"<<rel_perm_sw[rel_perm_id_ids]<<endl;
+
         if (rel_perm_id_mode==1)
                 {
                        
                         if ((rel_perm_id_dir==1) and (S_l>rel_perm_sw[rel_perm_id_ids]))
                         {
                                 rel_perm_id_mode=2;
-                                in_psi_BC=0;    
-                                rel_perm_id_time=0;
-                                rel_perm_id_cri=0;
-                                gxs=gx;gys=gy;gzs=gz;
+                                //in_psi_BC=0;    
+                                //rel_perm_id_time=0;
+                                //rel_perm_id_cri=0;
+                                //gxs=gx;gys=gy;gzs=gz;
                         }
                         
                       if ((rel_perm_id_dir==2) and (S_l<rel_perm_sw[rel_perm_id_ids]))
                         {
                                 rel_perm_id_mode=2;
-                                in_psi_BC=0;    
-                                rel_perm_id_time=0; 
-                                rel_perm_id_cri=0;
-                                gxs=gx;gys=gy;gzs=gz;
+                                //in_psi_BC=0;    
+                                //rel_perm_id_time=0; 
+                                //rel_perm_id_cri=0;
+                                //gxs=gx;gys=gy;gzs=gz;
                         }          
                         
                 }
@@ -1249,13 +1250,16 @@ void Rel_Perm_Imb_Dra(double* psi)
                     rel_perm_id_time+=1;
                     
                     //=============export psi=================================
-                    if ((rel_perm_id_time>=num_least_square) and (rel_perm_output_psi==1))
-                    {
+                    //if ((rel_perm_id_time>=num_least_square) and (rel_perm_output_psi==1))
+                    //{
                             
                      //export psi  ouput_psi_rel_perm
                      if (rel_perm_id_ids<=rel_perm_chan_num-1)
-                     output_psi_rel_perm(rel_perm_sw[rel_perm_id_ids],psi,Solid);
-                     
+                     //output_psi_rel_perm(rel_perm_sw[rel_perm_id_ids],psi,Solid);
+                     output_psi_b(n,psi,mirX,mirY,mirZ,mir,Solid);
+
+
+
                      rel_perm_id_ids+=1;
                                 if (rel_perm_id_ids<rel_perm_chan_num) 
                                         {
@@ -1278,14 +1282,14 @@ void Rel_Perm_Imb_Dra(double* psi)
                                         
                                         }
                                         
-                    }             
+                    //}             
              //===================================================
              
              
              
             }
             
-           
+   /*  
        if ((rel_perm_id_mode==2) and (rel_perm_id_time>num_least_square))
                {
                        
@@ -1336,6 +1340,9 @@ void Rel_Perm_Imb_Dra(double* psi)
                            
                               }
                } 
+
+*/
+
 }
 
 
@@ -2401,10 +2408,10 @@ void init(double* rho, double** u, double** f,double* psi,double* rho_r, double*
 	rel_perm_id_ids=0;
 	rel_perm_id_mode=1;
 	in_psi_BC=1;
-	ini_Sat=rel_perm_sw[0];
+	//ini_Sat=rel_perm_sw[0];
 	
 
-	
+	/*
 	if (PerDir==1)
 	        {       
 	                if (rel_perm_id_dir==1)
@@ -2449,7 +2456,7 @@ void init(double* rho, double** u, double** f,double* psi,double* rho_r, double*
 	                        }
 	        }       
 	        
-	        
+	*/        
 	}
 //==================================================
 
@@ -5947,18 +5954,33 @@ void output_psi_rel_perm(double m,double* psi,int*** Solid)
 	
 	ostringstream name;
 	if (rel_perm_id_dir==1)
-	        name<<outputfile<<"PSI_imb_S_w_"<<m<<".ini_dat";
+	        name<<outputfile<<"PSI_imb_S_w_"<<m<<".ini_vtk";
 	else
-	        name<<outputfile<<"PSI_drai_S_w_"<<m<<".ini_dat";
+	        name<<outputfile<<"PSI_drai_S_w_"<<m<<".ini_vtk";
 	
 	ofstream out;
 	out.open(name.str().c_str());
 
+	
+	out<<"# vtk DataFile Version 2.0"<<endl;
+	out<<"J.Yang Lattice Boltzmann Simulation 3D Single Phase-Solid-Density"<<endl;
+	out<<"ASCII"<<endl;
+	out<<"DATASET STRUCTURED_POINTS"<<endl;
+	out<<"DIMENSIONS         "<<NX0<<"         "<<NY0<<"         "<<NZ0<<endl;
+	out<<"ORIGIN 0 0 0"<<endl;
+	out<<"SPACING 1 1 1"<<endl;
+	out<<"POINT_DATA     "<<NX0*NY0*NZ0<<endl;
+	out<<"SCALARS sample_scalars float"<<endl;
+	out<<"LOOKUP_TABLE default"<<endl;
 
         for(int k=0;k<NZ0;k++)
       		for(int j=0; j<NY0; j++)
 			for(int i=0;i<NX0;i++)
-				out<<setprecision(preci)<<rbuf_psi[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]<<" ";
+				if (rbuf_psi[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]>=0.0)
+				out<<1.0<<" ";
+				else
+				out<<-1.0<<" ";
+				//out<<setprecision(preci)<<rbuf_psi[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]<<" ";
 
 	out.close();
 				

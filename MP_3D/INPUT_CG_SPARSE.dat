@@ -62,7 +62,7 @@ phase.dat       	    	:Initial components distribution
 ======================Least Square Fitting for Relative Permeability=============
 1 1000                            :0=OFF,1=ON; number of Fitting points;  
 =======================Relative Permeability with Imbibition and Drainage process Control==========
-0 5 1e-1 5                :0=OFF,1=Imb,2=Drai;No.of data points; (equil cond for least square rel_perm, time steps)
+0 5                :0=OFF,1=Imb,2=Drai;No.of data points; (need initial psi data)
 0 1e-5                            :Apply diff force for injec 0=OFF,1=ON,value for injection (to overcome the min cap pres)
 0                             :0=OFF,1=ON EXPORT BINARY FLUID DISTRIBUTION psi (CAN BE USED FOR OTHER SIMULATIONS INPUTS)
 ========
@@ -134,6 +134,21 @@ Static Relative Permeability calculation:
 capillary number 1e-5 is recommanded, it gives good convergence and stability
 
 ===========================
+
+
+
+**************
+To generate drinage or imbibition distribution for static relative permeabiltiy calculation,
+set bodyforce as normal, set psi boundary condition as normal, need initial psi data file
+set the following function as
+=======================Relative Permeability with Imbibition and Drainage process Control==========
+1 5                :0=OFF,1=Imb,2=Drai;No.of data points; (need initial psi data)
+0 1e-5                            :NOT APPLICABLE
+1                             :0=OFF,1=ON EXPORT BINARY FLUID DISTRIBUTION psi (CAN BE USED FOR OTHER SIMULATIONS INPUTS)
+****************
+
+
+
 
 ====================
 PLOT SCRIPT USE
