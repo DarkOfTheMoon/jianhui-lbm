@@ -15,11 +15,14 @@ int nx=220;
 int ny=200;
 int nz=200;
 
+int Phase_Filter_Visual=0;	//1= defualt setting for filter phases for visualization
+
+
 int sym_x=1;
 int sym_y=0;
 int sym_z=0;
 
-int xn=20;
+int xn=20; 		//20,200,20,200,20,200
 int xp=200;
 int yn=20;
 int yp=200;
@@ -28,16 +31,25 @@ int zp=200;
 
 
 int input_vtk=1;	//0=NO,1=YES
-int output=1;		//export processed file? 
+int output=0;		//export processed file? 
 int output_vtk=1;
 	
-char poreFileName[128]="psi2_LBM_psi_800000.vtk";
+char poreFileName[128]="psi2_LBM_psi_450000.vtk";
 
-char outputFileName[128]="sys_cut_phase_0.31.vtk";
+char outputFileName[128]="sys_cut_phase_0.50.vtk";
 
 
 
 //======================================================
+
+if (Phase_Filter_Visual==1)
+	{
+	sym_x=0;sym_y=0;sym_z=0;
+	xn=0;xp=nx;yn=0;yp=ny;zn=0;zp=nz;
+	input_vtk=1;output=1;output_vtk=1;
+	}
+
+
 int NCHAR=128;
 
 char     dummy[128+1];
@@ -225,7 +237,10 @@ if (sym_z==1)
 			if (Solid_Int[i][j][k]>=0.0)
 				out<<1.0<<endl;
 			else
+				//if (Solid_Int[i][j][k]<0)
 				out<<-1.0<<endl;
+				//else
+				//out<<0.0<<endl;
 				
 				//out<<Solid_Int[i][j][k]<<endl;
 			
