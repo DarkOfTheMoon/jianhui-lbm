@@ -143,11 +143,8 @@ double pore;
 			if ((i>=xn) and (i<xp) and (j>=yn) and (j<yp) and (k>=zn) and (k<zp))
 				Solid[i-xn][j-yn][k-zn]=pore;
 			
-			//if (pore == 0.0)	{Solid[ci-1][cj-1][ck-1] = 0;}
-			//if (pore == 0.0)	{Solid[i][j][k] = 0;}
+			//==========CHANGE PART SATURATIONS=================
 			
-			//if (pore == 1.0) 	{Solid[ci-1][cj-1][ck-1] = 1;sum++;}
-			//if (pore == 1.0) 	{Solid[i][j][k] = 1;sum++;}
 			
 			
 			
@@ -203,6 +200,19 @@ if (sym_z==1)
 	for(i=0 ; i<nx2; i++)				///*********
 		Solid_Int[i][j][nz2+k]=Solid_Int[i][j][nz2-1-k];
 
+	//==============change psi values===========================
+/*
+	for(k=0 ; k<nz2*(sym_z+1) ; k++)						///*********
+		for(j=0 ; j<ny2*(sym_y+1) ; j++)					///*********
+			for(i=0 ; i<nx2*(sym_x+1); i++)	
+			{
+			if (i<10) 
+				Solid_Int[i][j][k]=1;
+			if (i>ny2*(sym_y+1)-9)
+				Solid_Intp[i][j][k]=-1;
+			}
+*/
+	//==========================================================
 
 
 	if (output==1)
@@ -233,7 +243,8 @@ if (sym_z==1)
 	
 	for(k=0 ; k<nz2*(sym_z+1) ; k++)						///*********
 		for(j=0 ; j<ny2*(sym_y+1) ; j++)					///*********
-			for(i=0 ; i<nx2*(sym_x+1); i++)				///*********		
+			for(i=0 ; i<nx2*(sym_x+1); i++)				///*********	
+				
 			if (Solid_Int[i][j][k]>=0.0)
 				out<<1.0<<endl;
 			else
@@ -244,7 +255,7 @@ if (sym_z==1)
 				
 				//out<<Solid_Int[i][j][k]<<endl;
 			
-
+	
 
 
 	out.close();
