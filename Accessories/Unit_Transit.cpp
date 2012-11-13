@@ -12,9 +12,9 @@ int main (int argc , char * argv [])
 {
 
 
-double reso=5.3;		//Resolution microns/pixel
-double time=0.15;		//Time micro-second/lu
-double den=800.0;		//Density kg/m^3
+double reso=5.5;		//Resolution microns/pixel
+double time=2;		//Time micro-second/lu
+double den=1000.0;		//Density kg/m^3
 
 
 double la_dx=1.0;		//lattice dx
@@ -25,14 +25,17 @@ double la_den=1.0;		//lattice density
 
 double la_ift=0.5e-2;		//lattice surface tension
 double la_vis=0.05;		//lattice viscosity
-double la_pressure=5.5e-5*270;	//lattice pressure
+double la_pressure=1.0e-5;	//lattice pressure
 double la_dx2=1.0;		//lattice length
 double la_dt2=1.0;		//lattice time
 double la_v=1e-5;		//lattice velocity
+double la_bodyf=1e-5;		//lattice force
+
+
 
 double x0,t0,m0;
 
-double p_dx,p_dt,p_ift,p_vis,p_pressure,p_v;
+double p_dx,p_dt,p_ift,p_vis,p_pressure,p_v,p_bodyf;
 
 
 x0=reso*1e-6;
@@ -60,6 +63,10 @@ cout<<endl;
 cout<<"============================="<<endl;
 cout<<"lattice pressure "<<la_pressure<<"	Pysical unite "<<la_pressure*m0/t0/t0/x0<<" Pa or "<<la_pressure*m0/t0/t0/x0/(6.8948e3)<<" psi"<<endl;
 cout<<"or "<<la_pressure*m0/t0/t0/x0*1e-5<<" bar"<<endl;
+cout<<endl;
+
+cout<<"============================="<<endl;
+cout<<"lattice body force accerlaration  "<<la_bodyf<<"	Pysical unite "<<la_bodyf*x0/t0/t0<<" N/Kg"<<endl;
 cout<<endl;
 
 }
