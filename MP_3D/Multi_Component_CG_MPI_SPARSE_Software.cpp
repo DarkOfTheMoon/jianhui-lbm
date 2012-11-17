@@ -2299,7 +2299,7 @@ void init(double* rho, double** u, double** f,double* psi,double* rho_r, double*
         srand((unsigned)time(0)+rank);
 	
 	double usqr,vsqr,rand_double;
-	double c2,c4;
+	double c2,c4,sat_tmp;
 	
 	rho0=1.0;dt=1.0/Zoom;dx=1.0/Zoom;
  
@@ -2405,9 +2405,16 @@ void init(double* rho, double** u, double** f,double* psi,double* rho_r, double*
 	
 	if (rel_perm_id_dir>0)
 	{
+	        
 	rel_perm_id_ids=0;
 	rel_perm_id_mode=1;
 	in_psi_BC=1;
+	
+	
+	
+	
+	
+	
 	//ini_Sat=rel_perm_sw[0];
 	
 
@@ -2561,6 +2568,26 @@ void init(double* rho, double** u, double** f,double* psi,double* rho_r, double*
 	}       
 	
 //===================Rel_Perm_Imb_Drai======================
+rel_perm_id_ids=0;
+sat_tmp=Comput_Saturation(psi,Solid,SupInv);
+if (rel_perm_id_dir==1)
+{
+        while (((rel_perm_id_ids)<rel_perm_chan_num) &&  (sat_tmp>rel_perm_sw[rel_perm_id_ids]))
+                {
+                        rel_perm_id_ids++;
+                }
+}
+        
+if (rel_perm_id_dir==2)
+{
+        while (((rel_perm_id_ids)<rel_perm_chan_num) &&  (sat_tmp<rel_perm_sw[rel_perm_id_ids]))
+                {
+                        rel_perm_id_ids++;
+                }
+}       
+
+        
+        
 if ((rel_perm_bodyf_mode==1) and (rel_perm_id_dir>0))
                   {
                           if (PerDir==1)
@@ -5850,7 +5877,7 @@ void output_psi_b(int m,double* psi,int MirX,int MirY,int MirZ,int mir,int*** So
 	ofstream out;
 	out.open(name.str().c_str());
 	out<<"# vtk DataFile Version 2.0"<<endl;
-	out<<"J.Yang Lattice Boltzmann Simulation 3D Single Phase-Solid-Density"<<endl;
+	out<<"J.Yang Lattice Boltzmann Simulation 3D Single Phase-Solid-"<<S_l<<endl;
 	out<<"ASCII"<<endl;
 	out<<"DATASET STRUCTURED_POINTS"<<endl;
 	out<<"DIMENSIONS         "<<NX0<<"         "<<NY0<<"         "<<NZ0<<endl;
