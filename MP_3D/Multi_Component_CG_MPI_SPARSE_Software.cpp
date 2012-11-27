@@ -948,7 +948,7 @@ if (rank==0)
 		        
 		        //============IFT CHANGE====================rel_perm_ift >> vary_ift;   
 			if ((rel_perm_ift>0) and (rel_perm_ift==n))
-				CapA=rel_perm_ift;
+				CapA=vary_ift;
 			//==========================================
 			
 			if (rank==0)
