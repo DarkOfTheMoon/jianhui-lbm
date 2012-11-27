@@ -63,7 +63,7 @@ phase.dat       	    	:Initial components distribution
 1 1000                            :0=OFF,1=ON; number of Fitting points;  
 =======================Relative Permeability with Imbibition and Drainage process Control==========
 0 5                :0=OFF,1=Imb,2=Drai;No.of data points; (need initial psi data)
-0 1e-5                            :Apply diff force for injec 0=OFF,1=ON,value for injection (to overcome the min cap pres)
+0 0.7e-2                            :N>0 :Apply diff ift after N timesteps, N<=0 OFF, IFT value;
 0                             :0=OFF,1=ON EXPORT BINARY FLUID DISTRIBUTION psi (CAN BE USED FOR OTHER SIMULATIONS INPUTS)
 ========
 
@@ -133,6 +133,15 @@ Once the targeted saturation has been reached, the program will wait 30*output f
 Static Relative Permeability calculation:
 capillary number 1e-5 is recommanded, it gives good convergence and stability
 
+For Imbibition Stative Rel Perm calculation:
+if varying IFT is needed after N timestep, use:
+20000 0.7e-2                            :N>0 :Apply diff ift after N timesteps, N<=0 OFF, IFT value;
+
+Then the simulation will use IFT set in the inputfile initially:
+1.0e-2    		      	:Surface tension (Kappa)
+
+at 20000time step, the IFT will change to 0.7e-2
+
 ===========================
 
 
@@ -143,7 +152,7 @@ set bodyforce as normal, set psi boundary condition as normal, need initial psi 
 set the following function as
 =======================Relative Permeability with Imbibition and Drainage process Control==========
 1 5                :0=OFF,1=Imb,2=Drai;No.of data points; (need initial psi data)
-0 1e-5                            :NOT APPLICABLE
+0 1e-5                            :IFT settings
 1                             :0=OFF,1=ON EXPORT BINARY FLUID DISTRIBUTION psi (CAN BE USED FOR OTHER SIMULATIONS INPUTS)
 ****************
 

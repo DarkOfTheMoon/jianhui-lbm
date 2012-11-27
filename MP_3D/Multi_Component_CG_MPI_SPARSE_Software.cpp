@@ -236,9 +236,9 @@ double rel_per_l_ls,rel_per_g_ls,slopl,slopg;
 
 //=============Rel_Perm_Imb_Drai======================
 int rel_perm_id_mode,rel_perm_id_ids,rel_perm_id_time,rel_perm_id_cri;
-int rel_perm_id_dir,rel_perm_chan_num,rel_perm_bodyf_mode,rel_perm_output_psi;
+int rel_perm_id_dir,rel_perm_chan_num,rel_perm_ift,rel_perm_output_psi;
 double* rel_perm_sw;
-double pre_rell,pre_relg,rel_perm_bodyf;
+double pre_rell,pre_relg,vary_ift;
 char FileName7[128];
 //===============================================
 
@@ -409,7 +409,7 @@ double v_max,error_Per;
 	fin >> bodyforce_apply;					fin.getline(dummy, NCHAR);
 	fin.getline(dummy, NCHAR);        
 	
-	//=============CAPILLARY PRESSURE APPLY=================================                                                                                                                
+	//=============CAPILLARY PRESSUR======                                                                                                                
 	fin >> pressure_change2 >> pre_chan_pb2 >> interval_pre;					fin.getline(dummy, NCHAR);
 	fin >> pre_chan_pns >> pre_chan_pps >> pre_chan_fs >>chan_no >> sat_cri;                 fin.getline(dummy, NCHAR);
 	fin >> sat_cri_d;                                                                                fin.getline(dummy, NCHAR);
@@ -425,7 +425,7 @@ double v_max,error_Per;
 	//=======================Rel_Perm_Imb_Drai====================
 	fin.getline(dummy, NCHAR);
 	fin >>rel_perm_id_dir>>rel_perm_chan_num;                          fin.getline(dummy, NCHAR);
-	fin >>rel_perm_bodyf_mode >> rel_perm_bodyf;                       fin.getline(dummy, NCHAR);
+	fin >>rel_perm_ift >> vary_ift;                       fin.getline(dummy, NCHAR);
 	fin >> rel_perm_output_psi;                                                         fin.getline(dummy, NCHAR);
 	//=======================================================
 	
@@ -550,8 +550,8 @@ double v_max,error_Per;
 	//==================Rel_Perm_Imb_Drai=====================
 	MPI_Bcast(&rel_perm_id_dir,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&rel_perm_chan_num,1,MPI_INT,0,MPI_COMM_WORLD);
-	MPI_Bcast(&rel_perm_bodyf_mode,1,MPI_INT,0,MPI_COMM_WORLD);
-	MPI_Bcast(&rel_perm_bodyf,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Bcast(&rel_perm_ift,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&vary_ift,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 	MPI_Bcast(&rel_perm_output_psi,1,MPI_INT,0,MPI_COMM_WORLD);
 	
 	rel_perm_sw=new double[rel_perm_chan_num];
@@ -946,7 +946,10 @@ if (rank==0)
 		{       
 		        
 		        
-		        
+		        //============IFT CHANGE====================rel_perm_ift >> vary_ift;   
+			if ((rel_perm_ift>0) and (rel_perm_ift==n))
+				CapA=rel_perm_ift;
+			//==========================================
 			
 			if (rank==0)
 			{
@@ -1267,7 +1270,7 @@ void Rel_Perm_Imb_Dra(double* psi)
                                            in_psi_BC=1;
                                            ini_Sat=rel_perm_sw[rel_perm_id_ids];
                                            
-                                           
+                                           /*
                                            if (rel_perm_bodyf_mode==1)
                                            {
                                                    if (PerDir==1)
@@ -1277,7 +1280,7 @@ void Rel_Perm_Imb_Dra(double* psi)
                                                    if (PerDir==3)
                                                            gzs=rel_perm_bodyf;
                                         }
-                                        
+                                        */
                                         
                                         
                                         }
@@ -2587,7 +2590,7 @@ if (rel_perm_id_dir==2)
 }       
 
         
-        
+/*        
 if ((rel_perm_bodyf_mode==1) and (rel_perm_id_dir>0))
                   {
                           if (PerDir==1)
@@ -2597,6 +2600,7 @@ if ((rel_perm_bodyf_mode==1) and (rel_perm_id_dir>0))
                           if (PerDir==3)
                                   gzs=rel_perm_bodyf;
                   }	
+*/
 //=====================================================
 	 	
 }

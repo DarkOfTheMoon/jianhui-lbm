@@ -12,9 +12,9 @@ int main (int argc , char * argv [])
 {
 
 
-double reso=5.5;		//Resolution microns/pixel
-double time=2;		//Time micro-second/lu
-double den=1000.0;		//Density kg/m^3
+double reso=80;		//Resolution microns/pixel
+double time=15;		//Time micro-second/lu
+double den=800.0;		//Density kg/m^3
 
 
 double la_dx=1.0;		//lattice dx
@@ -23,13 +23,13 @@ double la_den=1.0;		//lattice density
 
 
 
-double la_ift=0.5e-2;		//lattice surface tension
-double la_vis=0.05;		//lattice viscosity
+double la_ift=1.0e-2;		//lattice surface tension
+double la_vis=0.2;		//lattice viscosity
 double la_pressure=1.0e-5;	//lattice pressure
 double la_dx2=1.0;		//lattice length
 double la_dt2=1.0;		//lattice time
 double la_v=1e-5;		//lattice velocity
-double la_bodyf=1e-5;		//lattice force
+double la_bodyf=1.76e-5;		//lattice force
 
 
 
