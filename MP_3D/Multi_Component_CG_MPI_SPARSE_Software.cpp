@@ -159,6 +159,8 @@ double Comput_Perm(double* ,double** ,double* ,double* ,int,int* );
 
 double Comput_Saturation(double* ,int***,int*);
 
+double Comput_Saturation_disp(double* ,int***,int*);
+
 double S[19];
 
 void Comput_MI(double[19][19], double[19][19]);
@@ -270,7 +272,10 @@ char FileName7[128];
 
 //=================================================
 
-
+//=========Saturation movement/displacement========
+double Sd_l=0.0;
+double Sd_g=0.0;
+//=================================================
 
 
 
@@ -981,6 +986,11 @@ if (rank==0)
 			S_l_r=S_l;
 			//=====================================
 			S_l=Comput_Saturation(psi,Solid,SupInv);
+
+
+			//=========Comput Saturation Displacement=========
+			Sd_l=Comput_Saturation_disp(psi,Solid,SupInv);
+			//================================================
 			
 			//=============Rel_Perm_Imb_Drai=================
 			pre_rell=rel_per_l_ls;
@@ -1083,7 +1093,7 @@ if (rank==0)
 
 			//==========for bodyforce output===========
 			ofstream finf3(FileName3,ios::app);
-			finf3<<S_l<<" "<<1-S_l<<" "<<abs((S_l_r-S_l)/S_l)<<endl;
+			finf3<<S_l<<" "<<1-S_l<<" "<<abs((S_l_r-S_l)/S_l)<<" "<<Sd_l<<" "<<Sd_g<<endl;
 			finf3.close();
 			ofstream finf5(FileName5,ios::app);
 			finf5<<u_ave<<" "<<u_max<<"  "<<error<<endl;
@@ -6444,6 +6454,128 @@ double Comput_Perm(double* psi,double** u,double* Per_l,double* Per_g,int PerDIr
 
 
 
+double Comput_Saturation_disp(double* psi,int*** Solid,int* SupInv)
+{
+	int rank = MPI :: COMM_WORLD . Get_rank ();
+	int mpi_size=MPI :: COMM_WORLD . Get_size ();
+
+	//double Sd_l,Sd_g;
+	
+	int nx_g[mpi_size];
+	int disp[mpi_size];
+	int si,sj,sm,sdir;
+	
+	MPI_Gather(&nx_l,1,MPI_INT,nx_g,1,MPI_INT,0,MPI_COMM_WORLD);
+	
+	
+	if (rank==0)
+		{
+		disp[0]=0;
+	
+		for (int i=1;i<mpi_size;i++)
+			disp[i]=disp[i-1]+nx_g[i-1];
+		
+		}
+
+	MPI_Bcast(disp,mpi_size,MPI_INT,0,MPI_COMM_WORLD);
+	
+double *rbuf_l,*rbuf_g;
+
+	rbuf_l=new double[mpi_size];
+	rbuf_g=new double[mpi_size];
+
+	Sd_l=0;Sd_g=0;
+
+if ((par_per_x-1)*(par_per_y-1)*(par_per_z-1)==0)	
+	for (int i=1;i<=Count;i++)
+	{
+		si=(int)(SupInv[i]/((NY+1)*(NZ+1)));
+		sj=(int)((SupInv[i]%((NY+1)*(NZ+1)))/(NZ+1));
+		sm=(int)(SupInv[i]%(NZ+1)); 
+		si+=disp[rank];
+
+		if (PerDir==1)
+			sdir=si;
+			else
+			if (PerDir==2)
+				sdir=sj;
+			else
+				sdir=sm;
+
+		
+		if ((si>=per_xn) and (si<=per_xp) and (sj>=per_yn) and (sj<=per_yp) and (sm>=per_zn) and (sm<=per_zp))
+		{
+	
+			if (psi[i]>=0) 
+			Sd_l+=psi[i]*sdir;
+			else
+			Sd_g+=psi[i]*sdir;
+		}
+		
+		
+	}
+	else
+	for (int i=1;i<=Count;i++)
+			{
+
+		si=(int)(SupInv[i]/((NY+1)*(NZ+1)));
+		sj=(int)((SupInv[i]%((NY+1)*(NZ+1)))/(NZ+1));
+		sm=(int)(SupInv[i]%(NZ+1)); 
+		si+=disp[rank];
+
+		if (PerDir==1)
+			sdir=si;
+			else
+			if (PerDir==2)
+				sdir=sj;
+			else
+				sdir=sm;
+				
+			if (psi[i]>=0) 
+			Sd_l+=psi[i]*sdir;
+			else
+			Sd_g+=psi[i]*sdir;
+
+		
+
+
+
+			}
+
+	
+		
+	
+
+		MPI_Gather(&Sd_l,1,MPI_DOUBLE,rbuf_l,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	
+		MPI_Gather(&Sd_g,1,MPI_DOUBLE,rbuf_g,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	
+	if (rank==0)
+	{Sd_l=0;Sd_g=0;
+	for (int i=0;i<mpi_size;i++)
+			{
+			Sd_l+=rbuf_l[i];Sd_g+=rbuf_g[i];
+			
+			}
+	
+	
+	
+	}
+
+	
+	delete [] rbuf_l;
+	delete [] rbuf_g;
+	
+	MPI_Bcast(&Sd_l,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Bcast(&Sd_g,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	
+	return (Sd_l);
+			
+
+}
+
+
+
 double Comput_Saturation(double* psi,int*** Solid,int* SupInv)
 {
 	int rank = MPI :: COMM_WORLD . Get_rank ();
@@ -6538,6 +6670,8 @@ if ((par_per_x-1)*(par_per_y-1)*(par_per_z-1)==0)
 			
 
 }
+
+
 
 
 
