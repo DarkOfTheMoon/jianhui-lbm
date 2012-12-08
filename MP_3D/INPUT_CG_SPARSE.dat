@@ -39,7 +39,7 @@ phase.dat       	    	:Initial components distribution
 0				:PRESET VALUE FOR BUFFET AREA, 0=NO,1=COMP A,-1=COMP B (valid when preset satuation)
 0.92 0.92			:Relative permeability calcualtion 0..1 (psi>=value, cal the flux for Comp1)
 0 0 0				:Pemeability calculation Partially  (1=ON, 0=OFF)
-49 3				:Permeability calculation partially Starting point and Ending point in X
+27 3				:Permeability calculation partially Starting point and Ending point in X
 0 100				:Permeability calculation partially Starting point and Ending point in Y
 0 100				:Permeability calculation partially Starting point and Ending point in Z
 ======================BACKUP==CONTROL====================
@@ -49,8 +49,8 @@ phase.dat       	    	:Initial components distribution
 0		:Geometry Reading format, 0=decimal,1=binary
 ======================PRESSURE OR BODAY FORCE SETTING (CHANGE WITH TIME)=============
 0 2			:0=OFF,1,2,3=ON,1=X,2=Y,3=Z;|| 1=PRESSURE,2=BODY FORCE
-10000 1.0025 1.0 1.0e-6		:ACT AT TIMESTEP n, PRESSURE N, PRESSURE P, BODYFORCE(1)
-10500 1.0 0.999 0.0		:ACT AT TIMESTEP n, PRESSURE N, PRESSURE P, BODYFORCE(2)
+7000 1.0025 1.0 1.0e-6		:ACT AT TIMESTEP n, PRESSURE N, PRESSURE P, BODYFORCE(1)
+7500 1.0 0.999 0.0		:ACT AT TIMESTEP n, PRESSURE N, PRESSURE P, BODYFORCE(2)
 -1 0.0 0.0 0.0		:ACT AT TIMESTEP n, PRESSURE N, PRESSURE P, BODYFORCE(3)
 -1 0.0 0.0 0.0		:ACT AT TIMESTEP n, PRESSURE N, PRESSURE P, BODYFORCE(4)
 -1 0.0 0.0 0.0		:ACT AT TIMESTEP n, PRESSURE N, PRESSURE P, BODYFORCE(5)

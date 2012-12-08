@@ -159,7 +159,7 @@ double Comput_Perm(double* ,double** ,double* ,double* ,int,int* );
 
 double Comput_Saturation(double* ,int***,int*);
 
-double Comput_Saturation_disp(double* ,int***,int*);
+//double Comput_Saturation_disp(double* ,int***,int*);
 
 double S[19];
 
@@ -888,21 +888,7 @@ if (rank==0)
 			}
 			
 			}
-			
-			
-/*
-			for(i=1;i<=Gcl[rank];i++)
-			        {
-			        sendl_psi[i-1]=psi[i];
-			        }
-			for(j=Count-Gcr[rank]+1;j<=Count;j++)
-			        {
-				sendr_psi[j-(Count-Gcr[rank]+1)]=psi[j];
-				}
 
-*/	
-	
-	
 	
 	//=====================================================
 	
@@ -989,7 +975,7 @@ if (rank==0)
 
 
 			//=========Comput Saturation Displacement=========
-			Sd_l=Comput_Saturation_disp(psi,Solid,SupInv);
+			//Sd_l=Comput_Saturation_disp(psi,Solid,SupInv);
 			//================================================
 			
 			//=============Rel_Perm_Imb_Drai=================
@@ -6453,7 +6439,7 @@ double Comput_Perm(double* psi,double** u,double* Per_l,double* Per_g,int PerDIr
 }
 
 
-
+/*
 double Comput_Saturation_disp(double* psi,int*** Solid,int* SupInv)
 {
 	int rank = MPI :: COMM_WORLD . Get_rank ();
@@ -6573,7 +6559,7 @@ if ((par_per_x-1)*(par_per_y-1)*(par_per_z-1)==0)
 			
 
 }
-
+*/
 
 
 double Comput_Saturation(double* psi,int*** Solid,int* SupInv)
@@ -6585,7 +6571,7 @@ double Comput_Saturation(double* psi,int*** Solid,int* SupInv)
 	
 	int nx_g[mpi_size];
 	int disp[mpi_size];
-	int si,sj,sm;
+	int si,sj,sm,sdir;
 	
 	MPI_Gather(&nx_l,1,MPI_INT,nx_g,1,MPI_INT,0,MPI_COMM_WORLD);
 	
@@ -6607,7 +6593,9 @@ double *rbuf_l,*rbuf_g;
 	rbuf_g=new double[mpi_size];
 
 	S_l=0;S_g=0;
-
+	Sd_l=0;Sd_g=0;
+	
+	
 if ((par_per_x-1)*(par_per_y-1)*(par_per_z-1)==0)	
 	for (int i=1;i<=Count;i++)
 	{
@@ -6615,9 +6603,7 @@ if ((par_per_x-1)*(par_per_y-1)*(par_per_z-1)==0)
 		sj=(int)((SupInv[i]%((NY+1)*(NZ+1)))/(NZ+1));
 		sm=(int)(SupInv[i]%(NZ+1)); 
 		si+=disp[rank];
-		//if (rank==1)
-		//cout<<rank<<"  "<<si<<" "<<sj<<" "<<sm<<endl;
-		//cout<<si<<"  "<<per_xn<<"  "<<per_xp<<endl;
+		
 		if ((si>=per_xn) and (si<=per_xp) and (sj>=per_yn) and (sj<=per_yp) and (sm>=per_zn) and (sm<=per_zp))
 		{
 	
@@ -6625,6 +6611,23 @@ if ((par_per_x-1)*(par_per_y-1)*(par_per_z-1)==0)
 			S_l+=1;
 			else
 			S_g+=1;
+		
+		
+		//============saturation displacement================= 
+		        if (PerDir==1)
+			sdir=si;
+			else
+			if (PerDir==2)
+				sdir=sj;
+			else
+				sdir=sm;
+				
+			if (psi[i]>=0) 
+			Sd_l+=psi[i]*sdir;
+			else
+			Sd_g+=psi[i]*sdir;
+		//===========================================
+		
 		}
 		
 		
@@ -6636,6 +6639,29 @@ if ((par_per_x-1)*(par_per_y-1)*(par_per_z-1)==0)
 			S_l+=1;
 			else
 			S_g+=1;
+		
+		
+		//===========saturation displacement==================
+		si=(int)(SupInv[i]/((NY+1)*(NZ+1)));
+		sj=(int)((SupInv[i]%((NY+1)*(NZ+1)))/(NZ+1));
+		sm=(int)(SupInv[i]%(NZ+1)); 
+		si+=disp[rank];
+
+		if (PerDir==1)
+			sdir=si;
+			else
+			if (PerDir==2)
+				sdir=sj;
+			else
+				sdir=sm;
+				
+			if (psi[i]>=0) 
+			Sd_l+=psi[i]*sdir;
+			else
+			Sd_g+=psi[i]*sdir;
+		//===========================================
+		        
+		
 			}
 
 	
@@ -6659,12 +6685,33 @@ if ((par_per_x-1)*(par_per_y-1)*(par_per_z-1)==0)
 	S_g=S_g/((per_xp-per_xn+1)*(per_yp-per_yn+1)*(per_zp-per_zn+1)*porosity);
 	}
 
+	MPI_Bcast(&S_l,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	
+	//==================saturation displacement==============================
+	        MPI_Gather(&Sd_l,1,MPI_DOUBLE,rbuf_l,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	        MPI_Gather(&Sd_g,1,MPI_DOUBLE,rbuf_g,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	
+	if (rank==0)
+	{
+	Sd_l=0;Sd_g=0;
+	for (int i=0;i<mpi_size;i++)
+			{
+			Sd_l+=rbuf_l[i];Sd_g+=rbuf_g[i];
+			
+			}	
+	}
+
+	
+	
+	MPI_Bcast(&Sd_l,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Bcast(&Sd_g,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+        //==================================================================	
+	
+	
+	
 	
 	delete [] rbuf_l;
 	delete [] rbuf_g;
-	
-	MPI_Bcast(&S_l,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
-	
 	
 	return (S_l);
 			
