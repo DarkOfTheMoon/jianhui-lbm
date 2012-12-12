@@ -193,6 +193,12 @@ void Rel_Perm_Imb_Dra(double*);
 void output_psi_rel_perm(double ,double* ,int***);
 //===============================================
 
+//===========input update==============
+void input_update();
+char inp_up[128];
+int update_fre;
+//=====================================
+
 
 const int e[19][3]=
 {{0,0,0},{1,0,0},{-1,0,0},{0,1,0},{0,-1,0},{0,0,1},{0,0,-1},{1,1,0},{-1,-1,0},{1,-1,0},{-1,1,0},{1,0,1},
@@ -238,7 +244,7 @@ double rel_per_l_ls,rel_per_g_ls,slopl,slopg;
 
 //=============Rel_Perm_Imb_Drai======================
 int rel_perm_id_mode,rel_perm_id_ids,rel_perm_id_time,rel_perm_id_cri;
-int rel_perm_id_dir,rel_perm_chan_num,rel_perm_ift,rel_perm_output_psi;
+int rel_perm_id_dir,rel_perm_chan_num,rel_perm_ift,input_dynamic;
 double* rel_perm_sw;
 double pre_rell,pre_relg,vary_ift;
 char FileName7[128];
@@ -352,6 +358,13 @@ double v_max,error_Per;
 	MPI_Barrier(MPI_COMM_WORLD);
 	start = MPI_Wtime();
 
+	//=======input update==============
+	strcpy(inp_up,argv[1]);
+	
+	//cout<<inp_up<<endl;
+	//==================================
+
+
 	if (rank==0)
 	{
 	ifstream fin(argv[1]);
@@ -429,9 +442,13 @@ double v_max,error_Per;
 	
 	//=======================Rel_Perm_Imb_Drai====================
 	fin.getline(dummy, NCHAR);
-	fin >>rel_perm_id_dir>>rel_perm_chan_num;                          fin.getline(dummy, NCHAR);
-	fin >>rel_perm_ift >> vary_ift;                       fin.getline(dummy, NCHAR);
-	fin >> rel_perm_output_psi;                                                         fin.getline(dummy, NCHAR);
+	fin >>rel_perm_id_dir>>rel_perm_chan_num;       fin.getline(dummy, NCHAR);
+	fin >>rel_perm_ift >> vary_ift;       		fin.getline(dummy, NCHAR);
+	//=============================================================
+	
+
+	//================INPUT UPDATE===========================
+	fin >> input_dynamic>>update_fre;           		fin.getline(dummy, NCHAR);
 	//=======================================================
 	
 	
@@ -557,7 +574,22 @@ double v_max,error_Per;
 	MPI_Bcast(&rel_perm_chan_num,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&rel_perm_ift,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&vary_ift,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
-	MPI_Bcast(&rel_perm_output_psi,1,MPI_INT,0,MPI_COMM_WORLD);
+
+	//==============input updat=====================================
+	MPI_Bcast(&input_dynamic,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&update_fre,1,MPI_INT,0,MPI_COMM_WORLD);
+
+
+
+
+
+
+
+
+
+
+
+
 	
 	rel_perm_sw=new double[rel_perm_chan_num];
 	if (rel_perm_id_dir==1)
@@ -912,6 +944,13 @@ if (rank==0)
 		pressure_capillary();
 	
 	
+	//=========input update=================fin >> input_dynamic>>update_fre;       
+	if (input_dynamic>0)
+		if (n%update_fre==0)
+		input_update();
+	//======================================
+
+
 	//periodic_streaming(f,F,SupInv,Solid,Sl,Sr,rho,u);	
 	
 	if ((stab==0) or ((stab==1) and (n>=stab_time)))
@@ -7050,5 +7089,122 @@ void Backup(int m,double* rho,double* psi, double** u, double** f, double* rho_r
 
 }
 
+void input_update()
+{
+	int rank = MPI :: COMM_WORLD . Get_rank ();
+	int mpi_size=MPI :: COMM_WORLD . Get_size ();
 
+	
+
+
+if (rank==0)
+	{
+	ifstream fin(inp_up);
+	                                                fin.getline(dummy, NCHAR);
+	/*fin >> filename;*/				fin.getline(dummy, NCHAR);
+	/*fin >> filenamepsi;*/				fin.getline(dummy, NCHAR);
+	/*fin >> NX >> NY >> NZ;*/				fin.getline(dummy, NCHAR);
+	fin >> n_max;					fin.getline(dummy, NCHAR);
+	/*fin >> reso;*/					fin.getline(dummy, NCHAR);
+	/*fin >> in_BC;*/					fin.getline(dummy, NCHAR);
+	/*fin >> in_psi_BC;*/				fin.getline(dummy, NCHAR);
+	fin >> gx >> gy >> gz;				fin.getline(dummy, NCHAR);
+	/*fin >> pre_xp >> p_xp >> pre_xn >> p_xn;*/	fin.getline(dummy, NCHAR);
+	/*fin >> pre_yp >> p_yp >> pre_yn >> p_yn;*/	fin.getline(dummy, NCHAR);
+	/*fin >> pre_zp >> p_zp >> pre_zn >> p_zn;*/	fin.getline(dummy, NCHAR);
+	/*fin >> vel_xp >> v_xp >> vel_xn >> v_xn;*/	fin.getline(dummy, NCHAR);
+	/*fin >> vel_yp >> v_yp >> vel_yn >> v_yn;*/	fin.getline(dummy, NCHAR);
+	/*fin >> vel_zp >> v_zp >> vel_zn >> v_zn;*/	fin.getline(dummy, NCHAR);
+	/*fin >> psi_xp >> psi_xn;*/			fin.getline(dummy, NCHAR);
+	/*fin >> psi_yp >> psi_yn;*/			fin.getline(dummy, NCHAR);
+	/*fin >> psi_zp >> psi_zn;*/			fin.getline(dummy, NCHAR);
+	/*fin >> niu_l;*/					fin.getline(dummy, NCHAR);
+	/*fin >> niu_g;*/					fin.getline(dummy, NCHAR);
+	fin >> ContactAngle_parameter;			fin.getline(dummy, NCHAR);
+	fin >> CapA;					fin.getline(dummy, NCHAR);
+	/*fin >> inivx >> inivy >> inivz;*/		fin.getline(dummy, NCHAR);
+	fin >> Permeability;				fin.getline(dummy, NCHAR);
+							fin.getline(dummy, NCHAR);
+	/*fin >> wr_per;*/					fin.getline(dummy, NCHAR);
+	/*fin >> PerDir;*/					fin.getline(dummy, NCHAR);
+	fin >> freRe;					fin.getline(dummy, NCHAR);
+	/*fin >> Out_Mode;*/				fin.getline(dummy, NCHAR);
+	fin >> freVe;					fin.getline(dummy, NCHAR);
+	fin >> freDe;					fin.getline(dummy, NCHAR);
+	fin >> frePsi;					fin.getline(dummy, NCHAR);
+	/*						fin.getline(dummy, NCHAR);
+	fin >> lattice_v >> dx_input >> dt_input;	fin.getline(dummy, NCHAR);
+	fin >> outputfile;			fin.getline(dummy, NCHAR);
+	fin >> Sub_BC;					fin.getline(dummy, NCHAR);
+	fin >> stab >> stab_time;		fin.getline(dummy, NCHAR);
+	fin >> ini_Sat;                                 fin.getline(dummy, NCHAR);
+	fin >> ini_buf;                                 fin.getline(dummy, NCHAR);
+	fin >> rel_perm_psi>>rel_perm_psi2;				fin.getline(dummy, NCHAR);
+	fin >> par_per_x >> par_per_y >>par_per_z;	fin.getline(dummy, NCHAR);
+	fin >> per_xp >> per_xn;			fin.getline(dummy, NCHAR);
+	fin >> per_yp >> per_yn;			fin.getline(dummy, NCHAR);
+	fin >> per_zp >> per_zn;			fin.getline(dummy, NCHAR);
+	                                      		fin.getline(dummy, NCHAR);
+	fin >> fre_backup;                        	fin.getline(dummy, NCHAR);
+	fin >>mode_backup_ini;                		fin.getline(dummy, NCHAR);
+							fin.getline(dummy, NCHAR);
+	fin >> decbin;					fin.getline(dummy, NCHAR);
+							fin.getline(dummy, NCHAR);
+	fin >> pressure_change >>pre_chan_pb;		fin.getline(dummy, NCHAR);
+	fin >> pre_chan_1>> pre_chan_pn1 >> pre_chan_pp1>>pre_chan_f1;	fin.getline(dummy, NCHAR);
+	fin >> pre_chan_2>> pre_chan_pn2 >> pre_chan_pp2>>pre_chan_f2;	fin.getline(dummy, NCHAR);
+	fin >> pre_chan_3>> pre_chan_pn3 >> pre_chan_pp3>>pre_chan_f3;	fin.getline(dummy, NCHAR);
+	fin >> pre_chan_4>> pre_chan_pn4 >> pre_chan_pp4>>pre_chan_f4;	fin.getline(dummy, NCHAR);
+	fin >> pre_chan_5>> pre_chan_pn5 >> pre_chan_pp5>>pre_chan_f5;	fin.getline(dummy, NCHAR);
+	fin >> bodyforce_apply;					fin.getline(dummy, NCHAR);
+	fin.getline(dummy, NCHAR);        
+	
+	//=============CAPILLARY PRESSUR======                                                                                                                
+	fin >> pressure_change2 >> pre_chan_pb2 >> interval_pre;					fin.getline(dummy, NCHAR);
+	fin >> pre_chan_pns >> pre_chan_pps >> pre_chan_fs >>chan_no >> sat_cri;                 fin.getline(dummy, NCHAR);
+	fin >> sat_cri_d;                                                                                fin.getline(dummy, NCHAR);
+	//=======================================================================
+	
+	
+	//=======================Least Square Fitting====================
+	fin.getline(dummy, NCHAR);
+	fin >> least_square >> num_least_square;                          fin.getline(dummy, NCHAR);
+	//=======================================================
+	
+	
+	//=======================Rel_Perm_Imb_Drai====================
+	fin.getline(dummy, NCHAR);
+	fin >>rel_perm_id_dir>>rel_perm_chan_num;       fin.getline(dummy, NCHAR);
+	fin >>rel_perm_ift >> vary_ift;       		fin.getline(dummy, NCHAR);
+	//=============================================================
+	
+
+	//================INPUT UPDATE===========================
+	fin >> input_dynamic;           		fin.getline(dummy, NCHAR);
+	//=======================================================
+	
+	
+	*/
+
+
+	fin.close();
+	
+	
+	}
+	MPI_Bcast(&n_max,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&gx,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Bcast(&gy,1,MPI_DOUBLE,0,MPI_COMM_WORLD);MPI_Bcast(&gz,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Bcast(&ContactAngle_parameter,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+
+	MPI_Bcast(&CapA,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Bcast(&Permeability,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Bcast(&freRe,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&freVe,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&freDe,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&frePsi,1,MPI_INT,0,MPI_COMM_WORLD);
+
+	gxs=gx;gys=gy;gzs=gz;
+	psi_solid=ContactAngle_parameter;
+
+
+}
 
