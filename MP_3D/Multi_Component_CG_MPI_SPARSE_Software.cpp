@@ -7132,15 +7132,15 @@ if (rank==0)
 	fin >> freVe;					fin.getline(dummy, NCHAR);
 	fin >> freDe;					fin.getline(dummy, NCHAR);
 	fin >> frePsi;					fin.getline(dummy, NCHAR);
-	/*						fin.getline(dummy, NCHAR);
-	fin >> lattice_v >> dx_input >> dt_input;	fin.getline(dummy, NCHAR);
-	fin >> outputfile;			fin.getline(dummy, NCHAR);
-	fin >> Sub_BC;					fin.getline(dummy, NCHAR);
-	fin >> stab >> stab_time;		fin.getline(dummy, NCHAR);
-	fin >> ini_Sat;                                 fin.getline(dummy, NCHAR);
-	fin >> ini_buf;                                 fin.getline(dummy, NCHAR);
+							fin.getline(dummy, NCHAR);
+	/*fin >> lattice_v >> dx_input >> dt_input;*/	fin.getline(dummy, NCHAR);
+	/*fin >> outputfile;*/				fin.getline(dummy, NCHAR);
+	/*fin >> Sub_BC;*/					fin.getline(dummy, NCHAR);
+	/*fin >> stab >> stab_time;*/		fin.getline(dummy, NCHAR);
+	/*fin >> ini_Sat;*/                                 fin.getline(dummy, NCHAR);
+	/*fin >> ini_buf;*/                                 fin.getline(dummy, NCHAR);
 	fin >> rel_perm_psi>>rel_perm_psi2;				fin.getline(dummy, NCHAR);
-	fin >> par_per_x >> par_per_y >>par_per_z;	fin.getline(dummy, NCHAR);
+	/*fin >> par_per_x >> par_per_y >>par_per_z;	fin.getline(dummy, NCHAR);
 	fin >> per_xp >> per_xn;			fin.getline(dummy, NCHAR);
 	fin >> per_yp >> per_yn;			fin.getline(dummy, NCHAR);
 	fin >> per_zp >> per_zn;			fin.getline(dummy, NCHAR);
@@ -7201,6 +7201,9 @@ if (rank==0)
 	MPI_Bcast(&freRe,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&freVe,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&freDe,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&frePsi,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&rel_perm_psi,1,MPI_DOUBLE,0,MPI_COMM_WORLD);MPI_Bcast(&rel_perm_psi2,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+
+	cout<<rel_perm_psi<<endl;
 
 	gxs=gx;gys=gy;gzs=gz;
 	psi_solid=ContactAngle_parameter;
