@@ -1884,7 +1884,6 @@ m_inv_l[18]=+((double)0X1.AF286BCA1AF2AP-5)*m_l[0]+((double)0X1.B6006D801B603P-9
 				{
 				F[ci][LR[mi]]=sum;
 				
-				
 				}
 					
 			
@@ -2013,7 +2012,6 @@ void collision_nnf(double* rho,double** u,double** f,double** F,int* SupInv,int*
 	
 	int rank = MPI :: COMM_WORLD . Get_rank ();
 	int mpi_size=MPI :: COMM_WORLD . Get_size ();
-
 	
 
 double lm0,lm1,sum;
