@@ -36,6 +36,7 @@ char poreFileNameOut[128];
 int mark,ii,jj,kk,loop,sum2;
 
 int sum=0;
+int sum1=0;
 int pore_sum;
 int sum3;
 int sn[max_cluster];
@@ -135,10 +136,10 @@ double pore;
 			fin >> pore;
 			
 			//if (pore == 0.0)	{Solid[ci-1][cj-1][ck-1] = 0;}
-			if (pore > crival)	{Solid[i][j][k] = 1;        if ((i>=lnx) and (i<rnx)) sum++;}
+			if (pore > crival)	{Solid[i][j][k] = 1;        if ((i>=lnx) and (i<rnx) and (j>=lny) and (j<rny) and (k>=lnz) and (k<rnz)) sum++;}
 			else
 				if (pore < -crival) 
-					{Solid[i][j][k] = -1;if ((i>=lnx) and (i<rnx))  sum++;}
+				{Solid[i][j][k] = -1;if ((i>=lnx) and (i<rnx) and (j>=lny) and (j<rny) and (k>=lnz) and (k<rnz))  {sum++;sum1++;}}
 			
 			
 		
@@ -150,6 +151,7 @@ double pore;
 		
 	pore_sum=sum;
 	cout<<"porosity="<<double(pore_sum)/double((rnx-lnx)*(rny-lny)*(rnz-lnz))<<endl;
+	cout<<"non wetting saturation="<<double(sum1)/double(sum)<<endl;
 	cout<<"READING COMPLETE"<<endl;	
 	
 
