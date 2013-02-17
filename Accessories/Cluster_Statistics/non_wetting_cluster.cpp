@@ -18,7 +18,7 @@ int NCHAR=128;
 	int      dummyInt;
 
 const int max_cluster=1000000;
-const double crival=0.01;
+const double crival=0.001;
 
 
 int nx,ny,nz;
@@ -40,6 +40,7 @@ int pore_sum;
 int sum3;
 int sn[max_cluster];
 
+int lnx,rnx,lny,rny,lnz,rnz;
 
 for (int i=0;i<max_cluster;i++)
 	sn[i]=0;
@@ -51,8 +52,9 @@ ifstream fins(argv[1]);
 	fins >> nx>> ny>>nz;				fins.getline(dummy, NCHAR);
 	fins >> poreFileNameVTK;				fins.getline(dummy, NCHAR);
 	fins >> vtk_format;				fins.getline(dummy, NCHAR);
-
-
+	fins >> lnx>>rnx;                                fins.getline(dummy, NCHAR);
+	fins >> lny>>rny;                                fins.getline(dummy, NCHAR);
+	fins >> lnz>>rnz;                                fins.getline(dummy, NCHAR);
 fins.close();	
 
 
@@ -133,10 +135,10 @@ double pore;
 			fin >> pore;
 			
 			//if (pore == 0.0)	{Solid[ci-1][cj-1][ck-1] = 0;}
-			if (pore > crival)	{Solid[i][j][k] = 1;sum++;}
+			if (pore > crival)	{Solid[i][j][k] = 1;        if ((i>=lnx) and (i<rnx)) sum++;}
 			else
 				if (pore < -crival) 
-					{Solid[i][j][k] = -1;sum++;}
+					{Solid[i][j][k] = -1;if ((i>=lnx) and (i<rnx))  sum++;}
 			
 			
 		
@@ -147,7 +149,7 @@ double pore;
 	fin.close();
 		
 	pore_sum=sum;
-	cout<<"porosity="<<double(pore_sum)/double(nx*ny*nz)<<endl;
+	cout<<"porosity="<<double(pore_sum)/double((rnx-lnx)*(rny-lny)*(rnz-lnz))<<endl;
 	cout<<"READING COMPLETE"<<endl;	
 	
 
@@ -155,9 +157,9 @@ double pore;
 
 	sum=1;
 
-	for (int i=0;i<nx;i++)
-		for (int j=0;j<ny;j++)
-			for (int k=0;k<nz;k++)
+	for (int i=lnx;i<rnx;i++)
+		for (int j=lny;j<rny;j++)
+			for (int k=lnz;k<rnz;k++)
 			if (Solid[i][j][k]==-1)
 				{
 				sum2=0;
@@ -167,9 +169,9 @@ double pore;
 				while (mark>0)
 				{
 				mark=0;
-				for (int ias=0;ias<nx;ias++)
-				for (int jas=0;jas<ny;jas++)
-				for (int kas=0;kas<nz;kas++)
+				for (int ias=lnx;ias<rnx;ias++)
+				for (int jas=lny;jas<rny;jas++)
+				for (int kas=lnz;kas<rnz;kas++)
 
 					if (Solid[ias][jas][kas]==-sum)
 					for (int ls=0;ls<6;ls++)
@@ -178,7 +180,7 @@ double pore;
 					jj=jas+e[ls][1];
 					kk=kas+e[ls][2];
 				
-					if ((ii>=0) and (ii<nx) and (jj>=0) and (jj<ny) and (kk>=0) and (kk<nz))
+					if ((ii>=lnx) and (ii<rnx) and (jj>=lny) and (jj<rny) and (kk>=lnz) and (kk<rnz))
 						{
 						if (Solid[ii][jj][kk]==-1)
 							{

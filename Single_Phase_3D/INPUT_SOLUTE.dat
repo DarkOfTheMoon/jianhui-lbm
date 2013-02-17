@@ -1,7 +1,7 @@
 =============INPUT FILE FOR 3D LATTICE BOLTZMANN MPI CODE--Solute and heat transfer=======
 BC.dat                  	:Geometry filenameEmily_Berea_y_614_764_7.dat
 phase.dat       	    	:Initial components distribution (ST_Peaks do not need this option)
-30 30 3                 	:nx ny nz
+30 10 10                 	:nx ny nz
 2000000		     		:Maximum time step
 4.9	             		:dx (um) Resolution (for Permeability calculation)
 0 	        	      	:Pressure Or Velocity Boundary (1=YES, 0=No)
@@ -30,7 +30,7 @@ phase.dat       	    	:Initial components distribution (ST_Peaks do not need thi
 0               		:Memory Saving mode for output subroutains (0=No, 1=Yes,for large outputs, x,z opposite)
 -1				:Frequency of velocity field writing (in vtk format, -1=no velocity writing)
 -1				:Frequency of density field writing (in vtk format, 0=Only Geometry)
-1000				:Frequency of concentration writing (in vtk format, -1=no density writing)
+-1				:Frequency of concentration writing (in vtk format, -1=no density writing)
 1 1000                        :Dispersion statistics (0=No,1,2,3=YES; Frequncy of writing)
 ==============ADVANCE==PARAMETER==========
 0 1.0 2.0	              :Self define lattice velocity: 0=DEFAULT, dx, dt ((u_x+u_y+u_z)*dt/dx<=1 Courant Number)
