@@ -18,8 +18,14 @@ int ny=90;
 int nz=90;
 int ii,jj,kk,pore2;
 
-char poreFileName[128]="maxd20-3-3.dat";
-char poreFileName2[128]="20-3-3.graph.part.20";
+//=============
+int sumss[11];
+//=============
+
+
+
+char poreFileName[128]="ftb.dat";
+char poreFileName2[128]="20-3-3.graph.part.10";
 char poreFileNameVTK[128]="20-3-3.vtk";
 
 const int e[18][3]=
@@ -41,7 +47,7 @@ double pore;
 
 	if(ftest == NULL)
 	{
-		cout << "\n The pore geometry file (" << poreFileName <<
+		cout << "\n The pore geometry file  (" << poreFileName <<
 			") does not exist!!!!\n";
 		cout << " Please check the file\n\n";
 
@@ -100,7 +106,7 @@ ftest = fopen(poreFileName2, "r");
 
 	if(ftest == NULL)
 	{
-		cout << "\n The pore geometry file (" << poreFileName <<
+		cout << "\n The pore geometry file (" << poreFileName2 <<
 			") does not exist!!!!\n";
 		cout << " Please check the file\n\n";
 
@@ -118,18 +124,37 @@ ftest = fopen(poreFileName2, "r");
 		if (Solid[i][j][k]>0)
 			{
 			fin >> pore2;		
-			Solid[i][j][k]=pore2;
+			Solid[i][j][k]=pore2+1;
 			}
 
 
 
 	fin.close();
 
+	/*
+	sum2=0;
+	for (int i=0;i<=10;i++)
+	        sumss[i]=0;
+	
+	fin.open(poreFileName2);
+	while (!fin.eof())
+	{        
+	        fin>>pore2;
+	        sum2++;
+	        for (int i=0;i<=10;i++)
+	                if (pore2==i)
+	                        sumss[i]++;
+	}
 
-
-
-
-
+	cout<<sum<<"                "<<sum2<<endl;
+	for (int i=0;i<=10;i++)
+	        cout<<i<<"                "<<sumss[i]<<endl;
+	cout<<endl;
+	*/
+	
+	
+	
+	
 	ostringstream name;
 	name<<poreFileNameVTK;
 	ofstream out;

@@ -17,7 +17,7 @@ int nx=90;
 int ny=90;
 int nz=90;
 int nxref,nyref,nzref;
-int divnumori=3;
+int divnumori=6;
 int divnum;
 int oddval=0;
 int evennum=0;
@@ -26,6 +26,30 @@ int dir;
 int dint;
 int sumin,numgeonum;
 int* sum_loc;
+
+
+int* nnx,nny,nnz,npx,npy,npz;
+nnx=new int[divnumori];
+nny=new int[divnumori];
+nnz=new int[divnumori];
+npx=new int[divnumori];
+npy=new int[divnumori];
+npz=new int[divnumori];
+
+
+
+/*
+Solid = new int**[nx_l];
+	for (int i=0;i<nx_l;i++)
+	{
+		Solid[i] = new int*[NY+1];
+			for (int j=0;j<=NY;j++)
+			Solid[i][j]= new int[NZ+1];
+			
+		
+	}
+*/
+
 
 
 char poreFileName[128]="maxd20-3-3.dat";
@@ -344,7 +368,7 @@ double pore;
 	
 	
 	
-	
+	/*
 	cout<<"Start writing VTK file"<<endl;
 	
 
@@ -381,6 +405,14 @@ double pore;
 	out.close();
 
 	cout<<"VTK file ouput COMPLETE"<<endl;
+	*/
+	
+	
+	
+	
+	
+	
+	
 	
 }
 

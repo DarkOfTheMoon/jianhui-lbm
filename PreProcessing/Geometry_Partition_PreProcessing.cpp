@@ -18,7 +18,7 @@ int ny=90;
 int nz=90;
 int ii,jj,kk;
 
-char poreFileName[128]="maxd20-3-3.dat";
+char poreFileName[128]="ftb.dat";
 char poreFileNameVTK[128]="20-3-3.graph";
 
 const int e[18][3]=
