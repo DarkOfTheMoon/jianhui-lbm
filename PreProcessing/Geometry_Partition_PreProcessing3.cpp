@@ -26,6 +26,10 @@ int procind=6+1;                        //current processor index, start from 1
 int neib=0;
 int* bufinfo;                                   //number of nodes of the partirion that need communiate with current processors
                                                         // 0= no contact with current processor, >0 number of nodes that need to communicate with current processor.
+                                                         //start from 1 size procn+1       designed for 19 components for f function transfer
+                                                         
+                                                         
+                                                         
                                                         
         bufinfo=new int[procn+1];
 for (int i=0;i<=procn;i++)
@@ -33,13 +37,16 @@ for (int i=0;i<=procn;i++)
 
 int com_n=0;                            //mpi commu numbers     number of neighbour partitions which need communication
 int com_memo_sum=0;             //mpi commu buffets length, length of buffet array 
-int* com_ind;                          //commu nodes indexs (partition no.)
+int* com_ind;                          //commu nodes indexs (partition no.)   com_ind[0,start from 0] size new int[com_n]
 int* com_loc;                           //mpi commu different nodes starting locations in buffet  arrays
 int tmpint;
 
 //-------------------
 int* coor;      //start from 1, int [sumss[procind]+1];
 //------------------
+
+double** bufsend;
+double** bufrecv;
 
 //============
 
@@ -204,8 +211,17 @@ sum=1;
 	for (int i=0;i<com_n;i++)
 	        cout<<com_ind[i]<<endl;
 	
-	
-	
+	bufsend = new double* [com_n];
+	        for (int i=0;i<com_n;i++)
+	                bufsend[i] = new double[bufinfo[com_ind[i]]];
+	        
+	bufrecv = new double* [com_n];
+	        for (int i=0;i<com_n;i++)
+	                bufrecv[i] = new double[bufinfo[com_ind[i]]];
+	        
+	        
+	        
+	        
 	
 	
 }
