@@ -325,7 +325,7 @@ sum=1;
       		MPI_Waitall(2*com_n,request, status);
       		MPI_Testall(2*com_n,request,&mpi_test,status);
 
-      		
+      		//--------------------vali--------------------------------------------------------------
       		int* testarr;
       		int testl1,testl2;
       		testarr=new int[(sumss[procind]+1)*19];
@@ -356,7 +356,8 @@ sum=1;
 	                                               testl2=(int)(buflocrecv[i][j]%19);
 	                                               //cout<<testarr[testl1*19+testl2]<<"  "<<procind<<"   "<<testl1<<"        "<<testl2<<"        "<<buflocrecv[i][j]<<endl;
 	                                               //cout<<buflocsend[i][j]<<"  ";
-	                                               testarr[testl1*19+testl2]=1;
+	                                               //testarr[testl1*19+testl2]=1;
+	                                               testarr[buflocrecv[i][j]]=1;
 	                                       }
 	                       }
 	                      
@@ -373,7 +374,10 @@ sum=1;
 	      //cout<<endl;
 	      //for (int i=0;i<com_n;i++)
 	      //         cout<<bufinfo[com_ind[i]]<<"                "<<sumtmp[i]<<"                "<<com_ind[i]<<endl;
-	        
+	      //-------------------------------------------------------------------------------------------
+	      
+	      
+	      
 	MPI :: Finalize ();
 }
 
