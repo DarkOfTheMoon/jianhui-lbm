@@ -43,8 +43,14 @@ int com_memo_sum=0;             //mpi commu buffets length, length of buffet arr
 int* com_ind;                          //commu nodes indexs (partition no.)   com_ind[0,start from 0] size new int[com_n]
 int* com_loc;                           //mpi commu different nodes starting locations in buffet  arrays
 int tmpint;
-int** nei_loc;                           //index of 18 neibourghs, nei_loc[3][0] is the first neighbour (e[1][]) of node 3
-
+int** nei_loc;                           //index of 18 neibourghs, nei_loc[3][1] is the first neighbour (e[1][]) of node 3
+                                                //0=neighbour is solid, <0, is the MINUS internal neighbour index-1, (1,2,3...,n) max
+                                                //number n is number of neighbour of current node 
+                                                //so if nei_loc[i][j]<0, it means this value need to stream to bufsend[-nei_loc[i][j]-1][sumtmp[-nei_loc[i][j]-1]]
+                                                //>0 need to stream to F[nei_loc[i][j]][j]
+                                                
+                                                
+                                                
 //-------------------
 int* coor;      //start from 1, int [sumss[procind]+1];
 //------------------
@@ -63,6 +69,14 @@ for (int i=0;i<=procn;i++)
 //-------------------
 int* sumtmp;
 //-------------------
+
+int* bclx;
+int* bcly;
+int* bclz;
+int* bcrx;
+int* bcry;
+int* bcrz;
+int bclxn,bclyn,bclzn,bcrxn,bcryn,bcrzn;
 //============
 
 //Geo_par.dat file
@@ -236,6 +250,9 @@ sum=1;
 	bufsend = new double* [com_n];
 	        for (int i=0;i<com_n;i++)
 	                bufsend[i] = new double[bufinfo[com_ind[i]]];
+	        for (int i=0;i<com_n;i++)
+	                for (int j=0;j<bufinfo[com_ind[i]];j++)
+	                bufsend[i][j]=0.0;
 	        
 	bufrecv = new double* [com_n];
 	        for (int i=0;i<com_n;i++)
@@ -282,8 +299,8 @@ sum=1;
 			                        nei_loc[ci][mi]=0;
 			                else
 			                {
-			                        nei_loc[ci][mi]=-Solid[ip][jp][kp];
-			                        //cout<<nei_loc[ci][mi]<<endl;
+			                        nei_loc[ci][mi]=-proc_com[Solid[ip][jp][kp]]-1;
+			                       
 			                        buflocsend[proc_com[Solid[ip][jp][kp]]][sumtmp[proc_com[Solid[ip][jp][kp]]]]=Solid2[ip][jp][kp]*19+mi;
 			                        //cout
 			                        //<<buflocsend[proc_com[Solid[ip][jp][kp]]][sumtmp[proc_com[Solid[ip][jp][kp]]]]
@@ -321,7 +338,94 @@ sum=1;
 	                       
 	                       MPI_Irecv(buflocrecv[i],bufinfo[com_ind[i]], MPI_INT, com_ind[i]-1, (com_ind[i]-1)*procn+procind-1, MPI_COMM_WORLD,&request[2*i+1]);		
 	               }
-      		
+	               
+	               
+	               
+	      //-------------BCs--------------------------------------------------------         
+	               bclxn=0;bclyn=0;bclzn=0;bcrxn=0;bcryn=0;bcrzn=0;
+	                
+	                 for(int k=0; k<nz ; k++)			
+	                 for(int j=0 ; j<ny ; j++)
+	                 {
+	                         if (Solid[0][j][k]==procind)
+	                                 bclxn++;
+	                         if (Solid[nx-1][j][k]==procind)
+	                                 bcrxn++;
+	                 }
+	                 if (bclxn>0)
+	                         bclx=new int[bclxn];
+	                 if (bcrxn>0)
+	                         bcrx= new int[bcrxn];
+	                 bclxn=0;bcrxn=0;
+	                 for(int k=0; k<nz ; k++)			
+	                 for(int j=0 ; j<ny ; j++)
+	                 {
+	                         if (Solid[0][j][k]==procind)
+	                                 bclx[bclxn]=Solid2[0][j][k],bclxn++;
+	                         
+	                         if (Solid[nx-1][j][k]==procind)
+	                                 bcrx[bcrxn]=Solid2[nx-1][j][k],bcrxn++;
+	                 }
+	                 
+	                 
+	                 
+	               for(int k=0 ; k<nz ; k++)			
+	               for(int i=0 ; i<nx ; i++)  
+	                 {
+	                         if (Solid[i][0][k]==procind)
+	                                 bclyn++;
+	                         if (Solid[i][ny-1][k]==procind)
+	                                 bcryn++;
+	                 }
+	                 if (bclyn>0)
+	                         bcly=new int[bclyn];
+	                 if (bcryn>0)
+	                         bcry= new int[bcryn];
+	                 bclyn=0;bcryn=0;
+	                for(int k=0 ; k<nz ; k++)			
+	                        for(int i=0 ; i<nx ; i++)  
+	                 {
+	                         if (Solid[i][0][k]==procind)
+	                                 bcly[bclyn]=Solid2[i][0][k],bclyn++;
+	                         
+	                         if (Solid[i][ny-1][k]==procind)
+	                                 bcry[bcryn]=Solid2[i][ny-1][k],bcryn++;
+	                 }   
+	                 
+	                 
+	                 for(int j=0 ; j<ny ; j++)     
+	                 for(int i=0 ; i<nx ; i++)  
+	                 {
+	                         if (Solid[i][j][0]==procind)
+	                                 bclzn++;
+	                         if (Solid[i][j][nz-1]==procind)
+	                                 bcrzn++;
+	                 }
+	                 if (bclzn>0)
+	                         bclz=new int[bclzn];
+	                 if (bcrzn>0)
+	                         bcrz= new int[bcrzn];
+	                 bclzn=0;bcrzn=0;
+	               for(int j=0 ; j<ny ; j++)     
+	                 for(int i=0 ; i<nx ; i++) 
+	                 {
+	                         if (Solid[i][j][0]==procind)
+	                                 bclz[bclzn]=Solid2[i][j][0],bclzn++;
+	                         
+	                         if (Solid[i][j][nz-1]==procind)
+	                                 bcrz[bcrzn]=Solid2[i][j][nz-1],bcrzn++;
+	                 }   
+	                 
+	      //---------------------------------------------------------------------------           
+	                 
+	                 
+	                 
+	                 
+	                 
+	                 
+	                 
+	                 
+	                 
       		MPI_Waitall(2*com_n,request, status);
       		MPI_Testall(2*com_n,request,&mpi_test,status);
 
@@ -333,6 +437,9 @@ sum=1;
       		for (int ci=0;ci<(sumss[procind]+1)*19;ci++)
 	               testarr[ci]=0;
 	       
+	       for (int i=0;i<com_n;i++)
+	               sumtmp[i]=0;
+	       
 	       for (int ci=1;ci<=sumss[procind];ci++)
 	               {
 	                    for (int mi=0; mi<19; mi++)
@@ -341,8 +448,11 @@ sum=1;
 	                            else
 	                                   if (nei_loc[ci][mi]==0)
 	                                            testarr[ci*19+LR[mi]]=1;
-	                            
-	                                    
+	                                    else
+	                                    {
+	                                            bufsend[-nei_loc[ci][mi]-1][sumtmp[-nei_loc[ci][mi]-1]]=1.0;
+	                                            sumtmp[-nei_loc[ci][mi]-1]++;
+	                                    }
 	                                    
 	                                    
 	               }
@@ -369,8 +479,13 @@ sum=1;
 	                                       cout<<ci<<"        "<<procind<<endl;
 	                       }
 
-	                       
-	        
+	                        for (int i=0;i<com_n;i++)
+	                                for (int j=0;j<bufinfo[com_ind[i]];j++)
+	                                if (bufsend[i][j]<1.0)
+	                                        cout<<i<<"        "<<j<<"        "<<procind<<endl;
+	                                
+	                                
+	                                
 	      //cout<<endl;
 	      //for (int i=0;i<com_n;i++)
 	      //         cout<<bufinfo[com_ind[i]]<<"                "<<sumtmp[i]<<"                "<<com_ind[i]<<endl;

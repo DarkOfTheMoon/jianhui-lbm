@@ -193,6 +193,8 @@ int NCHAR=128;
 	int      dummyInt;
 	
 int*** Solid;	
+int*** Solid2;
+
 char pfix[128];
 int decbin;
 double Permia_LOCAL[3]={0.0,0.0,0.0};
@@ -207,6 +209,34 @@ double* sendr;
 
 	double* recvl;
 	double* recvr;
+	
+	
+int* sumss;             //fluid nodes number of every partition            [procn+1]	
+int* bufinfo;                                   //number of nodes of the partirion that need communiate with current processors
+                                                        // 0= no contact with current processor, >0 number of nodes that need to communicate with current processor.
+                                                         //start from 1 size procn+1       designed for 19 components for f function transfer
+int* com_ind;                          //commu nodes indexs (partition no.)   com_ind[0,start from 0] size new int[com_n]
+int* com_loc;                           //mpi commu different nodes starting locations in buffet  arrays                                                         
+int** nei_loc;                           //index of 18 neibourghs, nei_loc[3][0] is the first neighbour (e[1][]) of node 3
+//-------------------
+int* coor;      //start from 1, int [sumss[procind]+1];
+//------------------
+
+double** bufsend;                       //send buffet for f functions bufsend[comm_index][number]
+double** bufrecv;                       //recv buffet for f functions
+//-----------------
+int** buflocsend;                       //exchange commu info, used to locate the data after when it is received from MPI communications
+int** buflocrecv;                       //two digital combination index*19+ls ls is the direction of 18 vectors
+
+int* bclx;
+int* bcly;
+int* bclz;
+int* bcrx;
+int* bcry;
+int* bcrz;
+int bclxn,bclyn,bclzn,bcrxn,bcryn,bcrzn;
+ int com_n;
+
 //==================================================
 
 //============NNF_module==============================
@@ -401,40 +431,6 @@ if (mirY==1)
 if (mirZ==1)
 	NZ=NZ*2+1;
 
-/*
-//*************THIN SOLID BOUNDARY MESH REFINEDMENT**************
-if (Zoom>1)
-	{	
-	NX=(NX)*Zoom;
-	NY=(NY)*Zoom;
-	NZ=(NZ)*Zoom;
-	}
-//***************************************************************
-*/
-Zoom=1;
-if (Zoom>1)
-	{	
-	NX=(NX+1)*Zoom-1;
-	NY=(NY+1)*Zoom-1;
-	NZ=(NZ+1)*Zoom-1;
-	}
-
-//if (Zoom>1)	
-//	reso=reso/Zoom;
-
-
-
-//	nx_l=(int)((NX+1)/para_size);
-//	dif=(NX+1)-nx_l*para_size;
-	
-//	if (rank>para_size-1-dif)
-//		nx_l+=1;
-	
-	
-	
-
-//	if (rank==para_size-1)
-//		nx_l+=(NX+1)%para_size;
 
 	double* Permia;
 	double* rho;
@@ -443,10 +439,6 @@ if (Zoom>1)
 	double**F;
 	double**u0;
 	int* SupInv;
-	//double* forcex;
-	//double* forcey;
-	//double* forcez;
-
 
 	
 	int*  Sl;
@@ -454,9 +446,7 @@ if (Zoom>1)
 
 	
 	
-//	Solid = new int**[nx_l];
-	Sl = new int[(NY+1)*(NZ+1)];
-	Sr = new int[(NY+1)*(NZ+1)];
+
 
 
         Parallelize_Geometry();
@@ -465,19 +455,7 @@ if (Zoom>1)
         
         MPI_Barrier(MPI_COMM_WORLD);
         
-	init_Sparse_read_rock_parallel(Solid,Sl,Sr);
 	
-	
-
-	/*
-	for (int i=0;i<(NX+1)/Zoom;i++)
-		{
-		for (int j=0;j<(NY+1)/Zoom;j++)
-			delete [] Solids[i][j];
-		delete [] Solids[i];
-		}
-	delete [] Solids;
-*/
 
 	//***************************************************
 	//WARRING: SPARSE MATRIX STARTS FROM INDEX 1 NOT 0!!!
@@ -488,18 +466,6 @@ if (Zoom>1)
 	
 	if (nnf_module==1)
 	        niu_vn = new double[Count+1];
-	
-	//forcex = new double[Count+1];
-	//forcey = new double[Count+1];
-	//forcez = new double[Count+1];
-	
-	/*
-	A** ga = new A*[m];
-	ga[0] = new A[m*n];
-	for(int i = 1; i < m; i++)
-	        ga[i] = ga[i-1]+n; 
-	        
-	*/
 	
 	
 	
@@ -526,14 +492,14 @@ if (Zoom>1)
 		u0[i] = u0[i-1]+3;
 	
 	
-	SupInv = new int[Count+1];
+	//SupInv = new int[Count+1];
 
 
 	Comput_MI(M,MI);
 	
-	Suppliment(SupInv,Solid);
-
+	
 	MPI_Barrier(MPI_COMM_WORLD);
+	
 	
 	if ((freVe>=0) or (freDe>=0))
 	{
@@ -542,7 +508,7 @@ if (Zoom>1)
 	else
 		Geometry_b(Solid);
 	}
-
+	
 	
 	
 	
@@ -597,7 +563,7 @@ if (wr_per==1)
 //======================================================================
 //=================MPI TRANSFER INITIALIZATION=================================
 //cout<<mpi_size<<"          "<<"@@@@@@@@@@@@@@@@@@@@@"<<endl;
-  		Gcl = new int[mpi_size];
+/* 		Gcl = new int[mpi_size];
   		Gcr = new int[mpi_size];
   		
  		MPI_Gather(&cl,1,MPI_INT,Gcl,1,MPI_INT,0,MPI_COMM_WORLD);
@@ -657,8 +623,10 @@ if (wr_per==1)
 
 			}
  //=====================================================================
- 
+ */
 
+ 
+ 
 	for(n=0;n<=n_max;n++)
 	{
 	
@@ -666,12 +634,7 @@ if (wr_per==1)
 	        collision(rho,u,f,F,SupInv,Solid,Sl,Sr);
 	else
 	        collision_nnf(rho,u,f,F,SupInv,Solid,Sl,Sr);//cout<<"markcollision"<<endl;
-
-	
-	//if (EI==0)
-	//	{periodic_streaming(f,F,SupInv,Solid,Sl,Sr,rho,u);}//cout<<"mark"<<endl;}
-	//else
-	//	periodic_streaming_MR(f,F,SupInv,Solid,Sl,Sr,rho,u);
+//cout<<"@@@@@@@@@@@   "<<n<<endl;
 	
 	if ((1-pre_xp)*(1-pre_xn)*(1-pre_yp)*(1-pre_yn)*(1-pre_zp)*(1-pre_zn)==0)
 		boundary_pressure(pre_xp,p_xp,pre_xn,p_xn,pre_yp,p_yp,pre_yn,p_yn,pre_zp,p_zp,pre_zn,p_zn,f,F,u,rho,Solid);
@@ -960,36 +923,62 @@ mat a;
 
 void Parallelize_Geometry()
 {
+        
         int rank = MPI :: COMM_WORLD . Get_rank ();
 	int mpi_size=MPI :: COMM_WORLD . Get_size ();
-
-
-int nx_g[mpi_size];
-int disp[mpi_size];
-int* Solid_rank0;
-int pore;
-int loc_por[NX+1];
-int sum=0;
-int sum2=0;
-double ave_nx;
-int nx_pre,nx_aft,n_i,sum_nx;
-int* recv_solid;
-
-int bufsize[mpi_size];
-int bufloc[mpi_size];
-
-	for (int i=0;i<=NX;i++)
-	        loc_por[i]=0;
+    int nx=NX+1;
+    int ny=NY+1;
+    int nz=NZ+1;
+    
+    int ii,jj,kk,pore2;
+    int ip,jp,kp;
+    
+   
+                                
+    int procind=MPI :: COMM_WORLD . Get_rank ()+1;                     //currentprocessor index, start from 1
+    int procn=MPI :: COMM_WORLD . Get_size ();           //total processor number
+    int neib=0;
+   
+            bufinfo=new int[procn+1];
+            for (int i=0;i<=procn;i++)
+                    bufinfo[i]=0;   
+            
+            
+    com_n=0;                            //mpi commu numbers     number of neighbour partitions which need communication
+    int tmpint;
+    int proc_com[procn+1];                  //index convert proc index---->commu index in current processor
+    for (int i=0;i<=procn;i++)
+        proc_com[i]=0;
+        
+      //-------------------
+      int* sumtmp;
+      //-------------------  
+        
+      Solid = new int**[nx];
+      Solid2 = new int**[nx];
 	
-		if (par_per_x==0)
-		{per_xn=0;per_xp=NX;}
-	if (par_per_y==0)
-		{per_yn=0;per_yp=NY;}
-	if (par_per_z==0)
-		{per_zn=0;per_zp=NZ;}
-	
-	
-if (rank==0)
+		
+	for (int i=0; i<nx;i++)
+	{
+	       Solid[i] = new int*[ny];
+	       Solid2[i] = new int*[ny];
+	       for (int j=0;j<ny;j++)
+	       {
+	               Solid[i][j] = new int[nz];
+	                Solid2[i][j] = new int[nz];
+	               for (int k=0;k<nz;k++)
+	                       Solid[i][j][k] = 0,Solid2[i][j][k] = 0;
+	       }
+	}
+      
+      
+      
+      
+ int* Solid_rank0;     
+    int* recv_solid;
+    int pore;
+   Solid_rank0 = new int[(NX+1)*(NY+1)*(NZ+1)]; 
+      if (rank==0)
 {	
 
 	fstream fin;
@@ -1009,27 +998,20 @@ if (rank==0)
 		exit(-1);
 	}
 	fclose(ftest);
-	Solid_rank0 = new int[(NX+1)*(NY+1)*(NZ+1)];
+	
 	fin.open(filename);
 	for(int k=0 ; k<=NZ ; k++)
 	for(int j=0 ; j<=NY ; j++)
 	for(int i=0 ; i<=NX ; i++)
 	
 	{
-		while(true)
-		{	
+		
 			fin >> pore;
-			if( pore == 0.0 || pore == 1.0) break;
-		}
+			
+	
 		
 		Solid_rank0[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]=pore;
-		if (pore==0)
-		        {
-		                sum+=1;
-		                loc_por[i]+=1;
-		                if ((i>=per_xn) and (i<=per_xp) and (j>=per_yn) and (j<=per_yp) and (k>=per_zn) and (k<=per_zp))
-		                        sum2+=1;
-		        }
+		
 	}
 	fin.close();
 
@@ -1045,226 +1027,278 @@ if (rank==0)
 	        }
 	Solid_rank0 = new int[(NX+1)*(NY+1)*(NZ+1)];
 	fin.read((char *)(&Solid_rank0[0]), sizeof(int)*(NX+1)*(NY+1)*(NZ+1));
-	for(int k=0 ; k<=NZ ; k++)
-	for(int j=0 ; j<=NY ; j++)
-	for(int i=0 ; i<=NX ; i++)
 	
-	{
-		
-		pore=Solid_rank0[i*(NY+1)*(NZ+1)+j*(NZ+1)+k];
-		if (pore==0)
-		        {
-		                sum+=1;
-		                loc_por[i]+=1;
-		                if ((i>=per_xn) and (i<=per_xp) and (j>=per_yn) and (j<=per_yp) and (k>=per_zn) and (k<=per_zp))
-		                        sum2+=1;
-		        }
-	}
 	fin.close();
 	}
 	
-
+	
 
 }
+  
 
-        MPI_Bcast(loc_por,NX+1,MPI_INT,0,MPI_COMM_WORLD);
-        MPI_Bcast(&sum,1,MPI_INT,0,MPI_COMM_WORLD);
+        MPI_Bcast(Solid_rank0,(NX+1)*(NY+1)*(NZ+1),MPI_INT,0,MPI_COMM_WORLD);
         
-         
-	nx_pre=0;nx_aft=0;sum_nx=0;
-	ave_nx=(double)sum/(mpi_size);
-	disp[0]=0;bufloc[0]=0;
-	porosity=(double)sum2/((per_xp-per_xn+1)*(per_yp-per_yn+1)*(per_zp-per_zn+1));
-	
-	for (int i=0;i<mpi_size-1;i++)
-	        {
-	        nx_pre=0;nx_aft=0;n_i=0;
-	        while (nx_aft<ave_nx*(i+1))
-	                {
-	                nx_pre=nx_aft;
-	                nx_aft+=loc_por[n_i];
-	                n_i+=1;
-	                }
-	        if ((double)(nx_aft-ave_nx*(i+1))>(double)(ave_nx*(i+1)-nx_pre))
-	                disp[i+1]=n_i-1;
-	        else
-	                disp[i+1]=n_i;
-	        
-	        nx_g[i]=disp[i+1]-disp[i];
-	        
-	          bufsize[i]=nx_g[i]*(NY+1)*(NZ+1);
-	        bufloc[i+1]=bufloc[i]+bufsize[i];
-	        
-	        }
-	  
-	  nx_g[mpi_size-1]=(NX+1)-disp[mpi_size-1];
-	  bufsize[mpi_size-1]=nx_g[mpi_size-1]*(NY+1)*(NZ+1);
-	  nx_l=nx_g[rank];
-
-
-        Solid = new int**[nx_l];
-	for (int i=0;i<nx_l;i++)
-	{
-		Solid[i] = new int*[NY+1];
-			for (int j=0;j<=NY;j++)
-			Solid[i][j]= new int[NZ+1];
-			
-		
-	}
-	        recv_solid = new int[nx_l*(NY+1)*(NZ+1)];
-		
-	  
-MPI_Barrier(MPI_COMM_WORLD);
-
-        
-MPI_Scatterv(Solid_rank0,bufsize,bufloc,MPI_INT,recv_solid,nx_l*(NY+1)*(NZ+1),MPI_INT,0,MPI_COMM_WORLD);
-
-cout<<"GEOMETRY INPUT FILE PARTITIONING FOR PARALLEL READING DONE   Processor No."<<rank<<endl;	  
-	  
-for (int i=0;i<nx_l;i++)
-	                for (int j=0;j<=NY;j++)
+        for (int i=0;i<=NX;i++)
+                for (int j=0;j<=NY;j++)
 	                for (int k=0;k<=NZ;k++)
-	                Solid[i][j][k]=recv_solid[i*(NY+1)*(NZ+1)+j*(NZ+1)+k];
-	               
-	           
-	 delete [] recv_solid;	  
-	if (rank==0)
-	       delete [] Solid_rank0;	
+	                Solid[i][j][k]=Solid_rank0[i*(NY+1)*(NZ+1)+j*(NZ+1)+k];
 
+	        sumss=new int [procn+1];
+	for (int i=0;i<=procn;i++)
+	        sumss[i]=0;
+	
+	
+	
+	for(int k=0 ; k<nz ; k++)			
+	for(int j=0 ; j<ny ; j++)
+	for(int i=0 ; i<nx ; i++)			
+	        if (Solid[i][j][k]>0)
+	        {
+	                sumss[Solid[i][j][k]]++;
+	                Solid2[i][j][k]=sumss[Solid[i][j][k]];
+	                
+	
+	
+	                //=======calculate neibough numbers==========
+	                if (Solid[i][j][k]==procind)
+	                for (int ls=1;ls<19;ls++)
+	                {
+	                        ii=i+e[ls][0];
+	                                if (ii<0)
+	                                        ii=nx-1;
+	                                if (ii>=nx)
+	                                        ii=0;
+	                                
+	                                        
+	                        jj=j+e[ls][1];
+	                                if (jj<0)
+	                                        jj=ny-1;
+	                                if (jj>=ny)
+	                                        jj=0;
+	                                
+	                        kk=k+e[ls][2];
+	                                       if (kk<0)
+	                                        kk=nz-1;
+	                                        if (kk>=nz)
+	                                        kk=0; 
+	                        
+	                                if ((Solid[ii][jj][kk]>0) and (Solid[ii][jj][kk]!=procind))
+	                                        {
+	                                                bufinfo[Solid[ii][jj][kk]]++;
+	                                        //cout<<procind<<"        "<<Solid[ii][jj][kk]<<endl;
+	                                        }
+	                                
+	                                        
+	                
+	                }
+	        //=======================================================
+	        }
+	        else
+	                Solid2[i][j][k]=0;
+	       
+	        //======coordinate of nodes===========
+	        coor = new int[sumss[procind]+1];
+	                for(int k=0 ; k<nz ; k++)			
+	                for(int j=0 ; j<ny ; j++)
+	                for(int i=0 ; i<nx ; i++)
+	                        if (Solid[i][j][k]==procind)
+	                                coor[Solid2[i][j][k]]=i*ny*nz+j*nz+k;
+	        //=============================
+	        
+	        
+	        for (int i=1;i<=procn;i++)
+	        {
+	                //cout<<bufinfo[i]<<endl;
+	                if (bufinfo[i]>0)
+	                        com_n++;
+	        }
+	        com_ind=new int[com_n];
+	                
+	        tmpint=0;
+	        for (int i=1;i<=procn;i++)
+	                if (bufinfo[i]>0)
+	                {com_ind[tmpint]=i;proc_com[i]=tmpint;tmpint++;}
+	                
+	
+	
+	bufsend = new double* [com_n];
+	        for (int i=0;i<com_n;i++)
+	                bufsend[i] = new double[bufinfo[com_ind[i]]];
+	        
+	bufrecv = new double* [com_n];
+	        for (int i=0;i<com_n;i++)
+	                bufrecv[i] = new double[bufinfo[com_ind[i]]];
+	        
+	        
+	nei_loc= new int*[sumss[procind]+1];
+	nei_loc[0] =new int[(sumss[procind]+1)*19];
+	        for (int i=1;i<=sumss[procind];i++)
+	                nei_loc[i] = nei_loc[i-1]+19;
+	  
+	        buflocsend = new int*[com_n];
+	        for (int i=0;i<com_n;i++)
+	                buflocsend[i] = new int[bufinfo[com_ind[i]]];
+	        
+	        buflocrecv = new int*[com_n];
+	        for (int i=0;i<com_n;i++)
+	                buflocrecv[i] = new int[bufinfo[com_ind[i]]];
+	        
+	        sumtmp = new int[com_n];
+	                for(int i=0;i<com_n;i++)
+	                        sumtmp[i]=0;
+	                
+	                
+	
+	        for (int ci=1;ci<=sumss[procind];ci++)
+	                {
+	                      ii=(int)(coor[ci]/(ny*nz));
+	                      jj=(int)((coor[ci]%(ny*nz))/nz);
+	                      kk=(int)(coor[ci]%nz);
+	                      
+	                      for (int mi=0; mi<19; mi++)
+			{
+			
+			
+			        ip=ii+e[mi][0];if (ip<0) {ip=nx-1;};if (ip>=nx) {ip=0;};
+			        jp=jj+e[mi][1];if (jp<0) {jp=ny-1;}; if (jp>=ny) {jp=0;};
+			        kp=kk+e[mi][2];if (kp<0) {kp=nz-1;}; if (kp>=nz) {kp=0;};
+			        
+			        if (Solid[ip][jp][kp]==procind)
+			                nei_loc[ci][mi]=Solid2[ip][jp][kp];
+			        else
+			                if (Solid[ip][jp][kp]==0)
+			                        nei_loc[ci][mi]=0;
+			                else
+			                {
+			                       // nei_loc[ci][mi]=-Solid[ip][jp][kp];
+			                       nei_loc[ci][mi]=-proc_com[Solid[ip][jp][kp]]-1;
+			                        buflocsend[proc_com[Solid[ip][jp][kp]]][sumtmp[proc_com[Solid[ip][jp][kp]]]]=Solid2[ip][jp][kp]*19+mi;
+			                      
+			                        sumtmp[proc_com[Solid[ip][jp][kp]]]++;
+			                       
+			                }
+			                
+			}
+			                
+			                
+	                    
+	                }
+	                
+	                
+	     
+	                                               
+	       MPI_Status status[com_n*2] ;
+	       MPI_Request request[com_n*2];         
+	       int mpi_test=procn;
+	       
+	       for (int i=0;i<com_n;i++)
+	       
+	               {
+	                       MPI_Isend(buflocsend[i],bufinfo[com_ind[i]], MPI_INT, com_ind[i]-1, (procind-1)*procn+com_ind[i]-1, MPI_COMM_WORLD,&request[2*i]);
+	                       
+	                       MPI_Irecv(buflocrecv[i],bufinfo[com_ind[i]], MPI_INT, com_ind[i]-1, (com_ind[i]-1)*procn+procind-1, MPI_COMM_WORLD,&request[2*i+1]);		
+	               }
+	               
+	               
+	               
+	      //-------------BCs--------------------------------------------------------         
+	               bclxn=0;bclyn=0;bclzn=0;bcrxn=0;bcryn=0;bcrzn=0;
+	                
+	                 for(int k=0; k<nz ; k++)			
+	                 for(int j=0 ; j<ny ; j++)
+	                 {
+	                         if (Solid[0][j][k]==procind)
+	                                 bclxn++;
+	                         if (Solid[nx-1][j][k]==procind)
+	                                 bcrxn++;
+	                 }
+	                 if (bclxn>0)
+	                         bclx=new int[bclxn];
+	                 if (bcrxn>0)
+	                         bcrx= new int[bcrxn];
+	                 bclxn=0;bcrxn=0;
+	                 for(int k=0; k<nz ; k++)			
+	                 for(int j=0 ; j<ny ; j++)
+	                 {
+	                         if (Solid[0][j][k]==procind)
+	                                 bclx[bclxn]=Solid2[0][j][k],bclxn++;
+	                         
+	                         if (Solid[nx-1][j][k]==procind)
+	                                 bcrx[bcrxn]=Solid2[nx-1][j][k],bcrxn++;
+	                 }
+	                 
+	                 
+	                 
+	               for(int k=0 ; k<nz ; k++)			
+	               for(int i=0 ; i<nx ; i++)  
+	                 {
+	                         if (Solid[i][0][k]==procind)
+	                                 bclyn++;
+	                         if (Solid[i][ny-1][k]==procind)
+	                                 bcryn++;
+	                 }
+	                 if (bclyn>0)
+	                         bcly=new int[bclyn];
+	                 if (bcryn>0)
+	                         bcry= new int[bcryn];
+	                 bclyn=0;bcryn=0;
+	                for(int k=0 ; k<nz ; k++)			
+	                        for(int i=0 ; i<nx ; i++)  
+	                 {
+	                         if (Solid[i][0][k]==procind)
+	                                 bcly[bclyn]=Solid2[i][0][k],bclyn++;
+	                         
+	                         if (Solid[i][ny-1][k]==procind)
+	                                 bcry[bcryn]=Solid2[i][ny-1][k],bcryn++;
+	                 }   
+	                 
+	                 
+	                 for(int j=0 ; j<ny ; j++)     
+	                 for(int i=0 ; i<nx ; i++)  
+	                 {
+	                         if (Solid[i][j][0]==procind)
+	                                 bclzn++;
+	                         if (Solid[i][j][nz-1]==procind)
+	                                 bcrzn++;
+	                 }
+	                 if (bclzn>0)
+	                         bclz=new int[bclzn];
+	                 if (bcrzn>0)
+	                         bcrz= new int[bcrzn];
+	                 bclzn=0;bcrzn=0;
+	               for(int j=0 ; j<ny ; j++)     
+	                 for(int i=0 ; i<nx ; i++) 
+	                 {
+	                         if (Solid[i][j][0]==procind)
+	                                 bclz[bclzn]=Solid2[i][j][0],bclzn++;
+	                         
+	                         if (Solid[i][j][nz-1]==procind)
+	                                 bcrz[bcrzn]=Solid2[i][j][nz-1],bcrzn++;
+	                 }   
+	                 
+	      //---------------------------------------------------------------------------           
+	                      
+	                 
+      		MPI_Waitall(2*com_n,request, status);
+      		MPI_Testall(2*com_n,request,&mpi_test,status);
+	      Count=sumss[procind];  
+	
+	   delete [] Solid_rank0;   
+	   for (int i=0;i<com_n;i++)
+	           delete [] buflocsend[i];
+	   delete [] buflocsend;
+	   
+	   delete [] sumtmp;
+	   
+      
+    
 }
 
 void init_Sparse_read_rock_parallel(int*** Solid,int* Sl,int* Sr)
-{	
-	MPI_Status status[4] ;
-	MPI_Request request[4];
-
-	
-	
-	int rank = MPI :: COMM_WORLD . Get_rank ();
-	int mpi_size=MPI :: COMM_WORLD . Get_size ();
-
-bool mark;
-int kk,ip,jp,kp,mean_l,mpi_test;
-
-
-
-	int* Sl_send;
-	int* Sr_send;
-	Sl_send = new int[(NY+1)*(NZ+1)];
-	Sr_send = new int[(NY+1)*(NZ+1)];
-
-	Count=1;
-
-
-
-
-for(int i=0;i<nx_l;i++)	
-	for(int j=0;j<=NY;j++)
-		for(int k=0;k<=NZ;k++)
-		{
-			if (Solid[i][j][k]==0)
-				{
-			
-				Solid[i][j][k]=Count;
-				Count++;
-				}
-			else
-				Solid[i][j][k]=0;
-
-		}
-		
-
-	
-//	cout<<"GEOMETRY DATA READING DONE-----PROCESSOR No."<<rank<<endl;
-	
-	
-	
-	Count-=1;
-	
-	cl=0;cr=0;	
-	
-	for (int j=0;j<=NY;j++)
-		for (int k=0;k<=NZ;k++)
-		{
-			
-			if (Solid[0][j][k]>0)
-				{
-				cl++;
-				Sl_send[j*(NZ+1)+k]=cl;
-				}
-			else
-				Sl_send[j*(NZ+1)+k]=0;
-			
-
-		
-			if (Solid[nx_l-1][j][k]>0)
-				{
-				cr++;
-				Sr_send[j*(NZ+1)+k]=cr;
-				}
-			else
-				Sr_send[j*(NZ+1)+k]=0;
-			
-		}
-
-
-
-
-if (rank==0)
-		{
-		MPI_Isend(Sr_send, (NY+1)*(NZ+1), MPI_INT, rank+1, rank*2+1, MPI_COMM_WORLD,&request[0]);
-      		MPI_Isend(Sl_send, (NY+1)*(NZ+1), MPI_INT, mpi_size-1, rank*2, MPI_COMM_WORLD,&request[1]);
-		MPI_Irecv(Sr , (NY+1)*(NZ+1), MPI_INT, rank+1, (rank+1)*2, MPI_COMM_WORLD,&request[2]);		
-      		MPI_Irecv(Sl, (NY+1)*(NZ+1), MPI_INT, mpi_size-1, (mpi_size-1)*2+1, MPI_COMM_WORLD,&request[3] );
-		
-		}
-		else
-		if (rank==mpi_size-1)
-			{
-			MPI_Isend(Sl_send, (NY+1)*(NZ+1), MPI_INT, rank-1, rank*2, MPI_COMM_WORLD,&request[0]);
-      			MPI_Isend(Sr_send, (NY+1)*(NZ+1), MPI_INT, 0, rank*2+1, MPI_COMM_WORLD,&request[1]);
-			MPI_Irecv(Sl, (NY+1)*(NZ+1), MPI_INT, rank-1, (rank-1)*2+1, MPI_COMM_WORLD,&request[2] );
-      			MPI_Irecv(Sr, (NY+1)*(NZ+1), MPI_INT, 0, 0, MPI_COMM_WORLD,&request[3]);
-			
-			}
-			else
-			{
-			MPI_Isend(Sl_send, (NY+1)*(NZ+1), MPI_INT, rank-1, rank*2, MPI_COMM_WORLD,&request[0]);
-      			MPI_Isend(Sr_send, (NY+1)*(NZ+1), MPI_INT, rank+1, rank*2+1, MPI_COMM_WORLD,&request[1]);
-			MPI_Irecv(Sl, (NY+1)*(NZ+1), MPI_INT, rank-1, (rank-1)*2+1, MPI_COMM_WORLD,&request[2]);
-      			MPI_Irecv(Sr, (NY+1)*(NZ+1), MPI_INT, rank+1, (rank+1)*2, MPI_COMM_WORLD,&request[3]);
-			
-			};
-
-	
-	MPI_Waitall(4,request, status);
-	MPI_Testall(4,request,&mpi_test,status);
-
-
-	
-
-	delete [] Sl_send;
-	delete [] Sr_send;	
-}
+{}
 
 void Suppliment(int* SupInv,int*** Solid)
-{
-
-       
-	int rank = MPI :: COMM_WORLD . Get_rank ();
-	int mpi_size=MPI :: COMM_WORLD . Get_size ();
-
-	for(int i=0;i<nx_l;i++)	
-		for(int j=0;j<=NY;j++)
-			for(int k=0;k<=NZ;k++)
-			if (Solid[i][j][k]>0)
-			        SupInv[abs(Solid[i][j][k])]=i*(NY+1)*(NZ+1)+j*(NZ+1)+k;
-				
-			
-
-
-}
-
+{}
 
 
 
@@ -1372,7 +1406,7 @@ void init(double* rho, double** u, double** f,int*** Solid)
 }
 
 
-double feq(int k,double rho, double u[3])
+inline double feq(int k,double rho, double u[3])
 {
 	double eu,uv,feq;
         double c2,c4;
@@ -1386,34 +1420,26 @@ double feq(int k,double rho, double u[3])
 
 
 
-//void periodic_streaming_MR(double** f,double** F,int* SupInv,int*** Solid,int* Sl,int* Sr,double* rho,double** u)
-
-
-//void periodic_streaming(double** f,double** F,int* SupInv,int*** Solid,int* Sl,int* Sr,double* rho,double** u)
 
 
 void collision(double* rho,double** u,double** f,double** F,int* SupInv,int*** Solid, int* Sl, int* Sr)
 {
 
-	MPI_Status status[4] ;
-	MPI_Request request[4];
+	MPI_Status status[com_n*2] ;
+	MPI_Request request[com_n*2];
 	int mpi_test;
 	
 	int rank = MPI :: COMM_WORLD . Get_rank ();
 	int mpi_size=MPI :: COMM_WORLD . Get_size ();
-
-	/*
-	int* Gcl = new int[mpi_size];
-	int* Gcr = new int[mpi_size];
-
+	int procn=mpi_size; 
+	int procind=rank+1;
 	
-	MPI_Gather(&cl,1,MPI_INT,Gcl,1,MPI_INT,0,MPI_COMM_WORLD);
-	MPI_Bcast(Gcl,mpi_size,MPI_INT,0,MPI_COMM_WORLD);
-
-	MPI_Gather(&cr,1,MPI_INT,Gcr,1,MPI_INT,0,MPI_COMM_WORLD);
-	MPI_Bcast(Gcr,mpi_size,MPI_INT,0,MPI_COMM_WORLD);
-	*/
-
+	int testl1,testl2;
+	int sumtmp[com_n];
+	for (int i=0;i<com_n;i++)
+	        sumtmp[i]=0;
+	
+	
 double lm0,lm1,sum;
 double usqr,vsqr;
 double F_hat[19],GuoF[19],f_eq[19],u_tmp[3];
@@ -1423,85 +1449,12 @@ int i,j,m,ip,jp,kp;
 
 const double c_l=lat_c;	
 
-        /*
-	double* sendl;
-	double* sendr;
 
-	double* recvl= new double[Gcl[rank]*5];
-	double* recvr = new double[Gcr[rank]*5];
-	*/
 	
-	
-	if (rank==0)
-		{
-		//sendl = new double[Gcr[mpi_size-1]*5];
-		//sendr = new double[Gcl[rank+1]*5];
-		
-		
-		for (int ka=0;ka<Gcr[mpi_size-1]*5;ka++)
-		                sendl[ka]=0;
-		                
-		 for (int ka=0;ka<Gcl[rank+1]*5;ka++)
-		                sendr[ka]=0;
-		                
-		      
-		
-		
-		}	
-		else
-		if (rank==mpi_size-1)
-			{
-			
-			//sendl = new double[Gcr[rank-1]*5];
-			//sendr = new double[Gcl[0]*5];
-			for (int ka=0;ka<Gcr[rank-1]*5;ka++)
-		                sendl[ka]=0;
-		                
-		        for (int ka=0;ka<Gcl[0]*5;ka++)
-		                sendr[ka]=0;
-
-			
-			}
-			else
-			{
-	
-			//sendl = new double[Gcr[rank-1]*5];
-			//sendr = new double[Gcl[rank+1]*5];
-			
-			for (int ka=0;ka<Gcr[rank-1]*5;ka++)
-		                sendl[ka]=0;
-	
-		        for (int ka=0;ka<Gcl[rank+1]*5;ka++)
-		                sendr[ka]=0;
-		
-
-			}
-			
-	//cout<<"aaafffffffffffffffffffffffff"<<endl;
-	
-
 	for(int ci=1;ci<=Count;ci++)	
 	
 
 		{	
-				
-			i=(int)(SupInv[ci]/((NY+1)*(NZ+1)));
-			j=(int)((SupInv[ci]%((NY+1)*(NZ+1)))/(NZ+1));
-			m=(int)(SupInv[ci]%(NZ+1));  
-			
-
-			//=================FORCE TERM_GUO=========================================
-/*
-			for (int k=0;k<19;k++)
-			{	
-			lm0=((elat[k][0]-u[ci][0])*gx+(elat[k][1]-u[ci][1])*gy+(elat[k][2]-u[ci][2])*gz)/c_s2;
-			lm1=(elat[k][0]*u[ci][0]+elat[k][1]*u[ci][1]+elat[k][2]*u[ci][2])*(elat[k][0]*gx+elat[k][1]*gy+elat[k][2]*gz)/(c_s2*c_s2);
-			GuoF[k]=w[k]*(lm0+lm1);
-			//GuoF[k]=0.0;
-			}
-
-*/
-
 
 
 //==========================
@@ -1598,33 +1551,7 @@ GuoF[18]=w[18]*(lm0+lm1);
 				{
 				f_eq[k]=feq(k,rho[ci],u_tmp);
 				}
-			
-			//for (int l=0;l<19;l++)
-			//	{
-			//	meq[l]=0;
-			//	for(int lm=0;lm<19;lm++)
-			//	meq[l]+=M[l][lm]*f_eq[lm];				
-			//	}
-
-			//============================================================================
-
-			/*
-			// ==================   m=Mf matrix calculation  =============================
-			// ==================   F_hat=(I-.5*S)MGuoF =====================================
-				for (int mi=0; mi<19; mi++)
-					{
-					m_l[mi]=0;F_hat[mi]=0;meq[mi]=0;
-					for (int mj=0; mj<19; mj++)
-						{
-						m_l[mi]+=M[mi][mj]*f[ci][mj];
-						F_hat[mi]+=M[mi][mj]*GuoF[mj];
-						meq[mi]+=M[mi][mj]*f_eq[mj];
-						}
-					F_hat[mi]*=(1-0.5*S[mi]);
-					m_l[mi]=m_l[mi]-S[mi]*(m_l[mi]-meq[mi])+dt*F_hat[mi];
-					}
-			//============================================================================
-			*/
+		
 			
 
 //==========================
@@ -1863,56 +1790,23 @@ m_inv_l[18]=+((double)0X1.AF286BCA1AF2AP-5)*m_l[0]+((double)0X1.B6006D801B603P-9
 			// ==================   f=M_-1m matrix calculation and streaming =============================
 		for (int mi=0; mi<19; mi++)
 			{
-			//sum=0;	
-			//for (int mj=0; mj<19; mj++)
-			//	sum+=MI[mi][mj]*m_l[mj];
-			sum=m_inv_l[mi];
 			
-			ip=i+e[mi][0];
-			jp=j+e[mi][1];if (jp<0) {jp=NY;}; if (jp>NY) {jp=0;};
-			kp=m+e[mi][2];if (kp<0) {kp=NZ;}; if (kp>NZ) {kp=0;};
-
-				
-
-			if (ip<0) 
-				if (Sl[jp*(NZ+1)+kp]>0)
-				{
-				sendl[(Sl[jp*(NZ+1)+kp]-1)*5+FLN[mi]]=sum;
-				
-				}
-				else
-				{
-				F[ci][LR[mi]]=sum;
-				
-				}
-					
+			if (nei_loc[ci][mi]>0)
+			        F[nei_loc[ci][mi]][mi]=m_inv_l[mi];
+			else
+	                                   if (nei_loc[ci][mi]==0)
+	                                            F[ci][LR[mi]]=m_inv_l[mi];
+	                                    else
+	                                    {
+	                                            bufsend[-nei_loc[ci][mi]-1][sumtmp[-nei_loc[ci][mi]-1]]=m_inv_l[mi];
+	                                            sumtmp[-nei_loc[ci][mi]-1]++;
+	                                    }
+			        
+			        
+			        
+			        
+			        
 			
-		
-			if (ip>=nx_l)
-				if (Sr[jp*(NZ+1)+kp]>0)
-				{
-				sendr[(Sr[jp*(NZ+1)+kp]-1)*5+FRP[mi]]=sum;
-				
-				}
-				else
-				{
-				F[ci][LR[mi]]=sum;
-				
-				}
-
-			if ((ip>=0) and (ip<nx_l)) 
-				if (Solid[ip][jp][kp]>0)
-				{
-				F[Solid[ip][jp][kp]][mi]=sum;
-				
-				}
-				else
-				{
-				F[ci][LR[mi]]=sum;
-				}
-
-
-
 			
 			}
 			//============================================================================
@@ -1920,61 +1814,31 @@ m_inv_l[18]=+((double)0X1.AF286BCA1AF2AP-5)*m_l[0]+((double)0X1.B6006D801B603P-9
 			
 			}
 
-/*
+  for (int i=0;i<com_n;i++)
+	       
+	               {
+	                       MPI_Isend(bufsend[i],bufinfo[com_ind[i]], MPI_DOUBLE, com_ind[i]-1, (procind-1)*procn+com_ind[i]-1, MPI_COMM_WORLD,&request[2*i]);
+	                       
+	                       MPI_Irecv(bufrecv[i],bufinfo[com_ind[i]], MPI_DOUBLE, com_ind[i]-1, (com_ind[i]-1)*procn+procind-1, MPI_COMM_WORLD,&request[2*i+1]);		
+	               }
+
+	               MPI_Waitall(2*com_n,request, status);
+	               MPI_Testall(2*com_n,request,&mpi_test,status);
+
+	               
+	               for (int i=0;i<com_n;i++)
+	                       {
+	                               for (int j=0;j<bufinfo[com_ind[i]];j++)
+	                                       {
+	                                               testl1=(int)(buflocrecv[i][j]/19);
+	                                               testl2=(int)(buflocrecv[i][j]%19);
+	                                               //cout<<testarr[testl1*19+testl2]<<"  "<<procind<<"   "<<testl1<<"        "<<testl2<<"        "<<buflocrecv[i][j]<<endl;
+	                                               //cout<<buflocsend[i][j]<<"  ";
+	                                               //testarr[testl1*19+testl2]=1;
+	                                               F[testl1][testl2]=bufrecv[i][j];
+	                                       }
+	                       }
 	
-	int dest_l,dest_r;
-	if (rank+1>mpi_size-1)
-		dest_r=0;
-	else
-		dest_r=rank+1;
-
-	if (rank-1<0)
-		dest_l=mpi_size-1;
-	else
-		dest_l=rank-1;
-
-MPI_Barrier(MPI_COMM_WORLD);
-MPI_Sendrecv(sendr,Gcl[dest_r]*5,MPI_DOUBLE,dest_r,rank*2+1,recvl,Gcl[rank]*5,MPI_DOUBLE,dest_l,(dest_l)*2+1, MPI_COMM_WORLD,&status[0]);
-MPI_Sendrecv(sendl,Gcr[dest_l]*5,MPI_DOUBLE,dest_l,rank*2,recvr,Gcr[rank]*5,MPI_DOUBLE,dest_r,(dest_r)*2, MPI_COMM_WORLD,&status[1]);
-*/
-
-
-
-	if (rank==0)
-		{
-		
-		
-		MPI_Isend(sendr, Gcl[1]*5, MPI_DOUBLE, rank+1, rank*2+1, MPI_COMM_WORLD,&request[0]);
-      		MPI_Isend(sendl, Gcr[mpi_size-1]*5, MPI_DOUBLE, mpi_size-1, rank*2, MPI_COMM_WORLD,&request[1]);
-		MPI_Irecv(recvr, Gcr[0]*5, MPI_DOUBLE, rank+1, (rank+1)*2, MPI_COMM_WORLD,&request[2]);		
-      		MPI_Irecv(recvl, Gcl[0]*5, MPI_DOUBLE, mpi_size-1, (mpi_size-1)*2+1, MPI_COMM_WORLD,&request[3] );
-		}
-		else
-		if (rank==mpi_size-1)
-			{
-			MPI_Isend(sendl, Gcr[rank-1]*5, MPI_DOUBLE, rank-1, rank*2, MPI_COMM_WORLD,&request[0]);
-      			MPI_Isend(sendr, Gcl[0]*5,  MPI_DOUBLE, 0, rank*2+1, MPI_COMM_WORLD,&request[1]);
-			MPI_Irecv(recvl, Gcl[rank]*5, MPI_DOUBLE, rank-1, (rank-1)*2+1, MPI_COMM_WORLD,&request[2] );
-      			MPI_Irecv(recvr, Gcr[rank]*5, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD,&request[3]);
-			
-			}
-			else
-			{
-
-      			MPI_Isend(sendl, Gcr[rank-1]*5, MPI_DOUBLE, rank-1, rank*2, MPI_COMM_WORLD,&request[0]);
-      			MPI_Isend(sendr, Gcl[rank+1]*5, MPI_DOUBLE, rank+1, rank*2+1, MPI_COMM_WORLD,&request[1]);
-			MPI_Irecv(recvl, Gcl[rank]*5, MPI_DOUBLE, rank-1, (rank-1)*2+1, MPI_COMM_WORLD,&request[2]);
-      			MPI_Irecv(recvr, Gcr[rank]*5, MPI_DOUBLE, rank+1, (rank+1)*2, MPI_COMM_WORLD,&request[3]);
-			
-			
-			};
-
-	
-	MPI_Waitall(4,request, status);
-
-	MPI_Testall(4,request,&mpi_test,status);	
-
-
 
 		
 			for(i=1;i<=Gcl[rank];i++)
@@ -1989,15 +1853,7 @@ MPI_Sendrecv(sendl,Gcr[dest_l]*5,MPI_DOUBLE,dest_l,rank*2,recvr,Gcr[rank]*5,MPI_
 			        
 			
 
-                        
 
-//	delete [] Gcl;
-//	delete [] Gcr;
-//	delete [] sendl;
-//	delete [] sendr;
-//	delete [] recvl;
-//	delete [] recvr;
-		
 
 }
 
@@ -4606,9 +4462,9 @@ double Comput_Perm(double** u,double* Permia,int PerDIr,int* SupInv)
 	if ((par_per_x-1)*(par_per_y-1)*(par_per_z-1)==0)	
 	for (int i=1;i<=Count;i++)
 	{
-		si=(int)(SupInv[i]/((NY+1)*(NZ+1)));
-		sj=(int)((SupInv[i]%((NY+1)*(NZ+1)))/(NZ+1));
-		sm=(int)(SupInv[i]%(NZ+1)); 
+		si=(int)(coor[i]/(NY+1)*(NZ+1));;
+		sj=(int)((coor[i]%((NY+1)*(NZ+1)))/(NZ+1));
+		sm=(int)(coor[i]%(NZ+1)); 
 		si+=disp[rank];
 		//if (rank==1)
 		//cout<<rank<<"  "<<si<<" "<<sj<<" "<<sm<<endl;
@@ -4631,19 +4487,10 @@ double Comput_Perm(double** u,double* Permia,int PerDIr,int* SupInv)
 		} 
 
 	
-		
-//	for (int i=1;i<=Count;i++)
-//		{
-//		Q[0]+=u[i][0];
-//		Q[1]+=u[i][1];
-//		Q[2]+=u[i][2];
-//		}
 
 	MPI_Barrier(MPI_COMM_WORLD);
 
-	//Qx/=(NX+1)/mpi_size*(NY+1)*(NZ+1);
-	//Qy/=(NX+1)/mpi_size*(NY+1)*(NZ+1);
-	//Qz/=(NX+1)/mpi_size*(NY+1)*(NZ+1);
+	
 
 	MPI_Gather(&Q,3,MPI_DOUBLE,rbuf,3,MPI_DOUBLE,0,MPI_COMM_WORLD);
 	
@@ -4657,9 +4504,7 @@ double Comput_Perm(double** u,double* Permia,int PerDIr,int* SupInv)
 			Q[2]+=rbuf[i*3+2];
 			}
 
-		//Perm[0]=Q[0]*(1.0/Zoom)*(1.0/Zoom)/((NX+1)/Zoom*(NY+1)/Zoom*(NZ+1)/Zoom)*(in_vis)/gx;
-		//Perm[1]=Q[1]*(1.0/Zoom)*(1.0/Zoom)/((NX+1)/Zoom*(NY+1)/Zoom*(NZ+1)/Zoom)*(in_vis)/gy;
-		//Perm[2]=Q[2]*(1.0/Zoom)*(1.0/Zoom)/((NX+1)/Zoom*(NY+1)/Zoom*(NZ+1)/Zoom)*(in_vis)/gz;
+	
 
 		Perm[0]=Q[0]/((per_xp-per_xn+1)*(per_yp-per_yn+1)*(per_zp-per_zn+1))*(in_vis)/(gx+dp);
 		Perm[1]=Q[1]/((per_xp-per_xn+1)*(per_yp-per_yn+1)*(per_zp-per_zn+1))*(in_vis)/(gy+dp);
@@ -4819,262 +4664,11 @@ void Backup_init(double* rho, double** u, double** f, char backup_rho[128], char
 
 void Comput_Perm_LOCAL(double** u,double* Permia_local,int PerDIr)
 {
-
-	
-	int rank = MPI :: COMM_WORLD . Get_rank ();
-	int mpi_size=MPI :: COMM_WORLD . Get_size ();
-
-	double qx,qy,qz;
-	double perm_local[3];
-
-	double dp;
-	if (in_BC==0)
-	        dp=0;
-	else
-	switch(PerDIr)
-		{
-		case 1:
-			dp=abs(p_xp-p_xn)*c_s2/(NX+1)/dx;break;
-		case 2:
-			dp=abs(p_yp-p_yn)*c_s2/(NY+1)/dx;break;
-		case 3:
-			dp=abs(p_zp-p_zn)*c_s2/(NZ+1)/dx;break;
-		default:
-			dp=abs(p_xp-p_xn)*c_s2/(NX+1)/dx;
-		}
-
-
-	if (rank==mpi_size-1)
-	{
-	qx=0;qy=0;qz=0;
-	for (int j=0;j<=NY;j++)
-		for (int k=0;k<=NZ;k++)
-		if (Solid[nx_l-2][j][k]>0)
-		{
-		qx+=u[Solid[nx_l-2][j][k]][0];
-		qy+=u[Solid[nx_l-2][j][k]][1];
-		qz+=u[Solid[nx_l-2][j][k]][2];
-		}
-	perm_local[0]=qx/((per_yp-per_yn+1)*(per_zp-per_zn+1))*(in_vis)/(gx+dp);
-	perm_local[1]=qy/((per_xp-per_xn+1)*(per_zp-per_zn+1))*(in_vis)/(gy+dp);
-	perm_local[2]=qz/((per_xp-per_xn+1)*(per_yp-per_yn+1))*(in_vis)/(gz+dp);
-	
-	}
-
-	
-	MPI_Barrier(MPI_COMM_WORLD);
-	MPI_Bcast(&perm_local,3,MPI_DOUBLE,mpi_size-1,MPI_COMM_WORLD);
-
-	Permia_local[0]=perm_local[0];
-	Permia_local[1]=perm_local[1];
-	Permia_local[2]=perm_local[2];
-
 }
 
 
 void Comput_Grop_Perm(double** u,double* Permia,int PerDIr,int* SupInv)
 {
-
-	int rank = MPI :: COMM_WORLD . Get_rank ();
-	int mpi_size=MPI :: COMM_WORLD . Get_size ();
-
-	int nx_g[mpi_size];
-	int disp[mpi_size];
-	int si,sj,sm;
-	int per_xn1,per_xp1,per_yn1,per_yp1,per_zn1,per_zp1;
-	int General_size=512;
-	int sub_size,por_loc,vol_g;
-	char File[128];
-	strcpy(File,outputfile);
-
-	//========================================
-	//int loop[4]={n_gperm1,n_gperm2,n_gperm3,n_gperm4};
-	//int loop_size[4]={size_gperm1,size_gperm2,size_gperm3,size_gperm4};
-	//int loop_s[4][3]={{c0_gperm1,c1_gperm1,c2_gperm1},{c0_gperm2,c1_gperm2,c2_gperm2},{c0_gperm3,c1_gperm3,c2_gperm3},{c0_gperm4,c1_gperm4,c2_gperm4}};
-	//========================================
-	
-	
-	//=========================================
-	int loop[4];
-	int loop_size[4];
-	int loop_s[4][3];
-	loop[0]=n_gperm1;loop[1]=n_gperm2;loop[2]=n_gperm3;loop[3]=n_gperm4;
-	loop_size[0]=size_gperm1;loop_size[1]=size_gperm2;loop_size[2]=size_gperm3;loop_size[3]=size_gperm4;
-	loop_s[0][0]=c0_gperm1;loop_s[0][1]=c1_gperm1;loop_s[0][2]=c2_gperm1;
-	loop_s[1][0]=c0_gperm2;loop_s[1][1]=c1_gperm2;loop_s[1][2]=c2_gperm2;
-	loop_s[2][0]=c0_gperm3;loop_s[2][1]=c1_gperm3;loop_s[2][2]=c2_gperm3;
-	loop_s[3][0]=c0_gperm4;loop_s[3][1]=c1_gperm4;loop_s[3][2]=c2_gperm4;
-	
-	//=========================================
-
-	MPI_Gather(&nx_l,1,MPI_INT,nx_g,1,MPI_INT,0,MPI_COMM_WORLD);
-
-	
-	
-	if (rank==0)
-		{
-		disp[0]=0;
-	
-		for (int i=1;i<mpi_size;i++)
-			disp[i]=disp[i-1]+nx_g[i-1];
-		
-		}
-
-	MPI_Bcast(disp,mpi_size,MPI_INT,0,MPI_COMM_WORLD);
-
-
-
-	double *rbuf;
-	int *rbuf_p;
-	rbuf=new double[mpi_size*3];
-	rbuf_p=new int[mpi_size];
-	double Perm[3];
-	double error;
-	double Q[3]={0.0,0.0,0.0};
-
-	double dp;
-	if (in_BC==0)
-	        dp=0;
-	else
-	switch(PerDIr)
-		{
-		case 1:
-			dp=abs(p_xp-p_xn)*c_s2/(NX+1)/dx;break;
-		case 2:
-			dp=abs(p_yp-p_yn)*c_s2/(NY+1)/dx;break;
-		case 3:
-			dp=abs(p_zp-p_zn)*c_s2/(NZ+1)/dx;break;
-		default:
-			dp=abs(p_xp-p_xn)*c_s2/(NX+1)/dx;
-		}
-
-ostringstream name;
-for (int divi=0;divi<4;divi++)	
-{
-
-if (rank==0)
-{
-name.str(""); 
-name<<File<<"Perm_"<<loop_size[divi]<<".output";
-	
-//-----------------------------------------	 
-//	ifstream fin;
-//	fin.open(name.str().c_str());
-//	
-  //      	for(int i=1;i<=Count;i++)
-    //    	        fin >> rho[i];
-  
-      // fin.close();
-
-//ofstream out;
-//	out.open(name.str().c_str());
-
-ofstream fin(name.str().c_str(),ios::out);
-fin.close();
-//ofstream fin(FileName,ios::app);
-//----------------------------------------------------
-}
-
-
-vol_g=loop_size[divi]*loop_size[divi]*loop_size[divi];
-
-
-for (int in_x=0;in_x<loop[divi];in_x++)
-for (int in_y=0;in_y<loop[divi];in_y++)
-for (int in_z=0;in_z<loop[divi];in_z++)
-
-{
-	
-	per_xn1=loop_s[divi][0]+in_x*loop_size[divi];
-	per_yn1=loop_s[divi][1]+in_y*loop_size[divi];
-	per_zn1=loop_s[divi][2]+in_z*loop_size[divi];
-
-	per_xp1=loop_s[divi][0]+in_x*loop_size[divi]+loop_size[divi]-1;
-	per_yp1=loop_s[divi][1]+in_y*loop_size[divi]+loop_size[divi]-1;
-	per_zp1=loop_s[divi][2]+in_z*loop_size[divi]+loop_size[divi]-1;
-
-
-	por_loc=0;
-	Q[0]=0;Q[1]=0;Q[2]=0;
-	for (int i=1;i<=Count;i++)
-	{
-		si=(int)(SupInv[i]/((NY+1)*(NZ+1)));
-		sj=(int)((SupInv[i]%((NY+1)*(NZ+1)))/(NZ+1));
-		sm=(int)(SupInv[i]%(NZ+1)); 
-		si+=disp[rank];
-		
-
-		if ((si>=per_xn1) and (si<=per_xp1) and (sj>=per_yn1) and (sj<=per_yp1) and (sm>=per_zn1) and (sm<=per_zp1))
-		{
-	        Q[0]+=u[i][0];
-		Q[1]+=u[i][1];
-		Q[2]+=u[i][2];
-		por_loc+=1;
-		}
-
-
-	}
-	
-	
-		
-
-
-	MPI_Barrier(MPI_COMM_WORLD);
-
-	MPI_Gather(&por_loc,1,MPI_INT,rbuf_p,1,MPI_INT,0,MPI_COMM_WORLD);
-	MPI_Gather(&Q,3,MPI_DOUBLE,rbuf,3,MPI_DOUBLE,0,MPI_COMM_WORLD);
-	
-	if (rank==0)
-		{
-		Q[0]=0;Q[1]=0;Q[2]=0;por_loc=0;
-		for (int i=0;i<mpi_size;i++)
-			{
-			Q[0]+=rbuf[i*3+0];
-			Q[1]+=rbuf[i*3+1];
-			Q[2]+=rbuf[i*3+2];
-			por_loc+=rbuf_p[i];
-			}
-
-	
-		Perm[0]=Q[0]/(vol_g)*(in_vis)/(gx+dp);
-		Perm[1]=Q[1]/(vol_g)*(in_vis)/(gy+dp);
-		Perm[2]=Q[2]/(vol_g)*(in_vis)/(gz+dp);
-		
-		
-
-		}
-	MPI_Barrier(MPI_COMM_WORLD);
-
-
-	//================INDICATED PERMEABILITY CALCULATION DIRECTION HERE!!!!!====================
-	if (rank==0)
-	{
-	ofstream fin(name.str().c_str(),ios::app);
-	switch(PerDIr)
-		{
-		case 1:
-			fin<<Perm[0]*reso*reso*1000<<" "<< (double)por_loc/vol_g <<endl;break;
-		case 2:
-			fin<<Perm[1]*reso*reso*1000<<" "<< (double)por_loc/vol_g <<endl;break;
-		case 3:
-			fin<<Perm[2]*reso*reso*1000<<" "<< (double)por_loc/vol_g <<endl;break;
-		default:
-			fin<<Perm[0]*reso*reso*1000<<" "<< (double)por_loc/vol_g <<endl;break;
-		}
-	//fin<<Perm[0]*reso*reso*1000<<" "<< (double)por_loc/vol_g <<endl;
-	fin.close();
-	}
-
-
-
-	}
-}
-	
-	delete [] rbuf;
-	delete [] rbuf_p;
-	
-	
-	
 
 }
 
