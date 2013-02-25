@@ -139,7 +139,7 @@ void Comput_MI(double[19][19], double[19][19]);
 
 int inverse(mat &a);
 
-double feq(int,double, double[3]);
+inline double feq(int,double, double[3]);
 
 void Suppliment(int*,int***);
 
@@ -1372,7 +1372,7 @@ void init(double* rho, double** u, double** f,int*** Solid)
 }
 
 
-double feq(int k,double rho, double u[3])
+inline double feq(int k,double rho, double u[3])
 {
 	double eu,uv,feq;
         double c2,c4;

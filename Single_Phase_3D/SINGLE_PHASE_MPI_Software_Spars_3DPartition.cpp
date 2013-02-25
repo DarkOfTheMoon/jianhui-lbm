@@ -139,7 +139,7 @@ void Comput_MI(double[19][19], double[19][19]);
 
 int inverse(mat &a);
 
-double feq(int,double, double[3]);
+inline double feq(int,double, double[3]);
 
 void Suppliment(int*,int***);
 
