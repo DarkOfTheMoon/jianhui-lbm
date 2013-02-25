@@ -127,7 +127,7 @@ void output_velocity_b(int ,double* ,double** ,int ,int ,int ,int ,int*** );
 
 void output_density_b(int ,double* ,int ,int ,int ,int ,int*** );	
 
-void Geometry_b(int*** );
+void Geometry_Par(int*** );
 
 void Backup(int ,double* ,double**, double**);
 
@@ -316,13 +316,10 @@ int tse,the,tme;
 							fin.getline(dummy, NCHAR);
 	fin >> fre_backup;                        	fin.getline(dummy, NCHAR);
 	fin >>mode_backup_ini;                		fin.getline(dummy, NCHAR);
-//	fin >> backup_rho;                   		fin.getline(dummy, NCHAR);
-//	fin >> backup_velocity;                		fin.getline(dummy, NCHAR);
-//	fin >> backup_f;                        	fin.getline(dummy, NCHAR);
+
 	fin >> vel_sol;                                	fin.getline(dummy, NCHAR);
 	
-	//fin >> EI;					fin.getline(dummy, NCHAR);
-	//fin >> q_p;					fin.getline(dummy, NCHAR);
+
 	fin.getline(dummy, NCHAR);
 	fin >> gperm;					fin.getline(dummy, NCHAR);
 	fin >> n_gperm1>>n_gperm2>>n_gperm3>>n_gperm4;	fin.getline(dummy, NCHAR);
@@ -504,9 +501,9 @@ if (mirZ==1)
 	if ((freVe>=0) or (freDe>=0))
 	{
 	if (Out_Mode==1)
+		Geometry_Par(Solid);
+	
 		Geometry(Solid);
-	else
-		Geometry_b(Solid);
 	}
 	
 	
@@ -560,72 +557,7 @@ if (wr_per==1)
 	fins.open(FileName4,ios::out);
 	fins.close();
 
-//======================================================================
-//=================MPI TRANSFER INITIALIZATION=================================
-//cout<<mpi_size<<"          "<<"@@@@@@@@@@@@@@@@@@@@@"<<endl;
-/* 		Gcl = new int[mpi_size];
-  		Gcr = new int[mpi_size];
-  		
- 		MPI_Gather(&cl,1,MPI_INT,Gcl,1,MPI_INT,0,MPI_COMM_WORLD);
-  		MPI_Bcast(Gcl,mpi_size,MPI_INT,0,MPI_COMM_WORLD);
 
-  		MPI_Gather(&cr,1,MPI_INT,Gcr,1,MPI_INT,0,MPI_COMM_WORLD);
-  		MPI_Bcast(Gcr,mpi_size,MPI_INT,0,MPI_COMM_WORLD);
-
-  	//double* sendl;
-	//double* sendr;
-
-	recvl= new double[Gcl[rank]*5];
-	recvr = new double[Gcr[rank]*5];
-
-	if (rank==0)
-		{
-		sendl = new double[Gcr[mpi_size-1]*5];
-		sendr = new double[Gcl[rank+1]*5];
-		
-		
-		for (int ka=0;ka<Gcr[mpi_size-1]*5;ka++)
-		                sendl[ka]=0;
-		                
-		 for (int ka=0;ka<Gcl[rank+1]*5;ka++)
-		                sendr[ka]=0;
-		                
-		      
-		
-		
-		}	
-		else
-		if (rank==mpi_size-1)
-			{
-			
-			sendl = new double[Gcr[rank-1]*5];
-			sendr = new double[Gcl[0]*5];
-			for (int ka=0;ka<Gcr[rank-1]*5;ka++)
-		                sendl[ka]=0;
-		                
-		        for (int ka=0;ka<Gcl[0]*5;ka++)
-		                sendr[ka]=0;
-
-			
-			}
-			else
-			{
-	
-			sendl = new double[Gcr[rank-1]*5];
-			sendr = new double[Gcl[rank+1]*5];
-			
-			for (int ka=0;ka<Gcr[rank-1]*5;ka++)
-		                sendl[ka]=0;
-	
-		        for (int ka=0;ka<Gcl[rank+1]*5;ka++)
-		                sendr[ka]=0;
-		
-
-			}
- //=====================================================================
- */
-
- 
  
 	for(n=0;n<=n_max;n++)
 	{
@@ -661,7 +593,6 @@ if (wr_per==1)
 			 fin<<"The"<<n-freRe<<"th computation result:"<<endl;
 			fin<<"The permiability is: "<<Permia[0]*reso*reso*1000<<", "<<Permia[1]*reso*reso*1000<<", "<<Permia[2]*reso*reso*1000<<endl;
 			fin<<"The relative error of permiability computing is: "<<error_perm<<endl;	
-			fin<<"The LOCAL permiability is: "<<Permia_LOCAL[0]*reso*reso*1000<<", "<<Permia_LOCAL[1]*reso*reso*1000<<", "<<Permia_LOCAL[2]*reso*reso*1000<<endl;
 			fin<<"The Maximum velocity is: "<<setprecision(6)<<u_max<<"   Re="<<Re<<"     Courant Number="<<u_max*dt/dx<<endl;
 			fin<<"The max relative error of velocity is: "
 				<<setiosflags(ios::scientific)<<error<<endl;
@@ -673,12 +604,10 @@ if (wr_per==1)
 
 			 error=Error(u,u0,&u_max,&u_ave);if (u_max>=10.0)	U_max_ref+=1;
 			error_perm=Comput_Perm(u,Permia,PerDir,SupInv); 
-			if (loc_perm==1)
-			Comput_Perm_LOCAL(u,Permia_LOCAL,PerDir);
 			
 			
-			if ((gperm>0) and (n%gperm==0))
-			Comput_Grop_Perm(u,Permia,PerDir,SupInv);
+			
+			
 			
 			
 			 if (rank==0)
@@ -702,7 +631,7 @@ if (wr_per==1)
 			fin<<"The"<<n<<"th computation result:"<<endl;
 		//=============================================================================================
 			fin<<"The permiability is: "<<Permia[0]*reso*reso*1000<<", "<<Permia[1]*reso*reso*1000<<", "<<Permia[2]*reso*reso*1000<<endl;
-			fin<<"The LOCAL permiability is: "<<Permia_LOCAL[0]*reso*reso*1000<<", "<<Permia_LOCAL[1]*reso*reso*1000<<", "<<Permia_LOCAL[2]*reso*reso*1000<<endl;
+			
 			fin<<"The relative error of permiability computing is: "<<error_perm<<endl;
 		//==============================================================================================
 
@@ -725,13 +654,13 @@ if (wr_per==1)
 			switch(PerDir)
 				{
 				case 1:
-				finfs<<Permia[0]*reso*reso*1000<<" "<<error_perm<<" "<<Permia_LOCAL[0]*reso*reso*1000<<endl;break;
+				finfs<<Permia[0]*reso*reso*1000<<" "<<error_perm<<" "<<endl;break;
 				case 2:
-				finfs<<Permia[1]*reso*reso*1000<<" "<<error_perm<<" "<<Permia_LOCAL[1]*reso*reso*1000<<endl;break;
+				finfs<<Permia[1]*reso*reso*1000<<" "<<error_perm<<" "<<endl;break;
 				case 3:
-				finfs<<Permia[2]*reso*reso*1000<<" "<<error_perm<<" "<<Permia_LOCAL[2]*reso*reso*1000<<endl;break;
+				finfs<<Permia[2]*reso*reso*1000<<" "<<error_perm<<" "<<endl;break;
 				default:
-				finfs<<Permia[0]*reso*reso*1000<<" "<<error_perm<<" "<<Permia_LOCAL[0]*reso*reso*1000<<endl;break;
+				finfs<<Permia[0]*reso*reso*1000<<" "<<error_perm<<" "<<endl;break;
 				}
 			finfs.close();
 			}
@@ -750,7 +679,7 @@ if (wr_per==1)
 				<<rho[(int)Count/2]<<endl;
 		//=============================================================================================
 			cout<<"The permiability is: "<<Permia[0]*reso*reso*1000<<", "<<Permia[1]*reso*reso*1000<<", "<<Permia[2]*reso*reso*1000<<endl;
-			cout<<"The LOCAL permiability is: "<<Permia_LOCAL[0]*reso*reso*1000<<", "<<Permia_LOCAL[1]*reso*reso*1000<<", "<<Permia_LOCAL[2]*reso*reso*1000<<endl;
+	
 			cout<<"The relative error of permiability computing is: "<<error_perm<<endl;
 		//==============================================================================================
 
@@ -767,17 +696,15 @@ if (wr_per==1)
 			cout<<endl;
 			}
 			
-			if ((freDe>0) and (n%freDe==0))
-				if (Out_Mode==1)
-					output_density(n,rho,mirX,mirY,mirZ,mir,Solid);
-				else
-					output_density_b(n,rho,mirX,mirY,mirZ,mir,Solid);
 
+			
+			if ((freDe>0) and (n%freDe==0))
+					output_density(n,rho,mirX,mirY,mirZ,mir,Solid);
+				
+			
 			if ((freVe>0) and (n%freVe==0))
-				if (Out_Mode==1)
 					output_velocity(n,rho,u,mirX,mirY,mirZ,mir,Solid);
-				else
-					output_velocity_b(n,rho,u,mirX,mirY,mirZ,mir,Solid);
+				
 				
 			if ((fre_backup>0) and (n%fre_backup==0) and (n>0))
 			        Backup(n,rho,u,f);
@@ -1038,10 +965,12 @@ void Parallelize_Geometry()
   
 
         MPI_Bcast(Solid_rank0,(NX+1)*(NY+1)*(NZ+1),MPI_INT,0,MPI_COMM_WORLD);
-        
-        for (int i=0;i<=NX;i++)
-                for (int j=0;j<=NY;j++)
-	                for (int k=0;k<=NZ;k++)
+
+
+        for (int k=0;k<=NZ;k++)
+		for (int j=0;j<=NY;j++)
+        		for (int i=0;i<=NX;i++)
+                
 			{
 	                Solid[i][j][k]=Solid_rank0[i*(NY+1)*(NZ+1)+j*(NZ+1)+k];
 			if (Solid[i][j][k]>0) porosity+=1.0;
@@ -3558,53 +3487,11 @@ for(int i=1; i<Count; i++)
 
 void Geometry(int*** Solid)	
 {	
+	
 	int rank = MPI :: COMM_WORLD . Get_rank ();
-	int mpi_size=MPI :: COMM_WORLD . Get_size ();
-	MPI_Status status;
-	MPI_Request request;
-	
-	const int root_rank=0;
-
-	int* send;
-	int* rece;
-	
-	int nx_g[mpi_size];
-	int disp[mpi_size];
-
-	
-	MPI_Gather(&nx_l,1,MPI_INT,nx_g,1,MPI_INT,root_rank,MPI_COMM_WORLD);
-	
-	if (rank==root_rank)
-		{
-		disp[0]=0;
-	
-		for (int i=1;i<mpi_size;i++)
-			disp[i]=disp[i-1]+nx_g[i-1];
-		}
-
-	
-	MPI_Bcast(&disp,mpi_size,MPI_INT,0,MPI_COMM_WORLD);
-	
-	
-	
-	int NX0=NX+1;
-	int NY0=NY+1;
-	int NZ0=NZ+1;
-
-if (mir==0)
-	{	
-	if (mirX==1)
-		NX0=NX0/2;
-	if (mirY==1)
-		NY0=NY0/2;
-	if (mirZ==1)
-		NZ0=NZ0/2;
-	}
-
-
 	ostringstream name;
 	name<<outputfile<<"LBM_Geometry"<<".vtk";
-	if (rank==root_rank)
+	if (rank==0)
 	{
 
 	ofstream out;
@@ -3613,137 +3500,120 @@ if (mir==0)
 	out<<"J.Yang Lattice Boltzmann Simulation 3D Single Phase-Solid-Geometry"<<endl;
 	out<<"ASCII"<<endl;
 	out<<"DATASET STRUCTURED_POINTS"<<endl;
-	out<<"DIMENSIONS         "<<NZ0<<"         "<<NY0<<"         "<<NX0<<endl;
+	out<<"DIMENSIONS         "<<NX+1<<"         "<<NY+1<<"         "<<NZ+1<<endl;
 	out<<"ORIGIN 0 0 0"<<endl;
 	out<<"SPACING 1 1 1"<<endl;
-	out<<"POINT_DATA     "<<NX0*NY0*NZ0<<endl;
+	out<<"POINT_DATA     "<<(NX+1)*(NY+1)*(NZ+1)<<endl;
 	out<<"SCALARS sample_scalars float"<<endl;
 	out<<"LOOKUP_TABLE default"<<endl;
-	out.close();
-	}
+
 	
-	
-	send = new int[nx_l*NY0*NZ0];
-	for (int i=0;i<nx_l;i++)
-		for (int j=0;j<NY0;j++)
-			for (int k=0;k<NZ0;k++)
-			send[i*NY0*NZ0+j*NZ0+k]=Solid[i][j][k];
-		
-	
-	if (rank==0)
-	{
-	ofstream out(name.str().c_str(),ios::app);
-	for(int i=0;i<nx_l;i++)
-        	for(int j=0; j<NY0; j++)
-			for(int k=0;k<NZ0;k++)
-			if (Solid[i][j][k]<=0)
-				out<<1<<endl;
+
+	for(int k=0;k<NZ+1;k++)
+		for(int j=0; j<NY+1; j++)
+			for(int i=0;i<NX+1;i++)
+			if (Solid[i][j][k]>0)
+				out<<0<<" ";
 			else
-				out<<0<<endl;
+				out<<1<<" ";
+
+
 	out.close();
 	}
-	
 	MPI_Barrier(MPI_COMM_WORLD);
 	
-	for (int processor=1;processor<mpi_size;processor++)
-	{	
-		
-		if (rank==0)
-			rece = new int[nx_g[processor]*NY0*NZ0];
-		
-		
-		MPI_Barrier(MPI_COMM_WORLD);
-		if (rank==processor)
-			MPI_Isend(send,nx_l*NY0*NZ0,MPI_INT,0,processor,MPI_COMM_WORLD,&request);
-			
-		
-		
-		if (rank==0)
-			MPI_Irecv(rece,nx_g[processor]*NY0*NZ0,MPI_INT,processor,processor,MPI_COMM_WORLD,&request);
-		
-		
-		if ((rank==0) or (rank==processor))
-			MPI_Wait(&request,&status);
-			
-		
-		if (rank==0)
-		{
-		ofstream out(name.str().c_str(),ios::app);
-		
-		for(int i=0;i<nx_g[processor];i++)
-			if (i+disp[processor]<NX0)
-        		for(int j=0; j<NY0; j++)
-				for(int k=0;k<NZ0;k++)
-
-				{
-				if (rece[i*NY0*NZ0+j*NZ0+k]<=0)
-					out<<1<<endl;
-				else
-					out<<0<<endl;
-				}
 	
-		out.close();
-		}
-		
-		
-		if (rank==0)
-			delete [] rece;
-		
-	}
-
-	delete [] send;
 	
 	
 		
 }
 
 
+void Geometry_Par(int*** Solid)	
+{	
+	int rank = MPI :: COMM_WORLD . Get_rank ();
+	ostringstream name;
+	name<<outputfile<<"LBM_Geometry_Mesh"<<".vtk";
+	if (rank==0)
+	{
+
+	ofstream out;
+	out.open(name.str().c_str());
+	out<<"# vtk DataFile Version 2.0"<<endl;
+	out<<"J.Yang Lattice Boltzmann Simulation 3D Single Phase-Solid-Geometry"<<endl;
+	out<<"ASCII"<<endl;
+	out<<"DATASET STRUCTURED_POINTS"<<endl;
+	out<<"DIMENSIONS         "<<NX+1<<"         "<<NY+1<<"         "<<NZ+1<<endl;
+	out<<"ORIGIN 0 0 0"<<endl;
+	out<<"SPACING 1 1 1"<<endl;
+	out<<"POINT_DATA     "<<(NX+1)*(NY+1)*(NZ+1)<<endl;
+	out<<"SCALARS sample_scalars float"<<endl;
+	out<<"LOOKUP_TABLE default"<<endl;
+
+	
+
+	for(int k=0;k<NZ+1;k++)
+		for(int j=0; j<NY+1; j++)
+			for(int i=0;i<NX+1;i++)
+			out<<Solid[i][j][k]<<" ";
+
+
+	out.close();
+	}
+	MPI_Barrier(MPI_COMM_WORLD);
+	
+	
+}
 
 
 void output_velocity(int m,double* rho,double** u,int MirX,int MirY,int MirZ,int mir,int*** Solid)	
 {
-
+	
 	int rank = MPI :: COMM_WORLD . Get_rank ();
 	const int mpi_size=MPI :: COMM_WORLD . Get_size ();
+	int procind=rank+1;
+	int procn=mpi_size;
+
+	int tmpsum[mpi_size];
+	for (int i=0;i<mpi_size;i++)
+		tmpsum[i]=3;	
+
 	const int root_rank=0;
 	
-	int nx_g[mpi_size];
-	int disp[mpi_size];
-	        
+	double rho_0=1.0;
+	
+	
 	MPI_Status status;
 	MPI_Request request;
 
-	double* send;
-	double* rece;
-	
-	
-	MPI_Gather(&nx_l,1,MPI_INT,nx_g,1,MPI_INT,root_rank,MPI_COMM_WORLD);
-	
-	
-	if (rank==root_rank)
-		{
-		disp[0]=0;
+	double* rbuf_v;
 
+
+
+	int nx_g[mpi_size];
+	int disp[mpi_size];
+	
+	for (int i=0;i<mpi_size;i++)
+		nx_g[i]=(sumss[i+1]+1)*3;
+
+
+	
+
+		disp[0]=0;
+	
 		for (int i=1;i<mpi_size;i++)
 			disp[i]=disp[i-1]+nx_g[i-1];
-		}
+		
 	
+	if (rank==root_rank)
+		rbuf_v = new double[disp[mpi_size-1]+nx_g[mpi_size-1]];
 
 	
-
 	int NX0=NX+1;
 	int NY0=NY+1;
 	int NZ0=NZ+1;
+	MPI_Gatherv(u[0],nx_g[rank],MPI_DOUBLE,rbuf_v,nx_g,disp,MPI_DOUBLE,root_rank,MPI_COMM_WORLD);
 
-if (mir==0)
-	{	
-	if (MirX==1)
-		NX0=NX0/2;
-	if (MirY==1)
-		NY0=NY0/2;
-	if (MirZ==1)
-		NZ0=NZ0/2;
-	}
 
 
 	ostringstream name;
@@ -3757,7 +3627,7 @@ if (mir==0)
 	out<<"J.Yang Lattice Boltzmann Simulation 3D Single Phase-Velocity"<<endl;
 	out<<"ASCII"<<endl;
 	out<<"DATASET STRUCTURED_POINTS"<<endl;
-	out<<"DIMENSIONS         "<<NZ0<<"         "<<NY0<<"         "<<NX0<<endl;
+	out<<"DIMENSIONS         "<<NX0<<"         "<<NY0<<"         "<<NZ0<<endl;
 	out<<"ORIGIN 0 0 0"<<endl;
 	out<<"SPACING 1 1 1"<<endl;
 
@@ -3765,111 +3635,26 @@ if (mir==0)
 	out<<"VECTORS sample_vectors double"<<endl;
 	out<<endl;
 
-	out.close();
-	}
-
-
-	send = new double[nx_l*NY0*NZ0*3];
-	for (int i=0;i<nx_l;i++)
-		for (int j=0;j<NY0;j++)
-			for (int k=0;k<NZ0;k++)
-			if (Solid[i][j][k]>0)
-			{
-			send[i*NY0*NZ0*3+j*NZ0*3+k*3]=u[Solid[i][j][k]][0];
-			send[i*NY0*NZ0*3+j*NZ0*3+k*3+1]=u[Solid[i][j][k]][1];
-			send[i*NY0*NZ0*3+j*NZ0*3+k*3+2]=u[Solid[i][j][k]][2];
-			}
+	for(int k=0 ; k<NZ0 ; k++)			
+	         for(int j=0 ; j<NY0 ; j++)
+	                for(int i=0 ; i<NX0 ; i++)
+			if (Solid[i][j][k]==0)
+				out<<0<<" "<<0<<" "<<0<<endl;
 			else
-			        {
-			        send[i*NY0*NZ0*3+j*NZ0*3+k*3]=0.0;
-			        send[i*NY0*NZ0*3+j*NZ0*3+k*3+1]=0.0;
-			        send[i*NY0*NZ0*3+j*NZ0*3+k*3+2]=0.0;        
-			        }
-			        
-			        
+				{
+				out<<rbuf_v[disp[Solid[i][j][k]-1]+tmpsum[Solid[i][j][k]-1]]<<" ";
+				out<<rbuf_v[disp[Solid[i][j][k]-1]+tmpsum[Solid[i][j][k]-1]+1]<<" ";
+				out<<rbuf_v[disp[Solid[i][j][k]-1]+tmpsum[Solid[i][j][k]-1]+2]<<endl;
+				tmpsum[Solid[i][j][k]-1]+=3;
+				}
 	
-			        
-	
-	if (rank==0)
-	{
-	ofstream out(name.str().c_str(),ios::app);
-	for(int i=0;i<nx_l;i++)
-        	for(int j=0; j<NY0; j++)
-			for(int k=0;k<NZ0;k++)
-			if (Solid[i][j][k]>0)
-				out<<u[Solid[i][j][k]][2]<<" "<<u[Solid[i][j][k]][1]<<" "<<u[Solid[i][j][k]][0]<<endl;
-			else
-				out<<0.0<<" "<<0.0<<" "<<0.0<<endl;
-			
 	out.close();
+
 	}
+        MPI_Barrier(MPI_COMM_WORLD);
 	
-	MPI_Barrier(MPI_COMM_WORLD);
-	
-	for (int processor=1;processor<mpi_size;processor++)
-	{	
-		
-		if (rank==0)
-			rece = new double[nx_g[processor]*NY0*NZ0*3];
-		
-		
-		MPI_Barrier(MPI_COMM_WORLD);
-		if (rank==processor)
-			MPI_Isend(send,nx_l*NY0*NZ0*3,MPI_DOUBLE,0,processor,MPI_COMM_WORLD,&request);
-		
-		
-		
-		if (rank==0)
-		{
-		        
-			MPI_Irecv(rece,nx_g[processor]*NY0*NZ0*3,MPI_DOUBLE,processor,processor,MPI_COMM_WORLD,&request);
-		}
-		
-		if ((rank==0) or (rank==processor))
-			MPI_Wait(&request,&status);
-			
-		MPI_Barrier(MPI_COMM_WORLD);
-		
-		if (rank==0)
-		{
-		ofstream out(name.str().c_str(),ios::app);
-		
-		for(int i=0;i<nx_g[processor];i++)
-			if (i+disp[processor]<NX0)
-        		for(int j=0; j<NY0; j++)
-				for(int k=0;k<NZ0;k++)
-				out<<rece[i*NY0*NZ0*3+j*NZ0*3+k*3+2]<<" "<<rece[i*NY0*NZ0*3+j*NZ0*3+k*3+1]<<" "<<rece[i*NY0*NZ0*3+j*NZ0*3+k*3]<<endl;	
-
-		
-		out.close();
-		}
-		
-		
-		if (rank==0)
-			delete [] rece;
-		
-	}
-
-	delete [] send;
-	
-
-	
-/*	ostringstream name2;
-	name2<<"LBM_velocity_"<<m<<".out";
-	ofstream out2(name2.str().c_str());
-	for (int j=0;j<=NY;j++)
-		{
-		if (Solid[1][j][1]>0)
-			out2<<u[Solid[2][j][1]][0]<<endl;
-		else
-			out2<<0.0<<endl;
-		}
-*/
-	
-	
-
-	
-
+	if (rank==root_rank)
+	delete [] rbuf_v;
 		
 }
 
@@ -3879,6 +3664,13 @@ void output_density(int m,double* rho,int MirX,int MirY,int MirZ,int mir,int*** 
 
 	int rank = MPI :: COMM_WORLD . Get_rank ();
 	const int mpi_size=MPI :: COMM_WORLD . Get_size ();
+	int procind=rank+1;
+	int procn=mpi_size;
+
+	int tmpsum[mpi_size];
+	for (int i=0;i<mpi_size;i++)
+		tmpsum[i]=1;	
+
 	const int root_rank=0;
 	
 	double rho_0=1.0;
@@ -3887,39 +3679,36 @@ void output_density(int m,double* rho,int MirX,int MirY,int MirZ,int mir,int*** 
 	MPI_Status status;
 	MPI_Request request;
 
-	double* send;
-	double* rece;
+	double* rbuf_v;
+
+
 
 	int nx_g[mpi_size];
 	int disp[mpi_size];
+	
+	for (int i=0;i<mpi_size;i++)
+		nx_g[i]=sumss[i+1]+1;
+
 
 	
-	MPI_Gather(&nx_l,1,MPI_INT,nx_g,1,MPI_INT,root_rank,MPI_COMM_WORLD);
-	
-	
-	if (rank==root_rank)
-		{
+
 		disp[0]=0;
 	
 		for (int i=1;i<mpi_size;i++)
 			disp[i]=disp[i-1]+nx_g[i-1];
-		}
+		
 	
+	if (rank==root_rank)
+		rbuf_v = new double[disp[mpi_size-1]+nx_g[mpi_size-1]];
 
 	
 	int NX0=NX+1;
 	int NY0=NY+1;
 	int NZ0=NZ+1;
+	MPI_Gatherv(rho,nx_g[rank],MPI_DOUBLE,rbuf_v,nx_g,disp,MPI_DOUBLE,root_rank,MPI_COMM_WORLD);
 
-	if (mir==0)
-	{	
-	if (MirX==1)
-		NX0=NX0/2;
-	if (MirY==1)
-		NY0=NY0/2;
-	if (MirZ==1)
-		NZ0=NZ0/2;
-	}
+
+
 
 	ostringstream name;
 	name<<outputfile<<"LBM_Density_"<<m<<".vtk";
@@ -3931,427 +3720,32 @@ void output_density(int m,double* rho,int MirX,int MirY,int MirZ,int mir,int*** 
 	out<<"J.Yang Lattice Boltzmann Simulation 3D Single Phase-Solid-Density"<<endl;
 	out<<"ASCII"<<endl;
 	out<<"DATASET STRUCTURED_POINTS"<<endl;
-	out<<"DIMENSIONS         "<<NZ0<<"         "<<NY0<<"         "<<NX0<<endl;
-	out<<"ORIGIN 0 0 0"<<endl;
-	out<<"SPACING 1 1 1"<<endl;
-	out<<"POINT_DATA     "<<NX0*NY0*NZ0<<endl;
-	out<<"SCALARS sample_scalars float"<<endl;
-	out<<"LOOKUP_TABLE default"<<endl;
-	out.close();
-
-	}
-        
-	send = new double[nx_l*NY0*NZ0];
-	for (int i=0;i<nx_l;i++)
-		for (int j=0;j<NY0;j++)
-			for (int k=0;k<NZ0;k++)
-			if (Solid[i][j][k]>0)
-			send[i*NY0*NZ0+j*NZ0+k]=rho[Solid[i][j][k]];
-			else
-			send[i*NY0*NZ0+j*NZ0+k]=rho_0;
-		
-		
-		
-	if (rank==0)
-	{
-	ofstream out(name.str().c_str(),ios::app);
-	for(int i=0;i<nx_l;i++)
-        	for(int j=0; j<NY0; j++)
-			for(int k=0;k<NZ0;k++)
-			if (Solid[i][j][k]>0)
-				out<<rho[Solid[i][j][k]]<<endl;
-			else
-				out<<rho_0<<endl;
-			
-	out.close();
-	}
-	
-	MPI_Barrier(MPI_COMM_WORLD);
-	
-	for (int processor=1;processor<mpi_size;processor++)
-	{	
-		
-		if (rank==0)
-			rece = new double[nx_g[processor]*NY0*NZ0];
-		
-		
-		MPI_Barrier(MPI_COMM_WORLD);
-		if (rank==processor)
-			MPI_Isend(send,nx_l*NY0*NZ0,MPI_DOUBLE,0,processor,MPI_COMM_WORLD,&request);
-		
-		
-		
-		if (rank==0)
-		{
-		        
-			MPI_Irecv(rece,nx_g[processor]*NY0*NZ0,MPI_DOUBLE,processor,processor,MPI_COMM_WORLD,&request);
-		}
-		
-		if ((rank==0) or (rank==processor))
-			MPI_Wait(&request,&status);
-			
-		MPI_Barrier(MPI_COMM_WORLD);
-		
-		if (rank==0)
-		{
-		ofstream out(name.str().c_str(),ios::app);
-		
-		for(int i=0;i<nx_g[processor];i++)
-			if (i+disp[processor]<NX0)
-        		for(int j=0; j<NY0; j++)
-				for(int k=0;k<NZ0;k++)
-				out<<rece[i*NY0*NZ0+j*NZ0+k]<<endl;	
-
-		
-		out.close();
-		}
-		
-		
-		if (rank==0)
-			delete [] rece;
-		
-	}
-
-	delete [] send;
-
-}
-
-void Geometry_b(int*** Solid)	
-{	
-	int rank = MPI :: COMM_WORLD . Get_rank ();
-	int mpi_size=MPI :: COMM_WORLD . Get_size ();
-
-	const int root_rank=0;
-
-	
-	int* nx_g = new int[mpi_size];
-	int* disp = new int[mpi_size];
-
-	
-	MPI_Gather(&nx_l,1,MPI_INT,nx_g,1,MPI_INT,root_rank,MPI_COMM_WORLD);
-	
-	
-	if (rank==root_rank)
-		{
-		disp[0]=0;
-		for (int i=0;i<mpi_size;i++)
-			nx_g[i]*=(NY+1)*(NZ+1);
-
-		for (int i=1;i<mpi_size;i++)
-			disp[i]=disp[i-1]+nx_g[i-1];
-		}
-
-
-		
-	
-	int* Solid_storage= new int[nx_l*(NY+1)*(NZ+1)];
-	int* rbuf;
-
-	for(int i=0;i<nx_l;i++)
-		for(int j=0;j<=NY;j++)
-			for(int k=0;k<=NZ;k++)
-			if (Solid[i][j][k]<=0)
-				Solid_storage[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]=1;
-			else
-				Solid_storage[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]=0;
-
-	if (rank==root_rank)
-		rbuf= new int[(NX+1)*(NY+1)*(NZ+1)];
-	
-	//MPI_Barrier(MPI_COMM_WORLD);
-	MPI_Gatherv(Solid_storage,nx_l*(NY+1)*(NZ+1),MPI_INT,rbuf,nx_g,disp,MPI_INT,root_rank,MPI_COMM_WORLD);
-	
-	int NX0=NX+1;
-	int NY0=NY+1;
-	int NZ0=NZ+1;
-
-if (mir==0)
-	{	
-	if (mirX==1)
-		NX0=NX0/2;
-	if (mirY==1)
-		NY0=NY0/2;
-	if (mirZ==1)
-		NZ0=NZ0/2;
-	}
-
-
-
-	if (rank==root_rank)
-	{
-	ostringstream name;
-	name<<outputfile<<"LBM_Geometry"<<".vtk";
-	ofstream out;
-	out.open(name.str().c_str());
-	out<<"# vtk DataFile Version 2.0"<<endl;
-	out<<"J.Yang Lattice Boltzmann Simulation 3D Single Phase-Solid-Geometry"<<endl;
-	out<<"ASCII"<<endl;
-	out<<"DATASET STRUCTURED_POINTS"<<endl;
 	out<<"DIMENSIONS         "<<NX0<<"         "<<NY0<<"         "<<NZ0<<endl;
 	out<<"ORIGIN 0 0 0"<<endl;
 	out<<"SPACING 1 1 1"<<endl;
 	out<<"POINT_DATA     "<<NX0*NY0*NZ0<<endl;
 	out<<"SCALARS sample_scalars float"<<endl;
 	out<<"LOOKUP_TABLE default"<<endl;
-for(int k=0;k<NZ0;k++)
-        for(int j=0; j<NY0; j++)
-		for(int i=0;i<NX0;i++)
-			//for(int k=0;k<=NZ;k++)
-			out<<rbuf[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]<<endl;
-	out.close();
-	
-	}
-		
-	delete [] Solid_storage;
-	if (rank==root_rank)
-		delete [] rbuf;
 
-	delete [] nx_g;
-	delete [] disp;
-
-		
-}
-
-
-void output_velocity_b(int m,double* rho,double** u,int MirX,int MirY,int MirZ,int mir,int*** Solid)	
-{
-
-	int rank = MPI :: COMM_WORLD . Get_rank ();
-	const int mpi_size=MPI :: COMM_WORLD . Get_size ();
-	const int root_rank=0;
-	
-	int* nx_g = new int[mpi_size];
-	int* disp = new int[mpi_size];
-
-	
-	MPI_Gather(&nx_l,1,MPI_INT,nx_g,1,MPI_INT,root_rank,MPI_COMM_WORLD);
-	
-	
-	if (rank==root_rank)
-		{
-		disp[0]=0;
-		for (int i=0;i<mpi_size;i++)
-			nx_g[i]*=(NY+1)*(NZ+1)*3;
-
-		for (int i=1;i<mpi_size;i++)
-			disp[i]=disp[i-1]+nx_g[i-1];
-		}
-	
-
-	double* rbuf_v;
-	double* v_storage = new double[nx_l*(NY+1)*(NZ+1)*3];
-
-
-	for (int i=0;i<nx_l;i++)
-		for (int j=0;j<=NY;j++)
-			for(int k=0;k<=NZ;k++)
-			{
-			if (Solid[i][j][k]>0)
-				{
-				v_storage[i*(NY+1)*(NZ+1)*3+j*(NZ+1)*3+k*3]=u[Solid[i][j][k]][0];
-				v_storage[i*(NY+1)*(NZ+1)*3+j*(NZ+1)*3+k*3+1]=u[Solid[i][j][k]][1];
-				v_storage[i*(NY+1)*(NZ+1)*3+j*(NZ+1)*3+k*3+2]=u[Solid[i][j][k]][2];
-				}				
+	for(int k=0 ; k<NZ0 ; k++)			
+	         for(int j=0 ; j<NY0 ; j++)
+	                for(int i=0 ; i<NX0 ; i++)
+			if (Solid[i][j][k]==0)
+				out<<rho0<<" ";
 			else
 				{
-				v_storage[i*(NY+1)*(NZ+1)*3+j*(NZ+1)*3+k*3]=0;
-				v_storage[i*(NY+1)*(NZ+1)*3+j*(NZ+1)*3+k*3+1]=0;
-				v_storage[i*(NY+1)*(NZ+1)*3+j*(NZ+1)*3+k*3+2]=0;
+				out<<rbuf_v[disp[Solid[i][j][k]-1]+tmpsum[Solid[i][j][k]-1]]<<" ";
+				tmpsum[Solid[i][j][k]-1]++;
 				}
-			}
-
-	if (rank==root_rank)
-		rbuf_v= new double[(NX+1)*(NY+1)*(NZ+1)*3];
-
-
-	//MPI_Barrier(MPI_COMM_WORLD);
-	MPI_Gatherv(v_storage,nx_l*(NY+1)*(NZ+1)*3,MPI_DOUBLE,rbuf_v,nx_g,disp,MPI_DOUBLE,root_rank,MPI_COMM_WORLD);
-
-
-	int NX0=NX+1;
-	int NY0=NY+1;
-	int NZ0=NZ+1;
-
-if (mir==0)
-	{	
-	if (MirX==1)
-		NX0=NX0/2;
-	if (MirY==1)
-		NY0=NY0/2;
-	if (MirZ==1)
-		NZ0=NZ0/2;
-	}
-
-
-
-	if (rank==root_rank)
-	{
-	ostringstream name;
-	name<<outputfile<<"LBM_velocity_Vector_"<<m<<".vtk";
-	ofstream out;
-	out.open(name.str().c_str());
-	out<<"# vtk DataFile Version 2.0"<<endl;
-	out<<"J.Yang Lattice Boltzmann Simulation 3D Single Phase-Velocity"<<endl;
-	out<<"ASCII"<<endl;
-	out<<"DATASET STRUCTURED_POINTS"<<endl;
-	out<<"DIMENSIONS         "<<NX0<<"         "<<NY0<<"         "<<NZ0<<endl;
-	out<<"ORIGIN 0 0 0"<<endl;
-	out<<"SPACING 1 1 1"<<endl;
-
-	out<<"POINT_DATA     "<<NX0*NY0*NZ0<<endl;
-	out<<"VECTORS sample_vectors double"<<endl;
-	out<<endl;
-	//out<<"LOOKUP_TABLE default"<<endl;
-	for(int k=0;k<NZ0;k++)
-      		for(int j=0; j<NY0; j++)
-			{
-			for(int i=0;i<NX0;i++)
-        		out<<rbuf_v[i*(NY+1)*(NZ+1)*3+j*(NZ+1)*3+k*3]<<" "<<rbuf_v[i*(NY+1)*(NZ+1)*3+j*(NZ+1)*3+k*3+1]<<" "<<rbuf_v[i*(NY+1)*(NZ+1)*3+j*(NZ+1)*3+k*3+2]<<" "<<endl;
-			//out<<endl;
-			}
-			
+	
 	out.close();
 
-//===================================================================
-	
-	ostringstream name2;
-	name2<<"LBM_velocity_"<<m<<".out";
-	ofstream out2(name2.str().c_str());
-	for (int j=0;j<=NY;j++)
-		{
-		if (Solid[1][j][1]>0)
-			out2<<u[Solid[2][j][1]][0]<<endl;
-		else
-			out2<<0.0<<endl;
-		}
-
-
-/*
-	ostringstream name2;
-	name2<<"LBM_velocity_"<<m<<".out";
-	ofstream out2(name2.str().c_str());
-	for (int i=0;i<=NX;i++)
-		out2<<rbuf_v[i*(NY+1)*(NZ+1)*3+1*(NZ+1)*3+1*3+2]<<endl;
-
-	out2.close();
-*/
-//=================================================================	
 	}
-
-
-
-	if (rank==root_rank)
-		{		
-		delete [] rbuf_v;
-		}
-	delete [] nx_g;
-	delete [] disp;
-	delete [] v_storage;
-	
-
-		
-}
-
-
-void output_density_b(int m,double* rho,int MirX,int MirY,int MirZ,int mir,int*** Solid)	
-{
-        
-	int rank = MPI :: COMM_WORLD . Get_rank ();
-	const int mpi_size=MPI :: COMM_WORLD . Get_size ();
-	const int root_rank=0;
-	
-
-	int* nx_g = new int[mpi_size];
-	int* disp = new int[mpi_size];
-
-	
-	MPI_Gather(&nx_l,1,MPI_INT,nx_g,1,MPI_INT,root_rank,MPI_COMM_WORLD);
-	
+        MPI_Barrier(MPI_COMM_WORLD);
 	
 	if (rank==root_rank)
-		{
-		disp[0]=0;
-		for (int i=0;i<mpi_size;i++)
-			nx_g[i]*=(NY+1)*(NZ+1);
+	delete [] rbuf_v;
 
-		for (int i=1;i<mpi_size;i++)
-			disp[i]=disp[i-1]+nx_g[i-1];
-		}
-	
-
-	double* rbuf_rho;
-	double* rho_storage = new double[nx_l*(NY+1)*(NZ+1)];
-
-
-	for (int i=0;i<nx_l;i++)
-		for (int j=0;j<=NY;j++)
-			for(int k=0;k<=NZ;k++)
-			{
-			if (Solid[i][j][k]>0)
-				rho_storage[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]=rho[Solid[i][j][k]];
-			else
-				rho_storage[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]=1.0;
-			}
-
-	if (rank==root_rank)
-		rbuf_rho= new double[(NX+1)*(NY+1)*(NZ+1)];
-
-	
-	//MPI_Barrier(MPI_COMM_WORLD);	
-	MPI_Gatherv(rho_storage,nx_l*(NY+1)*(NZ+1),MPI_DOUBLE,rbuf_rho,nx_g,disp,MPI_DOUBLE,root_rank,MPI_COMM_WORLD);
-
-	
-	int NX0=NX+1;
-	int NY0=NY+1;
-	int NZ0=NZ+1;
-
-	if (mir==0)
-	{	
-	if (MirX==1)
-		NX0=NX0/2;
-	if (MirY==1)
-		NY0=NY0/2;
-	if (MirZ==1)
-		NZ0=NZ0/2;
-	}
-
-	if (rank==root_rank)
-	{
-	
-	ostringstream name;
-	name<<outputfile<<"LBM_Density_"<<m<<".vtk";
-	ofstream out;
-	out.open(name.str().c_str());
-	out<<"# vtk DataFile Version 2.0"<<endl;
-	out<<"J.Yang Lattice Boltzmann Simulation 3D Single Phase-Solid-Density"<<endl;
-	out<<"ASCII"<<endl;
-	out<<"DATASET STRUCTURED_POINTS"<<endl;
-	out<<"DIMENSIONS         "<<NX0<<"         "<<NY0<<"         "<<NZ0<<endl;
-	out<<"ORIGIN 0 0 0"<<endl;
-	out<<"SPACING 1 1 1"<<endl;
-	out<<"POINT_DATA     "<<NX0*NY0*NZ0<<endl;
-	out<<"SCALARS sample_scalars float"<<endl;
-	out<<"LOOKUP_TABLE default"<<endl;
-
-        for(int k=0;k<NZ0;k++)
-      		for(int j=0; j<NY0; j++)
-			for(int i=0;i<NX0;i++)
-				out<<rbuf_rho[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]<<endl;
-
-	out.close();
-				
-	}
-	
-	
-	if (rank==root_rank)
-		{		
-		delete [] rbuf_rho;
-		}
-	delete [] nx_g;
-	delete [] disp;
-	delete [] rho_storage;
-
-		
 }
 
 
@@ -4365,8 +3759,6 @@ void Backup(int m,double* rho,double** u, double** f)
 	name<<outputfile<<"LBM_checkpoint_velocity_"<<m<<"."<<rank<<".bin_input";
 	ofstream out;
 	out.open(name.str().c_str());
-	//for (int i=1;i<=Count;i++)
-        //		out<<u[i][0]<<" "<<u[i][1]<<" "<<u[i][2]<<" "<<endl;
 	
         out.write((char *)(&u[0][0]),sizeof(double)*(Count+1)*3);
       
@@ -4381,8 +3773,6 @@ void Backup(int m,double* rho,double** u, double** f)
 	out2.open(name2.str().c_str());
 	
 	
-	//for (int i=1;i<=Count;i++)
-        //		out2<<rho[i]<<endl;
 	
 
         out2.write((char *)(&rho[0]), sizeof(double)*(Count+1));	
@@ -4396,12 +3786,7 @@ void Backup(int m,double* rho,double** u, double** f)
 	//ofstream out;
 	out.open(name4.str().c_str());
 	
-	//for (int i=1;i<=Count;i++)
-	//{
-	//        for (int j=0;j<19;j++)
-        //		out<<f[i][j]<<" ";
-        //out<<endl;
-        //}
+	
         
         out.write((char *)(&f[0][0]), sizeof(double)*(Count+1)*19);
                 
@@ -4667,16 +4052,6 @@ void Backup_init(double* rho, double** u, double** f, char backup_rho[128], char
 	 	
 }
 
-
-void Comput_Perm_LOCAL(double** u,double* Permia_local,int PerDIr)
-{
-}
-
-
-void Comput_Grop_Perm(double** u,double* Permia,int PerDIr,int* SupInv)
-{
-
-}
 
 
 void output_velocity_for_solute(int m,double* rho,double** u,int MirX,int MirY,int MirZ,int mir,int*** Solid)	
