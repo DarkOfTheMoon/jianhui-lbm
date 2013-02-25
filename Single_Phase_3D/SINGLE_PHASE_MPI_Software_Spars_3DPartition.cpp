@@ -785,7 +785,7 @@ if (wr_per==1)
 			 if ((vel_sol>0) and (n%vel_sol==0) and (n>0))
 			         output_velocity_for_solute(n,rho,u,mirX,mirY,mirZ,mir,Solid);
 			 
-			 
+			// cout<<"***********	"<<n<<"		"<<error<<endl;
 			 
 			if(error!=error) {cout<<"PROGRAM STOP"<<endl;break;};
 			if(U_max_ref>=5) {cout<<"PROGRAM STOP DUE TO HIGH VELOCITY"<<endl;break;}
@@ -973,7 +973,8 @@ void Parallelize_Geometry()
       
       
       
-      
+   porosity=0.0;
+   
  int* Solid_rank0;     
     int* recv_solid;
     int pore;
@@ -1041,13 +1042,16 @@ void Parallelize_Geometry()
         for (int i=0;i<=NX;i++)
                 for (int j=0;j<=NY;j++)
 	                for (int k=0;k<=NZ;k++)
+			{
 	                Solid[i][j][k]=Solid_rank0[i*(NY+1)*(NZ+1)+j*(NZ+1)+k];
-
+			if (Solid[i][j][k]>0) porosity+=1.0;
+			}
 	        sumss=new int [procn+1];
 	for (int i=0;i<=procn;i++)
 	        sumss[i]=0;
 	
-	
+	porosity=porosity/(double)((NX+1)*(NY+1)*(NZ+1));
+	//cout<<porosity<<endl;
 	
 	for(int k=0 ; k<nz ; k++)			
 	for(int j=0 ; j<ny ; j++)
@@ -1310,7 +1314,7 @@ void init(double* rho, double** u, double** f,int*** Solid)
 //	int mpi_size=MPI :: COMM_WORLD . Get_size ();
 	
 
-	
+	Zoom=1;
 	rho0=1.0;dt=1.0/Zoom;dx=1.0/Zoom;
 	
 	if (lattice_v==1)
@@ -1319,7 +1323,7 @@ void init(double* rho, double** u, double** f,int*** Solid)
 	lat_c=dx/dt;
 	c_s=lat_c/sqrt(3);
 	c_s2=lat_c*lat_c/3;
-
+	
  	
 	niu=in_vis;
 	tau_f=niu/(c_s2*dt)+0.5;
@@ -1815,17 +1819,16 @@ m_inv_l[18]=+((double)0X1.AF286BCA1AF2AP-5)*m_l[0]+((double)0X1.B6006D801B603P-9
 			}
 
   for (int i=0;i<com_n;i++)
-	       
-	               {
-	                       MPI_Isend(bufsend[i],bufinfo[com_ind[i]], MPI_DOUBLE, com_ind[i]-1, (procind-1)*procn+com_ind[i]-1, MPI_COMM_WORLD,&request[2*i]);
+	{
+	MPI_Isend(bufsend[i],bufinfo[com_ind[i]], MPI_DOUBLE, com_ind[i]-1, (procind-1)*procn+com_ind[i]-1, MPI_COMM_WORLD,&request[2*i]);
 	                       
-	                       MPI_Irecv(bufrecv[i],bufinfo[com_ind[i]], MPI_DOUBLE, com_ind[i]-1, (com_ind[i]-1)*procn+procind-1, MPI_COMM_WORLD,&request[2*i+1]);		
-	               }
+	MPI_Irecv(bufrecv[i],bufinfo[com_ind[i]], MPI_DOUBLE, com_ind[i]-1, (com_ind[i]-1)*procn+procind-1, MPI_COMM_WORLD,&request[2*i+1]);		
+	}
 
 	               MPI_Waitall(2*com_n,request, status);
 	               MPI_Testall(2*com_n,request,&mpi_test,status);
 
-	               
+//cout<<"@@@@@@@@@@@@@@@1	"<<rank<<endl;	               
 	               for (int i=0;i<com_n;i++)
 	                       {
 	                               for (int j=0;j<bufinfo[com_ind[i]];j++)
@@ -1836,11 +1839,12 @@ m_inv_l[18]=+((double)0X1.AF286BCA1AF2AP-5)*m_l[0]+((double)0X1.B6006D801B603P-9
 	                                               //cout<<buflocsend[i][j]<<"  ";
 	                                               //testarr[testl1*19+testl2]=1;
 	                                               F[testl1][testl2]=bufrecv[i][j];
+						
 	                                       }
 	                       }
 	
 
-		
+		/*
 			for(i=1;i<=Gcl[rank];i++)
 				for (int lm=0;lm<5;lm++)
 				if (recvl[(i-1)*5+lm]>0)
@@ -1851,7 +1855,7 @@ m_inv_l[18]=+((double)0X1.AF286BCA1AF2AP-5)*m_l[0]+((double)0X1.B6006D801B603P-9
 				if (recvr[(j-(Count-Gcr[rank]+1))*5+lm]>0)
 			        F[j][LN[lm]]=recvr[(j-(Count-Gcr[rank]+1))*5+lm];
 			        
-			
+			*/
 
 
 
@@ -2571,13 +2575,13 @@ void comput_macro_variables( double* rho,double** u,double** u0,double** f,doubl
 					{
 					
 					f[i][k]=F[i][k];
-					rho[i]+=f[i][k];
+					rho[i]+=f[i][k];//cout<<f[i][k]<<"  ";
 					u[i][0]+=elat[k][0]*f[i][k];
 					u[i][1]+=elat[k][1]*f[i][k];
 					u[i][2]+=elat[k][2]*f[i][k];
 					}
 				
-
+				//cout<<endl;
 				u[i][0]=(u[i][0]+dt*gx/2)/rho[i];
 				u[i][1]=(u[i][1]+dt*gy/2)/rho[i];
 				u[i][2]=(u[i][2]+dt*gz/2)/rho[i];
@@ -3508,6 +3512,8 @@ for(int i=1; i<Count; i++)
 		temp2=sqrt(temp2);
 		error_in=temp1/(temp2+1e-30);
 		u_max=sqrt(u_max);
+
+		//cout<<temp1<<"	@@@@@@@@@@"<<endl;
 
 		MPI_Barrier(MPI_COMM_WORLD);
 		
