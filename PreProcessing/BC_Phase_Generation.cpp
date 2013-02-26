@@ -10,9 +10,9 @@ using namespace std;
       
 int main (int argc , char * argv [])
 {
-int nx=256;
-int ny=130;
-int nz=130;
+int nx=100;
+int ny=30;
+int nz=3;
 
 
 ostringstream name;
