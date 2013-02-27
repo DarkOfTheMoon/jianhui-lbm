@@ -201,8 +201,6 @@ double Permia_LOCAL[3]={0.0,0.0,0.0};
 
 
 //============MPI==TRANSFER==INITIALIZATION===============
-int* Gcl;
-int* Gcr;
 
 double* sendl;
 double* sendr;
@@ -1784,18 +1782,6 @@ m_inv_l[18]=+((double)0X1.AF286BCA1AF2AP-5)*m_l[0]+((double)0X1.B6006D801B603P-9
 	                       }
 	
 
-		/*
-			for(i=1;i<=Gcl[rank];i++)
-				for (int lm=0;lm<5;lm++)
-				if (recvl[(i-1)*5+lm]>0)
-			        F[i][RP[lm]]=recvl[(i-1)*5+lm];
-			        
-			for(j=Count-Gcr[rank]+1;j<=Count;j++)
-				for (int lm=0;lm<5;lm++)
-				if (recvr[(j-(Count-Gcr[rank]+1))*5+lm]>0)
-			        F[j][LN[lm]]=recvr[(j-(Count-Gcr[rank]+1))*5+lm];
-			        
-			*/
 
 
 

@@ -1,0 +1,191 @@
+=============INPUT FILE FOR 3D LATTICE BOLTZMANN MPI CODE--MULTI COMPONENT COLOR GRADIENT MODEL=======
+BC.dat          	:Geometry filename
+phase.dat       	    	:Initial components distribution
+30 30 3                 	:nx ny nz
+1000000		     		:#Maximum time step
+7.0	             		:dx (um) Resolution (for Permeability calculation)
+0	        	      	:Pressure Or Velocity Boundary (1=YES, 0=No)
+0				:Psi constant BC
+3.0e-6 0.0 0.0	          	:#body force for x,y,z
+0 1.0 0 1.0000	    		:Pressure Boundary in X direction ()p=c_s^2*/rho
+0 1.0 0 1.0	    		:Pressure Boundary in Y direction ()
+0 1.0 0 1.0	    		:Pressure Boundary in Z direction (Format detials can be found within this file)
+0 0.0 0 0.0	   		:Velocity Boundary in X direction (Format detials can be found within this file)
+0 0.0 0 0.07	   		:Velocity Boundary in Y direction (Format detials can be found within this file)
+0 0.0 0 0.07	   		:Velocity Boundary in Z direction (Format detials can be found within this file)
+0 0				:Psi constant BC in X 0=OFF, 1=Ini psi, 2=Neibourghing,3=Rand:value=line38
+0 0				:Psi constant BC in Y
+0 0				:Psi constant BC in Z
+0.05   		       		:Viscosity (Component A, psi=1)
+0.05   		       		:Viscosity (Component B, psi=-1)
+0.7     		      	:#Contact Angle Cos(Theta) (Positive=1 wetting, Negative -1 wetting)
+1.0e-2    		      	:#Surface tension (Kappa)
+0.0e-3 0.0 0.0			:initial velocity for x,y,z
+2989816.0        	       	:Permeability (Single Phase mD)
+=========OUTPUT==CONTROL===================
+1		         	:Permeability writing (1=yes, 0=no)
+1                       	:Direction of Permeability Calculation (1=X, 2=Y, 3=Z)
+50		         	:#Frequency of results writing (interval in time steps)
+0               		:FREE
+-1				:#Freqency of velocity field writing (vtk, -1=no velocity writing 0=only geometry)
+-1				:#Freqency of density field writing (vtk, -1=no density writing 0=only geometry)
+500				:#Freqency of concentration writing (in vtk format, -1=no density writing)
+==============ADVANCE==PARAMETER==========
+0 1.0 4.0	              :Self define lattice velocity: 0=DEFAULT, dx, dt ((u_x+u_y+u_z)*dt/dx<=1 Courant Number)
+./				:OUTPUT PATH,DEFAULT: ./ (INCLUDE "/" AT THE END)
+2              			:PRESSURE AND VELOCITY BOUNDARY CONDITION OPTIONS: 0,1,2,3: EBC_S,EBC_D,TOLKE_BC,NEBC_D
+1  500				:MULTI-COMPONENT STABALIZER: (a,b) a=0=OFF, a=1=ON, BODY FORCE APPLIED AFTER b steps
+-1                              :PRESET SATUATION, 0--1 initial component distri not needed, -1=OFF(for Component A,1)
+0				:PRESET VALUE FOR BUFFET AREA, 0=NO,1=COMP A,-1=COMP B (valid when preset satuation)
+0.99 0.92			:#Relative permeability calcualtion 0..1 (psi>=value, cal the flux for Comp1)
+0 0 0				:Pemeability calculation Partially  (1=ON, 0=OFF)
+27 3				:Permeability calculation partially Starting point and Ending point in X
+0 100				:Permeability calculation partially Starting point and Ending point in Y
+0 100				:Permeability calculation partially Starting point and Ending point in Z
+======================BACKUP==CONTROL====================
+-1		                   :BACKUP FREQUENCY (-1=NO BACKUP,0=Backup at the end of computation)
+0                              :INITIALIZATION WITH BACKUP DATA (0=OFF, n>1=ON the time step of backup data)
+======================GEOMETRY READING=======================
+0		:Geometry Reading format, 0=decimal,1=binary
+======================PRESSURE OR BODAY FORCE SETTING (CHANGE WITH TIME)=============
+0 2			:0=OFF,1,2,3=ON,1=X,2=Y,3=Z;|| 1=PRESSURE,2=BODY FORCE
+7000 1.0025 1.0 1.0e-6		:ACT AT TIMESTEP n, PRESSURE N, PRESSURE P, BODYFORCE(1)
+7500 1.0 0.999 0.0		:ACT AT TIMESTEP n, PRESSURE N, PRESSURE P, BODYFORCE(2)
+-1 0.0 0.0 0.0		:ACT AT TIMESTEP n, PRESSURE N, PRESSURE P, BODYFORCE(3)
+-1 0.0 0.0 0.0		:ACT AT TIMESTEP n, PRESSURE N, PRESSURE P, BODYFORCE(4)
+-1 0.0 0.0 0.0		:ACT AT TIMESTEP n, PRESSURE N, PRESSURE P, BODYFORCE(5)
+0			:BODY FORCE APPLIED ON 1:Phase1,0:BOTH,-1:Phase2
+=====================CAPILLARY PRESSURE MEASURMENTS================
+0 1 2000                     :0=OFF,1,2,3=ON,1=X,2=Y,3=Z;|| 1=PRESSURE,2=BODY FORCE; time steps of 1 changement
+1.0 0.993 2e-5 6 10           :PRESSURE N,P; Changement times, (terminal condition: no. output intervals)                   
+1.0e-6                          :Error of Saturation stable condition
+======================Least Square Fitting for Relative Permeability=============
+1 1000                            :0=OFF,1=ON; number of Fitting points;  
+=======================Relative Permeability with Imbibition and Drainage process Control==========
+0 5                :0=OFF,1=Imb,2=Drai;No.of data points; (need initial psi data)
+0 0.7e-2                            :N>0 :Apply diff IFT after N timesteps, N<=0 OFF, IFT value;
+0 1000                  :WARRINING: USE WITH CAUTION 0=OFF,1=ON Input dynamic update, update frequency
+========
+
+with #,  parameter changeble use with 
+1 1000                  :WARRINING: USE WITH CAUTION 0=OFF,1=ON Input dynamic update, update frequency
+
+
+
+INSTRUCTIONS OF PARAMETER INPUT
+0.0556</frac{niu*dt}{dx^2}<0.25
+
+If buffet is add near the geometry boundaries, initial satuation parameter is on and 
+partly permeability calculation is used, the default component in the buffet is set as 
+component A (1)
+
+0 0				:Psi constant BC in X 0=OFF, 1=Ini psi, 2=Neibourghing,3=Rand
+if option3 is used, a saturation of preset saturation will be applied for the boundary
+
+
+To use the checkpoint data to restart the simulation,
+You might need to specify the path of the checkpoint data
+The path sould be put after the name and the path of the data file.
+such as: mpirun -np 3 INPUT.dat /work/jy810/test/
+If not given, the default value is ./
+
+
+If backup f,rho,psi,rhob,rhor is used, PRESET VALUE FOR BUFFET AREA option
+can be used solely without the activation of PRESET SATUATION. 
+But the simulation is initialized normally, The PRESET VALUE FOR BUFFET AREA is actived
+only if PRESET SATUATION option is ON.
+
+
+If PRESET VALUE FOR BUFFET AREA option is on, and partially permeability calculation option is also on,
+The Initial value of boundary of the buffet will be changed to the preset value for buffet area. So when the 
+color boundary is applied, the option 1: use initial value, will take the preset value for the boundary which located in 
+buffet area
+
+Relative Perm file format:
+Averaged Relative Perm, saturation, local Relative Perm, saturation, least squre rel_perm of the other component2
+for Relative Perm file component1
+Averaged Relative Perm, saturation, local Relative Perm, saturation, Pressure of left and right hand side, and bodyforce, least square rel_perm is also included at the end of every line.
+
+bodyforce file format:
+saturation of component1, saturatino of component2, relative error of saturation as a function of time, saturation1 movement index, saturation2 movement index
+
+Relative permeability measument with Imbibition and Drainage process control function:
+NOTE: Component1 is assumed as wetting phase: contact angle should be positive
+Should identify the injection direction by give approperiate value for 
+0 3				:Psi constant BC in X 0=OFF, 1=Ini psi, 2=Neibourghing,3=Rand:value=line38
+0 0				:Psi constant BC in Y
+0 0				:Psi constant BC in Z
+Least Square fitting should be swiched on and fitting points should be set properly
+1 2000                            :0=OFF,1=ON; number of Fitting points;
+After injection wetting/non-wetting phase and S_w reach equilibrium, the program will wait 2000*Frequency of results writing
+(interval in time steps), then check if the relative permeability has converged/slop is flat. 
+This module can also be used to generate initial distributions for binary fluid simulation,
+to use this function, set 
+1                            :0=OFF,1=ON EXPORT BINARY FLUID DISTRIBUTION psi (CAN BE USED FOR OTHER SIMULATIONS INPUTS)
+NOTE: if you don't need the export function, keep it 0, otherwise the relative permeability function will not work properly.
+
+
+then, set 
+1 5 1e-1 20                :0=OFF,1=Imb,2=Drai;No.of data points; (equil cond for least square rel_perm, time steps)
+1 1e-5                            :Apply diff force for injec 0=OFF,1=ON,value for injection (to overcome the min cap pres)
+the equilibrium condition for rel_perm should be big enough (eg. 1e-1) to save time (the once targeted saturation has been reached, export it, then start increasing or dcreasing again)
+and set least square check length short:
+1 30                            :0=OFF,1=ON; number of Fitting points;  
+Once the targeted saturation has been reached, the program will wait 30*output frequency time steps, then export the distribution.
+
+
+===========================
+Static Relative Permeability calculation:
+capillary number 1e-5 is recommanded, it gives good convergence and stability
+
+For Imbibition Stative Rel Perm calculation:
+if varying IFT is needed after N timestep, use:
+20000 0.7e-2                            :N>0 :Apply diff ift after N timesteps, N<=0 OFF, IFT value;
+
+Then the simulation will use IFT set in the inputfile initially:
+1.0e-2    		      	:Surface tension (Kappa)
+
+at 20000time step, the IFT will change to 0.7e-2
+
+===========================
+
+
+
+**************
+To generate drinage or imbibition distribution for static relative permeabiltiy calculation,
+set bodyforce as normal, set psi boundary condition as normal, need initial psi data file
+set the following function as
+=======================Relative Permeability with Imbibition and Drainage process Control==========
+1 5                :0=OFF,1=Imb,2=Drai;No.of data points; (need initial psi data)
+0 1e-5                            :IFT settings
+1                             :0=OFF,1=ON EXPORT BINARY FLUID DISTRIBUTION psi (CAN BE USED FOR OTHER SIMULATIONS INPUTS)
+****************
+
+===================
+When using input update module:
+1 1000                  :WARRINING: USE WITH CAUTION 0=OFF,1=ON Input dynamic update, update frequency
+absolute path is needed when exacute the calculation:
+mpiexec /home/jy810/paratest /work/jy810/input/INPUT_CG_SPARSE1.dat
+
+
+====================
+PLOT SCRIPT USE
+sh multi_phase_gnuplot.sh rel_2_ 
+will plot rel_2_Results.txt and relavent datas (rel perm, saturation, pressure, velocities)
+
+TO USE THE CODE Least_Square_Rel_Perm.cpp and new_plot.sh:
+compile the code with g++ Least...cpp -o test
+run the code 
+./test rel_34_ 5000
+rel_34_ is the prefix, 5000 is the length of least square fitting
+
+then use 
+sh new_plot.sh rel_34_
+to visulize the resutls
+
+TO USE THE CODE Results_Extraction.cpp
+g++ Results_Extraction.cpp -o test
+./test rel_ 2000
+
+then the code will extract datas from rel_1_Reslts.txt, rel_2_results.txt ..... rel_10_Results.txt
+from the most recent 2000 time step
