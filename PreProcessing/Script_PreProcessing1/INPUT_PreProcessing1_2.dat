@@ -5,14 +5,14 @@ ftb_test.roc		:Source Geometry file name (Geometry needed to be filtered)
 ftb.dat			:Processed Data file name (used for claculation)
 1			:Export VTK 1=YES,0=NO
 1			:Export DAT 1=YES, 0=NO
-0			:Binary for DAT 1=YES, 0=NO ONLY valid if GEOMETRY MODIFICATION IS ON
+1			:Binary for DAT 1=YES, 0=NO ONLY valid if GEOMETRY MODIFICATION IS ON
 ================FILTER========================================================================
 1				:Filter (1=ON,0=0FF)
 ================GEOMETRY MODIFICATION==========================================================
 1			:Geometry modification (0=OFF,1=ON)
-3			:0,no BCs, 1,2,3: solid the most outside to form a BC,flow dirc:x,y,z
+3			:3,no BCs, 4,5,6: solid the most outside to form a BC,flow dirc:x,y,z
 1 0 0 			:symetric in X,Y,Z 0=NO, 1=YES
-0 20 0			:add buffet in left X,Y,Z
+0 0 0			:add buffet in left X,Y,Z
 0 0 0			:add buffet in right X,Y,Z
 0			:add porous plate 0=OFF, 1=fine plate,pore size1, pore size2, 3=posr size3
 -1			:porous plate:-1=defualt position,end of the geometry, or give a positive value
@@ -21,10 +21,14 @@ ftb.dat			:Processed Data file name (used for claculation)
 1			:EXPORT INITIALIZATION FILE for METIS
 ftb.graph		:FILE NAME for METIS
 =========================METIS PARAMETER============================================
-20			:NUMBER OF PARTITIONS
-ftb_20.dat		:EXPORTED GEOMETRY WITH PARTITION DATA FILE NAME
+3			:NUMBER OF PARTITIONS
 1			:Binar for DAT
 1			:EXPORT FINAL PARTITIONS VTK NAME:Partitions.vtk
+The final Partitioned data file will be named as
+source geometry file name.number of partition.size
+eg:if the source geometry file name is ftb_test.roc
+the final partitioned data file will be 
+ftb_test.roc.3.262x131x131
 
 
 

@@ -73,7 +73,6 @@ ifstream fins(argv[1]);
 	fins >> poreFileNameMET;				fins.getline(dummy, NCHAR);
 								fins.getline(dummy, NCHAR);
 	fins >> par_n;						fins.getline(dummy, NCHAR);
-	fins >> poreFileNamePar;			fins.getline(dummy, NCHAR);
 	fins >> par_bin;				fins.getline(dummy, NCHAR);
 	fins >> expparvtk;					fins.getline(dummy, NCHAR);
 
@@ -299,7 +298,7 @@ ftest = fopen(namemet.str().c_str(), "r");
 	cout<<"Start writing Partitioned Geomtry DAT file"<<endl;
 	cout<<nx<<"	"<<ny<<"	"<<nz<<endl;
 	ostringstream name2;
-	name2<<poreFileNamePar;
+	name2<<poreFileName<<"."<<par_n<<"."<<nx<<"x"<<ny<<"x"<<nz;
 	//name<<"Clashach_z_sym_196x196x388_8.946.dat";
 	ofstream out2;
 	out2.open(name2.str().c_str());

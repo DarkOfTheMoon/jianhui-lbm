@@ -851,8 +851,8 @@ mat a;
 void Parallelize_Geometry()
 {
         
-        int rank = MPI :: COMM_WORLD . Get_rank ();
-	int mpi_size=MPI :: COMM_WORLD . Get_size ();
+    int rank = MPI :: COMM_WORLD . Get_rank ();
+    int mpi_size=MPI :: COMM_WORLD . Get_size ();
     int nx=NX+1;
     int ny=NY+1;
     int nz=NZ+1;
@@ -862,8 +862,8 @@ void Parallelize_Geometry()
     
    
                                 
-    int procind=MPI :: COMM_WORLD . Get_rank ()+1;                     //currentprocessor index, start from 1
-    int procn=MPI :: COMM_WORLD . Get_size ();           //total processor number
+    int procind=MPI :: COMM_WORLD . Get_rank ()+1;                               //currentprocessor index, start from 1
+    int procn=MPI :: COMM_WORLD . Get_size ();                                  //total processor number
     int neib=0;
    
             bufinfo=new int[procn+1];
@@ -871,9 +871,9 @@ void Parallelize_Geometry()
                     bufinfo[i]=0;   
             
             
-    com_n=0;                            //mpi commu numbers     number of neighbour partitions which need communication
+    com_n=0;                                                                    //mpi commu numbers     number of neighbour partitions which need communication
     int tmpint;
-    int proc_com[procn+1];                  //index convert proc index---->commu index in current processor
+    int proc_com[procn+1];                                              //index convert proc index---->commu index in current processor
     for (int i=0;i<=procn;i++)
         proc_com[i]=0;
         
@@ -1223,15 +1223,26 @@ void Parallelize_Geometry()
 	   
 	   delete [] sumtmp;
 	   
-      
+	   for (int i=0;i<nx;i++)
+	   {
+	           for (int j=0;j<ny;j++)
+	                   delete [] Solid2[i][j];
+	           delete [] Solid2[i];
+	   }
+	   delete [] Solid2;
     
+	   if (rank>0)
+	   {
+	           for (int i=0;i<nx;i++)
+	           {
+	                   for (int j=0;j<ny;j++)
+	                           delete [] Solid[i][j];
+	                   delete [] Solid[i];
+	           }
+	           delete [] Solid;
+	   }
+	   
 }
-
-void init_Sparse_read_rock_parallel(int*** Solid,int* Sl,int* Sr)
-{}
-
-void Suppliment(int* SupInv,int*** Solid)
-{}
 
 
 

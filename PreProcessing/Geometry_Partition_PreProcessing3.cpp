@@ -77,6 +77,11 @@ int* bcrx;
 int* bcry;
 int* bcrz;
 int bclxn,bclyn,bclzn,bcrxn,bcryn,bcrzn;
+/*
+int** bufpsisend;
+int** bufpsirecv;
+int* numpsicom;
+*/
 //============
 
 //Geo_par.dat file
@@ -428,12 +433,20 @@ sum=1;
 	                 
       		MPI_Waitall(2*com_n,request, status);
       		MPI_Testall(2*com_n,request,&mpi_test,status);
+      		
+      		
 
       		//--------------------vali--------------------------------------------------------------
+      		      		
       		int* testarr;
+      		int* testarr2;
       		int testl1,testl2;
       		testarr=new int[(sumss[procind]+1)*19];
-      		       
+      		testarr2=new int[(sumss[procind]+1)];
+      		
+      		for (int ci=0;ci<sumss[procind]+1;ci++)
+	               testarr2[ci]=0;
+      		
       		for (int ci=0;ci<(sumss[procind]+1)*19;ci++)
 	               testarr[ci]=0;
 	       
@@ -444,20 +457,33 @@ sum=1;
 	               {
 	                    for (int mi=0; mi<19; mi++)
 	                            if (nei_loc[ci][mi]>0)
-	                                    testarr[nei_loc[ci][mi]*19+mi]=1;
+	                                    testarr[nei_loc[ci][mi]*19+mi]=1,testarr2[nei_loc[ci][mi]]=1;
 	                            else
 	                                   if (nei_loc[ci][mi]==0)
-	                                            testarr[ci*19+LR[mi]]=1;
+	                                            testarr[ci*19+LR[mi]]=1,testarr2[nei_loc[ci][mi]]=1;
+	                                    /*
 	                                    else
 	                                    {
 	                                            bufsend[-nei_loc[ci][mi]-1][sumtmp[-nei_loc[ci][mi]-1]]=1.0;
 	                                            sumtmp[-nei_loc[ci][mi]-1]++;
 	                                    }
+	                                    */
 	                                    
 	                                    
 	               }
 	               
+	            for (int i=0;i<com_n;i++)
+	                                for (int j=0;j<bufinfo[com_ind[i]];j++)    
+	                                {
+	                                                testl1=(int)(buflocrecv[i][j]/19);
+	                                               testl2=(int)(buflocrecv[i][j]%19); 
+	                                               testarr2[testl1]=1;
+	                                               
+	                                }
 	               
+	               
+	               
+	               /*
 	               for (int i=0;i<com_n;i++)
 	                       {
 	                               for (int j=0;j<bufinfo[com_ind[i]];j++)
@@ -485,7 +511,15 @@ sum=1;
 	                                        cout<<i<<"        "<<j<<"        "<<procind<<endl;
 	                                
 	                                
-	                                
+	        */                        
+	                for (int ci=19;ci<sumss[procind]+1;ci++)
+	                       {        //cout<<testarr[ci]<<endl;
+	                               if (testarr2[ci]<1)
+	                                       cout<<ci<<"        "<<procind<<endl;
+	                       }
+
+	                
+	        
 	      //cout<<endl;
 	      //for (int i=0;i<com_n;i++)
 	      //         cout<<bufinfo[com_ind[i]]<<"                "<<sumtmp[i]<<"                "<<com_ind[i]<<endl;
