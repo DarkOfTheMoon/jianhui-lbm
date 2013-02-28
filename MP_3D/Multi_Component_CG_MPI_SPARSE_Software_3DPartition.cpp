@@ -451,7 +451,7 @@ double v_max,error_Per;
 //	fin >> backup_f;                        	fin.getline(dummy, NCHAR);
 	fin.close();
 	
-	//cout<<par_per_x<<"    asdfa    "<<backup_f<<endl;
+	//cout<<input_dynamic<<"    asdfa    "<<update_fre<<endl;
 	NX=NX-1;NY=NY-1;NZ=NZ-1;
 	}
 
@@ -654,6 +654,7 @@ if (Zoom>1)
 	int*  Sr;
 
 	
+
 	Parallelize_Geometry();
 	
 	
@@ -719,7 +720,6 @@ if (Zoom>1)
 	
 		Geometry(Solid);
 	}
-
 
 
 	if (mode_backup_ini==0)
@@ -802,7 +802,7 @@ if (wr_per==1)
 	
 	
 	
-	
+MPI_Barrier(MPI_COMM_WORLD);	
 	
 	for(n=0;n<=n_max;n++)
 	{
@@ -810,8 +810,10 @@ if (wr_per==1)
 	if ((stab==1) and (n==stab_time))
 		{gxs=gx;gys=gy;gzs=gz;}
 			
-	//cout<<"       qgragf       "<<endl;
+	
 	collision(rho,u,f,F,psi,rho_r,rho_b,rhor,rhob,SupInv,Solid,Sl,Sr);
+	//cout<<"       qgragf       "<<endl;
+
 
 	if (pressure_change>0)
 		pressure_bodyforce_change();
@@ -881,11 +883,13 @@ if (wr_per==1)
 			
 			error=Error(u,u0,&u_max,&u_ave);
 			if (u_max>=10.0)	U_max_ref+=1;
+			
 			error_Per=Comput_Perm(psi,u,Per_l,Per_g,PerDir,SupInv);
-			//Comput_Perm_LOCAL(psi,u,Per_l_LOCAL,Per_g_LOCAL,PerDir);
+			
 			//==========CAPILLARY PRESSURE  APPLY=========
 			S_l_r=S_l;
 			//=====================================
+			
 			S_l=Comput_Saturation(psi,Solid,SupInv);
 
 
@@ -897,6 +901,9 @@ if (wr_per==1)
 			pre_rell=rel_per_l_ls;
 			pre_relg=rel_per_g_ls;
 			//===========================================
+			
+
+
 			
 			//=====================Least Sqare Fitting======================
 			if (least_square>0)
@@ -910,9 +917,11 @@ if (wr_per==1)
 			    MPI_Bcast(&rel_per_l_ls,1,MPI_DOUBLE,0,MPI_COMM_WORLD); 
 			    MPI_Bcast(&rel_per_g_ls,1,MPI_DOUBLE,0,MPI_COMM_WORLD); 
 			   //======================================================== 
-			   
+			  
 			   
 	
+
+			 
 			 //=============Rel_Perm_Imb_Drai=================        
 			 if (rel_perm_id_dir>0)
 			         Rel_Perm_Imb_Dra(psi);               
@@ -949,8 +958,7 @@ if (wr_per==1)
 				<<setiosflags(ios::scientific)<<error<<endl;
 			fin<<"The relative permeability of component 1 is "<<Per_l[0]*reso*reso*1000/Permeability<<", "<<Per_l[1]*reso*reso*1000/Permeability<<", "<<Per_l[2]*reso*reso*1000/Permeability<<endl;
 			fin<<"The relative permeability of component 2 is "<<Per_g[0]*reso*reso*1000/Permeability<<", "<<Per_g[1]*reso*reso*1000/Permeability<<", "<<Per_g[2]*reso*reso*1000/Permeability<<endl;
-			//fin<<"The LOCAL relative permeability of component 1 is "<<Per_l_LOCAL[0]*reso*reso*1000/Permeability<<", "<<Per_l_LOCAL[1]*reso*reso*1000/Permeability<<", "<<Per_l_LOCAL[2]*reso*reso*1000/Permeability<<endl;
-			//fin<<"The LOCAL relative permeability of component 2 is "<<Per_g_LOCAL[0]*reso*reso*1000/Permeability<<", "<<Per_g_LOCAL[1]*reso*reso*1000/Permeability<<", "<<Per_g_LOCAL[2]*reso*reso*1000/Permeability<<endl;
+	
 			fin<<"The LEAST SQUARED relative permeability of component 1 is "<<rel_per_l_ls<<endl;
 			fin<<"The LEAST SQUARED relative permeability of component 2 is "<<rel_per_g_ls<<endl;
 			fin<<"Satuation of Component 1: "<<S_l<<", "<<"The satuation of Component 2: "<<1-S_l<<endl;
@@ -1000,11 +1008,7 @@ if (wr_per==1)
 			finf5<<u_ave<<" "<<u_max<<"  "<<error<<endl;
 			finf5.close();
 
-			//cout<<"The"<<n<<"th computation result:"<<endl;
-		//=============================================================================================
-			//cout<<"The permiability is: "<<Permia[0]*reso*reso*1000<<", "<<Permia[1]*reso*reso*1000<<", "<<Permia[2]*reso*reso*1000<<endl;
-			//cout<<"The relative error of permiability computing is: "<<error_perm<<endl;
-		//==============================================================================================
+			
 
 		//==============================================================================================
 			cout<<"The"<<n<<"th computation result:"<<endl;
@@ -1017,8 +1021,7 @@ if (wr_per==1)
 				<<setiosflags(ios::scientific)<<error<<endl;
 			cout<<"The relative permeability of component 1 is "<<Per_l[0]*reso*reso*1000/Permeability<<", "<<Per_l[1]*reso*reso*1000/Permeability<<", "<<Per_l[2]*reso*reso*1000/Permeability<<endl;
 			cout<<"The relative permeability of component 2 is "<<Per_g[0]*reso*reso*1000/Permeability<<", "<<Per_g[1]*reso*reso*1000/Permeability<<", "<<Per_g[2]*reso*reso*1000/Permeability<<endl;
-			//cout<<"The LOCAL relative permeability of component 1 is "<<Per_l_LOCAL[0]*reso*reso*1000/Permeability<<", "<<Per_l_LOCAL[1]*reso*reso*1000/Permeability<<", "<<Per_l_LOCAL[2]*reso*reso*1000/Permeability<<endl;
-			//cout<<"The LOCAL relative permeability of component 2 is "<<Per_g_LOCAL[0]*reso*reso*1000/Permeability<<", "<<Per_g_LOCAL[1]*reso*reso*1000/Permeability<<", "<<Per_g_LOCAL[2]*reso*reso*1000/Permeability<<endl;
+			
 			cout<<"The LEAST SQUARED relative permeability of component 1 is "<<rel_per_l_ls<<endl;
 			cout<<"The LEAST SQUARED relative permeability of component 2 is "<<rel_per_g_ls<<endl;
 			cout<<"Satuation of Component 1: "<<S_l<<", "<<"The satuation of Component 2: "<<1-S_l<<endl;
@@ -1046,7 +1049,7 @@ if (wr_per==1)
 			        Backup(n,rho,psi,u,f,rho_r,rho_b);
 			
 			
-			if(error!=error) {cout<<"PROGRAM STOP"<<endl;break;};
+			//if(error!=error) {cout<<"PROGRAM STOP"<<endl;break;};
 			if(U_max_ref>=5) {cout<<"PROGRAM STOP DUE TO HIGH VELOCITY"<<endl;break;}
 		}	
 	}
@@ -1058,38 +1061,7 @@ if (wr_per==1)
 
 	MPI_Barrier(MPI_COMM_WORLD);
 
-	/*
-	for (int i=0;i<=Count;i++)
-		{
-		delete [] u[i];
-		delete [] u0[i];
-		delete [] f[i];
-		delete [] F[i];
-		}
 	
-	delete [] f;
-	delete [] psi;
-	delete [] u;
-	delete [] F;
-	delete [] u0;
-	delete [] rho;
-	delete [] rho_r;
-	delete [] rho_b;
-	delete [] rhor;
-	delete [] rhob;
-	//delete [] forcex;
-	//delete [] forcey;
-	//delete [] forcez;
-	delete [] SupInv;
-
-	delete [] Sl;
-	delete [] Sr;
-
-	delete [] Permia;
-//	delete [] Count;
-
-*/
-
 
 
 	finish = MPI_Wtime();
@@ -1124,31 +1096,20 @@ void Rel_Perm_Imb_Dra(double* psi)
 	int mpi_size=MPI :: COMM_WORLD . Get_size ();
 	
 	
-        //ofstream finfs(FileName2,ios::app);rel_perm_sw[rel_perm_id_ids]
-       //cout<<rel_perm_id_ids<<"      @@@    "<<in_psi_BC<<"        "<<rel_perm_sw[rel_perm_id_ids]<<"          "<<ini_Sat<<endl;
-        
-
-//	cout<<rel_perm_id_mode<<"	"<<S_l<<"	"<<rel_perm_sw[rel_perm_id_ids]<<endl;
-
+       
         if (rel_perm_id_mode==1)
                 {
                        
                         if ((rel_perm_id_dir==1) and (S_l>rel_perm_sw[rel_perm_id_ids]))
                         {
                                 rel_perm_id_mode=2;
-                                //in_psi_BC=0;    
-                                //rel_perm_id_time=0;
-                                //rel_perm_id_cri=0;
-                                //gxs=gx;gys=gy;gzs=gz;
+                               
                         }
                         
                       if ((rel_perm_id_dir==2) and (S_l<rel_perm_sw[rel_perm_id_ids]))
                         {
                                 rel_perm_id_mode=2;
-                                //in_psi_BC=0;    
-                                //rel_perm_id_time=0; 
-                                //rel_perm_id_cri=0;
-                                //gxs=gx;gys=gy;gzs=gz;
+                               
                         }          
                         
                 }
@@ -1197,60 +1158,7 @@ void Rel_Perm_Imb_Dra(double* psi)
              
             }
             
-   /*  
-       if ((rel_perm_id_mode==2) and (rel_perm_id_time>num_least_square))
-               {
-                       
-                       
-                       
-                    if ((abs(rel_per_l_ls-pre_rell)/pre_rell<cri_rells) and (abs(rel_per_g_ls-pre_relg)/pre_relg<cri_rells))
-                            {
-                                    rel_perm_id_cri+=1;
-                            }
-                            else
-                                    {
-                                            rel_perm_id_cri=0;
-                                    }
-                          
-                                    
-                                    
-                                    
-                      if ((rel_perm_id_cri>=cri_rells_n) and (rel_perm_id_ids<rel_perm_chan_num))              
-                              {
-                                      if (rank==0)
-                                      {
-                                              ofstream finfsrel(FileName7,ios::app);
-                                              finfsrel<<S_l<<"  "<<rel_per_l_ls<<"  "<<rel_per_g_ls<<endl;
-                                              finfsrel.close();
-                                      }
-                                      
-                                 rel_perm_id_ids+=1;
-                                if (rel_perm_id_ids<rel_perm_chan_num) 
-                                        {
-                                           rel_perm_id_mode=1;
-                                           in_psi_BC=1;
-                                           ini_Sat=rel_perm_sw[rel_perm_id_ids];
-                                           
-                                           
-                                           if (rel_perm_bodyf_mode==1)
-                                           {
-                                                   if (PerDir==1)
-                                                           gxs=rel_perm_bodyf;
-                                                   if (PerDir==2)
-                                                           gys=rel_perm_bodyf;
-                                                   if (PerDir==3)
-                                                           gzs=rel_perm_bodyf;
-                                        }
-                                        
-                                        
-                                        
-                                        }
-                           
-                              }
-               } 
-
-*/
-
+  
 }
 
 
@@ -1880,6 +1788,9 @@ void Parallelize_Geometry()
 	for (int i=0;i<=procn;i++)
 	        sumss[i]=0;
 	
+
+
+
 	porosity=porosity/(double)((NX+1)*(NY+1)*(NZ+1));
 	//cout<<porosity<<endl;
 	
@@ -1929,6 +1840,9 @@ void Parallelize_Geometry()
 	        }
 	        else
 	                Solid2[i][j][k]=0;
+
+
+	
 	       
 	        //======coordinate of nodes===========
 	        coor = new int[sumss[procind]+1];
@@ -2046,9 +1960,9 @@ void Parallelize_Geometry()
 	       for (int i=0;i<com_n;i++)
 	       
 	               {
-	                       MPI_Isend(buflocsend[i],bufinfo[com_ind[i]], MPI_INT, com_ind[i]-1, (procind-1)*procn+com_ind[i]-1, MPI_COMM_WORLD,&request[2*i]);
+	       MPI_Isend(buflocsend[i],bufinfo[com_ind[i]], MPI_INT, com_ind[i]-1, (procind-1)*procn+com_ind[i]-1, MPI_COMM_WORLD,&request[2*i]);
 	                       
-	                       MPI_Irecv(buflocrecv[i],bufinfo[com_ind[i]], MPI_INT, com_ind[i]-1, (com_ind[i]-1)*procn+procind-1, MPI_COMM_WORLD,&request[2*i+1]);		
+	       MPI_Irecv(buflocrecv[i],bufinfo[com_ind[i]], MPI_INT, com_ind[i]-1, (com_ind[i]-1)*procn+procind-1, MPI_COMM_WORLD,&request[2*i+1]);		
 	               }
 	               
 	               
@@ -2134,6 +2048,8 @@ void Parallelize_Geometry()
       		MPI_Waitall(2*com_n,request, status);
       		MPI_Testall(2*com_n,request,&mpi_test,status);
 	      Count=sumss[procind];  
+
+cout<<"GEOMETRY FILE PARTITIONING FOR PARALLEL READING DONE   Processor No."<<rank<<endl;
 	
 	      
 float* Psi_rank0;	      
@@ -2556,12 +2472,7 @@ void collision(double* rho,double** u,double** f,double** F,double* psi, double*
 	
 	MPI_Status status2[com_n*6] ;
 	MPI_Request request2[com_n*6];
-	/*
-	MPI_Status status[4] ;
-	MPI_Request request[4];
-	MPI_Status status2[12] ;
-	MPI_Request request2[12];
-	*/
+	
 	
 	
 	int mpi_test;
@@ -2634,14 +2545,14 @@ double cb[19]={-1.0/3.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.
 	               MPI_Testall(2*com_n,request,&mpi_test,status);
 	               
 	               
-	               
+	 //cout<<"@@@@@@@@@@@@@@@@@@@"<<endl;              
 
 	for(int ci=1;ci<=Count;ci++)	
 	
 
 		{	
 				
-		       
+		       //cout<<"**     "<<rank<<"	"<<ci<<"	"<<Count+1<<endl;   
 
 			C[0]=0;C[1]=0;C[2]=0;ind_S=0;
 	for (int tmpi=0;tmpi<19;tmpi++)
@@ -2681,10 +2592,10 @@ double cb[19]={-1.0/3.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.
 			        	        }
 			        	        else
 			        	                {
-			        	                   C[0]+=3.0/(lat_c*lat_c*dt)*w[tmpi]*elat[tmpi][0]*bufrecv[-nei_loc[ci][tmpi]][sumtmp[-nei_loc[ci][tmpi]]];
-			        	                   C[1]+=3.0/(lat_c*lat_c*dt)*w[tmpi]*elat[tmpi][1]*bufrecv[-nei_loc[ci][tmpi]][sumtmp[-nei_loc[ci][tmpi]]];
-			        	                   C[2]+=3.0/(lat_c*lat_c*dt)*w[tmpi]*elat[tmpi][2]*bufrecv[-nei_loc[ci][tmpi]][sumtmp[-nei_loc[ci][tmpi]]];      
-			        	                   sumtmp[-nei_loc[ci][tmpi]]++;        
+	C[0]+=3.0/(lat_c*lat_c*dt)*w[tmpi]*elat[tmpi][0]*bufrecv[-nei_loc[ci][tmpi]-1][sumtmp[-nei_loc[ci][tmpi]-1]];
+	C[1]+=3.0/(lat_c*lat_c*dt)*w[tmpi]*elat[tmpi][1]*bufrecv[-nei_loc[ci][tmpi]-1][sumtmp[-nei_loc[ci][tmpi]-1]];
+	C[2]+=3.0/(lat_c*lat_c*dt)*w[tmpi]*elat[tmpi][2]*bufrecv[-nei_loc[ci][tmpi]-1][sumtmp[-nei_loc[ci][tmpi]-1]];      
+			        	                   sumtmp[-nei_loc[ci][tmpi]-1]++;        
 			        	                }
 			        	                        
 		}
@@ -2707,10 +2618,10 @@ double cb[19]={-1.0/3.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.
 			        	else
 			        	       
 			        	                {
-			        	                   C[0]+=3.0/(lat_c*lat_c*dt)*w[tmpi]*elat[tmpi][0]*bufrecv[-nei_loc[ci][tmpi]][sumtmp[-nei_loc[ci][tmpi]]];
-			        	                   C[1]+=3.0/(lat_c*lat_c*dt)*w[tmpi]*elat[tmpi][1]*bufrecv[-nei_loc[ci][tmpi]][sumtmp[-nei_loc[ci][tmpi]]];
-			        	                   C[2]+=3.0/(lat_c*lat_c*dt)*w[tmpi]*elat[tmpi][2]*bufrecv[-nei_loc[ci][tmpi]][sumtmp[-nei_loc[ci][tmpi]]];  
-			        	                   sumtmp[-nei_loc[ci][tmpi]]++;
+               C[0]+=3.0/(lat_c*lat_c*dt)*w[tmpi]*elat[tmpi][0]*bufrecv[-nei_loc[ci][tmpi]-1][sumtmp[-nei_loc[ci][tmpi]-1]];
+               C[1]+=3.0/(lat_c*lat_c*dt)*w[tmpi]*elat[tmpi][1]*bufrecv[-nei_loc[ci][tmpi]-1][sumtmp[-nei_loc[ci][tmpi]-1]];
+               C[2]+=3.0/(lat_c*lat_c*dt)*w[tmpi]*elat[tmpi][2]*bufrecv[-nei_loc[ci][tmpi]-1][sumtmp[-nei_loc[ci][tmpi]-1]];  
+			        	                   sumtmp[-nei_loc[ci][tmpi]-1]++;
 			        	                }
 			        	                      
 		                
@@ -2725,6 +2636,11 @@ double cb[19]={-1.0/3.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.
       			
 		
 		}
+
+
+
+		//cout<<"**     "<<rank<<"	"<<ci<<"	"<<Count+1<<endl;
+		//cout<<"@@@@@@@@"<<endl;
 
 		uu=u[ci][0]*u[ci][0]+u[ci][1]*u[ci][1]+u[ci][2]*u[ci][2];
 
@@ -2827,7 +2743,8 @@ GuoF[18]=w[18]*(lm0+lm1);
 }
 //====================
 
-			
+			//if (n>2100)
+			//cout<<c_s2<<"	"<<rank<<endl;
 			//=====================equilibrium of moment=================================
 			ux=u[ci][0];
 			uy=u[ci][1];
@@ -2838,24 +2755,24 @@ GuoF[18]=w[18]*(lm0+lm1);
 
 			
 	//========================================================================================		
-			meq[0]=rho[ci];meq[3]=rho_0*ux;meq[5]=rho_0*uy;meq[7]=rho_0*uz;
-			meq[1]=rho_0*(ux*ux+uy*uy+uz*uz)+CapA*cc;
-			meq[9]=rho_0*(2*ux*ux-uy*uy-uz*uz)+0.5*CapA*cc*(2*nx*nx-ny*ny-nz*nz);
-			meq[11]=rho_0*(uy*uy-uz*uz)+0.5*CapA*cc*(ny*ny-nz*nz);
-			meq[13]=rho_0*ux*uy+0.5*CapA*cc*(nx*ny);
-			meq[14]=rho_0*uy*uz+0.5*CapA*cc*(ny*nz);
-			meq[15]=rho_0*ux*uz+0.5*CapA*cc*(nx*nz);
+	//		meq[0]=rho[ci];meq[3]=rho_0*ux;meq[5]=rho_0*uy;meq[7]=rho_0*uz;
+	//		meq[1]=rho_0*(ux*ux+uy*uy+uz*uz)+CapA*cc;
+	//		meq[9]=rho_0*(2*ux*ux-uy*uy-uz*uz)+0.5*CapA*cc*(2*nx*nx-ny*ny-nz*nz);
+	//		meq[11]=rho_0*(uy*uy-uz*uz)+0.5*CapA*cc*(ny*ny-nz*nz);
+	//		meq[13]=rho_0*ux*uy+0.5*CapA*cc*(nx*ny);
+	//		meq[14]=rho_0*uy*uz+0.5*CapA*cc*(ny*nz);
+	//		meq[15]=rho_0*ux*uz+0.5*CapA*cc*(nx*nz);
 	//========================================================================================
 
 	
 	//=========================================================================================
-	//		meq[0]=rho[ci];meq[3]=rho_0*ux;meq[5]=rho_0*uy;meq[7]=rho_0*uz;
-	//		meq[1]=rho_0*(ux*ux+uy*uy+uz*uz);
-	//		meq[9]=rho_0*(2*ux*ux-uy*uy-uz*uz);
-	//		meq[11]=rho_0*(uy*uy-uz*uz);
-	//		meq[13]=rho_0*ux*uy;
-	//		meq[14]=rho_0*uy*uz;
-	//		meq[15]=rho_0*ux*uz;
+			meq[0]=rho[ci];meq[3]=rho_0*ux;meq[5]=rho_0*uy;meq[7]=rho_0*uz;
+			meq[1]=rho_0*(ux*ux+uy*uy+uz*uz);
+			meq[9]=rho_0*(2*ux*ux-uy*uy-uz*uz);
+			meq[11]=rho_0*(uy*uy-uz*uz);
+			meq[13]=rho_0*ux*uy;
+			meq[14]=rho_0*uy*uz;
+			meq[15]=rho_0*ux*uz;
 
 	//=======================================================================================		
 			
@@ -2879,7 +2796,11 @@ GuoF[18]=w[18]*(lm0+lm1);
 			s_other=8*(2-s_v)/(8-s_v);
 		//==================================================
 
+	//if (n>2030) 
+	//cout<<s_v<<"		"<<s_other<<"	"<<n<<endl;
 
+	//if (s_v!=s_v)
+	//	cout<<delta<<"	"<<psi[ci]<<"	"<<n<<endl;
 
 	//cout<<"@@@@@@@@@   "<<s_v<<"  "<<C[0]<<"   "<<C[1]<<"  "<<C[2]<<endl;
 	//cout<<"@@@@@@@@@   "<<s_v<<"  "<<ux<<"   "<<uy<<"  "<<uz<<"  "<<rho_r[ci]<<" "<<rho_b[ci]<<endl;
@@ -3063,6 +2984,9 @@ F_hat[18]*=(1-0.5*S[18]);
 m_l[18]=m_l[18]-S[18]*(m_l[18]-meq[18])+dt*F_hat[18];
 //=======================================
 
+//for (int isl=0;isl<19;isl++)
+//	if (m_l[isl]!=m_l[isl])
+//		cout<<isl<<"	"<<n<<"		"<<rank<<"	"<<s_v<<"		"<<s_other<<endl;
 
 //==========================
 m_inv_l[0]=+((double)0X1.5555555555555P-2)*1.0*m_l[0]+((double)-0X1P-1)*1.0/(c_l*c_l)*m_l[1]+((double)0X1.5555555555555P-3)*1.0/(c_l*c_l*c_l*c_l)*m_l[2]+((double)0X0P+0)*1.0/c_l*m_l[3]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[4]+((double)0X0P+0)*1.0/(c_l)*m_l[5]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[6]+((double)0X0P+0)*1.0/c_l*m_l[7]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[8]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[9]+((double)0X0P+0)*1.0/(c_l*c_l*c_l*c_l)*m_l[10]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[11]+((double)0X0P+0)*1.0/(c_l*c_l*c_l*c_l)*m_l[12]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[13]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[14]+((double)0X0P+0)*1.0/(c_l*c_l)*m_l[15]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[16]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[17]+((double)0X0P+0)*1.0/(c_l*c_l*c_l)*m_l[18];
@@ -3126,8 +3050,13 @@ m_inv_l[18]=+((double)0X1.C71C71C71C71CP-6)*1.0*m_l[0]+((double)0X1.555555555555
 		for (int mi=0; mi<19; mi++)
 			{
 			        
-			        
-		if (nei_loc[ci][mi]>0)
+			        //if (m_inv_l[mi]!=m_inv_l[mi])
+				//	cout<<n<<"	"<<mi<<"	"<<rank<<endl;
+
+
+
+
+			if (nei_loc[ci][mi]>0)
 			        F[nei_loc[ci][mi]][mi]=m_inv_l[mi];
 			else
 	                                   if (nei_loc[ci][mi]==0)
@@ -3147,7 +3076,7 @@ m_inv_l[18]=+((double)0X1.C71C71C71C71CP-6)*1.0*m_l[0]+((double)0X1.555555555555
 		
                  }
 
-	            
+	   //cout<<"@@     "<<rank<<endl;         
                  
            if (cc>0)
            for(int kk=1;kk<19;kk+=2)
@@ -3171,7 +3100,7 @@ m_inv_l[18]=+((double)0X1.C71C71C71C71CP-6)*1.0*m_l[0]+((double)0X1.555555555555
                       
 	               
 	               
-	               
+	           //cout<<"**     "<<rank<<"	"<<ci<<"	"<<Count+1<<endl;    
 			   
 		       for(int mi=0;mi<19;mi++)
 
@@ -3184,6 +3113,7 @@ m_inv_l[18]=+((double)0X1.C71C71C71C71CP-6)*1.0*m_l[0]+((double)0X1.555555555555
 				        }
 				        else
 				                {
+	//cout<<com_n<<"	"<<-nei_loc[ci][mi]-1<<"	"<<mi<<"	"<<rank<<endl;
 				                       bufsendrhor[-nei_loc[ci][mi]-1][sumtmp3[-nei_loc[ci][mi]-1]]=g_r[mi];
 				                       bufsendrhob[-nei_loc[ci][mi]-1][sumtmp3[-nei_loc[ci][mi]-1]]=g_b[mi];
 				                       sumtmp3[-nei_loc[ci][mi]-1]++; 
@@ -3191,16 +3121,23 @@ m_inv_l[18]=+((double)0X1.C71C71C71C71CP-6)*1.0*m_l[0]+((double)0X1.555555555555
 				        
 
 				}
-		
+
+
+		//cout<<"@@     "<<rank<<"	"<<ci<<"	"<<Count+1<<endl;
 		
 			
 }
+
+//cout<<"@@     "<<rank<<endl;    
+
+
+
                         
 	for (int i=0;i<com_n;i++)
 	{
-	MPI_Isend(bufsend[i],bufinfo[com_ind[i]], MPI_DOUBLE, com_ind[i]-1, (procind-1)*procn+com_ind[i]-1, MPI_COMM_WORLD,&request2[6*i]);
+	MPI_Isend(bufsend[i],bufinfo[com_ind[i]], MPI_DOUBLE, com_ind[i]-1, (procind-1)*procn+com_ind[i]-1+3*procn*procn+3, MPI_COMM_WORLD,&request2[6*i]);
 	                       
-	MPI_Irecv(bufrecv[i],bufinfo[com_ind[i]], MPI_DOUBLE, com_ind[i]-1, (com_ind[i]-1)*procn+procind-1, MPI_COMM_WORLD,&request2[6*i+1]);
+	MPI_Irecv(bufrecv[i],bufinfo[com_ind[i]], MPI_DOUBLE, com_ind[i]-1, (com_ind[i]-1)*procn+procind-1+3*procn*procn+3, MPI_COMM_WORLD,&request2[6*i+1]);
 	
 	MPI_Isend(bufsendrhor[i],bufinfo[com_ind[i]], MPI_DOUBLE, com_ind[i]-1, (procind-1)*procn+com_ind[i]-1+procn*procn+1, MPI_COMM_WORLD,&request2[6*i+2]);
 	                       
@@ -3213,6 +3150,13 @@ m_inv_l[18]=+((double)0X1.C71C71C71C71CP-6)*1.0*m_l[0]+((double)0X1.555555555555
 	
 	               MPI_Waitall(6*com_n,request2, status2);
 	               MPI_Testall(6*com_n,request2,&mpi_test2,status2);
+
+
+			
+			//for (int i=0;i<com_n;i++)
+	                //               for (int j=0;j<bufinfo[com_ind[i]];j++)
+			//		if (bufrecv[i][j]!=bufrecv[i][j])
+			//			cout<<"@@@@@   "<<n<<"	"<<com_ind[i]<<endl;
 		
 	               
 	                     for (int i=0;i<com_n;i++)
@@ -3229,8 +3173,22 @@ m_inv_l[18]=+((double)0X1.C71C71C71C71CP-6)*1.0*m_l[0]+((double)0X1.555555555555
 	                       }
 	               
 	               
-	               
-	               
+/*	               
+for (int i=0;i<com_n;i++)
+	{
+	if (sumtmp[i]!=bufinfo[com_ind[i]])
+		cout<<procind<<"		No."<<0<<endl;
+
+if (sumtmp2[i]!=bufinfo[com_ind[i]])
+		cout<<procind<<"		No."<<1<<endl;
+
+if (sumtmp3[i]!=bufinfo[com_ind[i]])
+		cout<<procind<<"		No."<<2<<endl;
+
+	//cout<<sumtmp[i]<<"	"<<bufinfo[com_ind[i]]<<"	"<<procind<<endl;
+	}	
+
+*/               
 	
 	
 
@@ -3276,7 +3234,10 @@ double psitemp;
 	for(int i=1;i<=Count;i++)	
                    
 			{
-			
+				//if ((u[i][0]!=u[i][0]) and (u0[i][0]==u0[i][0]))
+				//	{
+				//	cout<<n<<"	"<<rank<<"	"<<f[2][3]<<"	"<<rho[i]<<endl;
+				//	}
 				u0[i][0]=u[i][0];
 				u0[i][1]=u[i][1];
 				u0[i][2]=u[i][2];
@@ -3289,7 +3250,7 @@ double psitemp;
 					{
 					
 					f[i][k]=F[i][k];
-					rho[i]+=f[i][k];
+					rho[i]+=f[i][k]; 	//if (rho[i]!=rho[i]) cout<<f[i][k]<<"	"<<n<<"	"<<rank<<"	"<<k<<endl;
 					u[i][0]+=elat[k][0]*f[i][k];
 					u[i][1]+=elat[k][1]*f[i][k];
 					u[i][2]+=elat[k][2]*f[i][k];
@@ -3305,6 +3266,9 @@ double psitemp;
 				
 				
 				psi[i]=(rho_r[i]-rho_b[i])/(rho_r[i]+rho_b[i]);
+
+
+				//psi[i]=Psi_local[i];
 			
 			/*	
 			//==================PSI FILTER=============================
@@ -3707,6 +3671,8 @@ double psitemp;
 			
 	//MPI_Barrier(MPI_COMM_WORLD); 
 
+	//if (n>2100)
+	//cout<<f[2][3]<<"		"<<rank<<endl;
 }
 
 
@@ -4975,127 +4941,6 @@ double Comput_Perm(double* psi,double** u,double* Per_l,double* Per_g,int PerDIr
 }
 
 
-/*
-double Comput_Saturation_disp(double* psi,int*** Solid,int* SupInv)
-{
-	int rank = MPI :: COMM_WORLD . Get_rank ();
-	int mpi_size=MPI :: COMM_WORLD . Get_size ();
-
-	//double Sd_l,Sd_g;
-	
-	int nx_g[mpi_size];
-	int disp[mpi_size];
-	int si,sj,sm,sdir;
-	
-	MPI_Gather(&nx_l,1,MPI_INT,nx_g,1,MPI_INT,0,MPI_COMM_WORLD);
-	
-	
-	if (rank==0)
-		{
-		disp[0]=0;
-	
-		for (int i=1;i<mpi_size;i++)
-			disp[i]=disp[i-1]+nx_g[i-1];
-		
-		}
-
-	MPI_Bcast(disp,mpi_size,MPI_INT,0,MPI_COMM_WORLD);
-	
-double *rbuf_l,*rbuf_g;
-
-	rbuf_l=new double[mpi_size];
-	rbuf_g=new double[mpi_size];
-
-	Sd_l=0;Sd_g=0;
-
-if ((par_per_x-1)*(par_per_y-1)*(par_per_z-1)==0)	
-	for (int i=1;i<=Count;i++)
-	{
-		si=(int)(SupInv[i]/((NY+1)*(NZ+1)));
-		sj=(int)((SupInv[i]%((NY+1)*(NZ+1)))/(NZ+1));
-		sm=(int)(SupInv[i]%(NZ+1)); 
-		si+=disp[rank];
-
-		if (PerDir==1)
-			sdir=si;
-			else
-			if (PerDir==2)
-				sdir=sj;
-			else
-				sdir=sm;
-
-		
-		if ((si>=per_xn) and (si<=per_xp) and (sj>=per_yn) and (sj<=per_yp) and (sm>=per_zn) and (sm<=per_zp))
-		{
-	
-			if (psi[i]>=0) 
-			Sd_l+=psi[i]*sdir;
-			else
-			Sd_g+=psi[i]*sdir;
-		}
-		
-		
-	}
-	else
-	for (int i=1;i<=Count;i++)
-			{
-
-		si=(int)(SupInv[i]/((NY+1)*(NZ+1)));
-		sj=(int)((SupInv[i]%((NY+1)*(NZ+1)))/(NZ+1));
-		sm=(int)(SupInv[i]%(NZ+1)); 
-		si+=disp[rank];
-
-		if (PerDir==1)
-			sdir=si;
-			else
-			if (PerDir==2)
-				sdir=sj;
-			else
-				sdir=sm;
-				
-			if (psi[i]>=0) 
-			Sd_l+=psi[i]*sdir;
-			else
-			Sd_g+=psi[i]*sdir;
-
-		
-
-
-
-			}
-
-	
-		
-	
-
-		MPI_Gather(&Sd_l,1,MPI_DOUBLE,rbuf_l,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
-	
-		MPI_Gather(&Sd_g,1,MPI_DOUBLE,rbuf_g,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
-	
-	if (rank==0)
-	{Sd_l=0;Sd_g=0;
-	for (int i=0;i<mpi_size;i++)
-			{
-			Sd_l+=rbuf_l[i];Sd_g+=rbuf_g[i];
-			
-			}
-	
-	
-	
-	}
-
-	
-	delete [] rbuf_l;
-	delete [] rbuf_g;
-	
-	MPI_Bcast(&Sd_l,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
-	MPI_Bcast(&Sd_g,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
-	
-	return (Sd_l);
-			
-
-}
-*/
 
 
 double Comput_Saturation(double* psi,int*** Solid,int* SupInv)
