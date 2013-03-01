@@ -18,7 +18,7 @@ phase.dat       	    	:Initial components distribution
 0 0				:Psi constant BC in Z
 0.05   		       		:Viscosity (Component A, psi=1)
 0.05   		       		:Viscosity (Component B, psi=-1)
-0.7     		      	:#Contact Angle Cos(Theta) (Positive=1 wetting, Negative -1 wetting)
+-0.7     		      	:#Contact Angle Cos(Theta) (Positive=1 wetting, Negative -1 wetting)
 1.0e-2    		      	:#Surface tension (Kappa)
 0.0e-3 0.0 0.0			:initial velocity for x,y,z
 2981616.0        	       	:Permeability (Single Phase mD)

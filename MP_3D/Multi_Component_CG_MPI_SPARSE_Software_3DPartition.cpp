@@ -2500,7 +2500,7 @@ double usqr,vsqr,eu,ef,cospsi,s_other;
 double F_hat[19],GuoF[19],f_eq[19],u_tmp[3];
 double m_l[19],m_inv_l[19];
 int i,j,m,ind_S;
-int interi,interj,interk,ip,jp,kp;
+int interi,interj,interm,ip,jp,kp;
 double c2,c4;
 double delta_rho=0.1;
 const double c_l=lat_c;
@@ -2553,17 +2553,22 @@ double cb[19]={-1.0/3.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.
 		{	
 				
 		       //cout<<"**     "<<rank<<"	"<<ci<<"	"<<Count+1<<endl;   
+		        i=(int)(coor[ci]/((NY+1)*(NZ+1)));
+		        j=(int)((coor[ci]%((NY+1)*(NZ+1)))/(NZ+1));
+			m=(int)(coor[ci]%(NZ+1));   
 
 			C[0]=0;C[1]=0;C[2]=0;ind_S=0;
 	for (int tmpi=0;tmpi<19;tmpi++)
 		{
 		        //cout<<f[ci][tmpi]<<endl;
 			//-------------------PERIODIC BOUNDARY CONDITION---------------------------
-		
-			
+		interi=i+e[tmpi][0];
+		interj=j+e[tmpi][0];
+		interm=m+e[tmpi][0];
 			
 		if (in_psi_BC>0)
 		{
+		    
 		        i=(int)(coor[ci]/((NY+1)*(NZ+1)));
 		        j=(int)((coor[ci]%((NY+1)*(NZ+1)))/(NZ+1));
 			m=(int)(coor[ci]%(NZ+1));   
@@ -2583,7 +2588,7 @@ double cb[19]={-1.0/3.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.
 					C[2]+=3.0/(lat_c*lat_c*dt)*w[tmpi]*elat[tmpi][2]*psi_solid;
 			        	}
 			        	else
-			        	        if (((psi_xn>0) and (i==0)) or ((psi_xp>0) and (i==NX)) or ((psi_yn>0) and (j==0)) or ((psi_yp>0) and (j==NY)) or ((psi_zn>0) and (m==0)) or ((psi_zp>0) and (m==NZ)))
+			        	        if (((psi_xn>0) and (interi<0)) or ((psi_xp>0) and (interi>NX)) or ((psi_yn>0) and (interj<0)) or ((psi_yp>0) and (interj>NY)) or ((psi_zn>0) and (interm<0)) or ((psi_zp>0) and (interm>NZ)))
 			        	        {
 			        	                sumtmp[-nei_loc[ci][tmpi]]++;
 			        	                C[0]+=3.0/(lat_c*lat_c*dt)*w[tmpi]*elat[tmpi][0]*psi[ci];
@@ -2755,24 +2760,24 @@ GuoF[18]=w[18]*(lm0+lm1);
 
 			
 	//========================================================================================		
-	//		meq[0]=rho[ci];meq[3]=rho_0*ux;meq[5]=rho_0*uy;meq[7]=rho_0*uz;
-	//		meq[1]=rho_0*(ux*ux+uy*uy+uz*uz)+CapA*cc;
-	//		meq[9]=rho_0*(2*ux*ux-uy*uy-uz*uz)+0.5*CapA*cc*(2*nx*nx-ny*ny-nz*nz);
-	//		meq[11]=rho_0*(uy*uy-uz*uz)+0.5*CapA*cc*(ny*ny-nz*nz);
-	//		meq[13]=rho_0*ux*uy+0.5*CapA*cc*(nx*ny);
-	//		meq[14]=rho_0*uy*uz+0.5*CapA*cc*(ny*nz);
-	//		meq[15]=rho_0*ux*uz+0.5*CapA*cc*(nx*nz);
+			meq[0]=rho[ci];meq[3]=rho_0*ux;meq[5]=rho_0*uy;meq[7]=rho_0*uz;
+			meq[1]=rho_0*(ux*ux+uy*uy+uz*uz)+CapA*cc;
+			meq[9]=rho_0*(2*ux*ux-uy*uy-uz*uz)+0.5*CapA*cc*(2*nx*nx-ny*ny-nz*nz);
+			meq[11]=rho_0*(uy*uy-uz*uz)+0.5*CapA*cc*(ny*ny-nz*nz);
+			meq[13]=rho_0*ux*uy+0.5*CapA*cc*(nx*ny);
+			meq[14]=rho_0*uy*uz+0.5*CapA*cc*(ny*nz);
+			meq[15]=rho_0*ux*uz+0.5*CapA*cc*(nx*nz);
 	//========================================================================================
 
 	
 	//=========================================================================================
-			meq[0]=rho[ci];meq[3]=rho_0*ux;meq[5]=rho_0*uy;meq[7]=rho_0*uz;
-			meq[1]=rho_0*(ux*ux+uy*uy+uz*uz);
-			meq[9]=rho_0*(2*ux*ux-uy*uy-uz*uz);
-			meq[11]=rho_0*(uy*uy-uz*uz);
-			meq[13]=rho_0*ux*uy;
-			meq[14]=rho_0*uy*uz;
-			meq[15]=rho_0*ux*uz;
+	//		meq[0]=rho[ci];meq[3]=rho_0*ux;meq[5]=rho_0*uy;meq[7]=rho_0*uz;
+	//		meq[1]=rho_0*(ux*ux+uy*uy+uz*uz);
+	//		meq[9]=rho_0*(2*ux*ux-uy*uy-uz*uz);
+	//		meq[11]=rho_0*(uy*uy-uz*uz);
+	//		meq[13]=rho_0*ux*uy;
+	//		meq[14]=rho_0*uy*uz;
+	//		meq[15]=rho_0*ux*uz;
 
 	//=======================================================================================		
 			
@@ -3106,11 +3111,19 @@ m_inv_l[18]=+((double)0X1.C71C71C71C71CP-6)*1.0*m_l[0]+((double)0X1.555555555555
 
 
 			{       
-				if (nei_loc[ci][mi]>=0)
+				if (nei_loc[ci][mi]>0)
 				        {
-				                rhor[ci]+=g_r[mi];
-						rhob[ci]+=g_b[mi];       
+				                rhor[nei_loc[ci][mi]]+=g_r[mi];
+						rhob[nei_loc[ci][mi]]+=g_b[mi];
+						//rhor[ci]+=g_r[mi];rhob[ci]+=g_b[mi];
+						
+						
 				        }
+				        else
+				        if (nei_loc[ci][mi]==0)
+				                {
+				                        rhor[ci]+=g_r[mi];rhob[ci]+=g_b[mi];
+				                }
 				        else
 				                {
 	//cout<<com_n<<"	"<<-nei_loc[ci][mi]-1<<"	"<<mi<<"	"<<rank<<endl;
@@ -3130,7 +3143,7 @@ m_inv_l[18]=+((double)0X1.C71C71C71C71CP-6)*1.0*m_l[0]+((double)0X1.555555555555
 
 //cout<<"@@     "<<rank<<endl;    
 
-
+MPI_Barrier(MPI_COMM_WORLD);
 
                         
 	for (int i=0;i<com_n;i++)
@@ -3143,7 +3156,7 @@ m_inv_l[18]=+((double)0X1.C71C71C71C71CP-6)*1.0*m_l[0]+((double)0X1.555555555555
 	                       
 	MPI_Irecv(bufrecvrhor[i],bufinfo[com_ind[i]], MPI_DOUBLE, com_ind[i]-1, (com_ind[i]-1)*procn+procind-1+procn*procn+1, MPI_COMM_WORLD,&request2[6*i+3]);
 	
-	MPI_Isend(bufsendrhor[i],bufinfo[com_ind[i]], MPI_DOUBLE, com_ind[i]-1, (procind-1)*procn+com_ind[i]-1+2*procn*procn+2, MPI_COMM_WORLD,&request2[6*i+4]);
+	MPI_Isend(bufsendrhob[i],bufinfo[com_ind[i]], MPI_DOUBLE, com_ind[i]-1, (procind-1)*procn+com_ind[i]-1+2*procn*procn+2, MPI_COMM_WORLD,&request2[6*i+4]);
 	                       
 	MPI_Irecv(bufrecvrhob[i],bufinfo[com_ind[i]], MPI_DOUBLE, com_ind[i]-1, (com_ind[i]-1)*procn+procind-1+2*procn*procn+2, MPI_COMM_WORLD,&request2[6*i+5]);
 	}
@@ -4699,7 +4712,7 @@ void output_psi(int m,double* psi,int MirX,int MirY,int MirZ,int mir,int*** Soli
 
 	const int root_rank=0;
 	
-	double rho_0=1.0;
+	double rho_0=0.0;
 	
 	
 	MPI_Status status;
