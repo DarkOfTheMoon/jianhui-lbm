@@ -673,11 +673,23 @@ sum=1;
 	for(int i=0 ; i<nx ; i++)
 		if (Solid[i][j][k]>0)
 		{//cout<<i<<"	"<<j<<"		"<<k<<endl;
-		for (int ls=0;ls<6;ls++)
+		for (int ls=0;ls<18;ls++)
 		{
 		ii=i+e[ls][0];
 		jj=j+e[ls][1];
 		kk=k+e[ls][2];
+		
+		//================
+		/*
+		if (ii>=nx) ii=0;
+		if (ii<0) ii=nx-1;
+		if (jj>=ny) jj=0;
+		if (jj<0) jj=ny-1;
+		if (kk>=nz) kk=0;
+		if (kk<0) kk=nz-1;
+		*/
+		//================
+		
 		if ((ii>=0) and (ii<nx) and (jj>=0) and (jj<ny) and (kk>=0) and (kk<nz))
 			if (Solid[ii][jj][kk]>0)
 				{sum2++;}
@@ -703,11 +715,24 @@ sum=1;
 	for (int i=0;i<nx;i++)
 	if (Solid[i][j][k]>0)
 	{
-	for (int ls=0;ls<6;ls++)
+	for (int ls=0;ls<18;ls++)
 		{
 		ii=i+e[ls][0];
 		jj=j+e[ls][1];
 		kk=k+e[ls][2];	
+		
+		
+		//================
+		/*
+		if (ii>=nx) ii=0;
+		if (ii<0) ii=nx-1;
+		if (jj>=ny) jj=0;
+		if (jj<0) jj=ny-1;
+		if (kk>=nz) kk=0;
+		if (kk<0) kk=nz-1;
+		*/
+		//================
+		
 		if ((ii>=0) and (ii<nx) and (jj>=0) and (jj<ny) and (kk>=0) and (kk<nz))
 			if (Solid[ii][jj][kk]>0)
 				out<<Solid[ii][jj][kk]<<" ";
