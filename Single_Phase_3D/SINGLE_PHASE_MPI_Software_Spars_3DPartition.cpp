@@ -858,7 +858,12 @@ void Parallelize_Geometry()
     int ii,jj,kk,pore2;
     int ip,jp,kp;
     
-   
+   if (par_per_x==0)
+		{per_xn=0;per_xp=NX;}
+	if (par_per_y==0)
+		{per_yn=0;per_yp=NY;}
+	if (par_per_z==0)
+		{per_zn=0;per_zp=NZ;}
                                 
     int procind=MPI :: COMM_WORLD . Get_rank ()+1;                               //currentprocessor index, start from 1
     int procn=MPI :: COMM_WORLD . Get_size ();                                  //total processor number

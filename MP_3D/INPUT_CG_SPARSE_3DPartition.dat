@@ -1,12 +1,12 @@
 =============INPUT FILE FOR 3D LATTICE BOLTZMANN MPI CODE--MULTI COMPONENT COLOR GRADIENT MODEL=======
-BC.dat.5.36x70x3          	:Geometry filename
-phase.dat       	    	:Initial components distribution
-36 70 3                 	:nx ny nz
+ftb_test.roc.3.262x131x131          	:Geometry filename
+phase.dat       	    	          :Initial components distribution
+262 131 131                 	:nx ny nz
 10000		     		:#Maximum time step
 7.0	             		:dx (um) Resolution (for Permeability calculation)
 0	        	      	:Pressure Or Velocity Boundary (1=YES, 0=No)
 0				:Psi constant BC
-0.0e-6 1.0e-6 0.0	          	:#body force for x,y,z
+6.0e-6 0.0e-6 0.0	          	:#body force for x,y,z
 0 1.0 0 1.0000	    		:Pressure Boundary in X direction ()p=c_s^2*/rho
 0 1.0 0 1.0	    		:Pressure Boundary in Y direction ()
 0 1.0 0 1.0	    		:Pressure Boundary in Z direction (Format detials can be found within this file)
@@ -18,13 +18,13 @@ phase.dat       	    	:Initial components distribution
 0 0				:Psi constant BC in Z
 0.05   		       		:Viscosity (Component A, psi=1)
 0.05   		       		:Viscosity (Component B, psi=-1)
--0.7     		      	:#Contact Angle Cos(Theta) (Positive=1 wetting, Negative -1 wetting)
-1.0e-2    		      	:#Surface tension (Kappa)
+0.7     		      	:#Contact Angle Cos(Theta) (Positive=1 wetting, Negative -1 wetting)
+0.6e-2    		      	:#Surface tension (Kappa)
 0.0e-3 0.0 0.0			:initial velocity for x,y,z
 2981616.0        	       	:Permeability (Single Phase mD)
 =========OUTPUT==CONTROL===================
 1		         	:Permeability writing (1=yes, 0=no)
-2                       	:Direction of Permeability Calculation (1=X, 2=Y, 3=Z)
+1                       	:Direction of Permeability Calculation (1=X, 2=Y, 3=Z)
 50		         	:#Frequency of results writing (interval in time steps)
 0               		:Export Mesh Decomposition VTK (1=Yes, 0=No)
 100				:#Freqency of velocity field writing (vtk, -1=no velocity writing 0=only geometry)
@@ -35,13 +35,13 @@ phase.dat       	    	:Initial components distribution
 ./				:OUTPUT PATH,DEFAULT: ./ (INCLUDE "/" AT THE END)
 2              			:PRESSURE AND VELOCITY BOUNDARY CONDITION OPTIONS: 0,1,2,3: EBC_S,EBC_D,TOLKE_BC,NEBC_D
 0  500				:MULTI-COMPONENT STABALIZER: (a,b) a=0=OFF, a=1=ON, BODY FORCE APPLIED AFTER b steps
--1                              :PRESET SATUATION, 0--1 initial component distri not needed, -1=OFF(for Component A,1)
+0.3                              :PRESET SATUATION, 0--1 initial component distri not needed, -1=OFF(for Component A,1)
 0				:PRESET VALUE FOR BUFFET AREA, 0=NO,1=COMP A,-1=COMP B (valid when preset satuation)
 0.99 0.92			:#Relative permeability calcualtion 0..1 (psi>=value, cal the flux for Comp1)
 0 0 0				:Pemeability calculation Partially  (1=ON, 0=OFF)
-27 3				:Permeability calculation partially Starting point and Ending point in X
-0 100				:Permeability calculation partially Starting point and Ending point in Y
-0 100				:Permeability calculation partially Starting point and Ending point in Z
+300 20				:Permeability calculation partially Starting point and Ending point in X   N,P
+70 10				:Permeability calculation partially Starting point and Ending point in Y
+300 20				:Permeability calculation partially Starting point and Ending point in Z
 ======================BACKUP==CONTROL====================
 -1		                   :BACKUP FREQUENCY (-1=NO BACKUP,0=Backup at the end of computation)
 0                              :INITIALIZATION WITH BACKUP DATA (0=OFF, n>1=ON the time step of backup data)

@@ -1669,7 +1669,12 @@ void Parallelize_Geometry()
     int ii,jj,kk;
     int ip,jp,kp;
     
-   
+   if (par_per_x==0)
+		{per_xn=0;per_xp=NX;}
+	if (par_per_y==0)
+		{per_yn=0;per_yp=NY;}
+	if (par_per_z==0)
+		{per_zn=0;per_zp=NZ;}
                                 
     int procind=MPI :: COMM_WORLD . Get_rank ()+1;                               //currentprocessor index, start from 1
     int procn=MPI :: COMM_WORLD . Get_size ();                                  //total processor number
@@ -2344,6 +2349,7 @@ void init(double* rho, double** u, double** f,double* psi,double* rho_r, double*
 			else
 			        psi[i]=-1;
 			
+			Psi_local[i]=psi[i];
 			rho[i]=1.0;
 			rho_r[i]=(psi[i]*rho[i]+rho[i])/2;
 			rho_b[i]=rho[i]-rho_r[i];
@@ -2370,14 +2376,24 @@ void init(double* rho, double** u, double** f,double* psi,double* rho_r, double*
 			                loc_x=(int)(coor[i]/((NY+1)*(NZ+1)));
 			                loc_y=(int)((coor[i]%((NY+1)*(NZ+1)))/(NZ+1));
 			                loc_z=coor[i]%(NZ+1);
-			                if (((loc_x<per_xn) or (loc_x>per_xp) or (loc_y<per_yn) or (loc_y>per_yp) or (loc_z<per_zn) or (loc_z>per_zp)) and ((ini_buf==-1) or (ini_buf==1)))
+			                
+			                //if ((loc_y<per_yn) and (loc_y>per_yp) and (par_per_y>0))
+			                 //cout<<loc_x<<"        "<<loc_y<<"        "<<loc_z<<"        "<<par_per_x<<endl;
+			                 //cout<<loc_x<<"        "<<loc_y<<"        "<<loc_z<<"        "<<per_yn<<"        "<<per_yp<<"        "<<ini_buf<<endl;
+			                //cout<<per_xn<<endl;
+			                
+			                if ( (((loc_x<per_xn) or (loc_x>per_xp)) and (par_per_x>0)) or (((loc_y<per_yn) or (loc_y>per_yp)) and (par_per_y>0)) or (((loc_z<per_zn) or (loc_z>per_zp)) and (par_per_z>0)) )
+			                       
+			                 if ((ini_buf==-1) or (ini_buf==1))
 			                {        
+			                        //cout<<loc_x<<"        "<<loc_y<<"        "<<loc_z<<"        "<<par_per_x<<endl;
 			                        psi[i]=ini_buf;
 			                        rho_r[i]=(psi[i]*rho[i]+rho[i])/2;
 			                        rho_b[i]=rho[i]-rho_r[i];
 			                        Psi_local[i]=ini_buf;
 			                       
 			                }
+			                
 			                
 			                
 			        }
@@ -3318,7 +3334,7 @@ double psitemp;
                                    {
                                            for (int ii=0;ii<bclxn;ii++)
                                            if (nei_loc[bclx[ii]][1]>0)
-                                           for (int ii=0;ii<bclxn;ii++)
+                                           //for (int ii=0;ii<bclxn;ii++)
                                            {
                                             psi[bclx[ii]]=psi[nei_loc[bclx[ii]][1]];
                                             rho_r[bclx[ii]]=(psi[bclx[ii]]*1.0+1.0)/2;
@@ -3346,8 +3362,246 @@ double psitemp;
                                                    psi[bclx[ii]]=psi_rand;
                                    
                                    }
+                                   
+                                   
                         
+               if (psi_xp>0)
+                           if (psi_xp==1)   
+                           {
+                                   for (int ii=0;ii<bcrxn;ii++)
+                                           {
+                                               rho_r[bcrx[ii]]=(Psi_local[bcrx[ii]]*1.0+1.0)/2;
+                                               rho_b[bcrx[ii]]=1.0-rho_r[bcrx[ii]];
+                                               psi[bcrx[ii]]=Psi_local[bcrx[ii]];    
+                                           }
+                           }
+                           else
+                                   if (psi_xp==2)
+                                   {
+                                           for (int ii=0;ii<bcrxn;ii++)
+                                           if (nei_loc[bcrx[ii]][1]>0)
+                                           //for (int ii=0;ii<bcrxn;ii++)
+                                           {
+                                            psi[bcrx[ii]]=psi[nei_loc[bcrx[ii]][1]];
+                                            rho_r[bcrx[ii]]=(psi[bcrx[ii]]*1.0+1.0)/2;
+                                            rho_b[bcrx[ii]]=1.0-rho_r[bcrx[ii]];
+                                           }
+                                           else
+                                                    for (int ii=0;ii<bcrxn;ii++)
+                                                    {
+                                                            rho_r[bcrx[ii]]=(Psi_local[bcrx[ii]]*1.0+1.0)/2;
+                                                            rho_b[bcrx[ii]]=1.0-rho_r[bcrx[ii]];
+                                                            psi[bcrx[ii]]=Psi_local[bcrx[ii]];    
+                                                    }
+                                   }
+                                   else
+                                           for (int ii=0;ii<bcrxn;ii++)
+                                           {
+                                                   rand_double=(double(rand()%10000))/10000;
+                                                   if (rand_double<ini_Sat)
+                                                           psi_rand=1;
+                                                   else
+                                                           psi_rand=-1;
+			
+                                                   rho_r[bcrx[ii]]=(psi_rand*1.0+1.0)/2;
+                                                   rho_b[bcrx[ii]]=1.0-rho_r[bcrx[ii]];
+                                                   psi[bcrx[ii]]=psi_rand;
+                                   
+                                   }      
+                                   
+                                   
+                                   
+                                   
+                     if (psi_yn>0)
+                           if (psi_yn==1)   
+                           {
+                                   for (int ii=0;ii<bclyn;ii++)
+                                           {
+                                               rho_r[bcly[ii]]=(Psi_local[bcly[ii]]*1.0+1.0)/2;
+                                               rho_b[bcly[ii]]=1.0-rho_r[bcly[ii]];
+                                               psi[bcly[ii]]=Psi_local[bcly[ii]];    
+                                           }
+                           }
+                           else
+                                   if (psi_yn==2)
+                                   {
+                                           for (int ii=0;ii<bclyn;ii++)
+                                           if (nei_loc[bcly[ii]][1]>0)
+                                           //for (int ii=0;ii<bclyn;ii++)
+                                           {
+                                            psi[bcly[ii]]=psi[nei_loc[bcly[ii]][1]];
+                                            rho_r[bcly[ii]]=(psi[bcly[ii]]*1.0+1.0)/2;
+                                            rho_b[bcly[ii]]=1.0-rho_r[bcly[ii]];
+                                           }
+                                           else
+                                                    for (int ii=0;ii<bclyn;ii++)
+                                                    {
+                                                            rho_r[bcly[ii]]=(Psi_local[bcly[ii]]*1.0+1.0)/2;
+                                                            rho_b[bcly[ii]]=1.0-rho_r[bcly[ii]];
+                                                            psi[bcly[ii]]=Psi_local[bcly[ii]];    
+                                                    }
+                                   }
+                                   else
+                                           for (int ii=0;ii<bclyn;ii++)
+                                           {
+                                                   rand_double=(double(rand()%10000))/10000;
+                                                   if (rand_double<ini_Sat)
+                                                           psi_rand=1;
+                                                   else
+                                                           psi_rand=-1;
+			
+                                                   rho_r[bcly[ii]]=(psi_rand*1.0+1.0)/2;
+                                                   rho_b[bcly[ii]]=1.0-rho_r[bcly[ii]];
+                                                   psi[bcly[ii]]=psi_rand;
+                                   
+                                   }
+                                   
+                                   
                         
+               if (psi_yp>0)
+                           if (psi_yp==1)   
+                           {
+                                   for (int ii=0;ii<bcryn;ii++)
+                                           {
+                                               rho_r[bcry[ii]]=(Psi_local[bcry[ii]]*1.0+1.0)/2;
+                                               rho_b[bcry[ii]]=1.0-rho_r[bcry[ii]];
+                                               psi[bcry[ii]]=Psi_local[bcry[ii]];
+                                               //cout<<Psi_local[bcry[ii]]<<endl;
+                                           }
+                           }
+                           else
+                                   if (psi_yp==2)
+                                   {
+                                           for (int ii=0;ii<bcryn;ii++)
+                                           if (nei_loc[bcry[ii]][1]>0)
+                                           //for (int ii=0;ii<bcryn;ii++)
+                                           {
+                                            psi[bcry[ii]]=psi[nei_loc[bcry[ii]][1]];
+                                            rho_r[bcry[ii]]=(psi[bcry[ii]]*1.0+1.0)/2;
+                                            rho_b[bcry[ii]]=1.0-rho_r[bcry[ii]];
+                                           }
+                                           else
+                                                    for (int ii=0;ii<bcryn;ii++)
+                                                    {
+                                                            rho_r[bcry[ii]]=(Psi_local[bcry[ii]]*1.0+1.0)/2;
+                                                            rho_b[bcry[ii]]=1.0-rho_r[bcry[ii]];
+                                                            psi[bcry[ii]]=Psi_local[bcry[ii]];    
+                                                    }
+                                   }
+                                   else
+                                           for (int ii=0;ii<bcryn;ii++)
+                                           {
+                                                   rand_double=(double(rand()%10000))/10000;
+                                                   if (rand_double<ini_Sat)
+                                                           psi_rand=1;
+                                                   else
+                                                           psi_rand=-1;
+			
+                                                   rho_r[bcry[ii]]=(psi_rand*1.0+1.0)/2;
+                                                   rho_b[bcry[ii]]=1.0-rho_r[bcry[ii]];
+                                                   psi[bcry[ii]]=psi_rand;
+                                   
+                                   }      
+                                                 
+                                   
+                    if (psi_zn>0)
+                           if (psi_zn==1)   
+                           {
+                                   for (int ii=0;ii<bclzn;ii++)
+                                           {
+                                               rho_r[bclz[ii]]=(Psi_local[bclz[ii]]*1.0+1.0)/2;
+                                               rho_b[bclz[ii]]=1.0-rho_r[bclz[ii]];
+                                               psi[bclz[ii]]=Psi_local[bclz[ii]];    
+                                           }
+                           }
+                           else
+                                   if (psi_zn==2)
+                                   {
+                                           for (int ii=0;ii<bclzn;ii++)
+                                           if (nei_loc[bclz[ii]][1]>0)
+                                           //for (int ii=0;ii<bclzn;ii++)
+                                           {
+                                            psi[bclz[ii]]=psi[nei_loc[bclz[ii]][1]];
+                                            rho_r[bclz[ii]]=(psi[bclz[ii]]*1.0+1.0)/2;
+                                            rho_b[bclz[ii]]=1.0-rho_r[bclz[ii]];
+                                           }
+                                           else
+                                                    for (int ii=0;ii<bclzn;ii++)
+                                                    {
+                                                            rho_r[bclz[ii]]=(Psi_local[bclz[ii]]*1.0+1.0)/2;
+                                                            rho_b[bclz[ii]]=1.0-rho_r[bclz[ii]];
+                                                            psi[bclz[ii]]=Psi_local[bclz[ii]];    
+                                                    }
+                                   }
+                                   else
+                                           for (int ii=0;ii<bclzn;ii++)
+                                           {
+                                                   rand_double=(double(rand()%10000))/10000;
+                                                   if (rand_double<ini_Sat)
+                                                           psi_rand=1;
+                                                   else
+                                                           psi_rand=-1;
+			
+                                                   rho_r[bclz[ii]]=(psi_rand*1.0+1.0)/2;
+                                                   rho_b[bclz[ii]]=1.0-rho_r[bclz[ii]];
+                                                   psi[bclz[ii]]=psi_rand;
+                                   
+                                   }
+                                   
+                                   
+                        
+               if (psi_zp>0)
+                           if (psi_zp==1)   
+                           {
+                                   for (int ii=0;ii<bcrzn;ii++)
+                                           {
+                                               rho_r[bcrz[ii]]=(Psi_local[bcrz[ii]]*1.0+1.0)/2;
+                                               rho_b[bcrz[ii]]=1.0-rho_r[bcrz[ii]];
+                                               psi[bcrz[ii]]=Psi_local[bcrz[ii]];    
+                                           }
+                           }
+                           else
+                                   if (psi_zp==2)
+                                   {
+                                           for (int ii=0;ii<bcrzn;ii++)
+                                           if (nei_loc[bcrz[ii]][1]>0)
+                                           //for (int ii=0;ii<bcrzn;ii++)
+                                           {
+                                            psi[bcrz[ii]]=psi[nei_loc[bcrz[ii]][1]];
+                                            rho_r[bcrz[ii]]=(psi[bcrz[ii]]*1.0+1.0)/2;
+                                            rho_b[bcrz[ii]]=1.0-rho_r[bcrz[ii]];
+                                           }
+                                           else
+                                                    for (int ii=0;ii<bcrzn;ii++)
+                                                    {
+                                                            rho_r[bcrz[ii]]=(Psi_local[bcrz[ii]]*1.0+1.0)/2;
+                                                            rho_b[bcrz[ii]]=1.0-rho_r[bcrz[ii]];
+                                                            psi[bcrz[ii]]=Psi_local[bcrz[ii]];    
+                                                    }
+                                   }
+                                   else
+                                           for (int ii=0;ii<bcrzn;ii++)
+                                           {
+                                                   rand_double=(double(rand()%10000))/10000;
+                                                   if (rand_double<ini_Sat)
+                                                           psi_rand=1;
+                                                   else
+                                                           psi_rand=-1;
+			
+                                                   rho_r[bcrz[ii]]=(psi_rand*1.0+1.0)/2;
+                                                   rho_b[bcrz[ii]]=1.0-rho_r[bcrz[ii]];
+                                                   psi[bcrz[ii]]=psi_rand;
+                                   
+                                   }                     
+                                   
+                                   
+                                   
+                                   
+                                   
+                                   
+                                   
+                                   
+                                   
                         
              /*           
                    if ((psi_xn>0) and (rank==0))
@@ -3680,7 +3934,16 @@ double psitemp;
                         
                 }
 	
-                     
+         //for (int ii=0;ii<bcryn;ii++)
+            //                               {
+                                               //rho_r[bcry[ii]]=(Psi_local[bcry[ii]]*1.0+1.0)/2;
+                                               //rho_b[bcry[ii]]=1.0-rho_r[bcry[ii]];
+                                               //psi[bcry[ii]]=Psi_local[bcry[ii]];
+                                               //cout<<(int)(coor[bcry[ii]]%((NY+1)*(NZ+1))/(NZ+1))<<endl;
+               //                                cout<<psi[bcry[ii]]<<endl;
+                                               
+                                               
+                  //                         }             
 			
 	//MPI_Barrier(MPI_COMM_WORLD); 
 
