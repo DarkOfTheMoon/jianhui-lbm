@@ -4944,7 +4944,7 @@ void output_density(int m,double* rho,int MirX,int MirY,int MirZ,int mir,int*** 
 	         for(int j=0 ; j<NY0 ; j++)
 	                for(int i=0 ; i<NX0 ; i++)
 			if (Solid[i][j][k]==0)
-				out<<rho0<<" ";
+				out<<rho_0<<" ";
 			else
 				{
 				out<<rbuf_v[disp[Solid[i][j][k]-1]+tmpsum[Solid[i][j][k]-1]]<<" ";
@@ -5033,7 +5033,7 @@ void output_psi(int m,double* psi,int MirX,int MirY,int MirZ,int mir,int*** Soli
 	         for(int j=0 ; j<NY0 ; j++)
 	                for(int i=0 ; i<NX0 ; i++)
 			if (Solid[i][j][k]==0)
-				out<<rho0<<" ";
+				out<<rho_0<<" ";
 			else
 				{
 				out<<setprecision(preci)<<rbuf_v[disp[Solid[i][j][k]-1]+tmpsum[Solid[i][j][k]-1]]<<" ";
