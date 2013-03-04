@@ -46,7 +46,7 @@ int par_n;
 char poreFileNamePar[128];
 int expparvtk;
 int par_bin;
-	
+int partition_vtk;	
 ifstream fins(argv[1]);
 			
 							fins.getline(dummy, NCHAR);
@@ -71,6 +71,7 @@ ifstream fins(argv[1]);
 							fins.getline(dummy, NCHAR);
 	fins >> mesh_par;				fins.getline(dummy, NCHAR);
 	fins >> poreFileNameMET;				fins.getline(dummy, NCHAR);
+	fins >> partition_vtk;				fins.getline(dummy, NCHAR);
 								fins.getline(dummy, NCHAR);
 	fins >> par_n;						fins.getline(dummy, NCHAR);
 	fins >> par_bin;				fins.getline(dummy, NCHAR);

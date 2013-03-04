@@ -38,6 +38,7 @@ int nx,ny,nz;
 int expvtk,expdat,bindat,fil,geo_mod;
 int dir;
 
+int sum_rec;
 
 
 const int e[18][3]=
@@ -53,7 +54,8 @@ int mark,ii,jj,kk,loop,sum2;
 int sum=0;
 int sum3;
 int mesh_par;
-
+int partition_vtk;
+int reci,recj,reck;
 
 
 ifstream fins(argv[1]);
@@ -80,6 +82,7 @@ ifstream fins(argv[1]);
 							fins.getline(dummy, NCHAR);
 	fins >> mesh_par;				fins.getline(dummy, NCHAR);
 	fins >> poreFileNameMET;				fins.getline(dummy, NCHAR);
+	fins >> partition_vtk;				fins.getline(dummy, NCHAR);
 
 
 
@@ -159,7 +162,7 @@ double pore;
 			fin >> pore;
 			
 			//if (pore == 0.0)	{Solid[ci-1][cj-1][ck-1] = 0;}
-			if (pore == 0)	{Solid[i][j][k] = 0;sum++;}
+			if (pore == 0)	{Solid[i][j][k] = 0;sum++;reci=i;recj=j;reck=k;}
 			else
 			//if (pore == 1.0) 	{Solid[ci-1][cj-1][ck-1] = 1;sum++;}
 			//if (pore == 1.0) 	
@@ -170,6 +173,7 @@ double pore;
 			
 		}
 	cout<<"Porosity = "<<(double(sum)/(nx*ny*nz))<<endl;	
+	sum_rec=sum;
 	fin.close();
 
 	if (fil==1)
@@ -753,6 +757,231 @@ sum=1;
 }	
 	
 	
+
+if (mesh_par>1)
+{
+
+	cout<<endl;
+	cout<<"MESH PARTITION INITIALIZATION START"<<endl;
+
+sum=0;
+for(int k=0 ; k<nz ; k++)			
+	for(int j=0 ; j<ny ; j++)	
+	for(int i=0 ; i<nx ; i++)
+
+		if (Solid[i][j][k]==0)
+			{reci=i;recj=j;reck=k;sum++;}
+		else
+			{Solid[i][j][k]=-1;}
+
+cout<<sum<<endl;
+
+//sum_rec=sum;
+
+
+int ii,jj,kk;
+int sum_single=(int)(sum_rec)/mesh_par;
+int single_remain=(sum_rec)%mesh_par;
+
+int loc_size[mesh_par];
+
+for (int i=0;i<mesh_par;i++)
+	loc_size[i]=sum_single;
+
+	for (int i=0;i<single_remain;i++)
+		loc_size[i]+=1;
+
+
+int cor1n,cor2n;
+int cor1[sum_single+1][3];
+int cor2[sum_single+2][3];
+
+cor1n=0;
+cor2n=0;
+bool flag;
+sum=0;
+sum2=0;
+flag=0;
+int ind_par;
+int int_ind1,int_ind2;
+int resear_num=0;
+
+	cor1[0][0]=reci;cor1[0][1]=recj;cor1[0][2]=reck;
+	ind_par=1;
+	sum=0;
+	cor1n=1;
+	Solid[cor1[0][0]][cor1[0][1]][cor1[0][2]]=1;
+	
+
+	while (ind_par<=mesh_par-1)
+		{
+			cout<<"PROCESSING No."<<ind_par<<" DOMAIN	";
+			sum2=0;cor2n=0;flag=0;
+			while ((sum2<loc_size[ind_par-1]) and (flag==0) and (sum<sum_rec-1))
+			{
+				cor2n=0;int_ind1=0;
+				for (int i=0;i<cor1n;i++)
+					for (int ls=0;ls<6;ls++)
+					{
+					ii=cor1[i][0]+e[ls][0];
+					jj=cor1[i][1]+e[ls][1];
+					kk=cor1[i][2]+e[ls][2];
+					
+		if ((ii>=0) and (ii<nx) and (jj>=0) and (jj<ny) and (kk>=0) and (kk<nz) and (Solid[ii][jj][kk]==0))
+						{
+						cor2[cor2n][0]=ii;
+						cor2[cor2n][1]=jj;
+						cor2[cor2n][2]=kk;
+						cor2n++;
+						
+											
+						}					
+					}
+				
+				cor1n=0;
+				for (int i=0;i<cor2n;i++)
+					{	
+					if ((Solid[cor2[i][0]][cor2[i][1]][cor2[i][2]]==0) and (flag==0))
+						{
+						cor1[cor1n][0]=cor2[i][0];
+						cor1[cor1n][1]=cor2[i][1];
+						cor1[cor1n][2]=cor2[i][2];
+						cor1n++;
+						Solid[cor2[i][0]][cor2[i][1]][cor2[i][2]]=ind_par;
+						sum2++;sum++;
+						int_ind1=1;
+						if (sum2==loc_size[ind_par-1])
+							flag=1;
+						
+						}
+					
+					}
+
+				if (int_ind1==0)
+				{int_ind2=0;cor1n=1;resear_num++;
+				for(int k=0 ; k<nz ; k++)
+				{			
+					for(int j=0 ; j<ny ; j++)
+					{	
+					for(int i=0 ; i<nx ; i++)
+					{
+						if (Solid[i][j][k]==0)
+						{
+						cor1[0][0]=i;
+						cor1[0][1]=j;
+						cor1[0][2]=k;
+						Solid[i][j][k]=ind_par;
+						sum2++;sum++;
+						int_ind2=1;
+						if (sum2==loc_size[ind_par-1])
+							flag=1;
+						}
+					if ((int_ind2==1) or (flag==1))
+						break;
+	
+					}
+					if ((int_ind2==1) or (flag==1))
+						break;
+
+					}
+				if ((int_ind2==1) or (flag==1))
+				break;
+				}
+				}
+			//cout<<"COMPLETE		"<<resear_num<<endl;
+			//if (ind_par==mesh_par)	
+			//cout<<sum2<<" "<<sum<<"	"<<" "<<sum_rec<<" "<<ind_par<<" "<<mesh_par<<endl;
+			}
+		cout<<"COMPLETE		"<<resear_num<<endl;
+		ind_par++;
+
+		
+				
+
+
+		}
+	cout<<endl;
+	cout<<"MESH PARTITION COMPLETE"<<endl;
+	
+	for(int k=0 ; k<nz ; k++)			
+	for(int j=0 ; j<ny ; j++)	
+	for(int i=0 ; i<nx ; i++)
+	{
+	if (Solid[i][j][k]==0)
+		Solid[i][j][k]=mesh_par;
+	if (Solid[i][j][k]==-1)
+		Solid[i][j][k]=0;
+	
+	}
+	if (partition_vtk==1)
+	{
+	cout<<endl;
+	cout<<"Start decomposed VTK file"<<endl;
+	cout<<nx<<"         "<<ny<<"         "<<nz<<endl;
+
+	ostringstream name;
+	name<<poreFileName<<"_"<<mesh_par<<".vtk";
+	ofstream out;
+	out.open(name.str().c_str());
+	
+	//if (geo_mod==1)
+	//{
+	out<<"# vtk DataFile Version 2.0"<<endl;
+	out<<"J.Yang Lattice Boltzmann Simulation 3D Single Phase-Solid-Density"<<endl;
+	out<<"binary"<<endl;
+	out<<"DATASET STRUCTURED_POINTS"<<endl;
+	out<<"DIMENSIONS         "<<nz<<"         "<<ny<<"         "<<nx<<endl;       ///*********
+	out<<"ORIGIN 0 0 0"<<endl;
+	out<<"SPACING 1 1 1"<<endl;
+	out<<"POINT_DATA     "<<nx*ny*nz<<endl;				///*********
+	out<<"SCALARS sample_scalars int"<<endl;
+	out<<"LOOKUP_TABLE default"<<endl;
+	out.write((char *)(&Solid[0][0][0]), sizeof(int)*nx*ny*nz); 
+
+
+	out.close();
+
+	cout<<"Decomposed VTK file ouput COMPLETE"<<endl;
+	}
+
+	
+	
+	cout<<endl;
+	cout<<"Start writing MESH DAT file"<<endl;
+	cout<<nx<<"	"<<ny<<"	"<<nz<<endl;
+	ostringstream name3;
+	name3<<poreFileName<<"_"<<mesh_par<<".dat";
+	//name<<"Clashach_z_sym_196x196x388_8.946.dat";
+	ofstream out3;
+	out3.open(name3.str().c_str());
+	
+	if (bindat==1)
+	out3.write((char *)(&Solid[0][0][0]), sizeof(int)*nx*ny*nz); 
+	else
+	for (int k=0;k<nz;k++)
+	{
+		//cout<<k<<endl;
+		for (int j=0;j<ny;j++)
+		for (int i=0;i<nx;i++)
+			out3<<Solid[i][j][k]<<" ";
+	}
+	
+	out3.close();
+
+	cout<<"DAT file ouput complete"<<endl;
+	cout<<endl;
+
+	
+
+
+
+
+
+
+	
+
+}	
+
 	
 	
 	
