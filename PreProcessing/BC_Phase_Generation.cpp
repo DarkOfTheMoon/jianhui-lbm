@@ -10,8 +10,8 @@ using namespace std;
       
 int main (int argc , char * argv [])
 {
-int nx=100;
-int ny=30;
+int nx=30;
+int ny=100;
 int nz=3;
 
 
@@ -24,7 +24,7 @@ ostringstream name;
 		for(int j=0 ; j<ny; j++)					///*********
 			for(int i=0 ; i<nx; i++)
 			//if (i<=3)
-		        if ((i>=3) and (i<=5))
+		        if ((i==0) or (i==nx-1))
 			out<<1.0<<endl;
 			else
 			out<<0.0<<endl;

@@ -28,7 +28,7 @@ int sumin,numgeonum;
 int* sum_loc;
 
 
-int* nnx,nny,nnz,npx,npy,npz;
+int *nnx,*nny,*nnz,*npx,*npy,*npz;
 nnx=new int[divnumori];
 nny=new int[divnumori];
 nnz=new int[divnumori];
@@ -368,7 +368,7 @@ double pore;
 	
 	
 	
-	/*
+	
 	cout<<"Start writing VTK file"<<endl;
 	
 
@@ -405,7 +405,7 @@ double pore;
 	out.close();
 
 	cout<<"VTK file ouput COMPLETE"<<endl;
-	*/
+	
 	
 	
 	
