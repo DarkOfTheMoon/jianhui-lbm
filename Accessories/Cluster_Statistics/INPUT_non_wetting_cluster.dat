@@ -2,10 +2,15 @@
 psi_imb2_LBM_psi_875000.vtk			:Source Geometry file name (Geometry needed to be filtered)
 220 200 200			:size of geometry nx,ny,nz
 20-3-3.st			:OUTPUT FILE NAME FOR MATLAB POSTPROCESSING 
-1				:VTK format(1=YES,0=NO)
+1				:INPUT FILE VTK format(1=YES,0=NO)
+-1				:Calculation on non-wetting (-1) or Wetting (1)
 10       210                     :subdomain calculation nx_min,nx_max (MUST INDICATE)
 0       200             :subdomain calculation ny_min,ny_max (MUST INDICATE)
 0       200             :subdomain calculation nz_min,nz_max (MUST INDICATE)
+1			:Export clustered VTK (1=Yes 0= No)
+
+
+
 
 Note:
 output:

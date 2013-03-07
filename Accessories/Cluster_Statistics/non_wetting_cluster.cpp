@@ -40,6 +40,8 @@ int sum1=0;
 int pore_sum;
 int sum3;
 int sn[max_cluster];
+int phase_ind;
+int exp_vtk;
 
 int lnx,rnx,lny,rny,lnz,rnz;
 
@@ -53,9 +55,11 @@ ifstream fins(argv[1]);
 	fins >> nx>> ny>>nz;				fins.getline(dummy, NCHAR);
 	fins >> poreFileNameVTK;				fins.getline(dummy, NCHAR);
 	fins >> vtk_format;				fins.getline(dummy, NCHAR);
+	fins >> phase_ind;				fins.getline(dummy, NCHAR);
 	fins >> lnx>>rnx;                                fins.getline(dummy, NCHAR);
 	fins >> lny>>rny;                                fins.getline(dummy, NCHAR);
 	fins >> lnz>>rnz;                                fins.getline(dummy, NCHAR);
+	fins >> exp_vtk;				 fins.getline(dummy, NCHAR);
 fins.close();	
 
 
@@ -159,10 +163,12 @@ double pore;
 
 	sum=1;
 
+
+
 	for (int i=lnx;i<rnx;i++)
 		for (int j=lny;j<rny;j++)
 			for (int k=lnz;k<rnz;k++)
-			if (Solid[i][j][k]==-1)
+			if (Solid[i][j][k]==phase_ind)
 				{
 				sum2=0;
 				sum++;Solid[i][j][k]=-sum;sum2++;
@@ -184,7 +190,7 @@ double pore;
 				
 					if ((ii>=lnx) and (ii<rnx) and (jj>=lny) and (jj<rny) and (kk>=lnz) and (kk<rnz))
 						{
-						if (Solid[ii][jj][kk]==-1)
+						if (Solid[ii][jj][kk]==phase_ind)
 							{
 							Solid[ii][jj][kk]=-sum;
 							sum2++;mark=1;
@@ -198,7 +204,7 @@ double pore;
 				sn[sum-2]=sum2;
 				
 				}
-				cout<<sum-2<<"	"<<sum2<<endl;
+				cout<<sum<<"	"<<sum2<<endl;
 				}
 	
 		cout<<"CLUSTER SEARCHING COMPLETE"<<endl;
@@ -266,6 +272,39 @@ for (int i=0;i<sum3;i++)
 		
 		out.close();	
 	//		out<<"# vtk DataFile Version 2.0"<<endl;
+
+	
+
+	if (exp_vtk==1)
+	{
+	ostringstream name2;
+	name2<<"Processed_psi.vtk";
+	
+
+	out.open(name2.str().c_str());		
+	out<<"# vtk DataFile Version 2.0"<<endl;
+	out<<"J.Yang Lattice Boltzmann Simulation 3D Single Phase-Solid-Density"<<endl;
+	out<<"ASCII"<<endl;
+	out<<"DATASET STRUCTURED_POINTS"<<endl;
+	out<<"DIMENSIONS         "<<rnx-lnx<<"         "<<rny-lny<<"         "<<rnz-lnz<<endl;       ///*********
+	out<<"ORIGIN 0 0 0"<<endl;
+	out<<"SPACING 1 1 1"<<endl;
+	out<<"POINT_DATA     "<<(rnx-lnx)*(rny-lny)*(rnz-lnz)<<endl;				///*********
+	out<<"SCALARS sample_scalars float"<<endl;
+	out<<"LOOKUP_TABLE default"<<endl;
+	
+	for (int i=lnx;i<rnx;i++)
+		for (int j=lny;j<rny;j++)
+			for (int k=lnz;k<rnz;k++)
+	//for (int k=0;k<nz;k++)
+	//for (int j=0;j<ny;j++)
+	//for (int i=0;i<nx;i++)
+		out<<Solid[i][j][k]<<" ";
+
+	
+	out.close();
+	}
+
 		
 	
 }
