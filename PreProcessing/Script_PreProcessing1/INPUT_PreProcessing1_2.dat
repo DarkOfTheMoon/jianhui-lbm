@@ -25,6 +25,9 @@ ftb.graph		:FILE NAME for METIS (for SELF default output name source_name_number
 3			:NUMBER OF PARTITIONS
 1			:Binar for DAT
 1			:EXPORT FINAL PARTITIONS VTK NAME:Partitions.vtk
+
+
+
 The final Partitioned data file will be named as
 source geometry file name.number of partition.size
 eg:if the source geometry file name is ftb_test.roc
@@ -32,7 +35,13 @@ the final partitioned data file will be
 ftb_test.roc.3.262x131x131
 
 
-
+For Partition_ParMetis_IOs.cpp
+Give source geometry file name
+size
+Processed VTK file name
+Processed Data file name (used for claculation)
+and 
+EXPORT INITIALIZATION FILE for METIS(1 for METIS, >1 for parmetis decomposition domian numbers)
 
 Note:
 The source data should be comprised with 0 and a positive integal (eg 1 or 255)

@@ -9,7 +9,7 @@
  * George
  *
  * $Id: parmetis.c,v 1.5 2003/07/30 21:18:54 karypis Exp $
- *
+ * mpic++ Partition_ParMetis_IOs.cpp -lparmetis -lmetis -o paratest
  */
 
 //#include <parmetisbin.h>sstream
@@ -77,6 +77,8 @@ int expvtk,expdat,bindat,fil,geo_mod;
 int dir;
 
 int sum_rec;
+
+int* rbuf_result;
 
 
 const int e[18][3]=
@@ -227,6 +229,7 @@ if (rank==0)
 			
 		}
 	//cout<<"Porosity = "<<(double(sum)/(nx*ny*nz))<<endl;	
+	cout<<sum<<endl;
 	sum_rec=sum;
 	fin.close();
 
@@ -362,7 +365,7 @@ if (rank==0)
 	idx_t *adjwgt=NULL;
 	idx_t wgtflag=0;
 	idx_t numflag=0;
-	idx_t ncon=20;
+	idx_t ncon=1;
 	idx_t nparts=mesh_par;
 	real_t *tpwgts;
 	real_t *ubvec;
@@ -383,23 +386,132 @@ if (rank==0)
 	
 	//vwgt = new idx_t[proc_size[rank]];
 	//	for (int i=0;i<proc_size[rank];i++)
-	//	vwgt[i]=1;
+	//	vwgt[i]=10;
 
 	//adjwgt = new idx_t[sum];
 	//	for (int i=0;i<sum;i++)
 	//	adjwgt[i]=1;
 
-	//cout<<vtxdist[0]<<" "<<vtxdist[1]<<" "<<vtxdist[2]<<"	"<<rank<<"	"<<&vtxdist[0]<<"   "<<&vtxdist[1]<<"	"<<&vtxdist[2]<<" "<<&vtxdist[3]<<endl;
-	//cout<<xadj[0]<<" "<<xadj[1]<<" "<<xadj[2]<<"	"<<rank<<endl;
+	
 	options[0] = 0;
 	
+	if (rank==0)
+	cout<<"Start Partition"<<endl;
+	
+
+
 	MPI_Barrier(MPI_COMM_WORLD);
 	
-	
+
 	
       ParMETIS_V3_PartKway(vtxdist, xadj, adjncy, vwgt,adjwgt, &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec, options, &edgecut, part, &comm);
+
+	if (rank==0)
+	cout<<"Partition Complete"<<endl;
+
+	int* part_int;
+	int* disp;
+	int* sta_parts;
+
+	part_int = new int[proc_size[rank]];
+
+	for (int i=0;i<proc_size[rank];i++)
+		part_int[i]=part[i];
+
+	if (rank==0)
+		rbuf_result = new int[sum_rec];
+	
+	disp = new int[para_size];
+	for (int i=0;i<para_size;i++)
+		disp[i]=vtxdist[i];
+
+
+
+	MPI_Gatherv(part_int,proc_size[rank],MPI_INT,rbuf_result,proc_size,disp,MPI_INT,0,MPI_COMM_WORLD);
+
+	if (rank==0)
+	{
+	sta_parts = new int[mesh_par];
+	for (int i=0;i<mesh_par;i++)
+		sta_parts[i]=0;
+
+	sum=0;
+	for (int k=0;k<nz;k++)
+	for (int j=0;j<ny;j++)
+	for (int i=0;i<nx;i++)
+		if (Solid[i][j][k]>=0)
+			{Solid[i][j][k]=rbuf_result[sum];sta_parts[rbuf_result[sum]]++;sum++;}
+
+	
+	for (int i=0;i<mesh_par;i++)
+		cout<<sta_parts[i]<<"	"<<i<<"		"<<sta_parts[i]-(int)sum/mesh_par<<"	"<<(double)(sta_parts[i]-(int)sum/mesh_par)/sta_parts[i]<<endl;
+
+	
+
+	
+	if (partition_vtk==1)
+	{
+	cout<<endl;
+	cout<<"Start decomposed VTK file"<<endl;
+	cout<<nx<<"         "<<ny<<"         "<<nz<<endl;
+
+	ostringstream name;
+	name<<poreFileNameVTK;
+	ofstream out;
+	out.open(name.str().c_str());
+	
+	//if (geo_mod==1)
+	//{
+	out<<"# vtk DataFile Version 2.0"<<endl;
+	out<<"J.Yang Lattice Boltzmann Simulation 3D Single Phase-Solid-Density"<<endl;
+	out<<"binary"<<endl;
+	out<<"DATASET STRUCTURED_POINTS"<<endl;
+	out<<"DIMENSIONS         "<<nz<<"         "<<ny<<"         "<<nx<<endl;       ///*********
+	out<<"ORIGIN 0 0 0"<<endl;
+	out<<"SPACING 1 1 1"<<endl;
+	out<<"POINT_DATA     "<<nx*ny*nz<<endl;				///*********
+	out<<"SCALARS sample_scalars int"<<endl;
+	out<<"LOOKUP_TABLE default"<<endl;
+	out.write((char *)(&Solid[0][0][0]), sizeof(int)*nx*ny*nz); 
+
+
+	out.close();
+
+	cout<<"Decomposed VTK file ouput COMPLETE"<<endl;
+	}
+
 	
 	
+	cout<<endl;
+	cout<<"Start writing MESH DAT file"<<endl;
+	cout<<nx<<"	"<<ny<<"	"<<nz<<endl;
+	ostringstream name3;
+	name3<<poreFileNameOut;
+	//name<<"Clashach_z_sym_196x196x388_8.946.dat";
+	ofstream out3;
+	out3.open(name3.str().c_str());
+	
+	if (bindat==1)
+	out3.write((char *)(&Solid[0][0][0]), sizeof(int)*nx*ny*nz); 
+	else
+	for (int k=0;k<nz;k++)
+	{
+		//cout<<k<<endl;
+		for (int j=0;j<ny;j++)
+		for (int i=0;i<nx;i++)
+			out3<<Solid[i][j][k]<<" ";
+	}
+	
+	out3.close();
+
+	cout<<"DAT file ouput complete"<<endl;
+	cout<<endl;
+
+
+	}
+
+
+
         MPI :: Finalize ();
         
         

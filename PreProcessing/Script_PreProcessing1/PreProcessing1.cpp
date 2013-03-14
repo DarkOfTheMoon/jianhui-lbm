@@ -1047,7 +1047,7 @@ cout<<evennum<<"         "<<oddval<<endl;
 	if (partition_vtk==1)
 	{
 	cout<<endl;
-	cout<<"Start decomposed VTK file"<<endl;
+	cout<<"Start decomposed VTK file: Partition.vtk"<<endl;
 	cout<<nx<<"         "<<ny<<"         "<<nz<<endl;
 
 	ostringstream name;
