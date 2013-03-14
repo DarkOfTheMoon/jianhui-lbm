@@ -8,7 +8,11 @@
 #include<math.h> 
 # include "mpi.h"
 
+//======PARMETIS===============
+#include<parmetis.h>  
+//mpic++ SINGLE_PHASE_MPI_Software_Spars_3DPartition.cpp -lparmetis -lmetis -o paratest
 
+//=============================
 
 #define MAXN 100
 #define eps 1e-12
@@ -103,6 +107,8 @@ void tests();
 void init_Sparse_read_rock_parallel(int*, int*);
 
 void init(double*, double**, double**,double*, double*,double*, double*, double*,int*);
+
+void Partition_Solid(int***);
 
 void periodic_streaming(double** ,double** ,int* ,int***,int*, int*,double*, double**);
 
@@ -1695,31 +1701,44 @@ void Parallelize_Geometry()
       int* sumtmp;
       //-------------------  
         
-      Solid = new int**[nx];
+   
+	
+	Solid = new int**[nx];
       Solid2 = new int**[nx];
 	
-		
-	for (int i=0; i<nx;i++)
-	{
-	       Solid[i] = new int*[ny];
-	       Solid2[i] = new int*[ny];
-	       for (int j=0;j<ny;j++)
-	       {
-	               Solid[i][j] = new int[nz];
-	                Solid2[i][j] = new int[nz];
-	               for (int k=0;k<nz;k++)
-	                       Solid[i][j][k] = 0,Solid2[i][j][k] = 0;
-	       }
-	}
+	
+	
+	for (int i=0;i<nx;i++)				///*********
+		Solid[i]=new int*[ny],Solid2[i]=new int*[ny];
+
+	Solid[0][0]=new int[nx*ny*nz],Solid2[0][0]=new int[nx*ny*nz];
+
+	
+ 	for (int i=1;i<ny;i++)
+               Solid[0][i]=Solid[0][i-1]+nz,Solid2[0][i]=Solid2[0][i-1]+nz;
+       
+       for (int i=1;i<nx;i++)
+       {
+               Solid[i][0]=Solid[i-1][0]+ny*nz,Solid2[i][0]=Solid2[i-1][0]+ny*nz;
+               for (int j=1;j<ny;j++)
+                       Solid[i][j]=Solid[i][j-1]+nz,Solid2[i][j]=Solid2[i][j-1]+nz;
+       }	
+	
+      
+      for(int k=0 ; k<=NZ ; k++)
+	for(int j=0 ; j<=NY ; j++)
+	for(int i=0 ; i<=NX ; i++)
+		Solid[i][j][k]=0,Solid2[i][j][k]=0;	
+	
       
       
       
    porosity=0.0;
    
- int* Solid_rank0;     
+ 
     int* recv_solid;
     int pore;
-   Solid_rank0 = new int[(NX+1)*(NY+1)*(NZ+1)]; 
+   
       if (rank==0)
 {	
 
@@ -1752,7 +1771,7 @@ void Parallelize_Geometry()
 			
 	
 		
-		Solid_rank0[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]=pore;
+		Solid[i][j][k]=pore;
 		
 	}
 	fin.close();
@@ -1767,8 +1786,8 @@ void Parallelize_Geometry()
 	        cout<<"\n file open error on " << filename<<endl;
 	        exit(-1);
 	        }
-	Solid_rank0 = new int[(NX+1)*(NY+1)*(NZ+1)];
-	fin.read((char *)(&Solid_rank0[0]), sizeof(int)*(NX+1)*(NY+1)*(NZ+1));
+	
+	fin.read((char *)(&Solid[0][0]), sizeof(int)*(NX+1)*(NY+1)*(NZ+1));
 	
 	fin.close();
 	}
@@ -1778,7 +1797,7 @@ void Parallelize_Geometry()
 }
   
 
-        MPI_Bcast(Solid_rank0,(NX+1)*(NY+1)*(NZ+1),MPI_INT,0,MPI_COMM_WORLD);
+        MPI_Bcast(Solid[0][0],(NX+1)*(NY+1)*(NZ+1),MPI_INT,0,MPI_COMM_WORLD);
 
 
         for (int k=0;k<=NZ;k++)
@@ -1786,7 +1805,7 @@ void Parallelize_Geometry()
         		for (int i=0;i<=NX;i++)
                 
 			{
-	                Solid[i][j][k]=Solid_rank0[i*(NY+1)*(NZ+1)+j*(NZ+1)+k];
+	                //Solid[i][j][k]=Solid_rank0[i*(NY+1)*(NZ+1)+j*(NZ+1)+k];
 			if (Solid[i][j][k]>0) porosity+=1.0;
 			}
 	        sumss=new int [procn+1];
@@ -1797,6 +1816,9 @@ void Parallelize_Geometry()
 
 
 	porosity=porosity/(double)((NX+1)*(NY+1)*(NZ+1));
+
+	Partition_Solid(Solid);
+
 	//cout<<porosity<<endl;
 	
 	for(int k=0 ; k<nz ; k++)			
@@ -2112,7 +2134,7 @@ float pore2;
 
    
 	 
-	  delete [] Solid_rank0;  
+	 
 	  delete [] Psi_rank0;
 	  
 	   for (int i=0;i<com_n;i++)
@@ -2121,25 +2143,20 @@ float pore2;
 	   
 	   delete [] sumtmp;
 	   
-	   for (int i=0;i<nx;i++)
-	   {
-	           for (int j=0;j<ny;j++)
-	                   delete [] Solid2[i][j];
-	           delete [] Solid2[i];
-	   }
-	   delete [] Solid2;
+	   
+	 delete [] Solid2[0][0];
+		for (int i=0;i<nx;i++)
+			delete [] Solid2[i];
+		delete [] Solid2;
     
 	   if (rank>0)
 	   {
-	           for (int i=0;i<nx;i++)
-	           {
-	                   for (int j=0;j<ny;j++)
-	                           delete [] Solid[i][j];
-	                   delete [] Solid[i];
-	           }
-	           delete [] Solid;
-	   } 
-	 
+	      
+	           delete [] Solid[0][0];
+			for (int i=0;i<nx;i++)
+			delete [] Solid[i];
+		delete [] Solid;
+	   }
 	 
 	 
 	 
@@ -5815,4 +5832,269 @@ if (rank==0)
 
 
 }
+
+
+void Partition_Solid(int*** Solid)
+{
+
+
+int rank = MPI :: COMM_WORLD . Get_rank ();
+int para_size=MPI :: COMM_WORLD . Get_size ();
+	MPI_Comm comm;
+	MPI_Comm_dup(MPI_COMM_WORLD, &comm);
+
+	int sum=0;
+	int sum3,sum_rec;
+	int ii,jj,kk;
+	int mesh_par=para_size;
+
+	int nx=NX+1;
+	int ny=NY+1;
+	int nz=NZ+1;
+
+	int* rbuf_result;
+
+	for(int k=0 ; k<nz ; k++)				
+	for(int j=0 ; j<ny ; j++)
+	for(int i=0 ; i<nx ; i++)				
+	
+
+	
+		{	
+			
+			
+			
+			
+			if (Solid[i][j][k] == 0)	{sum++;Solid[i][j][k] = sum-1;}
+			else
+				{Solid[i][j][k] = -1;}
+			
+		
+			
+			
+		}
+	
+	sum_rec=sum;
+	
+
+
+
+	idx_t* vtxdist=NULL;
+	idx_t *xadj, *adjncy;
+        vtxdist = new idx_t[para_size+1];
+		
+
+
+        int ls1,ls2;
+        int *proc_size;
+        proc_size = new int[para_size];	
+        
+        ls1=sum_rec%para_size;
+        ls2=(int)sum_rec/para_size;
+        
+        for (int i=0;i<para_size;i++)
+                proc_size[i]=ls2;
+        for(int i=0;i<ls1;i++)
+                proc_size[i]++;
+        
+    
+
+
+        
+        vtxdist[0]=0;
+        for (int i=1;i<=para_size;i++)
+        {        vtxdist[i]=vtxdist[i-1]+proc_size[i-1];
+                
+        }
+        
+        
+        
+        xadj = new idx_t[proc_size[rank]+1];
+        sum=0;
+        
+        
+        for(int k=0 ; k<nz ; k++)			
+	for(int j=0 ; j<ny ; j++)
+	for(int i=0 ; i<nx ; i++)	
+	{
+	        if ((Solid[i][j][k]>=vtxdist[rank]) and (Solid[i][j][k]<vtxdist[rank+1]))
+	                for (int ls=1;ls<19;ls++)
+		{
+		ii=i+e[ls][0];
+		jj=j+e[ls][1];
+		kk=k+e[ls][2];	
+		
+		
+		//================
+		/*
+		if (ii>=nx) ii=0;
+		if (ii<0) ii=nx-1;
+		if (jj>=ny) jj=0;
+		if (jj<0) jj=ny-1;
+		if (kk>=nz) kk=0;
+		if (kk<0) kk=nz-1;
+		*/
+		//================
+		
+		if ((ii>=0) and (ii<nx) and (jj>=0) and (jj<ny) and (kk>=0) and (kk<nz) and (Solid[ii][jj][kk]>=0))
+			sum++;
+		}
+		
+	}
+        
+      adjncy = new idx_t[sum];
+      xadj[0]=0;
+      
+      sum=0;sum3=0;
+      for(int k=0 ; k<nz ; k++)			
+	for(int j=0 ; j<ny ; j++)
+	for(int i=0 ; i<nx ; i++)	
+	{
+	        if ((Solid[i][j][k]>=vtxdist[rank]) and (Solid[i][j][k]<vtxdist[rank+1]))
+	        {
+	                for (int ls=1;ls<19;ls++)
+	                {
+		ii=i+e[ls][0];
+		jj=j+e[ls][1];
+		kk=k+e[ls][2];	
+		
+		
+		//================
+		/*
+		if (ii>=nx) ii=0;
+		if (ii<0) ii=nx-1;
+		if (jj>=ny) jj=0;
+		if (jj<0) jj=ny-1;
+		if (kk>=nz) kk=0;
+		if (kk<0) kk=nz-1;
+		*/
+		//================
+		
+		if ((ii>=0) and (ii<nx) and (jj>=0) and (jj<ny) and (kk>=0) and (kk<nz) and (Solid[ii][jj][kk]>=0))
+		        {adjncy[sum]=Solid[ii][jj][kk];sum++;}
+		        }
+		        
+		        
+		        
+		sum3++;
+		xadj[sum3]=sum;
+		
+		
+		}
+		
+	}
+
+
+	
+
+	
+
+	idx_t *vwgt=NULL;
+	
+	idx_t *adjwgt=NULL;
+	idx_t wgtflag=0;
+	idx_t numflag=0;
+	idx_t ncon=1;
+	idx_t nparts=mesh_par;
+	real_t *tpwgts;
+	real_t *ubvec;
+	idx_t options[10];
+	idx_t edgecut;
+	idx_t *part;
+	part = new idx_t[proc_size[rank]];
+	//vwgt = new idx_t[proc_size[rank]*ncon];
+
+	
+	tpwgts = new real_t[ncon*nparts];
+	for (int i=0;i<ncon*nparts;i++)
+	        tpwgts[i]=1.0/(real_t)nparts;
+	
+	ubvec = new real_t[ncon];
+	for (int i=0;i<ncon;i++)
+	        ubvec[i]=1.05;
+	
+	//vwgt = new idx_t[proc_size[rank]];
+	//	for (int i=0;i<proc_size[rank];i++)
+	//	vwgt[i]=10;
+
+	//adjwgt = new idx_t[sum];
+	//	for (int i=0;i<sum;i++)
+	//	adjwgt[i]=1;
+
+	
+	options[0] = 0;
+	
+	if (rank==0)
+	cout<<"Start Partition"<<endl;
+	
+
+
+	MPI_Barrier(MPI_COMM_WORLD);
+	
+
+	
+      ParMETIS_V3_PartKway(vtxdist, xadj, adjncy, vwgt,adjwgt, &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec, options, &edgecut, part, &comm);
+
+	if (rank==0)
+	cout<<"Partition Complete"<<endl;
+
+	int* part_int;
+	int* disp;
+	int* sta_parts;
+
+	part_int = new int[proc_size[rank]];
+
+	for (int i=0;i<proc_size[rank];i++)
+		part_int[i]=part[i];
+
+	if (rank==0)
+		rbuf_result = new int[sum_rec];
+	
+	disp = new int[para_size];
+	for (int i=0;i<para_size;i++)
+		disp[i]=vtxdist[i];
+
+
+
+	MPI_Gatherv(part_int,proc_size[rank],MPI_INT,rbuf_result,proc_size,disp,MPI_INT,0,MPI_COMM_WORLD);
+
+	if (rank==0)
+	{
+	sta_parts = new int[mesh_par];
+	for (int i=0;i<mesh_par;i++)
+		sta_parts[i]=0;
+
+	sum=0;
+	for (int k=0;k<nz;k++)
+	for (int j=0;j<ny;j++)
+	for (int i=0;i<nx;i++)
+		if (Solid[i][j][k]>=0)
+			{Solid[i][j][k]=rbuf_result[sum]+1;sta_parts[rbuf_result[sum]]++;sum++;}
+		else	
+			{Solid[i][j][k]=0;}
+
+	
+	for (int i=0;i<mesh_par;i++)
+		cout<<sta_parts[i]<<"	"<<i<<"		"<<sta_parts[i]-(int)sum/mesh_par<<"	"<<(double)(sta_parts[i]-(int)sum/mesh_par)/sta_parts[i]<<endl;
+	}
+
+	MPI_Bcast(Solid[0][0],nx*ny*nz,MPI_INT,0,MPI_COMM_WORLD);
+
+	
+	delete [] proc_size;
+	delete [] xadj;
+	delete [] adjncy;
+	delete [] part;
+	delete [] tpwgts;
+	delete [] ubvec;
+	delete [] part_int;
+	delete [] disp;
+
+	if (rank==0)
+		delete [] rbuf_result;
+
+	
+	
+}
+
 

@@ -1,6 +1,6 @@
 =================SINGLE PHASE LATTICE BOLTZMANN CODE INPUT FILE================================================
-geo_par.dat        :Geometry filename
-90 90 90                 :nx ny nz
+64_all_128x64x64.dat        :Geometry filename
+128 64 64                 :nx ny nz
 300000	                 :Maxmum time step
 7.0	                :x=1 (um) Resolution (for Permeability calculation, resolution/dx)
 0	        	       :Pressure/Velocity Boundary (1=Yes, 0=No)   Convergence accelerator (1=yes, 0=no)
@@ -16,9 +16,9 @@ geo_par.dat        :Geometry filename
 =========OUTPUT==CONTROL===================
 1		:Permeability writing (1=yes, 0=no)
 1               :Direction of Permeability Calculation (1=X, 2=Y, 3=Z)
-10		:Frequency of results writing (interval in time steps)
+100		:Frequency of results writing (interval in time steps)
 1               :Export Mesh Decomposition VTK (1=Yes, 0=No)
-50		:Frequency of velocity field writing (in vtk format, -1=no velocity writing)
+500		:Frequency of velocity field writing (in vtk format, -1=no velocity writing)
 -1		:Fre of density field writing (vtk, -1=no density writing,0=only geometry)
 ==============ADVANCE==PARAMETER==========
 0 1.0 2.0	:Self define lattice velocity: 0=DEFAULT, dx, dt ((u_x+u_y+u_z)*dt/dx<=1 Courant Number)
