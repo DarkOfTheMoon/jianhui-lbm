@@ -457,7 +457,7 @@ double v_max,error_Per;
 //	fin >> backup_f;                        	fin.getline(dummy, NCHAR);
 	fin.close();
 	
-	//cout<<input_dynamic<<"    asdfa    "<<update_fre<<endl;
+	cout<<input_dynamic<<"    asdfa    "<<update_fre<<endl;
 	NX=NX-1;NY=NY-1;NZ=NZ-1;
 	}
 
@@ -718,11 +718,12 @@ if (Zoom>1)
 
 	MPI_Barrier(MPI_COMM_WORLD);
 	
-	
-	if ((freVe>=0) or (freDe>=0))
-	{
 	if (Out_Mode==1)
 		Geometry_Par(Solid);
+
+	if ((freVe>=0) or (freDe>=0))
+	{
+	
 	
 		Geometry(Solid);
 	}
@@ -2626,7 +2627,7 @@ double cb[19]={-1.0/3.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.
 			        	else
 			        	        if (((psi_xn>0) and (interi<0)) or ((psi_xp>0) and (interi>NX)) or ((psi_yn>0) and (interj<0)) or ((psi_yp>0) and (interj>NY)) or ((psi_zn>0) and (interm<0)) or ((psi_zp>0) and (interm>NZ)))
 			        	        {
-			        	                sumtmp[-nei_loc[ci][tmpi]]++;
+			        	                //sumtmp[-nei_loc[ci][tmpi]]++;
 			        	                C[0]+=3.0/(lat_c*lat_c*dt)*w[tmpi]*elat[tmpi][0]*psi[ci];
 			        	                C[1]+=3.0/(lat_c*lat_c*dt)*w[tmpi]*elat[tmpi][1]*psi[ci];
 			        	                C[2]+=3.0/(lat_c*lat_c*dt)*w[tmpi]*elat[tmpi][2]*psi[ci];       
@@ -3341,7 +3342,7 @@ double psitemp;
                         
                    if (psi_xn>0)
                            if (psi_xn==1)   
-                           {
+                           {	
                                    for (int ii=0;ii<bclxn;ii++)
                                            {
                                                rho_r[bclx[ii]]=(Psi_local[bclx[ii]]*1.0+1.0)/2;
@@ -3388,6 +3389,7 @@ double psitemp;
                if (psi_xp>0)
                            if (psi_xp==1)   
                            {
+					//cout<<"@@@@@@@@@@"<<endl;
                                    for (int ii=0;ii<bcrxn;ii++)
                                            {
                                                rho_r[bcrx[ii]]=(Psi_local[bcrx[ii]]*1.0+1.0)/2;
@@ -4009,18 +4011,7 @@ if ((yp-1)*(yn-1)==0)
 		F[bcry[i]][ks]=feq(ks,1.0,u_yp); 
 	}
  
-/*
-if ((yp-1)*(yn-1)==0)
-for (int i=0;i<nx_l;i++)
-	for(int k=0;k<=NZ;k++)
-		for (int ks=0;ks<Q;ks++)
-		{
-		if ((yp==1)  && (Solid[i][NY][k]>0))   
-		        F[Solid[i][NY][k]][ks]=feq(ks,1.0,u_yp);
-		if ((yn==1) && (Solid[i][0][k]>0))
-		       F[Solid[i][0][k]][ks]=feq(ks,1.0,u_yn);      
-		}
-*/
+
 
 if ((zp-1)*(zn-1)==0)	
 	{
@@ -4128,7 +4119,7 @@ for (int i=0;i<bclxn;i++)
 	if (e[ks][0]>0)
 	F[bclx[i]][ks]=feq(LR[ks],1.0,u_xn)-F[bclx[i]][LR[ks]]+feq(ks,1.0,u_xn);
 
-
+//cout<<"~~~~~~~~~~~~~~~@@@@@@@@@@@@"<<endl;
 	
 }
 

@@ -1,10 +1,10 @@
 =================SINGLE PHASE LATTICE BOLTZMANN CODE INPUT FILE================================================
-64_all_128x64x64.dat        :Geometry filename
-128 64 64                 :nx ny nz
+BC.dat        :Geometry filename
+80 36 3                 :nx ny nz
 300000	                 :Maxmum time step
 7.0	                :x=1 (um) Resolution (for Permeability calculation, resolution/dx)
 0	        	       :Pressure/Velocity Boundary (1=Yes, 0=No)   Convergence accelerator (1=yes, 0=no)
-1.0e-6 0.0 0.0          :body force for x,y,z
+3.0e-6 0.0 0.0          :body force for x,y,z
 0 1.0 0 1.003 	:Pressure Boundary in X direction (Format detials can be found within this file)p=c_s^2*/rho
 0 1.0 0 1.0	:Pressure Boundary in Y direction (Format detials can be found within this file)
 0 1.0 0 1.0	:Pressure Boundary in Z direction (Format detials can be found within this file)
@@ -16,10 +16,10 @@
 =========OUTPUT==CONTROL===================
 1		:Permeability writing (1=yes, 0=no)
 1               :Direction of Permeability Calculation (1=X, 2=Y, 3=Z)
-100		:Frequency of results writing (interval in time steps)
+50		:Frequency of results writing (interval in time steps)
 1               :Export Mesh Decomposition VTK (1=Yes, 0=No)
 500		:Frequency of velocity field writing (in vtk format, -1=no velocity writing)
--1		:Fre of density field writing (vtk, -1=no density writing,0=only geometry)
+500		:Fre of density field writing (vtk, -1=no density writing,0=only geometry)
 ==============ADVANCE==PARAMETER==========
 0 1.0 2.0	:Self define lattice velocity: 0=DEFAULT, dx, dt ((u_x+u_y+u_z)*dt/dx<=1 Courant Number)
 ./		:OUTPUT PATH,DEFAULT: ./ (REMEMBER TO INCLUDE "/" AT THE END OF PATH)

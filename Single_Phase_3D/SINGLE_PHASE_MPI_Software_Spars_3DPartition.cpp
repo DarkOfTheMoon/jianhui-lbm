@@ -503,11 +503,12 @@ if (mirZ==1)
 	
 	MPI_Barrier(MPI_COMM_WORLD);
 	
-	
-	if ((freVe>=0) or (freDe>=0))
-	{
 	if (Out_Mode==1)
 		Geometry_Par(Solid);
+
+	if ((freVe>=0) or (freDe>=0))
+	{
+	
 	
 		Geometry(Solid);
 	}
