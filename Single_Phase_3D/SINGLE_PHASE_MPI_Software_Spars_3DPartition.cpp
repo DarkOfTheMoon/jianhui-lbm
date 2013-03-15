@@ -993,13 +993,14 @@ void Parallelize_Geometry()
                 
 			{
 	                
-			if (Solid[i][j][k]>0) porosity+=1.0;
+			if ((Solid[i][j][k]==0) and (i>=per_xn) and (i<=per_xp) and (j>=per_yn) and (j<=per_yp) and (k>=per_zn) and (k<=per_zp))
+			        porosity+=1.0;
 			}
 	        sumss=new int [procn+1];
 	for (int i=0;i<=procn;i++)
 	        sumss[i]=0;
 	
-	porosity=porosity/(double)((NX+1)*(NY+1)*(NZ+1));
+	porosity=porosity/(double)((per_xp-per_xn+1)*(per_yp-per_yn+1)*(per_zp-per_zn+1));
 
 	
 	

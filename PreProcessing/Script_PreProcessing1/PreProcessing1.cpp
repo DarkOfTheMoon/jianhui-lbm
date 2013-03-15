@@ -1057,7 +1057,7 @@ cout<<evennum<<"         "<<oddval<<endl;
 	
 	//if (geo_mod==1)
 	//{
-	out<<"# vtk DataFile Version 2.0"<<endl;
+	/*out<<"# vtk DataFile Version 2.0"<<endl;
 	out<<"J.Yang Lattice Boltzmann Simulation 3D Single Phase-Solid-Density"<<endl;
 	out<<"binary"<<endl;
 	out<<"DATASET STRUCTURED_POINTS"<<endl;
@@ -1068,7 +1068,24 @@ cout<<evennum<<"         "<<oddval<<endl;
 	out<<"SCALARS sample_scalars int"<<endl;
 	out<<"LOOKUP_TABLE default"<<endl;
 	out.write((char *)(&Solid[0][0][0]), sizeof(int)*nx*ny*nz); 
+	*/
+	
+	out<<"# vtk DataFile Version 2.0"<<endl;
+	out<<"J.Yang Lattice Boltzmann Simulation 3D Single Phase-Solid-Density"<<endl;
+	out<<"ASCII"<<endl;
+	out<<"DATASET STRUCTURED_POINTS"<<endl;
+	out<<"DIMENSIONS         "<<nx<<"         "<<ny<<"         "<<nz<<endl;       ///*********
+	out<<"ORIGIN 0 0 0"<<endl;
+	out<<"SPACING 1 1 1"<<endl;
+	out<<"POINT_DATA     "<<nx*ny*nz<<endl;				///*********
+	out<<"SCALARS sample_scalars float"<<endl;
+	out<<"LOOKUP_TABLE default"<<endl;
 
+	for (int k=0;k<nz;k++)
+	for (int j=0;j<ny;j++)
+	for (int i=0;i<nx;i++)
+		out<<Solid[i][j][k]<<" ";
+	
 
 	out.close();
 
@@ -1099,7 +1116,7 @@ cout<<evennum<<"         "<<oddval<<endl;
 	
 	out3.close();
 
-	cout<<"DAT file ouput complete"<<endl;
+	cout<<"MESH DAT file ouput complete"<<endl;
 	cout<<endl;
 
 	

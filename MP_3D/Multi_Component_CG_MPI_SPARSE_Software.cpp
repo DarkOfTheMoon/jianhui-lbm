@@ -6718,7 +6718,7 @@ if ((par_per_x-1)*(par_per_y-1)*(par_per_z-1)==0)
 			S_l+=rbuf_l[i];S_g+=rbuf_g[i];
 			}
 	
-	
+	//cout<<S_l<<"        ##########        "<<endl;
 	//cout<<porosity<<endl;
 	S_l=S_l/((per_xp-per_xn+1)*(per_yp-per_yn+1)*(per_zp-per_zn+1)*porosity);
 	S_g=S_g/((per_xp-per_xn+1)*(per_yp-per_yn+1)*(per_zp-per_zn+1)*porosity);
@@ -6746,7 +6746,7 @@ if ((par_per_x-1)*(par_per_y-1)*(par_per_z-1)==0)
 	MPI_Bcast(&Sd_g,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
         //==================================================================	
 	
-	
+	//cout<<S_l<<"      @@@@@@          "<<S_g<<endl;
 	
 	
 	delete [] rbuf_l;

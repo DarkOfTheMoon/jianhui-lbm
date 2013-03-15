@@ -223,7 +223,7 @@ else
 }
 
 	ostringstream namemet;
-	namemet<<poreFileNameMET<<".part."<<par_n;
+	namemet<<poreFileNameMET<<".part";//<<"."<<par_n;
 FILE *ftest;
 	ifstream fin;		
 ftest = fopen(namemet.str().c_str(), "r");
@@ -267,7 +267,7 @@ ftest = fopen(namemet.str().c_str(), "r");
 	out.open(name.str().c_str());
 
 	
-	
+	/*
 	out<<"# vtk DataFile Version 2.0"<<endl;
 	out<<"J.Yang Lattice Boltzmann Simulation 3D Single Phase-Solid-Density"<<endl;
 	out<<"binary"<<endl;
@@ -279,16 +279,31 @@ ftest = fopen(namemet.str().c_str(), "r");
 	out<<"SCALARS sample_scalars int"<<endl;
 	out<<"LOOKUP_TABLE default"<<endl;
 	
-	out.write((char *)(&Solid[0][0][0]), sizeof(int)*nx*ny*nz); 
-	/*
+	out.write((char *)(&Solid[0][0][0]), sizeof(int)*nx*ny*nz);
+	
+	*/
+	
+	
+	
+	
+	out<<"# vtk DataFile Version 2.0"<<endl;
+	out<<"J.Yang Lattice Boltzmann Simulation 3D Single Phase-Solid-Density"<<endl;
+	out<<"ASCII"<<endl;
+	out<<"DATASET STRUCTURED_POINTS"<<endl;
+	out<<"DIMENSIONS         "<<nx<<"         "<<ny<<"         "<<nz<<endl;       ///*********
+	out<<"ORIGIN 0 0 0"<<endl;
+	out<<"SPACING 1 1 1"<<endl;
+	out<<"POINT_DATA     "<<nx*ny*nz<<endl;				///*********
+	out<<"SCALARS sample_scalars float"<<endl;
+	out<<"LOOKUP_TABLE default"<<endl;
+	
 	for (int k=0;k<nz;k++)
-	{
 	for (int j=0;j<ny;j++)
 	for (int i=0;i<nx;i++)
 		out<<Solid[i][j][k]<<" ";
-	}
-	}
-	*/
+	
+	
+	
 	
 	
 

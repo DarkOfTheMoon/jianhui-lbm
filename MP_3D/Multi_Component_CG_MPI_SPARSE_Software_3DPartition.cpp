@@ -1810,7 +1810,8 @@ void Parallelize_Geometry()
                 
 			{
 	                //Solid[i][j][k]=Solid_rank0[i*(NY+1)*(NZ+1)+j*(NZ+1)+k];
-			if (Solid[i][j][k]>0) porosity+=1.0;
+			if ((Solid[i][j][k]==0) and (i>=per_xn) and (i<=per_xp) and (j>=per_yn) and (j<=per_yp) and (k>=per_zn) and (k<=per_zp)) 
+			        porosity+=1.0;
 			}
 	        sumss=new int [procn+1];
 	for (int i=0;i<=procn;i++)
@@ -1819,7 +1820,7 @@ void Parallelize_Geometry()
 
 
 
-	porosity=porosity/(double)((NX+1)*(NY+1)*(NZ+1));
+	porosity=porosity/(double)((per_xp-per_xn+1)*(per_yp-per_yn+1)*(per_zp-per_zn+1));
 
 	Partition_Solid(Solid);
 
@@ -2137,6 +2138,23 @@ float pore2;
 	 cout<<"CONCENTRATION FILE PARTITIONING FOR PARALLEL READING DONE   Processor No."<<rank<<endl;
 
    
+	 /*
+	 for (int ci=1;ci<=Count;ci++)
+	                {
+	                      ii=(int)(coor[ci]/(ny*nz));
+	                      jj=(int)((coor[ci]%(ny*nz))/nz);
+	                      kk=(int)(coor[ci]%nz);
+	                      
+	                      //Solid2[ii][jj][kk]=0;
+	                }
+	 
+	        cout<<"@@@@@@@@@@@@@@@"<<endl;
+	        for(int k=0 ; k<=NZ ; k++)
+	for(int j=0 ; j<=NY ; j++)
+	for(int i=0 ; i<=NX ; i++)
+	        if ((Solid2[i][j][k]!=0) and (Solid[i][j][k]==procind))
+	                cout<<Solid2[i][j][k]<<"        "<<Solid[i][j][k]<<"        "<<i<<"        "<<j<<"        "<<k<<endl;
+	 */
 	 
 	 
 	  delete [] Psi_rank0;
@@ -4659,7 +4677,7 @@ double Error(double** u,double** u0,double *v_max,double* u_average)
 
 
 
-for(int i=1; i<Count; i++)
+for(int i=1; i<=Count; i++)
 			{	
 
 			temp1+=(u[i][0]-u0[i][0])*(u[i][0]-u0[i][0])+(u[i][1]-u0[i][1])*(u[i][1]-u0[i][1])+(u[i][2]-u0[i][2])*(u[i][2]-u0[i][2]);
@@ -5112,7 +5130,9 @@ double Comput_Perm(double* psi,double** u,double* Per_l,double* Per_g,int PerDIr
 		si=(int)(coor[i]/((NY+1)*(NZ+1)));
 		sj=(int)((coor[i]%((NY+1)*(NZ+1)))/(NZ+1));
 		sm=(int)(coor[i]%(NZ+1)); 
-	
+		
+		
+
 		//if (rank==1)
 		//cout<<rank<<"  "<<si<<" "<<sj<<" "<<sm<<endl;
 		//cout<<si<<"  "<<per_xn<<"  "<<per_xp<<endl;
@@ -5258,6 +5278,10 @@ if ((par_per_x-1)*(par_per_y-1)*(par_per_z-1)==0)
 		sj=(int)((coor[i]%((NY+1)*(NZ+1)))/(NZ+1));
 		sm=(int)(coor[i]%(NZ+1)); 
 	
+	
+		
+		//cout<<per_xn<<"        "<<per_xp<<"        "<<per_yn<<"        "<<per_yp<<"        "<<per_zn<<"        "<<per_zp<<endl;
+		//cout<<si<<"        "<<sj<<"        "<<sm<<endl;
 		
 		if ((si>=per_xn) and (si<=per_xp) and (sj>=per_yn) and (sj<=per_yp) and (sm>=per_zn) and (sm<=per_zp))
 		{
@@ -5294,7 +5318,7 @@ if ((par_per_x-1)*(par_per_y-1)*(par_per_z-1)==0)
 			S_l+=1;
 			else
 			S_g+=1;
-		
+		//cout<<"@@@@@@@@@"<<endl;
 		
 		//===========saturation displacement==================
 		si=(int)(coor[i]/((NY+1)*(NZ+1)));
@@ -5334,7 +5358,7 @@ if ((par_per_x-1)*(par_per_y-1)*(par_per_z-1)==0)
 			S_l+=rbuf_l[i];S_g+=rbuf_g[i];
 			}
 	
-	
+	//cout<<S_l<<"        ##########        "<<endl;
 	//cout<<porosity<<endl;
 	S_l=S_l/((per_xp-per_xn+1)*(per_yp-per_yn+1)*(per_zp-per_zn+1)*porosity);
 	S_g=S_g/((per_xp-per_xn+1)*(per_yp-per_yn+1)*(per_zp-per_zn+1)*porosity);
@@ -5362,7 +5386,7 @@ if ((par_per_x-1)*(par_per_y-1)*(par_per_z-1)==0)
 	MPI_Bcast(&Sd_g,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
         //==================================================================	
 	
-	
+	//cout<<S_l<<"      @@@@@@          "<<S_g<<endl;
 	
 	
 	delete [] rbuf_l;
