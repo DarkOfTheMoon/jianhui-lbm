@@ -973,7 +973,7 @@ void Parallelize_Geometry()
 	        exit(-1);
 	        }
 	
-	fin.read((char *)(&Solid[0][0]), sizeof(int)*(NX+1)*(NY+1)*(NZ+1));
+	fin.read((char *)(Solid[0][0]), sizeof(int)*(NX+1)*(NY+1)*(NZ+1));
 	
 	fin.close();
 	}

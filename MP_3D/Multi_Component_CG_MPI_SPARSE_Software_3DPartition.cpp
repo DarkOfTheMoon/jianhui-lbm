@@ -1701,7 +1701,7 @@ void Parallelize_Geometry()
       int* sumtmp;
       //-------------------  
         
-   
+   //cout<<"@@@@@@@@@@@@@@@@@@@@@@@@"<<endl;
 	
 	Solid = new int**[nx];
       Solid2 = new int**[nx];
@@ -1728,9 +1728,12 @@ void Parallelize_Geometry()
       for(int k=0 ; k<=NZ ; k++)
 	for(int j=0 ; j<=NY ; j++)
 	for(int i=0 ; i<=NX ; i++)
-		Solid[i][j][k]=0,Solid2[i][j][k]=0;	
+		Solid[i][j][k]=0,Solid2[i][j][k]=0;
+
+
 	
-      
+	//MPI_Barrier(MPI_COMM_WORLD);
+      //cout<<"@@@@@@@@@@@@@   "<<rank<<endl;
       
       
    porosity=0.0;
@@ -1779,15 +1782,15 @@ void Parallelize_Geometry()
 	}
 	else
 	{
-	fstream fin;
+	//fstream fin;
 	fin.open(filename,ios::in);
 	if (fin.fail())
 	        {
 	        cout<<"\n file open error on " << filename<<endl;
 	        exit(-1);
 	        }
-	
-	fin.read((char *)(&Solid[0][0]), sizeof(int)*(NX+1)*(NY+1)*(NZ+1));
+	//cout<<filename<<endl;
+	fin.read((char *)(Solid[0][0]), sizeof(int)*(NX+1)*(NY+1)*(NZ+1));
 	
 	fin.close();
 	}
@@ -1795,10 +1798,10 @@ void Parallelize_Geometry()
 	
 
 }
-  
-
+  	//MPI_Barrier(MPI_COMM_WORLD);
+	//cout<<"##########   "<<rank<<endl;
         MPI_Bcast(Solid[0][0],(NX+1)*(NY+1)*(NZ+1),MPI_INT,0,MPI_COMM_WORLD);
-
+	
 
         for (int k=0;k<=NZ;k++)
 		for (int j=0;j<=NY;j++)
