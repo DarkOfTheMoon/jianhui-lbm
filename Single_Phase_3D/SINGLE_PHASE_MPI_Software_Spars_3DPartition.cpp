@@ -36,6 +36,8 @@ const int Q=19;
 
 
 double u_max,u_ave,u_ave2,gx,gy,gz,porosity;
+double pre_u_ave;
+
 
 //----------
 double s_e;
@@ -609,6 +611,8 @@ if (wr_per==1)
 			 fin.close();     
 			}
 
+
+			pre_u_ave=u_ave;
 			 error=Error(u,u0,&u_max,&u_ave);if (u_max>=10.0)	U_max_ref+=1;
 			error_perm=Comput_Perm(u,Permia,PerDir,SupInv); 
 			
@@ -677,7 +681,7 @@ if (wr_per==1)
 			finf3<<gx<<endl;
 			finf3.close();
 			ofstream finf4(FileName4,ios::app);
-			finf4<<u_ave<<"  "<<u_max<<" "<<error<<endl;
+			finf4<<u_ave<<"  "<<u_max<<" "<<error<<"  "<<abs((pre_u_ave-u_ave)/(u_ave+1e-20))<<endl;
 			finf4.close();
 		
 

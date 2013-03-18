@@ -33,7 +33,7 @@ using namespace std;
 const int Q=19;          
 
 int preci=2;
-double u_max,u_ave,gx,gy,gz,porosity;
+double u_max,u_ave,pre_u_ave,gx,gy,gz,porosity;
 
 //----------
 double s_e;
@@ -888,6 +888,7 @@ MPI_Barrier(MPI_COMM_WORLD);
 			}
 			
 			
+			pre_u_ave=u_ave;
 			error=Error(u,u0,&u_max,&u_ave);
 			if (u_max>=10.0)	U_max_ref+=1;
 			
@@ -1009,10 +1010,10 @@ MPI_Barrier(MPI_COMM_WORLD);
 
 			//==========for bodyforce output===========
 			ofstream finf3(FileName3,ios::app);
-			finf3<<S_l<<" "<<1-S_l<<" "<<abs((S_l_r-S_l)/S_l)<<" "<<Sd_l<<" "<<Sd_g<<endl;
+			finf3<<S_l<<" "<<1-S_l<<" "<<abs((S_l_r-S_l)/(S_l+1e-20))<<" "<<Sd_l<<" "<<Sd_g<<endl;
 			finf3.close();
 			ofstream finf5(FileName5,ios::app);
-			finf5<<u_ave<<" "<<u_max<<"  "<<error<<endl;
+			finf5<<u_ave<<" "<<u_max<<"  "<<error<<"  "<<abs((pre_u_ave-u_ave)/(u_ave+1e-20))<<endl;
 			finf5.close();
 
 			
@@ -2437,7 +2438,16 @@ void init(double* rho, double** u, double** f,double* psi,double* rho_r, double*
 			                
 			        }
 					
-	}       
+	}
+
+
+
+       		//-------------------------------------
+		S_l=Comput_Saturation(psi,Solid,SupInv);
+		//---------------------------------------
+
+
+
 	
 //===================Rel_Perm_Imb_Drai======================
 rel_perm_id_ids=0;
