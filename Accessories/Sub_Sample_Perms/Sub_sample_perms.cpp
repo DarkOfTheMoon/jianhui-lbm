@@ -11,9 +11,9 @@ using namespace std;
 int main (int argc , char * argv [])
 {
 
-int nx_read=320;
+int nx_read=640;
 int ny_read=320;
-int nz_read=640;
+int nz_read=320;
 
 int nx=320;
 int ny=320;
@@ -30,14 +30,28 @@ const int sub_n=6;
 
 int sub_num[sub_n]={4,3,3,2,2,2};
 int sub_size[sub_n]={80,120,160,180,200,230};
-int input_vtk=0;	//0=NO,1=YES
-int pgDir=3;
+int sub_size2[sub_n]={80,120,160,180,200,230};
+int sub_size3[sub_n]={80,120,160,180,200,230};
+
+
+	//-------------AUTO MODEL FOR SUBSIZE Y AND Z-------------------
+	for (int i=0;i<sub_n;i++)
+		{
+		sub_size2[i]=(int)sub_size[i]*ny/nx;cout<<sub_size[i]<<"	"<<sub_size2[i]<<endl;
+		sub_size3[i]=(int)sub_size[i]*nz/nx;cout<<sub_size[i]<<"	"<<sub_size2[i]<<endl;
+		}
 	
-char poreFileName[128]="port_z_LBM_velocity_Vector_60000.vtk";	//velocity
-char poreFileName_geo[128]="port_z_LBM_Geometry.vtk";		//geometry
+	//--------------------------------------------------------------
 
 
-char ouput_prefix[128]="port_z_";
+int input_vtk=1;	//0=NO,1=YES
+int pgDir=1;
+	
+char poreFileName[128]="port_perm_LBM_velocity_Vector_120000.vtk";	//velocity
+char poreFileName_geo[128]="port_perm_LBM_Geometry.vtk";		//geometry
+
+
+char ouput_prefix[128]="port_perm_";
 
 
 //======================================================
@@ -57,6 +71,9 @@ int NCHAR=128;
 char     dummy[128+1];
 
 int inter_sub[sub_n];
+
+
+
 for (int i=0;i<sub_n;i++)
 	{
 	if (sub_num[i]>1)
@@ -98,10 +115,10 @@ double pore;
 	
 	
 	
-	Solid = new bool**[nx_read];
+	Solid = new bool**[nx];
 	
 		
-	for (i=0; i<nx_read;i++)
+	for (i=0; i<nx;i++)
 	{
 	       Solid[i] = new bool*[ny];
 	       for (j=0;j<ny;j++)
@@ -113,8 +130,8 @@ double pore;
 	}
 
 
-	vel = new double***[nx_read];
-		for (int i=0;i<nx_read;i++)
+	vel = new double***[nx];
+		for (int i=0;i<nx;i++)
 		{
 		vel[i] = new double**[ny];
 			for (int j=0;j<ny;j++)
@@ -162,8 +179,8 @@ double pore;
 	fin.getline(dummy, NCHAR);
 	}
 
-	for(k=0 ; k<nz ; k++)				///*********
-	for(j=0 ; j<ny ; j++)
+	for(k=0 ; k<nz_read ; k++)				///*********
+	for(j=0 ; j<ny_read ; j++)
 	for(i=0 ; i<nx_read ; i++)				///*********
 
 	 
@@ -171,6 +188,7 @@ double pore;
 		{	
 			//fin >> ci >> cj>> ck>>pore;
 			fin >> pore;
+			if ((i<nx) and (j<ny) and (k<nz))
 			if (pore==1.0)
 				{Solid[i][j][k]=1;}
 			else
@@ -220,8 +238,8 @@ double pore;
 	fin.getline(dummy, NCHAR);
 	}
 
-	for(k=0 ; k<nz ; k++)				///*********
-	for(j=0 ; j<ny ; j++)
+	for(k=0 ; k<nz_read ; k++)				///*********
+	for(j=0 ; j<ny_read ; j++)
 	for(i=0 ; i<nx_read ; i++)				///*********
 
 	 
@@ -229,7 +247,8 @@ double pore;
 		{	
 			//fin >> ci >> cj>> ck>>pore;
 			fin >> pore1>>pore2>>pore3;
-			if (Solid[i][j][k]==0)
+			if ((i<nx) and (j<ny) and (k<nz))
+			if (Solid[i][j][k]==0) 
 			{
 			vel[i][j][k][0]=pore1;
 			vel[i][j][k][1]=pore2;
@@ -248,61 +267,8 @@ double pore;
 	cout<<"Velocity File Reading Complete"<<endl;
 	cout<<endl;
 
-	/*
-	ftest = fopen(poreFileName_geo, "r");
 
-	if(ftest == NULL)
-	{
-		cout << "\n The pore geometry file (" << poreFileName <<
-			") does not exist!!!!\n";
-		cout << " Please check the file\n\n";
 
-		exit(0);
-	}
-	fclose(ftest);
-
-	fin.open(poreFileName_geo);
-	
-	cout<<"Start Reading Geometry File"<<endl;
-
-	if (input_vtk==1)
-	{
-	fin.getline(dummy, NCHAR);
-	fin.getline(dummy, NCHAR);
-	fin.getline(dummy, NCHAR);
-	fin.getline(dummy, NCHAR);
-	fin.getline(dummy, NCHAR);
-	fin.getline(dummy, NCHAR);
-	fin.getline(dummy, NCHAR);
-	fin.getline(dummy, NCHAR);
-	fin.getline(dummy, NCHAR);
-	fin.getline(dummy, NCHAR);
-	}
-
-	for(k=0 ; k<nz ; k++)				///*********
-	for(j=0 ; j<ny ; j++)
-	for(i=0 ; i<nx_read ; i++)				///*********
-
-	 
-	//while (!fin.eof())                                        //**********
-		{	
-			//fin >> ci >> cj>> ck>>pore;
-			fin >> pore;
-			if (pore==1.0)
-				{Solid[i][j][k]=1;}
-			else
-				{Solid[i][j][k]=0;}
-			
-			
-			
-		}
-		
-	fin.close();
-
-	cout<<endl;	
-	cout<<"Geometry File Reading Complete"<<endl;
-	cout<<endl;
-*/
 int st_i,st_j,st_k;
 int sum=0;
 double vx,vy,vz;
@@ -324,7 +290,7 @@ inter_sub
 	for (int pri_ind=0;pri_ind<sub_n;pri_ind++)
 	{
 				name.str("");
-				name<<ouput_prefix<<"Sub_Sample_Perm_"<<sub_size[pri_ind]<<".sta_dat";
+				name<<ouput_prefix<<"Sub_Sample_Perm_"<<sub_size[pri_ind]<<"x"<<sub_size2[pri_ind]<<"x"<<sub_size3[pri_ind]<<".sta_dat";
 				out.open(name.str().c_str());
 		for (int li=0;li<sub_num[pri_ind];li++)
 			for (int lj=0;lj<sub_num[pri_ind];lj++)
@@ -337,8 +303,8 @@ inter_sub
 			
 				
 				for (int i=st_i;i<st_i+sub_size[pri_ind];i++)
-					for (int j=st_j;j<st_j+sub_size[pri_ind];j++)
-						for (int k=st_k;k<st_k+sub_size[pri_ind];k++)
+					for (int j=st_j;j<st_j+sub_size2[pri_ind];j++)
+						for (int k=st_k;k<st_k+sub_size3[pri_ind];k++)
 						{
 						
 						if (Solid[i][j][k]==0)
@@ -350,19 +316,19 @@ inter_sub
 
 
 						}
-				factor=(double)sum/(sub_size[pri_ind]*sub_size[pri_ind]*sub_size[pri_ind]);
+				factor=(double)sum/(sub_size[pri_ind]*sub_size2[pri_ind]*sub_size3[pri_ind]);
 				//cout<<sum<<"	"<<sub_size[pri_ind]*sub_size[pri_ind]*sub_size[pri_ind]<<endl;
 		if (source_data_opt==2)
 		{
-		permX = 1e9*(vx/(sub_size[pri_ind]*sub_size[pri_ind]*sub_size[pri_ind])+factor*pgBB[0])*nu*dx*dx/pgMag;
-		permY = 1e9*(vy/(sub_size[pri_ind]*sub_size[pri_ind]*sub_size[pri_ind])+factor*pgBB[1])*nu*dx*dx/pgMag;  
-		permZ = 1e9*(vz/(sub_size[pri_ind]*sub_size[pri_ind]*sub_size[pri_ind])+factor*pgBB[2])*nu*dx*dx/pgMag;
+		permX = 1e9*(vx/(sub_size[pri_ind]*sub_size2[pri_ind]*sub_size3[pri_ind])+factor*pgBB[0])*nu*dx*dx/pgMag;
+		permY = 1e9*(vy/(sub_size[pri_ind]*sub_size2[pri_ind]*sub_size3[pri_ind])+factor*pgBB[1])*nu*dx*dx/pgMag;  
+		permZ = 1e9*(vz/(sub_size[pri_ind]*sub_size2[pri_ind]*sub_size3[pri_ind])+factor*pgBB[2])*nu*dx*dx/pgMag;
 		}
 		else
 		{
-		permX=vx/(sub_size[pri_ind]*sub_size[pri_ind]*sub_size[pri_ind])*vis/bodyf*dx*dx*1e9;
-		permY=vy/(sub_size[pri_ind]*sub_size[pri_ind]*sub_size[pri_ind])*vis/bodyf*dx*dx*1e9;
-		permZ=vz/(sub_size[pri_ind]*sub_size[pri_ind]*sub_size[pri_ind])*vis/bodyf*dx*dx*1e9;
+		permX=vx/(sub_size[pri_ind]*sub_size2[pri_ind]*sub_size3[pri_ind])*vis/bodyf*dx*dx*1e9;
+		permY=vy/(sub_size[pri_ind]*sub_size2[pri_ind]*sub_size3[pri_ind])*vis/bodyf*dx*dx*1e9;
+		permZ=vz/(sub_size[pri_ind]*sub_size2[pri_ind]*sub_size3[pri_ind])*vis/bodyf*dx*dx*1e9;
 		}
 				
 				
