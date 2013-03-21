@@ -698,7 +698,7 @@ if (wr_per==1)
 			
 			Re=u_ave*(NY+1)/(1.0/3.0*(1/s_v-0.5));
 			cout<<"The Maximum velocity is: "<<setprecision(6)<<u_max<<"   Re="<<Re<<"     Courant Number="<<u_max*dt/dx<<endl;
-			
+			cout<<"The average velocity is: "<<setprecision(6)<<u_ave<<endl;
 		//===============================================================================================
 			cout<<"The max relative error of uv is: "
 				<<setiosflags(ios::scientific)<<error<<endl;
@@ -3188,7 +3188,9 @@ for(int i=1; i<Count; i++)
 	delete [] uave;
 
 	//MPI_Barrier(MPI_COMM_WORLD);
-
+	
+	
+	
 	return(error_in);
 
 }
@@ -3519,25 +3521,14 @@ double Comput_Perm(double** u,double* Permia,int PerDIr,int* SupInv)
 	int rank = MPI :: COMM_WORLD . Get_rank ();
 	int mpi_size=MPI :: COMM_WORLD . Get_size ();
 
-	int nx_g[mpi_size];
-	int disp[mpi_size];
+	//int ls_int=0;
+	
+	
 	int si,sj,sm;
 	
 	double avex,avey,avez;
 	
-	MPI_Gather(&nx_l,1,MPI_INT,nx_g,1,MPI_INT,0,MPI_COMM_WORLD);
 	
-	
-	if (rank==0)
-		{
-		disp[0]=0;
-	
-		for (int i=1;i<mpi_size;i++)
-			disp[i]=disp[i-1]+nx_g[i-1];
-		
-		}
-
-	MPI_Bcast(disp,mpi_size,MPI_INT,0,MPI_COMM_WORLD);
 
 
 
@@ -3555,32 +3546,37 @@ double Comput_Perm(double** u,double* Permia,int PerDIr,int* SupInv)
 	switch(PerDIr)
 		{
 		case 1:
-			dp=abs(p_xp-p_xn)*c_s2/(NX+1)/dx;break;
+			dp=abs(p_xp-p_xn)*c_s2/(per_xp-per_xn+1)/dx;break;
 		case 2:
-			dp=abs(p_yp-p_yn)*c_s2/(NY+1)/dx;break;
+			dp=abs(p_yp-p_yn)*c_s2/(per_yp-per_yn+1)/dx;break;
 		case 3:
-			dp=abs(p_zp-p_zn)*c_s2/(NZ+1)/dx;break;
+			dp=abs(p_zp-p_zn)*c_s2/(per_zp-per_zn+1)/dx;break;
 		default:
-			dp=abs(p_xp-p_xn)*c_s2/(NX+1)/dx;
+			dp=abs(p_xp-p_xn)*c_s2/(per_xp-per_xn+1)/dx;
 		}
 
 		
 	if ((par_per_x-1)*(par_per_y-1)*(par_per_z-1)==0)	
 	for (int i=1;i<=Count;i++)
 	{
-		si=(int)(coor[i]/(NY+1)*(NZ+1));;
+		si=(int)(coor[i]/((NY+1)*(NZ+1)));
 		sj=(int)((coor[i]%((NY+1)*(NZ+1)))/(NZ+1));
 		sm=(int)(coor[i]%(NZ+1)); 
-		si+=disp[rank];
+		//si+=disp[rank];
 		//if (rank==1)
 		//cout<<rank<<"  "<<si<<" "<<sj<<" "<<sm<<endl;
-		//cout<<si<<"  "<<per_xn<<"  "<<per_xp<<endl;
+		//cout<<si<<"  "<<sj<<"  "<<sm<<endl;
+		//cout<<rank<<"        "<<per_yp<<"        "<<per_yn<<endl;
+		//ls_int++;
 		if ((si>=per_xn) and (si<=per_xp) and (sj>=per_yn) and (sj<=per_yp) and (sm>=per_zn) and (sm<=per_zp))
 		{
+		  //ls_int++;     
 	        Q[0]+=u[i][0];
 		Q[1]+=u[i][1];
 		Q[2]+=u[i][2];
 		}
+		  //   else
+		     //           cout<<si<<"  "<<sj<<"  "<<sm<<endl;
 
 
 	}
@@ -3596,7 +3592,7 @@ double Comput_Perm(double** u,double* Permia,int PerDIr,int* SupInv)
 
 	MPI_Barrier(MPI_COMM_WORLD);
 
-	
+	     //   cout<<ls_int<<"        "<<Q[0]<<"        "<<Q[1]<<"        "<<Q[2]<<"        "<<rank<<endl;
 
 	MPI_Gather(&Q,3,MPI_DOUBLE,rbuf,3,MPI_DOUBLE,0,MPI_COMM_WORLD);
 	
@@ -3640,7 +3636,8 @@ double Comput_Perm(double** u,double* Permia,int PerDIr,int* SupInv)
 
 		u_ave=sqrt(avex*avex+avey*avey+avez*avez);
 
-
+		//cout<<(per_xp-per_xn+1)*(per_yp-per_yn+1)*(per_zp-per_zn+1)*porosity<<endl;
+		//cout<<"SUM= "<<Q[0]<<"        "<<Q[1]<<"        "<<Q[2]<<endl;
 		}
 	
 	delete [] rbuf;
