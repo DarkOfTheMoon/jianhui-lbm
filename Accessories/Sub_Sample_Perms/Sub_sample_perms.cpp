@@ -11,13 +11,13 @@ using namespace std;
 int main (int argc , char * argv [])
 {
 
-int nx_read=708;
-int ny_read=154;
-int nz_read=150;
+int nx_read=400;
+int ny_read=600;
+int nz_read=215;
 
-int nx=354;
-int ny=154;
-int nz=150;
+int nx=400;
+int ny=300;
+int nz=215;
 
 //=====source data option======
 int source_data_opt=1;	//1=OWN,2=Keehm
@@ -25,11 +25,11 @@ double bodyf=1e-6;
 double vis=0.166667;
 //=============================
 
-double dx=0.00176;	//resolution mm
+double dx=0.001733;	//resolution mm
 const int sub_n=6;
 
 int sub_num[sub_n]={5,4,3,2,2,2};
-int sub_size[sub_n]={70,100,130,180,240,290};
+int sub_size[sub_n]={90,120,160,200,260,320};
 int sub_size2[sub_n]={80,120,160,180,200,230};
 int sub_size3[sub_n]={80,120,160,180,200,230};
 
@@ -45,13 +45,13 @@ int sub_size3[sub_n]={80,120,160,180,200,230};
 
 
 int input_vtk=1;	//0=NO,1=YES
-int pgDir=1;
+int pgDir=2;
 	
-char poreFileName[128]="HP1_LBM_velocity_Vector_50000.vtk";	//velocity
-char poreFileName_geo[128]="HP1_LBM_Geometry.vtk";		//geometry
+char poreFileName[128]="R1_2_LBM_velocity_Vector_50000.vtk";	//velocity
+char poreFileName_geo[128]="R1_2_LBM_Geometry.vtk";		//geometry
 
 
-char ouput_prefix[128]="HP1_";
+char ouput_prefix[128]="R1_1_";
 
 
 //======================================================
@@ -116,7 +116,11 @@ double pore1,pore2,pore3;
 	int i, j, k;
 	
 double pore;
-	
+int st_i,st_j,st_k;
+int sum=0;
+double vx,vy,vz;
+double permX,permY,permZ;
+double factor;	
 	
 	
 	Solid = new bool**[nx];
@@ -183,6 +187,8 @@ double pore;
 	fin.getline(dummy, NCHAR);
 	}
 
+
+	sum=0;
 	for(k=0 ; k<nz_read ; k++)				///*********
 	for(j=0 ; j<ny_read ; j++)
 	for(i=0 ; i<nx_read ; i++)				///*********
@@ -196,7 +202,7 @@ double pore;
 			if (pore==1.0)
 				{Solid[i][j][k]=1;}
 			else
-				{Solid[i][j][k]=0;}
+				{Solid[i][j][k]=0;sum++;}
 			
 			
 			
@@ -206,6 +212,7 @@ double pore;
 
 	cout<<endl;	
 	cout<<"Geometry File Reading Complete"<<endl;
+	cout<<"General porosity = "<<(double)sum/(nx*ny*nz);
 	cout<<endl;
 
 
@@ -242,6 +249,8 @@ double pore;
 	fin.getline(dummy, NCHAR);
 	}
 
+
+	vx-0.0;vy=0.0;vz=0.0;
 	for(k=0 ; k<nz_read ; k++)				///*********
 	for(j=0 ; j<ny_read ; j++)
 	for(i=0 ; i<nx_read ; i++)				///*********
@@ -254,9 +263,9 @@ double pore;
 			if ((i<nx) and (j<ny) and (k<nz))
 			if (Solid[i][j][k]==0) 
 			{
-			vel[i][j][k][0]=pore1;
-			vel[i][j][k][1]=pore2;
-			vel[i][j][k][2]=pore3;
+			vel[i][j][k][0]=pore1;vx+=pore1;
+			vel[i][j][k][1]=pore2;vy+=pore2;
+			vel[i][j][k][2]=pore3;vz+=pore3;
 			}
 			
 			
@@ -266,18 +275,27 @@ double pore;
 		
 	fin.close();
 
+		if (source_data_opt==2)
+		{
+		permX = 1e9*(vx/(nx*ny*nz)+factor*pgBB[0])*nu*dx*dx/pgMag;
+		permY = 1e9*(vy/(nx*ny*nz)+factor*pgBB[1])*nu*dx*dx/pgMag;  
+		permZ = 1e9*(vz/(nx*ny*nz)+factor*pgBB[2])*nu*dx*dx/pgMag;
+		}
+		else
+		{
+		permX=vx/(nx*ny*nz)*vis/bodyf*dx*dx*1e9;
+		permY=vy/(nx*ny*nz)*vis/bodyf*dx*dx*1e9;
+		permZ=vz/(nx*ny*nz)*vis/bodyf*dx*dx*1e9;
+		}
 
 	cout<<endl;	
 	cout<<"Velocity File Reading Complete"<<endl;
+	cout<<"General Perm = "<<permX<<"	"<<permY<<"	"<<permZ<<endl;
 	cout<<endl;
 
 
 
-int st_i,st_j,st_k;
-int sum=0;
-double vx,vy,vz;
-double permX,permY,permZ;
-double factor;
+
 /*
 	const int sub_n=4;
 
@@ -294,7 +312,7 @@ inter_sub
 	for (int pri_ind=0;pri_ind<sub_n;pri_ind++)
 	{
 				name.str("");
-				name<<ouput_prefix<<"Sub_Sample_Perm_"<<sub_size[pri_ind]<<"x"<<sub_size2[pri_ind]<<"x"<<sub_size3[pri_ind]<<".sta_dat";
+				name<<ouput_prefix<<"Sub_Sample_Perm_"<<sub_size[pri_ind]<<"x"<<sub_size2[pri_ind]<<"x"<<sub_size3[pri_ind]<<"_"<<sub_num[pri_ind]*sub_num[pri_ind]*sub_num[pri_ind]<<".sta_dat";
 				out.open(name.str().c_str());
 		for (int li=0;li<sub_num[pri_ind];li++)
 			for (int lj=0;lj<sub_num[pri_ind];lj++)

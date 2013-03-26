@@ -4,15 +4,17 @@ figure
 area_v=[];
 
 
-sizes=[80,120,160,180,200,230];
-file1='port_z_Sub_Sample_Perm_80.sta_dat';
-file2='port_z_Sub_Sample_Perm_120.sta_dat';
-file3='port_z_Sub_Sample_Perm_160.sta_dat';
-file4='port_z_Sub_Sample_Perm_180.sta_dat';
-file5='port_z_Sub_Sample_Perm_200.sta_dat';
-file6='port_z_Sub_Sample_Perm_230.sta_dat';
+sizes=[70,100,130,180,240,290];
+file1='HP2_Sub_Sample_Perm_70x30x29.sta_dat';
+file2='HP2_Sub_Sample_Perm_100x43x42.sta_dat';
+file3='HP2_Sub_Sample_Perm_130x56x55.sta_dat';
+file4='HP2_Sub_Sample_Perm_180x78x76.sta_dat';
+file5='HP2_Sub_Sample_Perm_240x104x101.sta_dat';
+file6='HP2_Sub_Sample_Perm_290x126x122.sta_dat';
 
-
+ALL_size=350;
+All_Perm=5333;
+All_Porosity=0.826037;
 %==================================================
 a1=load(file1);
 
@@ -110,6 +112,8 @@ plot (a1(1,IX_42(1,:)),a1(2,IX_42(1,:)),'-bs');
 hold on
 %===================================================
 
+
+plot (All_Porosity,All_Perm,'-ro');
 
 hold off
 
