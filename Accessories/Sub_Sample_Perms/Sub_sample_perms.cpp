@@ -11,25 +11,25 @@ using namespace std;
 int main (int argc , char * argv [])
 {
 
-int nx_read=640;
-int ny_read=320;
-int nz_read=320;
+int nx_read=708;
+int ny_read=154;
+int nz_read=150;
 
-int nx=320;
-int ny=320;
-int nz=320;
+int nx=354;
+int ny=154;
+int nz=150;
 
 //=====source data option======
 int source_data_opt=1;	//1=OWN,2=Keehm
-double bodyf=2e-6;
-double vis=0.05;
+double bodyf=1e-6;
+double vis=0.166667;
 //=============================
 
-double dx=0.009;	//resolution mm
+double dx=0.00176;	//resolution mm
 const int sub_n=6;
 
-int sub_num[sub_n]={4,3,3,2,2,2};
-int sub_size[sub_n]={80,120,160,180,200,230};
+int sub_num[sub_n]={5,4,3,2,2,2};
+int sub_size[sub_n]={70,100,130,180,240,290};
 int sub_size2[sub_n]={80,120,160,180,200,230};
 int sub_size3[sub_n]={80,120,160,180,200,230};
 
@@ -38,7 +38,7 @@ int sub_size3[sub_n]={80,120,160,180,200,230};
 	for (int i=0;i<sub_n;i++)
 		{
 		sub_size2[i]=(int)sub_size[i]*ny/nx;cout<<sub_size[i]<<"	"<<sub_size2[i]<<endl;
-		sub_size3[i]=(int)sub_size[i]*nz/nx;cout<<sub_size[i]<<"	"<<sub_size2[i]<<endl;
+		sub_size3[i]=(int)sub_size[i]*nz/nx;cout<<sub_size[i]<<"	"<<sub_size3[i]<<endl;
 		}
 	
 	//--------------------------------------------------------------
@@ -47,11 +47,11 @@ int sub_size3[sub_n]={80,120,160,180,200,230};
 int input_vtk=1;	//0=NO,1=YES
 int pgDir=1;
 	
-char poreFileName[128]="port_perm_LBM_velocity_Vector_120000.vtk";	//velocity
-char poreFileName_geo[128]="port_perm_LBM_Geometry.vtk";		//geometry
+char poreFileName[128]="HP1_LBM_velocity_Vector_50000.vtk";	//velocity
+char poreFileName_geo[128]="HP1_LBM_Geometry.vtk";		//geometry
 
 
-char ouput_prefix[128]="port_perm_";
+char ouput_prefix[128]="HP1_";
 
 
 //======================================================
@@ -71,15 +71,19 @@ int NCHAR=128;
 char     dummy[128+1];
 
 int inter_sub[sub_n];
+int inter_sub2[sub_n];
+int inter_sub3[sub_n];
+
+
 
 
 
 for (int i=0;i<sub_n;i++)
 	{
 	if (sub_num[i]>1)
-	inter_sub[i]=(nx-sub_size[i])/(sub_num[i]-1);
+	inter_sub[i]=(nx-sub_size[i])/(sub_num[i]-1),inter_sub2[i]=(ny-sub_size2[i])/(sub_num[i]-1),inter_sub3[i]=(nz-sub_size3[i])/(sub_num[i]-1);
 	else
-		inter_sub[i]=0;
+		inter_sub[i]=0,inter_sub2[i]=0,inter_sub2[i]=0;
 	//cout<<i<<"	"<<inter_sub[i]<<endl;
 	}
 
@@ -298,15 +302,15 @@ inter_sub
 				{
 				sum=0;vx=0.0;vy=0.0;vz=0.0;
 				st_i=li*inter_sub[pri_ind];
-				st_j=lj*inter_sub[pri_ind];
-				st_k=lk*inter_sub[pri_ind];
+				st_j=lj*inter_sub2[pri_ind];
+				st_k=lk*inter_sub3[pri_ind];
 			
 				
 				for (int i=st_i;i<st_i+sub_size[pri_ind];i++)
 					for (int j=st_j;j<st_j+sub_size2[pri_ind];j++)
 						for (int k=st_k;k<st_k+sub_size3[pri_ind];k++)
 						{
-						
+						//cout<<i<<"	"<<j<<"	"<<k<<endl;
 						if (Solid[i][j][k]==0)
 							sum++;
 						//permX = 1e9*(Q[0]/(nx*ny*nz)+factor*pgBB[0])*nu*dx*dx/pgMag
