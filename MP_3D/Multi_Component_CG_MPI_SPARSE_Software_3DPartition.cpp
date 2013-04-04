@@ -11,7 +11,7 @@
 //======PARMETIS===============
 #include<parmetis.h>  
 //mpic++ SINGLE_PHASE_MPI_Software_Spars_3DPartition.cpp -lparmetis -lmetis -o paratest
-
+//mpic++ Multi_Component_CG_MPI_SPARSE_Software_3DPartition.cpp ./../parmetis-4.0.2/build/Linux-x86_64/libparmetis/libparmetis.a ./../parmetis-4.0.2/build/Linux-x86_64/libmetis/libmetis.a -o paratest
 //=============================
 
 #define MAXN 100
@@ -318,6 +318,12 @@ char FileName6[128];
 int ind_error_sat=0;
 //=====================================
 
+//=======MIXTURE PSI INJECTION===========
+int mix_psi_thickness;
+//=======================================
+
+
+
 int main(int argc , char *argv [])
 {	
 
@@ -448,6 +454,11 @@ double v_max,error_Per;
 
 	//================INPUT UPDATE===========================
 	fin >> input_dynamic>>update_fre;           		fin.getline(dummy, NCHAR);
+	//=======================================================
+
+	//================MIXTURE PSI INJECTION==================
+	fin.getline(dummy, NCHAR);
+	fin >> mix_psi_thickness;				fin.getline(dummy, NCHAR);
 	//=======================================================
 	
 	
@@ -602,7 +613,9 @@ double v_max,error_Per;
 	
 	
 	
-	
+	//=============MIXTURE PSI INJECTION=================
+	MPI_Bcast(&mix_psi_thickness,1,MPI_INT,0,MPI_COMM_WORLD);
+	//===================================================
 p_xn_ori=p_xn;p_xp_ori=p_xp;
 p_yn_ori=p_yn;p_yp_ori=p_yp;
 p_zn_ori=p_zn;p_zp_ori=p_zp;
@@ -2634,9 +2647,9 @@ double cb[19]={-1.0/3.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.
 		if (in_psi_BC>0)
 		{
 		    
-		        i=(int)(coor[ci]/((NY+1)*(NZ+1)));
-		        j=(int)((coor[ci]%((NY+1)*(NZ+1)))/(NZ+1));
-			m=(int)(coor[ci]%(NZ+1));   
+		        //i=(int)(coor[ci]/((NY+1)*(NZ+1)));
+		        //j=(int)((coor[ci]%((NY+1)*(NZ+1)))/(NZ+1));
+			//m=(int)(coor[ci]%(NZ+1));   
 		        
 		        if (nei_loc[ci][tmpi]>0)
 			        	{
@@ -2836,13 +2849,17 @@ GuoF[18]=w[18]*(lm0+lm1);
 
 	
 	//=========================================================================================
-	//		meq[0]=rho[ci];meq[3]=rho_0*ux;meq[5]=rho_0*uy;meq[7]=rho_0*uz;
-	//		meq[1]=rho_0*(ux*ux+uy*uy+uz*uz);
-	//		meq[9]=rho_0*(2*ux*ux-uy*uy-uz*uz);
-	//		meq[11]=rho_0*(uy*uy-uz*uz);
-	//		meq[13]=rho_0*ux*uy;
-	//		meq[14]=rho_0*uy*uz;
-	//		meq[15]=rho_0*ux*uz;
+			if (mix_psi_thickness>0)
+			if ((psi_xn>0) and (i<=mix_psi_thickness))
+			{
+			meq[0]=rho[ci];meq[3]=rho_0*ux;meq[5]=rho_0*uy;meq[7]=rho_0*uz;
+			meq[1]=rho_0*(ux*ux+uy*uy+uz*uz);
+			meq[9]=rho_0*(2*ux*ux-uy*uy-uz*uz);
+			meq[11]=rho_0*(uy*uy-uz*uz);
+			meq[13]=rho_0*ux*uy;
+			meq[14]=rho_0*uy*uz;
+			meq[15]=rho_0*ux*uz;
+			}
 
 	//=======================================================================================		
 			

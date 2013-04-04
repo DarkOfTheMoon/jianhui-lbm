@@ -66,6 +66,9 @@ phase.dat       	    	          :Initial components distribution
 0 0.7e-2                            :N>0 :Apply diff IFT after N timesteps, N<=0 OFF, IFT value;
 0 1000                  :WARRINING: USE WITH CAUTION 0=OFF,1=ON Input dynamic update, update frequency
 ========
+3		:Mixture psi injection, 0=OFF, N>0 the thickness of the injection buffer
+
+
 
 with #,  parameter changeble use with 
 1 1000                  :WARRINING: USE WITH CAUTION 0=OFF,1=ON Input dynamic update, update frequency
