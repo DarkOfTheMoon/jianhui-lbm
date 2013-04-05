@@ -7,6 +7,9 @@
 #include<string>
 #include <math.h>
 
+#include <cstdlib>
+#include <algorithm>
+
 
 using namespace std; 
 
@@ -40,6 +43,11 @@ int sum1=0;
 int pore_sum;
 int sum3;
 int sn[max_cluster];
+
+
+int* sn2;
+sn2=new int[max_cluster];
+
 int phase_ind;
 int exp_vtk;
 
@@ -201,7 +209,7 @@ double pore;
 				
 				if (sum-2>max_cluster)
 					cout<<"WARNING: BEYOND MAX NUMBER OF CLUSTER"<<endl;
-				sn[sum-2]=sum2;
+				sn[sum-2]=sum2;sn2[sum-2]=sum2;
 				
 				}
 				cout<<sum<<"	"<<sum2<<endl;
@@ -271,9 +279,10 @@ for (int i=0;i<sum3;i++)
 		out<<capa[i]<<"		"<<capa2[i]<<"		"<<double(capa2[i])/double(pore_sum)<<"		"<<capa3[i]<<"		"<<double(capa[i])/double(pore_sum)<<endl;
 		
 		out.close();	
-	//		out<<"# vtk DataFile Version 2.0"<<endl;
-
 	
+
+
+
 
 	if (exp_vtk==1)
 	{
@@ -292,10 +301,10 @@ for (int i=0;i<sum3;i++)
 	out<<"POINT_DATA     "<<(rnx-lnx)*(rny-lny)*(rnz-lnz)<<endl;				///*********
 	out<<"SCALARS sample_scalars float"<<endl;
 	out<<"LOOKUP_TABLE default"<<endl;
-	
+	for (int k=lnz;k<rnz;k++)
+	for (int j=lny;j<rny;j++)
 	for (int i=lnx;i<rnx;i++)
-		for (int j=lny;j<rny;j++)
-			for (int k=lnz;k<rnz;k++)
+		
 	//for (int k=0;k<nz;k++)
 	//for (int j=0;j<ny;j++)
 	//for (int i=0;i<nx;i++)
@@ -305,7 +314,29 @@ for (int i=0;i<sum3;i++)
 	out.close();
 	}
 
-		
+sort(sn2,sn2+sum-1);
+
+
+//for (int i=0;i<=sum-2;i++)
+//	cout<<i<<" "<<sn2[i]<<endl;
+
+
+ostringstream name3;
+		name3<<"Cluster_size_index_finder.txt";
+
+		ofstream out3;
+		out3.open(name3.str().c_str());
+out3<<"Cluster size	index	"<<endl;
+for (int i=0;i<=sum-2;i++)
+	{
+	for (int j=0;j<=sum-2;j++)
+	if (sn[j]==sn2[i])
+		{
+		sn[j]=0;	
+		out3<<sn2[i]<<"		"<<j+2<<endl;
+		j=sum;
+		}
+	}		
 	
 }
 
