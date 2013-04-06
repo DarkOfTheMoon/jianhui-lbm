@@ -172,6 +172,13 @@ void Rel_Perm_Imb_Dra(double*);
 void output_psi_rel_perm(double ,double* ,int***);
 //===============================================
 
+
+//=============Psi mixture injection======================
+void psi_mixture_ini(float* );
+
+//===============================================
+
+
 //===========input update==============
 void input_update();
 char inp_up[128];
@@ -320,6 +327,7 @@ int ind_error_sat=0;
 
 //=======MIXTURE PSI INJECTION===========
 int mix_psi_thickness;
+double protion_w;
 //=======================================
 
 
@@ -459,6 +467,7 @@ double v_max,error_Per;
 	//================MIXTURE PSI INJECTION==================
 	fin.getline(dummy, NCHAR);
 	fin >> mix_psi_thickness;				fin.getline(dummy, NCHAR);
+	fin >> protion_w;                                        fin.getline(dummy, NCHAR);
 	//=======================================================
 	
 	
@@ -614,7 +623,7 @@ double v_max,error_Per;
 	
 	
 	//=============MIXTURE PSI INJECTION=================
-	MPI_Bcast(&mix_psi_thickness,1,MPI_INT,0,MPI_COMM_WORLD);
+	MPI_Bcast(&mix_psi_thickness,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&protion_w,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 	//===================================================
 p_xn_ori=p_xn;p_xp_ori=p_xp;
 p_yn_ori=p_yn;p_yp_ori=p_yp;
@@ -2096,16 +2105,21 @@ void Parallelize_Geometry()
 	      Count=sumss[procind];  
 
 cout<<"GEOMETRY FILE PARTITIONING FOR PARALLEL READING DONE   Processor No."<<rank<<endl;
-	
-	      
+
+
 float* Psi_rank0;	      
 Psi_rank0 = new float[(NX+1)*(NY+1)*(NZ+1)];
+if (mix_psi_thickness>0)
+        psi_mixture_ini(Psi_rank0);
+	      
+
 Psi_local = new float[Count+1];
 
 float pore2;
  
+
  if (rank==0)
-         if (ini_Sat<0)
+         if ((ini_Sat<0) and (mix_psi_thickness==0))
 {       
         FILE *ftest;
 	ftest = fopen(filenamepsi, "r");
@@ -2152,23 +2166,7 @@ float pore2;
 	 cout<<"CONCENTRATION FILE PARTITIONING FOR PARALLEL READING DONE   Processor No."<<rank<<endl;
 
    
-	 /*
-	 for (int ci=1;ci<=Count;ci++)
-	                {
-	                      ii=(int)(coor[ci]/(ny*nz));
-	                      jj=(int)((coor[ci]%(ny*nz))/nz);
-	                      kk=(int)(coor[ci]%nz);
-	                      
-	                      //Solid2[ii][jj][kk]=0;
-	                }
-	 
-	        cout<<"@@@@@@@@@@@@@@@"<<endl;
-	        for(int k=0 ; k<=NZ ; k++)
-	for(int j=0 ; j<=NY ; j++)
-	for(int i=0 ; i<=NX ; i++)
-	        if ((Solid2[i][j][k]!=0) and (Solid[i][j][k]==procind))
-	                cout<<Solid2[i][j][k]<<"        "<<Solid[i][j][k]<<"        "<<i<<"        "<<j<<"        "<<k<<endl;
-	 */
+	
 	 
 	 
 	  delete [] Psi_rank0;
@@ -2179,12 +2177,11 @@ float pore2;
 	   
 	   delete [] sumtmp;
 	   
-	   
-	 delete [] Solid2[0][0];
+	   delete [] Solid2[0][0];
 		for (int i=0;i<nx;i++)
 			delete [] Solid2[i];
-		delete [] Solid2;
-    
+		delete [] Solid2;	
+	 
 	   if (rank>0)
 	   {
 	      
@@ -6142,4 +6139,204 @@ int para_size=MPI :: COMM_WORLD . Get_size ();
 	
 }
 
+void psi_mixture_ini(float* Psi_rank0)
+{
+        
+        int rank = MPI :: COMM_WORLD . Get_rank ();
+        int para_size=MPI :: COMM_WORLD . Get_size ();
+        
+        int nx=NX+1;
+	int ny=NY+1;
+	int nz=NZ+1;
+	int fluid_sum=0;
 
+        int*** Solid_in;
+        
+	
+	
+int nw_node;
+int nei_ver;
+int lsi,lsj,lsk;
+int cori,corj,cork;
+int nwn_mark=0;
+int cor_i=mix_psi_thickness;
+int rad_max,rad1,cenx,ceny,cenz;
+
+cenx=(int)(nx/2);
+ceny=(int)(ny/2);
+cenz=(int)(nz/2);
+
+rad_max=(int)(ny/2);
+if (nz/2>rad_max)
+	rad_max=(int)(nz/2);
+
+
+
+
+if (rank==0)
+{
+
+     
+        for (int i=0;i<nx;i++)
+                for (int j=0;j<ny;j++)
+                for (int k=0;k<nz;k++)
+                if (Solid[i][j][k]==0)
+                        Solid2[i][j][k]=1;
+                else
+                        Solid2[i][j][k]=0;
+
+
+for (int j=0;j<ny;j++)
+        for (int k=0;k<nz;k++)
+        if (Solid2[cor_i][j][k]==0)
+                fluid_sum++;
+        
+nw_node = (int)(fluid_sum*protion_w);
+
+
+
+
+
+
+if (Solid2[cor_i][ceny][cenz]==0)
+        {
+                        nei_ver=0;
+                        for (int ls=0;ls<18;ls++)
+                                {
+                                      lsi=cor_i+e[ls][0];
+                                      lsj=ceny+e[ls][1];
+                                      lsk=cenz+e[ls][2];
+                                      if ((lsi>=0) and (lsi<nx) and (lsj>=0) and (lsj<ny) and (lsk>=0) and (lsk<nz)) 
+                                              if (Solid2[lsi][lsj][lsk]==1)
+                                                        nei_ver=1;
+                                }
+                        if ((nei_ver==1) and (nwn_mark<nw_node))
+                                Solid2[cor_i][ceny][cenz]=2,nwn_mark++;
+                        
+        }
+
+
+rad1=1;
+while ((nwn_mark<nw_node) and (rad1<rad_max))
+{
+	for (int k=cenz-rad1;k<=cenz+rad1;k=k+rad1*2)
+	for (int j=ceny-rad1;j<=ceny+rad1;j++)
+	if (Solid2[cor_i][j][k]==0)
+        {
+                        nei_ver=0;
+                        for (int ls=0;ls<18;ls++)
+                                {
+                                      lsi=cor_i+e[ls][0];
+                                      lsj=j+e[ls][1];
+                                      lsk=k+e[ls][2];
+                                      if ((lsi>=0) and (lsi<nx) and (lsj>=0) and (lsj<ny) and (lsk>=0) and (lsk<nz)) 
+                                              if (Solid2[lsi][lsj][lsk]==1)
+                                                        nei_ver=1;
+                                }
+                        if ((nei_ver==1) and (nwn_mark<nw_node))
+                                Solid2[cor_i][j][k]=2,nwn_mark++;
+                        
+        }
+
+
+	for (int j=ceny-rad1;j<=ceny+rad1;j=j+rad1*2)
+	for (int k=cenz-rad1;k<=cenz+rad1;k++)
+	if (Solid2[cor_i][j][k]==0)
+        {
+                        nei_ver=0;
+                        for (int ls=0;ls<18;ls++)
+                                {
+                                      lsi=cor_i+e[ls][0];
+                                      lsj=j+e[ls][1];
+                                      lsk=k+e[ls][2];
+                                      if ((lsi>=0) and (lsi<nx) and (lsj>=0) and (lsj<ny) and (lsk>=0) and (lsk<nz)) 
+                                              if (Solid2[lsi][lsj][lsk]==1)
+                                                        nei_ver=1;
+                                }
+                        if ((nei_ver==1) and (nwn_mark<nw_node))
+                                Solid2[cor_i][j][k]=2,nwn_mark++;
+                        
+        }
+
+	rad1++;
+	
+
+        }
+        cout<<"Portition of Wetting Fluid "<<(double)nwn_mark/fluid_sum<<endl;
+
+
+
+		//---------level2----------------
+rad1=1;
+while ((nwn_mark<nw_node) and (rad1<rad_max))
+{
+	for (int k=cenz-rad1;k<=cenz+rad1;k=k+rad1*2)
+	for (int j=ceny-rad1;j<=ceny+rad1;j++)
+	if (Solid2[cor_i][j][k]==0)
+        {
+                        nei_ver=0;
+                        for (int ls=0;ls<18;ls++)
+                                {
+                                      lsi=cor_i+e[ls][0];
+                                      lsj=j+e[ls][1];
+                                      lsk=k+e[ls][2];
+                                      if ((lsi>=0) and (lsi<nx) and (lsj>=0) and (lsj<ny) and (lsk>=0) and (lsk<nz)) 
+                                              if (Solid2[lsi][lsj][lsk]>0)
+                                                        nei_ver=1;
+                                }
+                        if ((nei_ver==1) and (nwn_mark<nw_node))
+                                Solid2[cor_i][j][k]=-2,nwn_mark++;
+                        
+        }
+
+
+	for (int j=ceny-rad1;j<=ceny+rad1;j=j+rad1*2)
+	for (int k=cenz-rad1;k<=cenz+rad1;k++)
+	if (Solid2[cor_i][j][k]==0)
+        {
+                        nei_ver=0;
+                        for (int ls=0;ls<18;ls++)
+                                {
+                                      lsi=cor_i+e[ls][0];
+                                      lsj=j+e[ls][1];
+                                      lsk=k+e[ls][2];
+                                      if ((lsi>=0) and (lsi<nx) and (lsj>=0) and (lsj<ny) and (lsk>=0) and (lsk<nz)) 
+                                              if (Solid2[lsi][lsj][lsk]>0)
+                                                        nei_ver=1;
+                                }
+                        if ((nei_ver==1) and (nwn_mark<nw_node))
+                                Solid2[cor_i][j][k]=-2,nwn_mark++;
+                        
+        }
+
+	rad1++;
+	
+
+}
+
+
+for (int j=0;j<ny;j++)
+        for (int k=0;k<nz;k++)
+        if (Solid2[cor_i][j][k]==-2)
+                Solid2[cor_i][j][k]=2;
+        
+     cout<<"Portition of Wetting Fluid2 "<<(double)nwn_mark/fluid_sum<<endl;    
+
+
+
+     for (int k=0;k<nz;k++)
+	for (int j=0;j<ny;j++)
+	for (int i=0;i<nx;i++)
+		//out4<<Solid[i][j][k]<<"	";
+		
+		if ((i<=mix_psi_thickness) and (Solid2[mix_psi_thickness][j][k]==0))
+				Psi_rank0[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]=-1;
+			else
+				Psi_rank0[i*(NY+1)*(NZ+1)+j*(NZ+1)+k]=1;
+			
+			cout<<endl;
+			cout<<"PSI RANK0 initialization complete"<<rank<<endl;
+			cout<<endl;
+}	
+	
+}
