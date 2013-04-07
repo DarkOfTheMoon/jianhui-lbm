@@ -18,7 +18,8 @@ int NCHAR=128;
 	int      dummyInt;
 
 
-
+int rotation;
+	
 int sym_x;
 int sym_y;
 int sym_z;
@@ -63,6 +64,7 @@ ifstream fins(argv[1]);
 							fins.getline(dummy, NCHAR);
 	fins >> poreFileName;				fins.getline(dummy, NCHAR);
 	fins >> nx>> ny>>nz;				fins.getline(dummy, NCHAR);
+	fins >> rotation;                                fins.getline(dummy, NCHAR);
 	fins >> poreFileNameVTK;			fins.getline(dummy, NCHAR);
 	fins >> poreFileNameOut;			fins.getline(dummy, NCHAR);
 	fins >> expvtk;					fins.getline(dummy, NCHAR);
@@ -88,6 +90,22 @@ ifstream fins(argv[1]);
 
 fins.close();	
 
+
+//--------------ROTATION-------------------------
+int tmp;
+//cout<<"@@@@@@@@@@"<<rotation<<endl;
+if (rotation==1)
+        tmp=ny,ny=nx,nx=tmp;
+if (rotation==2)
+        tmp=nz,nz=nx,nx=tmp;
+if (rotation>0)
+{
+        cout<<"=================================================="<<endl;
+        cout<<"CAUTION: ROTATION OF ORIGINAL GEOMETRY IS CARRIED OUT"<<endl;
+        cout<<"THE ORIGINAL GEOMETRY SIZE HAS BEEN CHANGED TO  "<<nx<<"         "<<ny<<"        "<<nz<<endl;
+        cout<<endl;
+}
+//---------------------------------------------------
 
 
 int*** Solid;
@@ -131,47 +149,47 @@ double pore;
        }
 
 
-	/*
-	Solid = new int**[nx];
+
 	
-		
-	for (int i=0; i<nx;i++)
+	cout<<"Start reading source geometry file"<<endl;
+	if (rotation==0)
 	{
-	       Solid[i] = new int*[ny];
-	       for (int j=0;j<ny;j++)
-	       {
-	               Solid[i][j] = new int[nz];
-	               for (int k=0;k<nz;k++)
-	                       Solid[i][j][k] = 0;
-	       }
-	}
-
-	*/
-
-
-	
-	cout<<"Start reading source geometry file"<<endl;	
 	for(int k=0 ; k<nz ; k++)				///*********
 	for(int j=0 ; j<ny ; j++)
 	for(int i=0 ; i<nx ; i++)				///*********
-	
-
-	//while (!fin.eof())                                        //**********
 		{	
-			//fin >> ci >> cj>> ck>>pore;
 			fin >> pore;
-			
-			//if (pore == 0.0)	{Solid[ci-1][cj-1][ck-1] = 0;}
 			if (pore == 0)	{Solid[i][j][k] = 0;sum++;reci=i;recj=j;reck=k;}
 			else
-			//if (pore == 1.0) 	{Solid[ci-1][cj-1][ck-1] = 1;sum++;}
-			//if (pore == 1.0) 	
 				{Solid[i][j][k] = 1;}
-			
-		
-			
-			
 		}
+	}
+	else
+	        if (rotation==1)
+	        {
+	         for(int k=0 ; k<nz ; k++)				
+	          for(int i=0 ; i<nx ; i++)		
+	         for(int j=0 ; j<ny ; j++)		
+	                 {        	
+			fin >> pore;
+			if (pore == 0)	{Solid[i][j][k] = 0;sum++;reci=i;recj=j;reck=k;}
+			else
+				{Solid[i][j][k] = 1;}
+			 }
+		}
+		else
+		        {
+		             	        for(int i=0 ; i<nx ; i++)		
+		             	        for(int j=0 ; j<ny ; j++)
+		             	        for(int k=0 ; k<nz ; k++)		
+		                     {        	
+		                             fin >> pore;
+		                             if (pore == 0)	{Solid[i][j][k] = 0;sum++;reci=i;recj=j;reck=k;}
+		                             else
+		                                     {Solid[i][j][k] = 1;}
+		                     }                  
+		        }
+		
 	cout<<"Porosity = "<<(double(sum)/(nx*ny*nz))<<endl;	
 	sum_rec=sum;
 	fin.close();
