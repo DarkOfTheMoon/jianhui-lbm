@@ -12,12 +12,20 @@ int main (int argc , char * argv [])
 {
 
 int nx_read=400;
-int ny_read=600;
-int nz_read=215;
+int ny_read=300;
+int nz_read=430;
 
-int nx=400;
-int ny=300;
-int nz=215;
+int nx_l=0;
+int nx_r=400;
+int ny_l=0;
+int ny_r=300;
+int nz_l=0;
+int nz_r=215;
+
+
+int nx=nx_r-nx_l;
+int ny=ny_r-ny_l;
+int nz=nz_r-nz_l;
 
 //=====source data option======
 int source_data_opt=1;	//1=OWN,2=Keehm
@@ -45,13 +53,13 @@ int sub_size3[sub_n]={80,120,160,180,200,230};
 
 
 int input_vtk=1;	//0=NO,1=YES
-int pgDir=2;
+int pgDir=3;
 	
-char poreFileName[128]="R1_2_LBM_velocity_Vector_50000.vtk";	//velocity
-char poreFileName_geo[128]="R1_2_LBM_Geometry.vtk";		//geometry
+char poreFileName[128]="R1_3_LBM_velocity_Vector_150000.vtk";	//velocity
+char poreFileName_geo[128]="R1_3_LBM_Geometry.vtk";		//geometry
 
 
-char ouput_prefix[128]="R1_1_";
+char ouput_prefix[128]="R1_3_";
 
 
 //======================================================
@@ -198,11 +206,11 @@ double factor;
 		{	
 			//fin >> ci >> cj>> ck>>pore;
 			fin >> pore;
-			if ((i<nx) and (j<ny) and (k<nz))
+			if ((i<nx_r) and (j<ny_r) and (k<nz_r) and (i>=nx_l) and (j>=ny_l) and (k>=nz_l))
 			if (pore==1.0)
-				{Solid[i][j][k]=1;}
+				{Solid[i-nx_l][j-ny_l][k-nz_l]=1;}
 			else
-				{Solid[i][j][k]=0;sum++;}
+				{Solid[i-nx_l][j-ny_l][k-nz_l]=0;sum++;}
 			
 			
 			
@@ -259,13 +267,13 @@ double factor;
 	//while (!fin.eof())                                        //**********
 		{	
 			//fin >> ci >> cj>> ck>>pore;
-			fin >> pore1>>pore2>>pore3;
-			if ((i<nx) and (j<ny) and (k<nz))
-			if (Solid[i][j][k]==0) 
+			fin >> pore1>>pore2>>pore3;//vx+=pore1;vy+=pore2;vz+=pore3;
+			if ((i<nx_r) and (j<ny_r) and (k<nz_r) and (i>=nx_l) and (j>=ny_l) and (k>=nz_l))
+			if (Solid[i-nx_l][j-ny_l][k-nz_l]==0) 
 			{
-			vel[i][j][k][0]=pore1;vx+=pore1;
-			vel[i][j][k][1]=pore2;vy+=pore2;
-			vel[i][j][k][2]=pore3;vz+=pore3;
+			vel[i-nx_l][j-ny_l][k-nz_l][0]=pore1;vx+=pore1;
+			vel[i-nx_l][j-ny_l][k-nz_l][1]=pore2;vy+=pore2;
+			vel[i-nx_l][j-ny_l][k-nz_l][2]=pore3;vz+=pore3;
 			}
 			
 			

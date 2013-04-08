@@ -5076,8 +5076,8 @@ void output_psi(int m,double* psi,int MirX,int MirY,int MirZ,int mir,int*** Soli
 	{
 	ofstream out;
 	out.open(name.str().c_str());
-	out<<"# vtk DataFile Version 2.0"<<endl;
-	out<<"J.Yang Lattice Boltzmann Simulation 3D Single Phase-Solid-Density - "<<S_l<<endl;
+	out<<"# vtk DataFile Version 2.0 - "<<niu_l<<" "<<niu_g<<" "<<ContactAngle_parameter<<" "<<CapA<<endl;
+	out<<"J.Yang Lattice Boltzmann Simulation 3D MC- "<<S_l<<" "<<porosity<<" "<<reso<<" "<<gxs<<" "<<p_xp<<" "<<p_xn<<endl;
 	out<<"ASCII"<<endl;
 	out<<"DATASET STRUCTURED_POINTS"<<endl;
 	out<<"DIMENSIONS         "<<NX0<<"         "<<NY0<<"         "<<NZ0<<endl;

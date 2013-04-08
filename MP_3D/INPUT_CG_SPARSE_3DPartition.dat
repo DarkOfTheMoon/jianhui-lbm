@@ -193,3 +193,18 @@ g++ Results_Extraction.cpp -o test
 
 then the code will extract datas from rel_1_Reslts.txt, rel_2_results.txt ..... rel_10_Results.txt
 from the most recent 2000 time step
+
+To use mixture fluid injection function, give a mixture injection buffer thickness value, normally 3, it should be compatible with the real buffer thickness, because this value also indicates the location of the first porous layer.
+PSI initialization data file is now needed anymore, but normally use constant psi for inlet and outlet
+This function is now only valid in X direction and the injection is done from xn to xp. The following is an example:
+3		:Mixture psi injection, 0=OFF, N>0 the thickness of the injection buffer (psi initial data not needed)
+0.5             :Portion of wetting layer next to solid (0.0~1.0)
+6		:thichness of zero sigma (ift)
+
+
+VTK file heading datas:
+# vtk DataFile Version 2.0 -0.05 0.05 0.7 0.005
+J.Yang Lattice Boltzmann Simulation 3D MC- 1 0.340502 7 1e-06 1 1
+# vtk DataFile Version 2.0 - viscosity_l viscosity_g contact_angle surface_tension
+J.Yang Lattice Boltzmann Simulation 3D MC- saturation porosity resolution bodyforce_x pressure_x_p pressure_x_n
+
