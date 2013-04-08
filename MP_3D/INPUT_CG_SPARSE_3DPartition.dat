@@ -68,6 +68,7 @@ phase.dat       	    	          :Initial components distribution
 ========
 3		:Mixture psi injection, 0=OFF, N>0 the thickness of the injection buffer (psi initial data not needed)
 0.5             :Portion of wetting layer next to solid (0.0~1.0)
+6		:thichness of zero sigma (ift)
 
 
 with #,  parameter changeble use with 

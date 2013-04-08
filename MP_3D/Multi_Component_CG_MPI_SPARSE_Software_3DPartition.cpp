@@ -328,6 +328,7 @@ int ind_error_sat=0;
 //=======MIXTURE PSI INJECTION===========
 int mix_psi_thickness;
 double protion_w;
+int zero_sigma_thickness;
 //=======================================
 
 
@@ -468,6 +469,7 @@ double v_max,error_Per;
 	fin.getline(dummy, NCHAR);
 	fin >> mix_psi_thickness;				fin.getline(dummy, NCHAR);
 	fin >> protion_w;                                        fin.getline(dummy, NCHAR);
+	fin >> zero_sigma_thickness;				fin.getline(dummy, NCHAR);
 	//=======================================================
 	
 	
@@ -624,7 +626,10 @@ double v_max,error_Per;
 	
 	//=============MIXTURE PSI INJECTION=================
 	MPI_Bcast(&mix_psi_thickness,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&protion_w,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Bcast(&zero_sigma_thickness,1,MPI_INT,0,MPI_COMM_WORLD);
 	//===================================================
+
+
 p_xn_ori=p_xn;p_xp_ori=p_xp;
 p_yn_ori=p_yn;p_yp_ori=p_yp;
 p_zn_ori=p_zn;p_zp_ori=p_zp;
@@ -2847,7 +2852,7 @@ GuoF[18]=w[18]*(lm0+lm1);
 	
 	//=========================================================================================
 			if (mix_psi_thickness>0)
-			if ((psi_xn>0) and (i<=mix_psi_thickness))
+			if ((psi_xn>0) and (i<=zero_sigma_thickness))
 			{
 			meq[0]=rho[ci];meq[3]=rho_0*ux;meq[5]=rho_0*uy;meq[7]=rho_0*uz;
 			meq[1]=rho_0*(ux*ux+uy*uy+uz*uz);
