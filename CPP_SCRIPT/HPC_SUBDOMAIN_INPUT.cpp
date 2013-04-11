@@ -18,6 +18,7 @@ double g[15]={1e-6,1e-6,1e-6,1e-6,1e-6,1e-6,2e-6,3e-6,4e-6,5e-6,6e-6,7e-6,8e-6,9
 double diffu[15]={0.05,0.02,0.01,0.005,0.002,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001};
 
 double var1[11];
+
         
  	char poreFileName[128]="INPUT_CG_";
 	char poreFileName2[128]="LV60_";
@@ -161,8 +162,9 @@ out<<i<<endl;
 
 
 
+
 out<<"========3D LATTICE BOLTZMANN MPI CODE--MULTI COMPONENT CG======="<<endl;
-out<<"fbere.dat         :Geometry filenameEmily_Berea_y_614_764_7.dat"<<endl;
+out<<"fbere_"<<diffu[i-1]<<".dat         :Geometry filenameEmily_Berea_y_614_764_7.dat"<<endl;
 out<<"phase_309_302_302.dat           	:Initial components distribution"<<endl;
 out<<"309 302 302               	:nx ny nz"<<endl;
 out<<"10000000		     		:Maximum time step"<<endl;
