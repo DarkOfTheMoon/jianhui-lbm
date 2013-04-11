@@ -6,6 +6,12 @@
 #include<sstream>
 #include<string>
 
+//-----------------------
+#include <stdio.h>
+#include <dirent.h>
+//-----------------------
+
+
 using namespace std; 
       
 int main (int argc , char * argv [])
@@ -34,13 +40,72 @@ int input_vtk=1;	//0=NO,1=YES
 int output=0;		//export processed file? 
 int output_vtk=1;
 	
-char poreFileName[128]="psi2_LBM_psi_450000.vtk";
-
-char outputFileName[128]="sys_cut_phase_0.50.vtk";
+char dir_path[256]="/home/jy810/LBM/source/CODE/jianhui-lbm/PreProcessing/";
 
 
 
-//======================================================
+
+
+
+//===========================================================
+
+string nametest;
+int where,where2;
+ostringstream name;
+ofstream out;
+FILE *ftest;
+	ifstream fin;
+char* poreFileName2;
+string pref;
+
+
+struct dirent *pDirEntry = NULL;
+
+         DIR          *pDir      = NULL;
+string poreFileName;
+
+if( (pDir = opendir(dir_path)) == NULL )
+
+         {
+
+                   printf("opendir failed!\n");
+
+                   return 1;
+
+         }
+
+         else
+
+         {
+
+
+
+
+                   while( pDirEntry = readdir(pDir) )
+
+{
+
+//char poreFileName[128]="psi2_LBM_psi_450000.vtk";
+
+//char outputFileName[128]="sys_cut_phase_0.50.vtk";
+
+poreFileName=pDirEntry->d_name;
+poreFileName2=const_cast<char*>(poreFileName.c_str());
+
+
+where = poreFileName.find(".vtk");
+//cout<<poreFileName2<<"	"<<where<<endl;
+
+if (where>0)
+
+
+{
+
+
+
+where2=poreFileName.find("_LBM");
+pref=poreFileName.substr(0,where2+1);
+//cout<<pref<<endl;
 
 if (Phase_Filter_Visual==1)
 	{
@@ -69,10 +134,11 @@ double*** Solid_Int;
 double*** Solid;
 
 
-	FILE *ftest;
-	ifstream fin;
 	
-	ftest = fopen(poreFileName, "r");
+	cout<<"--------------------------------------------------------"<<endl;
+	cout<<"Start Processing "<<poreFileName<<endl;
+	cout<<endl;
+	ftest = fopen(poreFileName2, "r");
 
 	if(ftest == NULL)
 	{
@@ -84,7 +150,8 @@ double*** Solid;
 	}
 	fclose(ftest);
 
-	fin.open(poreFileName);
+	fin.open(poreFileName2);
+
 
 
 double pore;
@@ -218,12 +285,22 @@ if (sym_z==1)
 	if (output==1)
 	{
 	//cout<<sum<<endl;
-	cout<<"Start writting output file"<<endl;
-	cout<<endl;
+	
 
-	ostringstream name;
-	name<<outputFileName;
-	ofstream out;
+	name.str("");
+	if (output_vtk==1)
+	name<<pref<<setprecision(2)<<(double)sum2/sum<<".vtk";
+	else
+	name<<pref<<setprecision(2)<<(double)sum2/sum<<".dat";
+
+	if (Phase_Filter_Visual==1)
+		{
+		name.str("");
+		name<<poreFileName;
+		}
+
+	cout<<"Start writting output file "<<name.str()<<endl;
+	cout<<endl;
 	out.open(name.str().c_str());
 	
 	if (output_vtk==1)
@@ -262,6 +339,13 @@ if (sym_z==1)
 	}
 
 cout<<nx2*(sym_x+1)<<"         "<<ny2*(sym_y+1)<<"         "<<nz2*(sym_z+1)<<endl;
+
+
+	cout<<"Processing of "<<poreFileName<<"	done"<<endl;
+	cout<<"---------------------------------------------------------"<<endl;
+}
+}
+}
 
 }
 

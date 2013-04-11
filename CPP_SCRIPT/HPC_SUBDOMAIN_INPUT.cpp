@@ -162,7 +162,7 @@ out<<i<<endl;
 
 
 out<<"========3D LATTICE BOLTZMANN MPI CODE--MULTI COMPONENT CG======="<<endl;
-out<<"LV60_bufn_309_302_302.dat         :Geometry filenameEmily_Berea_y_614_764_7.dat"<<endl;
+out<<"fbere.dat         :Geometry filenameEmily_Berea_y_614_764_7.dat"<<endl;
 out<<"phase_309_302_302.dat           	:Initial components distribution"<<endl;
 out<<"309 302 302               	:nx ny nz"<<endl;
 out<<"10000000		     		:Maximum time step"<<endl;
@@ -220,14 +220,18 @@ out<<"-1 0.0 0.0 0.0		:ACT AT TIMESTEP n, PRESSURE N, PRESSURE P, BODYFORCE(5)"<
 out<<"0			:BODY FORCE APPLIED ON 1:Phase1,0:BOTH,-1:Phase2"<<endl;
 out<<"=====================CAPILLARY PRESSURE MEASURMENTS================"<<endl;
 out<<"0 1 2000                     :0=OFF,1,2,3=ON,1=X,2=Y,3=Z;|| 1=PRESSURE,2=BODY FORCE; time steps of 1 changement"<<endl;
-out<<"1.0 0.993 1.0e-6 6 10           :PRESSURE N,P; Chan times, (term condition: no. output intervals)"<<endl;                   
+out<<"1.0 0.993 1.0e-6 6 10     :PRESSURE N,P; Chan times, (term condition: no. output intervals)"<<endl;                   
 out<<"1.0e-6                          :Error of Saturation stable condition"<<endl;
 out<<"======================Least Square Fitting for Relative Permeability============="<<endl;
 out<<"0 10                            :0=OFF,1=ON; number of Fitting points;"<<endl;  
 out<<"===============Relative Permeability with Imbibition and Drainage process Control=========="<<endl;
-out<<"0 5 10e-3 5                :0=OFF,1=Imb,2=Drai;No.of data points; (equil cond for least square rel_perm, time steps)"<<endl;
-out<<"0 1e-5                    :Apply diff force for injec 0=OFF,1=ON,value for injection (to overcome the min cap pres)"<<endl;
-out<<"0			:psi export"<<endl;
+out<<"0 5          :0=OFF,1=Imb,2=Drai;No.of data points; (equil cond for least square rel_perm, time steps)"<<endl;
+out<<"0 1e-5               :Apply diff force for injec 0=OFF,1=ON,value for injection (to overcome the min cap pres)"<<endl;
+out<<"0	1000		:psi export"<<endl;
+out<<"=========================="<<endl;
+out<<"0		:Mixture psi injection, 0=off n>0 thickness"<<endl;
+out<<"0.5	::Portion of wetting layer next to solid (0.0~1.0)"<<endl;
+out<<"6		:thichness of zero sigma (ift)"<<endl;
 out<<i<<endl;
 
 }
@@ -255,16 +259,16 @@ out<<"#PBS -l select=2:ncpus=12:icib=true "<<endl;
 
 out<<"module load intel-suite mpi"<<endl;
 
-out<<"cp /work/jy810/Sandpack/LV60/*.dat ."<<endl;
-out<<"cp /work/jy810/Sandpack/LV60/*.inputdat ."<<endl;
+//out<<"cp /work/jy810/Sandpack/LV60/*.dat ."<<endl;
+//out<<"cp /work/jy810/Sandpack/LV60/*.inputdat ."<<endl;
 
 //out<<"cp /work/jy810/Sandpack/LV60/*_"<<i*20000<<"*.bin_input ."<<endl;
 
 out<<endl;
 
-out<<"mpiexec /home/jy810/Multi_Component/MC_CG "<<poreFileName<<i<<".inputdat";
-out<<" /work/jy810/Sandpack/LV60/";
-out<<">/work/jy810/Sandpack/LV60/"<<i<<"_report.txt"<<endl;
+out<<"mpiexec /home/jy810/Multi_Component/MC_CG /work/jy810/Sandpack/LV60/"<<poreFileName<<i<<".inputdat";
+//out<<" /work/jy810/Sandpack/LV60/";
+//out<<">/work/jy810/Sandpack/LV60/"<<i<<"_report.txt"<<endl;
 
 
 
