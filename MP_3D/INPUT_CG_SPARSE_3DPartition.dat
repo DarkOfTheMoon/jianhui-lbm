@@ -208,3 +208,15 @@ J.Yang Lattice Boltzmann Simulation 3D MC- 1 0.340502 7 1e-06 1 1
 # vtk DataFile Version 2.0 - viscosity_l viscosity_g contact_angle surface_tension
 J.Yang Lattice Boltzmann Simulation 3D MC- saturation porosity resolution bodyforce_x pressure_x_p pressure_x_n
 
+
+To visulize wetting, non-wetting and solid using psi.vtk only,
+options for color scale:
+opacity scalar value		opacity
+-1.0				1.0
+-0.67				0.775
+0				0
+0.02				0.2
+0.3				0
+1.0				0
+
+
