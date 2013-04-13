@@ -26,6 +26,11 @@ using namespace std;
       
 int main (int argc , char * argv [])
 {
+const int total_number=3;
+int indexs[total_number]={2,3,5};
+
+
+int i;
 
 const int imax=300000;
 int num;
@@ -35,7 +40,6 @@ int num;
        else
                le_num=1500;
 
-int total_number=5;
 char prefix[128];    //prefix<<i<<"_Results.txt"
 strcpy(prefix,argv[1]);
 
@@ -79,8 +83,11 @@ ofstream fins;
 	fins.open(poreFileNameave,ios::trunc);
 	fins.close();
 	
-for (int i=1;i<=total_number;i++)
+for (int ige=0;ige<total_number;ige++)
 {
+        i=indexs[ige];
+        //cout<<i<<endl;
+        
         
         name.str("");
 	name<<prefix<<i<<"_Results.txt";
