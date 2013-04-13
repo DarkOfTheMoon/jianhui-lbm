@@ -56,7 +56,7 @@ phase.dat       	    	          :Initial components distribution
 -1 0.0 0.0 0.0		:ACT AT TIMESTEP n, PRESSURE N, PRESSURE P, BODYFORCE(5)
 0			:BODY FORCE APPLIED ON 1:Phase1,0:BOTH,-1:Phase2
 =====================CAPILLARY PRESSURE MEASURMENTS================
-0 1 2000                     :0=OFF,1,2,3=ON,1=X,2=Y,3=Z;|| 1=PRESSURE,2=BODY FORCE; time steps of 1 changement
+0 1 2000                     :0=OFF,1,2,3=ON,1=X,2=Y,3=Z;|| 1=PRESSURE,2=BODY FORCE; time steps of 1 f/p changement
 1.0 0.993 2e-5 6 10           :PRESSURE N,P; Changement times, (terminal condition: no. output intervals)                   
 1.0e-6                          :Error of Saturation stable condition
 ======================Least Square Fitting for Relative Permeability=============
