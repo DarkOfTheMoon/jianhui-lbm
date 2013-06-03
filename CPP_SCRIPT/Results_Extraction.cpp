@@ -262,6 +262,17 @@ for (int ige=0;ige<total_number;ige++)
 	                          
 	                          var4=x01+x11*(num-1);
 	                          var5=x02+x12*(num-1);
+	
+			//===========================================
+			if (var2<0) var2=0;
+			if (var3<0) var3=0;
+			if (var4<0) var4=0;
+			if (var5<0) var5=0;
+			if (ave1<0) ave1=0;
+			if (ave2<0) ave2=0;
+			//===========================================
+
+
 	                          
 	               ofstream out(poreFileName,ios::app);
 	                out<<var1<<" "<<var2<<" "<<var3<<endl;

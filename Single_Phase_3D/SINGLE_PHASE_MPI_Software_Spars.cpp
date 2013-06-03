@@ -537,9 +537,9 @@ if (Zoom>1)
 	
 	if ((freVe>=0) or (freDe>=0))
 	{
-	if (Out_Mode==1)
-		Geometry(Solid);
-	else
+	//if (Out_Mode==1)
+	//	Geometry(Solid);
+	//else
 		Geometry_b(Solid);
 	}
 
@@ -657,7 +657,7 @@ if (wr_per==1)
 
 			}
  //=====================================================================
- 
+ u_ave2=-10000000;
 
 	for(n=0;n<=n_max;n++)
 	{
@@ -707,7 +707,8 @@ if (wr_per==1)
 			fin<<endl; 
 			 fin.close();     
 			}
-
+			
+			u_ave2=u_ave;	
 			 error=Error(u,u0,&u_max,&u_ave);if (u_max>=10.0)	U_max_ref+=1;
 			error_perm=Comput_Perm(u,Permia,PerDir,SupInv); 
 			if (loc_perm==1)
@@ -804,16 +805,26 @@ if (wr_per==1)
 			cout<<endl;
 			}
 			
+
+			MPI_Bcast(&u_ave,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+			MPI_Bcast(&u_ave2,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+			//cout<<"****************          "<<u_ave2<<"		"<<u_ave<<endl;
+			if ((Out_Mode==1) and (abs((u_ave2-u_ave)/(u_ave2))<1e-7))
+				{cout<<"@@@@@@@@@@@@@@@@@@@@@"<<endl;
+				output_velocity_b(n,rho,u,mirX,mirY,mirZ,mir,Solid);
+				n=n_max+1;				
+				}
+
 			if ((freDe>0) and (n%freDe==0))
-				if (Out_Mode==1)
-					output_density(n,rho,mirX,mirY,mirZ,mir,Solid);
-				else
+				//if (Out_Mode==1)
+				//	output_density(n,rho,mirX,mirY,mirZ,mir,Solid);
+				//else
 					output_density_b(n,rho,mirX,mirY,mirZ,mir,Solid);
 
 			if ((freVe>0) and (n%freVe==0))
-				if (Out_Mode==1)
-					output_velocity(n,rho,u,mirX,mirY,mirZ,mir,Solid);
-				else
+				//if (Out_Mode==1)
+				//	output_velocity(n,rho,u,mirX,mirY,mirZ,mir,Solid);
+				//else
 					output_velocity_b(n,rho,u,mirX,mirY,mirZ,mir,Solid);
 				
 			if ((fre_backup>0) and (n%fre_backup==0) and (n>0))
