@@ -284,35 +284,7 @@ for (int i=0;i<sum3;i++)
 
 
 
-	if (exp_vtk==1)
-	{
-	ostringstream name2;
-	name2<<"Processed_psi.vtk";
-	
 
-	out.open(name2.str().c_str());		
-	out<<"# vtk DataFile Version 2.0"<<endl;
-	out<<"J.Yang Lattice Boltzmann Simulation 3D Single Phase-Solid-Density"<<endl;
-	out<<"ASCII"<<endl;
-	out<<"DATASET STRUCTURED_POINTS"<<endl;
-	out<<"DIMENSIONS         "<<rnx-lnx<<"         "<<rny-lny<<"         "<<rnz-lnz<<endl;       ///*********
-	out<<"ORIGIN 0 0 0"<<endl;
-	out<<"SPACING 1 1 1"<<endl;
-	out<<"POINT_DATA     "<<(rnx-lnx)*(rny-lny)*(rnz-lnz)<<endl;				///*********
-	out<<"SCALARS sample_scalars float"<<endl;
-	out<<"LOOKUP_TABLE default"<<endl;
-	for (int k=lnz;k<rnz;k++)
-	for (int j=lny;j<rny;j++)
-	for (int i=lnx;i<rnx;i++)
-		
-	//for (int k=0;k<nz;k++)
-	//for (int j=0;j<ny;j++)
-	//for (int i=0;i<nx;i++)
-		out<<Solid[i][j][k]<<" ";
-
-	
-	out.close();
-	}
 
 sort(sn2,sn2+sum-1);
 
@@ -337,6 +309,80 @@ for (int i=0;i<=sum-2;i++)
 		j=sum;
 		}
 	}		
+
+
+
+	//cout<<sum<<"        @@@@@@@@@@@@"<<endl;
+	
+	int jumpnum,lsar;
+	int* maparr1;
+	int* maparr2;
+if (exp_vtk==1)
+	{
+	        
+	        jumpnum=(int)sum/4;
+	        maparr1 = new int[sum+1];
+	         maparr2 = new int[sum+1];
+	        
+	        for (int i=0;i<=sum;i++)
+	                {maparr1[i]=0;maparr2[i]=0;}
+	      lsar=1;
+	        for (int i=1;i<=sum;i++)
+	        {
+	                  //lsar=i+jumpnum;
+	                  while (maparr2[lsar]>0)
+	                          {
+	                                  lsar+=1;
+	                                  if (lsar>sum)
+	                                          lsar-=sum;
+	                          }
+	                          maparr1[i]=lsar;//cout<<lsar<<"        @@@"<<endl;
+	                          maparr2[lsar]=i;
+	                          lsar=lsar+jumpnum;
+	                          if (lsar>sum)
+	                                          lsar-=sum;
+	        }
+	        
+	        
+	ostringstream name2;
+	name2<<"Processed_psi.vtk";
+	
+	
+
+	out.open(name2.str().c_str());		
+	out<<"# vtk DataFile Version 2.0"<<endl;
+	out<<"J.Yang Lattice Boltzmann Simulation 3D Single Phase-Solid-Density"<<endl;
+	out<<"ASCII"<<endl;
+	out<<"DATASET STRUCTURED_POINTS"<<endl;
+	out<<"DIMENSIONS         "<<rnx-lnx<<"         "<<rny-lny<<"         "<<rnz-lnz<<endl;       ///*********
+	out<<"ORIGIN 0 0 0"<<endl;
+	out<<"SPACING 1 1 1"<<endl;
+	out<<"POINT_DATA     "<<(rnx-lnx)*(rny-lny)*(rnz-lnz)<<endl;				///*********
+	out<<"SCALARS sample_scalars float"<<endl;
+	out<<"LOOKUP_TABLE default"<<endl;
+	for (int k=lnz;k<rnz;k++)
+	for (int j=lny;j<rny;j++)
+	for (int i=lnx;i<rnx;i++)
+		
+	//for (int k=0;k<nz;k++)
+	//for (int j=0;j<ny;j++)
+	//for (int i=0;i<nx;i++)
+	        if (Solid[i][j][k]<0)
+		out<<-maparr1[-Solid[i][j][k]]<<" ";
+	        else
+	                out<<Solid[i][j][k]<<" "; 
+
+	
+	out.close();
+	}
+
+
+
+
+
+
+
+
 	
 }
 
