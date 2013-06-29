@@ -1,0 +1,19 @@
+==========INPUT FILE FOR CLUSTER CALCULATION=======================================
+ftb_test.roc_velocity.vtk			:Source Geometry file name (Geometry needed to be filtered)
+260 131 131			:size of geometry nx,ny,nz
+20-3-3.st			:OUTPUT FILE NAME FOR MATLAB POSTPROCESSING 
+1				:INPUT FILE VTK format(1=YES,0=NO)
+100				:X resolution number of regions
+0       260                     :subdomain calculation nx_min,nx_max (MUST INDICATE)
+0       131             :subdomain calculation ny_min,ny_max (MUST INDICATE)
+0       131             :subdomain calculation nz_min,nz_max (MUST INDICATE)
+1.0e-10			:crival
+
+
+
+
+Note:
+output:
+
+cluster size,	number of cluster of this size,		number/total pore volume in voxels,	S(s)value, \sigma_s^inf sN(s)/N_v
+
