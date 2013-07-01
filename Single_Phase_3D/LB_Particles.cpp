@@ -37,7 +37,7 @@ const int Q=19;
 
 
 double u_max,u_ave,u_ave2,gx,gy,gz,porosity;
-double pre_u_ave;
+double pre_u_ave=1.0;
 
 
 //----------
@@ -130,6 +130,8 @@ void boundary_pressure(int ,double ,int , double ,int ,double ,int ,double ,int 
 
 void output_velocity(int ,double* ,double** ,int ,int ,int ,int ,int*** );
 
+void output_velocity_compact(int m,double* rho,double** u,int MirX,int MirY,int MirZ,int mir,int*** Solid);	
+
 void output_density(int ,double* ,int ,int ,int ,int ,int*** );	
 
 void Geometry(int*** );	
@@ -215,7 +217,7 @@ double Permia_LOCAL[3]={0.0,0.0,0.0};
 
 
 //==============hybrid lb dispersion===============
-int updatesss;
+int updatesss=0;
 
 //=================================================
 
@@ -281,10 +283,21 @@ int mpi_size=para_size;
 
 int dif,ts,th,tm;
 int tse,the,tme;
- 
+double st1,st2; 
+
+	string pfix2;
+
         strcpy(pfix,"./");
         if (argc>2)
-                strcpy(pfix,argv[2]);
+		{
+		//strcpy(pfix2,argv[2]);
+		//updatesss=argv[2];
+		updatesss=atoi(argv[2]);
+                //strcpy(pfix,argv[2])
+		}	
+	
+	
+	cout<<updatesss<<"	&&&&&&	"<<endl;
         
 
 	MPI_Barrier(MPI_COMM_WORLD);
@@ -336,8 +349,8 @@ int tse,the,tme;
 	
 
 	fin.getline(dummy, NCHAR);
-	fin >> gperm;					fin.getline(dummy, NCHAR);
-	fin >> n_gperm1>>n_gperm2>>n_gperm3>>n_gperm4;	fin.getline(dummy, NCHAR);
+	fin >> st1;					fin.getline(dummy, NCHAR);
+	fin >> st2;	fin.getline(dummy, NCHAR);
 	fin >> size_gperm1>>size_gperm2>>size_gperm3>>size_gperm4; fin.getline(dummy, NCHAR);
 	fin >> c0_gperm1>>c1_gperm1>>c2_gperm1; 	fin.getline(dummy, NCHAR);	
 	fin >> c0_gperm2>>c1_gperm2>>c2_gperm2; 	fin.getline(dummy, NCHAR);
@@ -417,7 +430,7 @@ fin.close();
 	MPI_Bcast(&nnf_module,1,MPI_INT,0,MPI_COMM_WORLD);MPI_Bcast(&nnf_n,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 	MPI_Bcast(&nnf_m,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 	
-	
+	MPI_Bcast(&st1,1,MPI_DOUBLE,0,MPI_COMM_WORLD);MPI_Bcast(&st2,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 	Par_Geo=0;
 
 if (mirX==1)
@@ -623,7 +636,8 @@ if (wr_per==1)
 			pre_u_ave=u_ave;
 			 error=Error(u,u0,&u_max,&u_ave);if (u_max>=10.0)	U_max_ref+=1;
 			error_perm=Comput_Perm(u,Permia,PerDir,SupInv); 
-			
+			MPI_Bcast(&u_ave,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+			MPI_Bcast(&error,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 			
 			
 			
@@ -714,9 +728,12 @@ if (wr_per==1)
 			cout<<endl;
 			}
 			
-			if ((Out_Mode==1) and (abs((u_ave2-u_ave)/(u_ave2))<1e-7))
-				{cout<<"@@@@@@@@@@@@@@@@@@@@@"<<endl;
-				output_velocity(n,rho,u,mirX,mirY,mirZ,mir,Solid);
+			//if ((Out_Mode==1) and (abs((u_ave2-u_ave)/(u_ave2))<1e-7))
+			cout<<st1<<"	"<<st2<<"	"<<loc_perm<<" "<<error<<" "<<abs((pre_u_ave-u_ave)/(pre_u_ave))<<endl; 
+			if ((loc_perm==1) and (error<st2) and (abs((pre_u_ave-u_ave)/(pre_u_ave))<st1))
+				{
+				//cout<<"@@@@@@@@@@@@@@@@@@@@@"<<endl;
+				output_velocity_compact(n,rho,u,mirX,mirY,mirZ,mir,Solid);
 				n=n_max+1;				
 				}
 
@@ -1276,13 +1293,13 @@ void Parallelize_Geometry()
 	   delete [] sumtmp;
 	   
 	   
-	   delete [] Solid2[0][0];
-		for (int i=0;i<nx;i++)
-			delete [] Solid2[i];
-		delete [] Solid2;
+	  // delete [] Solid2[0][0];
+		//for (int i=0;i<nx;i++)
+		//	delete [] Solid2[i];
+		//delete [] Solid2;
     	
 	
-/*
+
 
 	if (updatesss==1)
 	{
@@ -1318,7 +1335,7 @@ void Parallelize_Geometry()
 			disp[i]=disp[i-1]+nx_g[i-1];
 		
 	
-	if (rank==root_rank)
+	//if (rank==root_rank)
 		rbuf_v = new double[disp[mpi_size-1]+nx_g[mpi_size-1]];
 
 	
@@ -1336,32 +1353,36 @@ void Parallelize_Geometry()
 	fin.open(namevel.str().c_str(),ios::in);
        if (fin.fail())
 	        {
-	        cout<<"\n file open error on" << namevel.str().c_str()<<endl;
+	        cout<<"\n file open error on " << namevel.str().c_str()<<endl;
 	        exit(-1);
 	        }
 	        
 	        
-       fin.read((char *)(&rbuf_v[0]), sizeof(int)*(disp[mpi_size-1]+nx_g[mpi_size-1]));
+       fin.read((char *)(&rbuf_v[0]), sizeof(double)*(disp[mpi_size-1]+nx_g[mpi_size-1]));
         	
        fin.close();
 	}
-	
+	//cout<<"@@@@@@@@@@@@"<<endl;
+
 	MPI_Bcast(rbuf_v,disp[mpi_size-1]+nx_g[mpi_size-1],MPI_DOUBLE,0,MPI_COMM_WORLD);
 	
 
-	tmpint=-1;pore=0;
+
+
+	tmpint=-3;pore=0;
 	for(int k=0 ; k<NZ+1 ; k++)			
 	         for(int j=0 ; j<NY+1 ; j++)
 	                for(int i=0 ; i<NX+1 ; i++)
 			if (Solid[i][j][k]>0)
 			{
-			tmpint++;
+			tmpint+=3;
 				if (Solid[i][j][k]==rank+1)
 				{
-				u[pore][0]=rbuf_v[tmpint*3];
-				u[pore][1]=rbuf_v[tmpint*3+1];
-				u[pore][2]=rbuf_v[tmpint*3+2];
-				pore++;
+				u[Solid2[i][j][k]][0]=rbuf_v[tmpint];
+				//u[pore][1]=rbuf_v[tmpint+1];
+				u[Solid2[i][j][k]][1]=rbuf_v[tmpint+1];
+				u[Solid2[i][j][k]][2]=rbuf_v[tmpint+2];
+				//pore++;
 				}
 					
 			}
@@ -1370,10 +1391,13 @@ void Parallelize_Geometry()
 	delete [] rbuf_v;
 
 	}
-*/
+
 	//----------------------------------------------------------
 
-
+	delete [] Solid2[0][0];
+		for (int i=0;i<nx;i++)
+			delete [] Solid2[i];
+		delete [] Solid2;
 	
 	  
 	   if (rank>0)
@@ -1453,9 +1477,12 @@ void init(double* rho, double** u, double** f,int*** Solid)
 	for (int i=1;i<=Count;i++)	
 			
 		{
+			if (updatesss!=1)
+			{
 			u[i][0]=inivx;
 			u[i][1]=inivy;
 			u[i][2]=inivz;
+			}
 			u_tmp[0]=u[i][0];
 			u_tmp[1]=u[i][1];
 			u_tmp[2]=u[i][2];
@@ -3489,6 +3516,105 @@ void output_velocity(int m,double* rho,double** u,int MirX,int MirY,int MirZ,int
 		
 }
 
+void output_velocity_compact(int m,double* rho,double** u,int MirX,int MirY,int MirZ,int mir,int*** Solid)	
+{
+	
+	int rank = MPI :: COMM_WORLD . Get_rank ();
+	const int mpi_size=MPI :: COMM_WORLD . Get_size ();
+	int procind=rank+1;
+	int procn=mpi_size;
+
+	int tmpsum[mpi_size];
+	for (int i=0;i<mpi_size;i++)
+		tmpsum[i]=3;	
+
+	const int root_rank=0;
+	
+	double rho_0=1.0;
+	
+	
+	MPI_Status status;
+	MPI_Request request;
+
+	double* rbuf_v;
+	double* rbuf_v2;
+
+
+
+	int nx_g[mpi_size];
+	int disp[mpi_size];
+	
+	for (int i=0;i<mpi_size;i++)
+		nx_g[i]=(sumss[i+1]+1)*3;
+
+
+	
+
+		disp[0]=0;
+	
+		for (int i=1;i<mpi_size;i++)
+			disp[i]=disp[i-1]+nx_g[i-1];
+		
+	
+	if (rank==root_rank)
+		{
+		rbuf_v = new double[disp[mpi_size-1]+nx_g[mpi_size-1]];
+		rbuf_v2 = new double[disp[mpi_size-1]+nx_g[mpi_size-1]];
+		}
+
+	
+	int NX0=NX+1;
+	int NY0=NY+1;
+	int NZ0=NZ+1;
+	MPI_Gatherv(u[0],nx_g[rank],MPI_DOUBLE,rbuf_v,nx_g,disp,MPI_DOUBLE,root_rank,MPI_COMM_WORLD);
+
+	int sumtmp=0;
+
+	ostringstream name;
+	name<<"vel.bin";
+	if (rank==root_rank)
+	{
+
+	ofstream out;
+	out.open(name.str().c_str());
+	//out<<"# vtk DataFile Version 2.0"<<endl;
+	//out<<"J.Yang Lattice Boltzmann Simulation 3D Single Phase-Velocity"<<endl;
+	//out<<"ASCII"<<endl;
+	//out<<"DATASET STRUCTURED_POINTS"<<endl;
+	//out<<"DIMENSIONS         "<<NX0<<"         "<<NY0<<"         "<<NZ0<<endl;
+	//out<<"ORIGIN 0 0 0"<<endl;
+	//out<<"SPACING 1 1 1"<<endl;
+
+	//out<<"POINT_DATA     "<<NX0*NY0*NZ0<<endl;
+	//out<<"VECTORS sample_vectors double"<<endl;
+	//out<<endl;
+
+	
+
+	for(int k=0 ; k<NZ0 ; k++)			
+	         for(int j=0 ; j<NY0 ; j++)
+	                for(int i=0 ; i<NX0 ; i++)
+			if (Solid[i][j][k]>0)
+				{
+				rbuf_v2[sumtmp]=rbuf_v[disp[Solid[i][j][k]-1]+tmpsum[Solid[i][j][k]-1]];
+				rbuf_v2[sumtmp+1]=rbuf_v[disp[Solid[i][j][k]-1]+tmpsum[Solid[i][j][k]-1]+1];
+				rbuf_v2[sumtmp+2]=rbuf_v[disp[Solid[i][j][k]-1]+tmpsum[Solid[i][j][k]-1]+2];
+				tmpsum[Solid[i][j][k]-1]+=3;
+				sumtmp+=3;
+				}
+	out.write((char *)(&rbuf_v2[0]), sizeof(double)*(disp[mpi_size-1]+nx_g[mpi_size-1]));
+	out.close();
+
+	}
+        MPI_Barrier(MPI_COMM_WORLD);
+	
+	if (rank==root_rank)
+		{
+		delete [] rbuf_v;
+		delete [] rbuf_v2;
+		}
+		
+}
 
 void output_density(int m,double* rho,int MirX,int MirY,int MirZ,int mir,int*** Solid)	
 {
@@ -3832,7 +3958,7 @@ void Backup_init(double* rho, double** u, double** f, char backup_rho[128], char
 	fin.open(name.str().c_str(),ios::in);
 	if (fin.fail())
 	        {
-	        cout<<"\n file open error on" << name.str().c_str()<<endl;
+	        cout<<"\n file open error on " << name.str().c_str()<<endl;
 	        exit(-1);
 	        }
 	
@@ -3847,7 +3973,7 @@ void Backup_init(double* rho, double** u, double** f, char backup_rho[128], char
 	fin.open(name2.str().c_str(),ios::in);
 	if (fin.fail())
 	        {
-	        cout<<"\n file open error on" << name2.str().c_str()<<endl;
+	        cout<<"\n file open error on " << name2.str().c_str()<<endl;
 	        exit(-1);
 	        }
 	        
@@ -3861,7 +3987,7 @@ void Backup_init(double* rho, double** u, double** f, char backup_rho[128], char
        fin.open(name4.str().c_str(),ios::in);
        if (fin.fail())
 	        {
-	        cout<<"\n file open error on" << name4.str().c_str()<<endl;
+	        cout<<"\n file open error on " << name4.str().c_str()<<endl;
 	        exit(-1);
 	        }
 	        
@@ -4101,7 +4227,7 @@ int para_size=MPI :: COMM_WORLD . Get_size ();
 	options[0] = 0;
 	
 	if (rank==0)
-	cout<<"Start Partition"<<endl;
+	cout<<"Start Partition "<<endl;
 	
 
 
