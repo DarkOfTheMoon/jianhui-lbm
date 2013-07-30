@@ -109,6 +109,7 @@ if (rotation>0)
 
 
 int*** Solid;
+bool*** Solidbool;
 double pore;
 
 
@@ -148,7 +149,26 @@ double pore;
                        Solid[i][j]=Solid[i][j-1]+nz;
        }
 
+	if (bindat==2)
+	{
+		Solidbool = new bool**[nx];	///*********
+	
+	for (int i=0;i<nx;i++)				///*********
+		Solidbool[i]=new bool*[ny];
 
+	Solidbool[0][0]=new bool[nx*ny*nz];
+
+	
+ 	for (int i=1;i<ny;i++)
+               Solidbool[0][i]=Solidbool[0][i-1]+nz;
+       
+       for (int i=1;i<nx;i++)
+       {
+               Solidbool[i][0]=Solidbool[i-1][0]+ny*nz;
+               for (int j=1;j<ny;j++)
+                       Solidbool[i][j]=Solidbool[i][j-1]+nz;
+       }
+	}
 
 	
 	cout<<"Start reading source geometry file"<<endl;
@@ -633,7 +653,16 @@ if (expdat==1)
 	//name<<"Clashach_z_sym_196x196x388_8.946.dat";
 	ofstream out2;
 	out2.open(name2.str().c_str());
-	
+
+	if (bindat==2)
+	{
+	for (int k=0;k<nz;k++)
+	for (int j=0;j<ny;j++)
+	for (int i=0;i<nx;i++)
+		Solidbool[i][j][k]=Solid[i][j][k];
+	out2.write((char *)(&Solidbool[0][0][0]), sizeof(bool)*nx*ny*nz); 
+	}
+	else
 	if (bindat==1)
 	out2.write((char *)(&Solid[0][0][0]), sizeof(int)*nx*ny*nz); 
 	else
@@ -1121,16 +1150,18 @@ cout<<evennum<<"         "<<oddval<<endl;
 	ofstream out3;
 	out3.open(name3.str().c_str());
 	
-	if (bindat==1)
-	out3.write((char *)(&Solid[0][0][0]), sizeof(int)*nx*ny*nz); 
-	else
-	for (int k=0;k<nz;k++)
-	{
+
+	
+		if (bindat==1)
+		out3.write((char *)(&Solid[0][0][0]), sizeof(int)*nx*ny*nz); 
+		else
+		for (int k=0;k<nz;k++)
+		{
 		//cout<<k<<endl;
 		for (int j=0;j<ny;j++)
 		for (int i=0;i<nx;i++)
 			out3<<Solid[i][j][k]<<" ";
-	}
+		}
 	
 	out3.close();
 

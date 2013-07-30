@@ -1,5 +1,5 @@
 =================SINGLE PHASE LATTICE BOLTZMANN CODE INPUT FILE================================================
-BC.dat        :Geometry filename
+bc_f.dat        :Geometry filename
 30 50 3                 :nx ny nz
 300000	                 :Maxmum time step
 7.0	                :x=1 (um) Resolution (for Permeability calculation, resolution/dx)
@@ -34,7 +34,7 @@ BC.dat        :Geometry filename
 0               :USE BACKUP DATA (0=OFF, 1=ON)
 -1      :Velocity output for Solute transport every x timesteps (-1=NO)
 ======================GROP PERM PARAMETER =====================
-1e-3		:Stop condition permeability error
+1e-2		:Stop condition permeability error
 1e-4		:Stop condition general relative error
 512 256 128 64	:FREE
 0 1 1		:FREE
@@ -42,7 +42,7 @@ BC.dat        :Geometry filename
 128 129 129	:FREE
 128 129 129	:FREE
 ======================GEOMETRY READING=======================
-0		:Geometry Reading format, 0=decimal,1=binary
+1		:Geometry Reading format, 0=decimal,1=binary
 ======================Non-Newtonian Module======================
 0               :0=OFF, 1=ON
 0.001 0.25        :mu,n: apparent viscosity=mu*gama_dot^(n-1)

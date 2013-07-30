@@ -1,4 +1,4 @@
-//Use INPUT_Partition.dat
+//Use INPUT_LB_RW.dat
 #include<iostream>
 #include<cmath>
 #include<cstdlib>
@@ -10,7 +10,7 @@
 # include "mpi.h"
 
 //======PARMETIS===============
-#include<parmetis.h>  
+//#include<parmetis.h>  
 //#include "/home/jy810/LBM/source/CODE/jianhui-lbm/parmetis-4.0.2/include/parmetis.h"
 //mpic++ SINGLE_PHASE_MPI_Software_Spars_3DPartition.cpp -lparmetis -lmetis -o paratest
 
@@ -160,6 +160,8 @@ void Backup_init(double* rho, double** u, double** f, char[128], char[128],char[
 
 void Parallelize_Geometry();
 
+void Partition_Solid_SELF(int***);
+
 void Comput_Grop_Perm(double** ,double* ,int ,int* );
 
 void output_velocity_for_solute(int ,double* ,double** ,int ,int,int,int,int*** );
@@ -297,7 +299,7 @@ double st1,st2;
 		}	
 	
 	
-	cout<<updatesss<<"	&&&&&&	"<<endl;
+	//cout<<updatesss<<"	&&&&&&	"<<endl;
         
 
 	MPI_Barrier(MPI_COMM_WORLD);
@@ -729,7 +731,7 @@ if (wr_per==1)
 			}
 			
 			//if ((Out_Mode==1) and (abs((u_ave2-u_ave)/(u_ave2))<1e-7))
-			cout<<st1<<"	"<<st2<<"	"<<loc_perm<<" "<<error<<" "<<abs((pre_u_ave-u_ave)/(pre_u_ave))<<endl; 
+			//cout<<st1<<"	"<<st2<<"	"<<loc_perm<<" "<<error<<" "<<abs((pre_u_ave-u_ave)/(pre_u_ave))<<endl; 
 			if ((loc_perm==1) and (error<st2) and (abs((pre_u_ave-u_ave)/(pre_u_ave))<st1))
 				{
 				//cout<<"@@@@@@@@@@@@@@@@@@@@@"<<endl;
@@ -924,34 +926,37 @@ void Parallelize_Geometry()
         
       //-------------------
       int* sumtmp;
+	int upx,upy,upz;
+	double updoux,updouy,updouz;
+	bool*** Solid3;
       //-------------------  
         
       Solid = new int**[nx];
       Solid2 = new int**[nx];
-	
+	Solid3 = new bool**[nx];
 	
 	
 	for (int i=0;i<nx;i++)				///*********
-		Solid[i]=new int*[ny],Solid2[i]=new int*[ny];
+		Solid[i]=new int*[ny],Solid2[i]=new int*[ny],Solid3[i]=new bool*[ny];
 
-	Solid[0][0]=new int[nx*ny*nz],Solid2[0][0]=new int[nx*ny*nz];
+	Solid[0][0]=new int[nx*ny*nz],Solid2[0][0]=new int[nx*ny*nz],Solid3[0][0]=new bool[nx*ny*nz];
 
 	
  	for (int i=1;i<ny;i++)
-               Solid[0][i]=Solid[0][i-1]+nz,Solid2[0][i]=Solid2[0][i-1]+nz;
+               Solid[0][i]=Solid[0][i-1]+nz,Solid2[0][i]=Solid2[0][i-1]+nz,Solid3[0][i]=Solid3[0][i-1]+nz;
        
        for (int i=1;i<nx;i++)
        {
-               Solid[i][0]=Solid[i-1][0]+ny*nz,Solid2[i][0]=Solid2[i-1][0]+ny*nz;
+               Solid[i][0]=Solid[i-1][0]+ny*nz,Solid2[i][0]=Solid2[i-1][0]+ny*nz,Solid3[i][0]=Solid3[i-1][0]+ny*nz;
                for (int j=1;j<ny;j++)
-                       Solid[i][j]=Solid[i][j-1]+nz,Solid2[i][j]=Solid2[i][j-1]+nz;
+                       Solid[i][j]=Solid[i][j-1]+nz,Solid2[i][j]=Solid2[i][j-1]+nz,Solid3[i][j]=Solid3[i][j-1]+nz;
        }	
 	
       
       for(int k=0 ; k<=NZ ; k++)
 	for(int j=0 ; j<=NY ; j++)
 	for(int i=0 ; i<=NX ; i++)
-		Solid[i][j][k]=0,Solid2[i][j][k]=0;
+		Solid[i][j][k]=0,Solid2[i][j][k]=0,Solid3[i][j][k]=0;
       
    porosity=0.0;
    
@@ -991,7 +996,7 @@ void Parallelize_Geometry()
 			
 	
 		
-		Solid[i][j][k]=pore;
+		Solid3[i][j][k]=pore;
 		
 	}
 	fin.close();
@@ -1007,12 +1012,47 @@ void Parallelize_Geometry()
 	        exit(-1);
 	        }
 	
-	fin.read((char *)(Solid[0][0]), sizeof(int)*(NX+1)*(NY+1)*(NZ+1));
+	//fin.read((char *)(Solid[0][0]), sizeof(int)*(NX+1)*(NY+1)*(NZ+1));
+	fin.read((char *)(Solid3[0][0]), sizeof(bool)*(NX+1)*(NY+1)*(NZ+1));
 	
 	fin.close();
 	}
+
+	//***********************update part 1**********************************
 	
+	for(int k=0 ; k<=NZ ; k++)
+	for(int j=0 ; j<=NY ; j++)
+	for(int i=0 ; i<=NX ; i++)
+		Solid[i][j][k]=Solid3[i][j][k];
 	
+
+
+	if (updatesss==1)
+	{
+	FILE *ftest;
+	ftest = fopen("update.txt", "r");
+
+	if(ftest == NULL)
+		{
+		cout << "\n The pore geometry file (" << filename <<
+			") does not exist!!!!\n";
+		cout << " Please check the file\n\n";
+
+		exit(-1);
+		}
+		fclose(ftest);
+	
+	fin.open("update.txt");
+	while (!fin.eof())
+	{
+	fin >> tmpint >> upx >> upy >> upz;fin.getline(dummy, NCHAR,'\n');
+	cout<<upx<<"	"<<upy<<"	&&&&&&&&&&&&& "<<rank<<endl;
+		Solid[upx][upy][upz] = tmpint;
+	}
+	
+	fin.close();
+	}
+	//********************************************************************
 
 }
   
@@ -1037,7 +1077,7 @@ void Parallelize_Geometry()
 
 	
 	
-	Partition_Solid(Solid);
+	Partition_Solid_SELF(Solid);
 
 
 
@@ -1303,6 +1343,12 @@ void Parallelize_Geometry()
 
 	if (updatesss==1)
 	{
+		if (rank==0)
+		{
+		cout<<"READING VELOCITY DATA"<<endl;
+		cout<<endl;
+		}
+
 
 	int tmpsum[mpi_size];
 	for (int i=0;i<mpi_size;i++)
@@ -1392,13 +1438,50 @@ void Parallelize_Geometry()
 
 	}
 
+	//***********************update part 2**********************************
+	
+	
+	FILE *ftest;
+	ftest = fopen("update.txt", "r");
+
+	if(ftest == NULL)
+		{
+		cout << "\n The pore geometry file (" << filename <<
+			") does not exist!!!!\n";
+		cout << " Please check the file\n\n";
+
+		exit(-1);
+		}
+		fclose(ftest);
+	fstream fin;
+	fin.open("update.txt");
+	while (!fin.eof())
+	{
+	fin >> tmpint >> upx >> upy >> upz >> updoux >> updouy >> updouz;fin.getline(dummy, NCHAR);
+	if ((Solid[upx][upy][upz]==rank+1) and (tmpint==0))
+		{
+			u[Solid2[upx][upy][upz]][0]=updoux;
+			u[Solid2[upx][upy][upz]][1]=updouy;
+			u[Solid2[upx][upy][upz]][2]=updouz;
+		}
+	}
+	
+	fin.close();
+	//********************************************************************
+	
+
+
 	//----------------------------------------------------------
 
 	delete [] Solid2[0][0];
 		for (int i=0;i<nx;i++)
 			delete [] Solid2[i];
 		delete [] Solid2;
-	
+
+	delete [] Solid3[0][0];
+		for (int i=0;i<nx;i++)
+			delete [] Solid3[i];
+		delete [] Solid3;
 	  
 	   if (rank>0)
 	   {
@@ -4035,7 +4118,7 @@ void output_velocity_for_solute(int m,double* rho,double** u,int MirX,int MirY,i
 		
 }
 
-
+/*
 void Partition_Solid(int*** Solid)
 {
 
@@ -4127,16 +4210,7 @@ int para_size=MPI :: COMM_WORLD . Get_size ();
 		kk=k+e[ls][2];	
 		
 		
-		//================
-		/*
-		if (ii>=nx) ii=0;
-		if (ii<0) ii=nx-1;
-		if (jj>=ny) jj=0;
-		if (jj<0) jj=ny-1;
-		if (kk>=nz) kk=0;
-		if (kk<0) kk=nz-1;
-		*/
-		//================
+	
 		
 		if ((ii>=0) and (ii<nx) and (jj>=0) and (jj<ny) and (kk>=0) and (kk<nz) and (Solid[ii][jj][kk]>=0))
 			sum++;
@@ -4160,17 +4234,7 @@ int para_size=MPI :: COMM_WORLD . Get_size ();
 		jj=j+e[ls][1];
 		kk=k+e[ls][2];	
 		
-		
-		//================
-		/*
-		if (ii>=nx) ii=0;
-		if (ii<0) ii=nx-1;
-		if (jj>=ny) jj=0;
-		if (jj<0) jj=ny-1;
-		if (kk>=nz) kk=0;
-		if (kk<0) kk=nz-1;
-		*/
-		//================
+	
 		
 		if ((ii>=0) and (ii<nx) and (jj>=0) and (jj<ny) and (kk>=0) and (kk<nz) and (Solid[ii][jj][kk]>=0))
 		        {adjncy[sum]=Solid[ii][jj][kk];sum++;}
@@ -4297,4 +4361,304 @@ int para_size=MPI :: COMM_WORLD . Get_size ();
 
 	
 	
+}
+*/
+
+void Partition_Solid_SELF(int*** Solid)
+{
+	int nx=NX+1;
+	int ny=NY+1;
+	int nz=NZ+1;
+	cout<<endl;
+	cout<<"MESH PARTITION INITIALIZATION START"<<endl;
+
+int sum=0;
+int mesh_par=MPI :: COMM_WORLD . Get_size ();
+for(int k=0 ; k<nz ; k++)			
+	for(int j=0 ; j<ny ; j++)	
+	for(int i=0 ; i<nx ; i++)
+
+		if (Solid[i][j][k]==0)
+			{sum++;}
+		else
+			{Solid[i][j][k]=-1;}
+
+
+int nxref,nyref,nzref;
+int divnumori;
+divnumori=mesh_par;
+int divnum;
+int oddval=0;
+int evennum=0;
+double oddpor;
+int dir;
+int dint;
+int sumin,numgeonum;
+int* sum_loc;
+
+
+int *nnx,*nny,*nnz,*npx,*npy,*npz;
+nnx=new int[divnumori];
+nny=new int[divnumori];
+nnz=new int[divnumori];
+npx=new int[divnumori];
+npy=new int[divnumori];
+npz=new int[divnumori];
+
+
+
+
+cout<<divnumori<<endl;
+divnum=divnumori;
+while (divnum%2==0)
+        {evennum++;divnum=divnum/2;}
+oddval=divnum;
+divnum=divnumori;
+
+cout<<evennum<<"         "<<oddval<<endl;
+ 
+
+	sum_loc = new int[divnum+1];
+	for (int i=0;i<=divnum;i++)
+	        sum_loc[i]=0;
+		
+	
+	nxref=nx;nyref=ny;nzref=nz;
+	oddpor=sum/oddval;
+	if (oddval>1)
+	        {
+	                //oddpor=sum/oddval;
+	                //cout<<oddpor<<endl;
+	               if (nx>ny)
+	                       if (nx>nz)
+	                       dir=1;
+	                       else
+	                               dir=3;
+                       else
+	                               if (ny>nz)
+	                               dir=2;
+	                               else
+	                               dir=3;
+	                   //cout<<dir<<endl;
+	                if (dir==1)
+	                        for (int sn=1;sn<=oddval;sn++)
+	                        {
+	                                sumin=0;
+	                                dint=0;
+	                                while ((sumin<oddpor*sn) and (dint<nx))
+	                                {
+	                                for (int j=0;j<ny;j++)
+	                                        for (int k=0;k<nz;k++)
+	                                        {
+	                                                if ((Solid[dint][j][k]<sn) and (Solid[dint][j][k]>=0))
+	                                                        {
+	                                                                sumin++;
+	                                                                if (Solid[dint][j][k]==0)
+	                                                                        Solid[dint][j][k]=sn;
+	                                                        }
+	                                                
+	                                        }
+	                                        dint++;
+	                                }
+	                                
+	                             nxref=nx/oddval;   
+	                                
+	                                
+	                        }
+	                        
+	                        
+	                   if (dir==2)
+	                        for (int sn=1;sn<=oddval;sn++)
+	                        {
+	                                sumin=0;
+	                                dint=0;
+	                                while ((sumin<oddpor*sn) and (dint<ny))
+	                                {
+	                                for (int i=0;i<nx;i++)
+	                                        for (int k=0;k<nz;k++)
+	                                        {
+	                                                if ((Solid[i][dint][k]<sn) and (Solid[i][dint][k]>=0))
+	                                                        {
+	                                                                sumin++;
+	                                                                if (Solid[i][dint][k]==0)
+	                                                                        Solid[i][dint][k]=sn;
+	                                                        }
+	                                                
+	                                        }
+	                                        dint++;
+	                                }
+	                                
+	                                
+	                              nyref=ny/oddval;     
+	                                
+	                        }
+	                             
+	                 if (dir==3)
+	                        for (int sn=1;sn<=oddval;sn++)
+	                        {
+	                                sumin=0;
+	                                dint=0;
+	                                while ((sumin<oddpor*sn) and (dint<nz))
+	                                {
+	                                for (int i=0;i<nx;i++)
+	                                        for (int j=0;j<ny;j++)
+	                                        {
+	                                                if ((Solid[i][j][dint]<sn) and (Solid[i][j][dint]>=0))
+	                                                        {
+	                                                                sumin++;
+	                                                                if (Solid[i][j][dint]==0)
+	                                                                        Solid[i][j][dint]=sn;
+	                                                        }
+	                                                
+	                                        }
+	                                        dint++;
+	                                }
+	                                
+	                           nzref=nz/oddval;     
+	                                
+	                                
+	                        }       
+	                
+	        }
+	        else
+	                {
+	                  for (int k=0;k<nz;k++)
+	              for (int j=0;j<ny;j++)
+	              for (int i=0;i<nx;i++)
+	                      if (Solid[i][j][k]==0)
+	                              Solid[i][j][k]=1;
+	                      else
+	                              Solid[i][j][k]=-1;
+	                }
+	
+	
+	      for (int k=0;k<nz;k++)
+	              for (int j=0;j<ny;j++)
+	              for (int i=0;i<nx;i++)
+	             if (Solid[i][j][k]<0)
+	             Solid[i][j][k]=0;
+	
+	
+	
+	numgeonum=oddval;
+	cout<<numgeonum<<endl;
+	//cout<<"@@@@@@@@@@@"<<endl;
+	for (int sn=1;sn<=evennum;sn++)
+	        {
+	                
+	                oddpor=oddpor/2;
+	                for (int i=0;i<=divnum;i++)
+	                        sum_loc[i]=0;
+	                
+	          if (nxref>nyref)
+	                       if (nxref>nzref)
+	                       dir=1;
+	                       else
+	                               dir=3;
+                       else
+	                               if (nyref>nzref)
+	                               dir=2;
+	                               else
+	                               dir=3;      
+	                
+	             //-----------------------------
+	            // cout<<dir<<"            eeeeeeeeeeeee"<<endl;
+	             //cout<<Solid[88][0][0]<<"        afadsfasdf         "<<endl;
+	             if (dir==1)
+	                     {
+	                         for (int i=0;i<nx;i++)
+	                                 {
+	                                         for (int j=0;j<ny;j++)
+	                                         for (int k=0;k<nz;k++)
+	                                         if (Solid[i][j][k]>0)
+	                                                 if (sum_loc[Solid[i][j][k]]>=0)
+	                                                 {sum_loc[Solid[i][j][k]]++;Solid[i][j][k]*=-1;}
+	                                         
+	             
+	                                   
+	                             
+	                               for (int si=0;si<=divnum;si++)
+	                                       if (sum_loc[si]>oddpor)
+	                                               sum_loc[si]=-1;
+	                                       
+	                                 }
+	                       nxref=nxref/2;          
+	                     }
+	                     
+	            if (dir==2)
+	                     {
+	                         for (int j=0;j<ny;j++)
+	                                 {
+	                                         for (int i=0;i<nx;i++)
+	                                         for (int k=0;k<nz;k++)
+	                                         if (Solid[i][j][k]>0)
+	                                                 if (sum_loc[Solid[i][j][k]]>=0)
+	                                                 {sum_loc[Solid[i][j][k]]++;Solid[i][j][k]*=-1;}
+	                                                 //cout<<Solid[i][j][k]<<"                bbbbbbbbb        "<<i<<"        "<<j<<"        "<<k<<endl;
+	                                         
+	                                         
+	                             
+	                               for (int siz=1;siz<=divnum;siz++)               
+	                                       if (sum_loc[siz]>oddpor)
+	                                               sum_loc[siz]=-1;
+	                                 
+	                                       
+	                                 }
+	                       nyref=nyref/2;          
+	                     }         
+	                     
+	                if (dir==3)
+	                     {
+	                         for (int k=0;k<nz;k++)
+	                                 {
+	                                         for (int i=0;i<nx;i++)
+	                                         for (int j=0;j<ny;j++)
+	                                         if (Solid[i][j][k]>0)
+	                                                 if (sum_loc[Solid[i][j][k]]>=0)
+	                                                 {sum_loc[Solid[i][j][k]]++;Solid[i][j][k]*=-1;}
+	                                
+	                             
+	                               for (int si=0;si<=divnum;si++)
+	                                       if (sum_loc[si]>oddpor)
+	                                               sum_loc[si]=-1;
+	                                       
+	                                 }
+	                      nzref=nzref/2;           
+	                     }              
+	         numgeonum*=2;
+	         cout<<numgeonum<<endl;
+
+	         for (int k=0;k<nz;k++)
+	              for (int j=0;j<ny;j++)
+	              for (int i=0;i<nx;i++)
+	              {
+	                      if (Solid[i][j][k]>0)
+	                                   Solid[i][j][k]=Solid[i][j][k]*2;
+	                           if (Solid[i][j][k]<0)
+	                                          Solid[i][j][k]=-Solid[i][j][k]*2-1;
+	                
+	                
+	                
+	        }
+	
+	  }
+	    
+	
+	//============decomposition complete=======================
+	
+	//==================================================
+	
+	
+
+	
+
+
+
+
+
+
+	
+
+	
+
 }

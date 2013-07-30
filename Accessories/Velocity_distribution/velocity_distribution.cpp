@@ -52,8 +52,7 @@ int phase_ind;
 int exp_vtk;
 double* xres;
 
-for (int i=0;i<phase_ind;i++)
-        xres[i]=0.0;
+
 
 int lnx,rnx,lny,rny,lnz,rnz;
 
@@ -75,8 +74,9 @@ ifstream fins(argv[1]);
 fins.close();	
 
 
-xres = new double[phase_ind];
-
+xres = new double[phase_ind*10];
+for (int i=0;i<phase_ind*10;i++)
+        xres[i]=0.0;
 
 
 double*** Solid;
@@ -189,7 +189,7 @@ double vmax=0.0;
 	double interval;
 	double cal_max=vave*5;
 	//interval=vmax/(phase_ind-1);
-	interval=cal_max/(phase_ind-1);
+	//interval=cal_max/(phase_ind-1);
 	
 
 	for (int i=lnx;i<rnx;i++)
@@ -197,9 +197,11 @@ double vmax=0.0;
 			for (int k=lnz;k<rnz;k++)
 			if (Solid[i][j][k]>crival)
 				{
-				  for (int ls=1;ls<phase_ind;ls++)
-				          if ((Solid[i][j][k]>(ls-1)*interval) and (Solid[i][j][k]<=interval*ls))
-				          {xres[ls]+=1.0;sum3++;}
+				  for (int ls=-1;ls<-phase_ind;ls--)
+						for (int lsi=1;lsi<=9;lsi++)
+				          	if ((Solid[i][j][k]>(lsi*pow(10,ls)) and (Solid[i][j][k]<=(lsi+1)*pow(10,ls)))
+				          	{xres[ls]+=1.0;sum3++;}
+						}
 				}
 			
 	//	cout<<"@@@@@@@@@@@@@@@"<<endl;		
