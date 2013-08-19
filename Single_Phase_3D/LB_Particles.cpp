@@ -617,31 +617,17 @@ if (wr_per==1)
 	if(n%freRe==0)
 		{       
 			
-			/*
-			if (rank==0)
-			{
-			        
-			 ofstream fin(FileName,ios::out);       
-			 fin<<"The"<<n-freRe<<"th computation result:"<<endl;
-			fin<<"The permiability is: "<<Permia[0]*reso*reso*1000<<", "<<Permia[1]*reso*reso*1000<<", "<<Permia[2]*reso*reso*1000<<endl;
-			fin<<"The relative error of permiability computing is: "<<error_perm<<endl;	
-			fin<<"The Maximum velocity is: "<<setprecision(6)<<u_max<<"   Re="<<Re<<"     Courant Number="<<u_max*dt/dx<<endl;
-			fin<<"The max relative error of velocity is: "
-				<<setiosflags(ios::scientific)<<error<<endl;
-			fin<<"Elapsed time is "<< the<<"h"<<tme<<"m"<<tse<<"s"<<endl;
-			fin<<"The expected completion time is "<<th<<"h"<<tm<<"m"<<ts<<"s"<<endl;
-			fin<<endl; 
-			 fin.close();     
-			}
-*/
+			
 
 			pre_u_ave=u_ave;
 			 error=Error(u,u0,&u_max,&u_ave);if (u_max>=10.0)	U_max_ref+=1;
 			error_perm=Comput_Perm(u,Permia,PerDir,SupInv); 
+			
+			
 			MPI_Bcast(&u_ave,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 			MPI_Bcast(&error,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 			
-			
+			//cout<<error<<"                ccccccccccccc      "<<u_ave<<"        "<<rank<<endl;
 			
 			
 			
@@ -662,51 +648,7 @@ if (wr_per==1)
 			tme=int((elaps-the*3600)/60);
 			tse=int(elaps-(the*3600+tme*60));
 
-/*
-			fin<<"The"<<n<<"th computation result:"<<endl;
-		//=============================================================================================
-			fin<<"The permiability is: "<<Permia[0]*reso*reso*1000<<", "<<Permia[1]*reso*reso*1000<<", "<<Permia[2]*reso*reso*1000<<endl;
-			
-			fin<<"The relative error of permiability computing is: "<<error_perm<<endl;
-		//==============================================================================================
 
-		//==============================================================================================
-			Re=u_ave*(NY+1)/(1.0/3.0*(1/s_v-0.5));
-			fin<<"The Maximum velocity is: "<<setprecision(6)<<u_max<<"   Re="<<Re<<"     Courant Number="<<u_max*dt/dx<<endl;
-			
-		//===============================================================================================
-			fin<<"The max relative error of velocity is: "
-				<<setiosflags(ios::scientific)<<error<<endl;
-			fin<<"Elapsed time is "<< the<<"h"<<tme<<"m"<<tse<<"s"<<endl;
-			fin<<"The expected completion time is "<<th<<"h"<<tm<<"m"<<ts<<"s"<<endl;
-			fin<<endl;*/
-			//fin.close();
-
-
-		/*if (wr_per==1)
-			{
-			ofstream finfs(FileName2,ios::app);
-			switch(PerDir)
-				{
-				case 1:
-				finfs<<Permia[0]*reso*reso*1000<<" "<<error_perm<<" "<<endl;break;
-				case 2:
-				finfs<<Permia[1]*reso*reso*1000<<" "<<error_perm<<" "<<endl;break;
-				case 3:
-				finfs<<Permia[2]*reso*reso*1000<<" "<<error_perm<<" "<<endl;break;
-				default:
-				finfs<<Permia[0]*reso*reso*1000<<" "<<error_perm<<" "<<endl;break;
-				}
-			finfs.close();
-			}
-
-			ofstream finf3(FileName3,ios::app);
-			finf3<<gx<<endl;
-			finf3.close();
-			ofstream finf4(FileName4,ios::app);
-			finf4<<u_ave<<"  "<<u_max<<" "<<error<<"  "<<abs((pre_u_ave-u_ave)/(u_ave+1e-20))<<endl;
-			finf4.close();
-		*/
 
 			cout<<"The"<<n<<"th computation result:"<<endl;
 			cout<<"The Density of point(NX/2,NY/2,NZ/2) is: "<<setprecision(6)
@@ -748,13 +690,7 @@ if (wr_per==1)
 					output_velocity(n,rho,u,mirX,mirY,mirZ,mir,Solid);
 				
 				
-			//if ((fre_backup>0) and (n%fre_backup==0) and (n>0))
-			  //      Backup(n,rho,u,f);
 			
-			 //if ((vel_sol>0) and (n%vel_sol==0) and (n>0))
-			   //      output_velocity_for_solute(n,rho,u,mirX,mirY,mirZ,mir,Solid);
-			 
-			// cout<<"***********	"<<n<<"		"<<error<<endl;
 			 
 			if(error!=error) {cout<<"PROGRAM STOP"<<endl;break;};
 			if(U_max_ref>=5) {cout<<"PROGRAM STOP DUE TO HIGH VELOCITY"<<endl;break;}
@@ -928,18 +864,18 @@ void Parallelize_Geometry()
       int* sumtmp;
 	int upx,upy,upz;
 	double updoux,updouy,updouz;
-	bool*** Solid3;
+	int*** Solid3;
       //-------------------  
         
       Solid = new int**[nx];
       Solid2 = new int**[nx];
-	Solid3 = new bool**[nx];
+	Solid3 = new int**[nx];
 	
 	
 	for (int i=0;i<nx;i++)				///*********
-		Solid[i]=new int*[ny],Solid2[i]=new int*[ny],Solid3[i]=new bool*[ny];
+		Solid[i]=new int*[ny],Solid2[i]=new int*[ny],Solid3[i]=new int*[ny];
 
-	Solid[0][0]=new int[nx*ny*nz],Solid2[0][0]=new int[nx*ny*nz],Solid3[0][0]=new bool[nx*ny*nz];
+	Solid[0][0]=new int[nx*ny*nz],Solid2[0][0]=new int[nx*ny*nz],Solid3[0][0]=new int[nx*ny*nz];
 
 	
  	for (int i=1;i<ny;i++)
@@ -963,6 +899,8 @@ void Parallelize_Geometry()
  
     int* recv_solid;
     int pore;
+   int pre_sum=0;
+   
    
       if (rank==0)
 {	
@@ -1012,8 +950,8 @@ void Parallelize_Geometry()
 	        exit(-1);
 	        }
 	
-	//fin.read((char *)(Solid[0][0]), sizeof(int)*(NX+1)*(NY+1)*(NZ+1));
-	fin.read((char *)(Solid3[0][0]), sizeof(bool)*(NX+1)*(NY+1)*(NZ+1));
+	fin.read((char *)(Solid3[0][0]), sizeof(int)*(NX+1)*(NY+1)*(NZ+1));
+	//fin.read((char *)(Solid3[0][0]), sizeof(bool)*(NX+1)*(NY+1)*(NZ+1));
 	
 	fin.close();
 	}
@@ -1023,9 +961,13 @@ void Parallelize_Geometry()
 	for(int k=0 ; k<=NZ ; k++)
 	for(int j=0 ; j<=NY ; j++)
 	for(int i=0 ; i<=NX ; i++)
+	{
 		Solid[i][j][k]=Solid3[i][j][k];
+		if (Solid3[i][j][k]==0)
+		        pre_sum++;
+	}
 	
-
+	cout<<pre_sum<<"           %%%%%     previous velocity number"<<endl;
 
 	if (updatesss==1)
 	{
@@ -1034,8 +976,7 @@ void Parallelize_Geometry()
 
 	if(ftest == NULL)
 		{
-		cout << "\n The pore geometry file (" << filename <<
-			") does not exist!!!!\n";
+		cout << "\n The pore geometry file ( update.txt ) does not exist!!!!\n";
 		cout << " Please check the file\n\n";
 
 		exit(-1);
@@ -1056,9 +997,9 @@ void Parallelize_Geometry()
 
 }
   
-
+        MPI_Bcast(&pre_sum,1,MPI_INT,0,MPI_COMM_WORLD);
         MPI_Bcast(Solid[0][0],(NX+1)*(NY+1)*(NZ+1),MPI_INT,0,MPI_COMM_WORLD);
-
+        MPI_Bcast(Solid3[0][0],(NX+1)*(NY+1)*(NZ+1),MPI_INT,0,MPI_COMM_WORLD);
 
         for (int k=0;k<=NZ;k++)
 		for (int j=0;j<=NY;j++)
@@ -1382,8 +1323,8 @@ void Parallelize_Geometry()
 		
 	
 	//if (rank==root_rank)
-		rbuf_v = new double[disp[mpi_size-1]+nx_g[mpi_size-1]];
-
+	//	rbuf_v = new double[disp[mpi_size-1]+nx_g[mpi_size-1]];
+	rbuf_v = new double[pre_sum*3];
 	
 	int NX0=NX+1;
 	int NY0=NY+1;
@@ -1404,24 +1345,24 @@ void Parallelize_Geometry()
 	        }
 	        
 	        
-       fin.read((char *)(&rbuf_v[0]), sizeof(double)*(disp[mpi_size-1]+nx_g[mpi_size-1]));
+       fin.read((char *)(&rbuf_v[0]), sizeof(double)*(pre_sum*3));
         	
        fin.close();
 	}
 	//cout<<"@@@@@@@@@@@@"<<endl;
 
-	MPI_Bcast(rbuf_v,disp[mpi_size-1]+nx_g[mpi_size-1],MPI_DOUBLE,0,MPI_COMM_WORLD);
+	MPI_Bcast(rbuf_v,pre_sum*3,MPI_DOUBLE,0,MPI_COMM_WORLD);
 	
 
 
 
-	tmpint=-3;pore=0;
+	tmpint=0;pore=0;
 	for(int k=0 ; k<NZ+1 ; k++)			
 	         for(int j=0 ; j<NY+1 ; j++)
 	                for(int i=0 ; i<NX+1 ; i++)
-			if (Solid[i][j][k]>0)
+			if (Solid3[i][j][k]==0)
 			{
-			tmpint+=3;
+			
 				if (Solid[i][j][k]==rank+1)
 				{
 				u[Solid2[i][j][k]][0]=rbuf_v[tmpint];
@@ -1430,13 +1371,15 @@ void Parallelize_Geometry()
 				u[Solid2[i][j][k]][2]=rbuf_v[tmpint+2];
 				//pore++;
 				}
-					
+			tmpint+=3;		
 			}
 
 
 	delete [] rbuf_v;
 
+	cout<<pre_sum*3<<"        "<<tmpint<<"        previous sum velocity and reading velocity numbers"<<endl;
 	}
+	
 
 	//***********************update part 2**********************************
 	
@@ -1470,7 +1413,7 @@ void Parallelize_Geometry()
 	//********************************************************************
 	
 
-
+	
 	//----------------------------------------------------------
 
 	delete [] Solid2[0][0];
@@ -3413,7 +3356,8 @@ for(int i=1; i<Count; i++)
 
 	//MPI_Barrier(MPI_COMM_WORLD);
 	
-	
+	//MPI_Bcast(&error_in,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+	//cout<<error_in<<"          wwwwwwwwwwwwwww      "<<rank<<endl;
 	
 	return(error_in);
 
@@ -3691,6 +3635,8 @@ void output_velocity_compact(int m,double* rho,double** u,int MirX,int MirY,int 
 	}
         MPI_Barrier(MPI_COMM_WORLD);
 	
+        cout<<sumtmp<<"         update export sum of velocity"<<endl;
+        
 	if (rank==root_rank)
 		{
 		delete [] rbuf_v;
@@ -3701,9 +3647,9 @@ void output_velocity_compact(int m,double* rho,double** u,int MirX,int MirY,int 
 
 void output_density(int m,double* rho,int MirX,int MirY,int MirZ,int mir,int*** Solid)	
 {
-
+    
 	int rank = MPI :: COMM_WORLD . Get_rank ();
-	const int mpi_size=MPI :: COMM_WORLD . Get_size ();
+	int mpi_size=MPI :: COMM_WORLD . Get_size ();
 	int procind=rank+1;
 	int procn=mpi_size;
 
@@ -3742,12 +3688,14 @@ void output_density(int m,double* rho,int MirX,int MirY,int MirZ,int mir,int*** 
 		rbuf_v = new double[disp[mpi_size-1]+nx_g[mpi_size-1]];
 
 	
+	
+	
 	int NX0=NX+1;
 	int NY0=NY+1;
 	int NZ0=NZ+1;
 	MPI_Gatherv(rho,nx_g[rank],MPI_DOUBLE,rbuf_v,nx_g,disp,MPI_DOUBLE,root_rank,MPI_COMM_WORLD);
 
-
+        
 
 
 	ostringstream name;
