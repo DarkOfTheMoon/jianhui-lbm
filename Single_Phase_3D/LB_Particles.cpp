@@ -168,6 +168,7 @@ void output_velocity_for_solute(int ,double* ,double** ,int ,int,int,int,int*** 
 
 void Comput_Perm_LOCAL(double** ,double* ,int);
 
+void output_Geometry_compact();
 
 const int e[19][3]=
 {{0,0,0},{1,0,0,},{-1,0,0},{0,1,0},{0,-1,0},{0,0,1},{0,0,-1},{1,1,0},{-1,1,0},{1,-1,0},{-1,-1,0},{0,1,1},
@@ -209,6 +210,7 @@ int NCHAR=128;
 	
 int*** Solid;	
 int*** Solid2;
+bool*** Solid3;
 double** u;
 
 
@@ -678,6 +680,7 @@ if (wr_per==1)
 				{
 				//cout<<"@@@@@@@@@@@@@@@@@@@@@"<<endl;
 				output_velocity_compact(n,rho,u,mirX,mirY,mirZ,mir,Solid);
+				output_Geometry_compact();
 				n=n_max+1;				
 				}
 
@@ -864,18 +867,18 @@ void Parallelize_Geometry()
       int* sumtmp;
 	int upx,upy,upz;
 	double updoux,updouy,updouz;
-	int*** Solid3;
+	//bool*** Solid3;
       //-------------------  
         
       Solid = new int**[nx];
       Solid2 = new int**[nx];
-	Solid3 = new int**[nx];
+	Solid3 = new bool**[nx];
 	
 	
 	for (int i=0;i<nx;i++)				///*********
-		Solid[i]=new int*[ny],Solid2[i]=new int*[ny],Solid3[i]=new int*[ny];
+		Solid[i]=new int*[ny],Solid2[i]=new int*[ny],Solid3[i]=new bool*[ny];
 
-	Solid[0][0]=new int[nx*ny*nz],Solid2[0][0]=new int[nx*ny*nz],Solid3[0][0]=new int[nx*ny*nz];
+	Solid[0][0]=new int[nx*ny*nz],Solid2[0][0]=new int[nx*ny*nz],Solid3[0][0]=new bool[nx*ny*nz];
 
 	
  	for (int i=1;i<ny;i++)
@@ -950,8 +953,8 @@ void Parallelize_Geometry()
 	        exit(-1);
 	        }
 	
-	fin.read((char *)(Solid3[0][0]), sizeof(int)*(NX+1)*(NY+1)*(NZ+1));
-	//fin.read((char *)(Solid3[0][0]), sizeof(bool)*(NX+1)*(NY+1)*(NZ+1));
+	//fin.read((char *)(Solid3[0][0]), sizeof(int)*(NX+1)*(NY+1)*(NZ+1));
+	fin.read((char *)(Solid3[0][0]), sizeof(bool)*(NX+1)*(NY+1)*(NZ+1));
 	
 	fin.close();
 	}
@@ -999,7 +1002,7 @@ void Parallelize_Geometry()
   
         MPI_Bcast(&pre_sum,1,MPI_INT,0,MPI_COMM_WORLD);
         MPI_Bcast(Solid[0][0],(NX+1)*(NY+1)*(NZ+1),MPI_INT,0,MPI_COMM_WORLD);
-        MPI_Bcast(Solid3[0][0],(NX+1)*(NY+1)*(NZ+1),MPI_INT,0,MPI_COMM_WORLD);
+        MPI_Bcast(Solid3[0][0],(NX+1)*(NY+1)*(NZ+1),MPI_CHAR,0,MPI_COMM_WORLD);
 
         for (int k=0;k<=NZ;k++)
 		for (int j=0;j<=NY;j++)
@@ -1419,22 +1422,35 @@ void Parallelize_Geometry()
 	delete [] Solid2[0][0];
 		for (int i=0;i<nx;i++)
 			delete [] Solid2[i];
-		delete [] Solid2;
 
+		delete [] Solid2;
+	if (rank>0)
+	   {
 	delete [] Solid3[0][0];
 		for (int i=0;i<nx;i++)
 			delete [] Solid3[i];
 		delete [] Solid3;
 	  
-	   if (rank>0)
-	   {
 	      
 	           delete [] Solid[0][0];
 			for (int i=0;i<nx;i++)
 			delete [] Solid[i];
 		delete [] Solid;
 	   }
+		else
+		{
+			for(int k=0 ; k<nz ; k++)			
+	                for(int j=0 ; j<ny ; j++)
+	                for(int i=0 ; i<nx ; i++)
+			if (Solid[i][j][k]>0)
+				Solid3[i][j][k]=0;
+			else
+				Solid3[i][j][k]=1;
+		}
 	   
+
+	
+	
 }
 
 
@@ -3369,6 +3385,32 @@ for(int i=1; i<Count; i++)
 //OUTPUT SUBROUTAINS:
 //ALL THE OUTPUTS ARE TRANSFERED TO PROCESSOR 0, AND EXPORT TO DAT FILE BY PROCESSOR 0
 
+void output_Geometry_compact()	
+{	
+	
+	int rank = MPI :: COMM_WORLD . Get_rank ();
+	ostringstream name;
+	name<<outputfile<<"geo.bin";
+	if (rank==0)
+	{
+
+	ofstream out;
+	out.open(name.str().c_str());
+
+	
+
+	
+	out.write((char *)(&Solid3[0]), sizeof(bool)*((NX+1)*(NY+1)*(NZ+1)));
+	out.close();
+
+	}
+        MPI_Barrier(MPI_COMM_WORLD);
+	
+        
+		
+	
+		
+}
 
 void Geometry(int*** Solid)	
 {	
@@ -3635,7 +3677,7 @@ void output_velocity_compact(int m,double* rho,double** u,int MirX,int MirY,int 
 	}
         MPI_Barrier(MPI_COMM_WORLD);
 	
-        cout<<sumtmp<<"         update export sum of velocity"<<endl;
+        //cout<<sumtmp<<"         update export sum of velocity"<<endl;
         
 	if (rank==root_rank)
 		{
