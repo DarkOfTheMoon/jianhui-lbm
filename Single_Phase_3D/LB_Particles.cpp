@@ -372,6 +372,11 @@ fin.close();
 	NX=NX-1;NY=NY-1;NZ=NZ-1;
 	}
 
+	if (updatesss==1)
+		strcpy(filename,""),strcat(filename,"geo_lb.bin");
+		
+
+
 	MPI_Bcast(&filename,128,MPI_CHAR,0,MPI_COMM_WORLD);
 	MPI_Bcast(&NX,1,MPI_INT,0,MPI_COMM_WORLD);
 	MPI_Bcast(&NY,1,MPI_INT,0,MPI_COMM_WORLD);
@@ -3391,23 +3396,38 @@ void output_Geometry_compact()
 	int rank = MPI :: COMM_WORLD . Get_rank ();
 	ostringstream name;
 	name<<outputfile<<"geo.bin";
+	ostringstream name2;
+	name2<<outputfile<<"geo_lb.bin";
+	bool* solid4;
+	int sumtmp=0;
+	
 	if (rank==0)
 	{
+	solid4 = new bool[(NX+1)*(NY+1)*(NZ+1)];
 
 	ofstream out;
 	out.open(name.str().c_str());
 
-	
+	for (int k=0;k<NZ+1;k++)
+		for (int j=0;j<NY+1;j++)
+			for (int i=0;i<NX+1;i++)
+			solid4[sumtmp]=Solid3[i][j][k],sumtmp++;
+
 
 	
+//	out.write((char *)(&Solid3[0][0][0]), sizeof(bool)*((NX+1)*(NY+1)*(NZ+1)));
+	out.write((char *)(&solid4[0]), sizeof(bool)*((NX+1)*(NY+1)*(NZ+1)));
+	out.close();
+
+	out.open(name2.str().c_str());
 	out.write((char *)(&Solid3[0][0][0]), sizeof(bool)*((NX+1)*(NY+1)*(NZ+1)));
 	out.close();
 
 	}
         MPI_Barrier(MPI_COMM_WORLD);
 	
-        
-		
+        		if (rank==0)
+			delete [] solid4;
 	
 		
 }
