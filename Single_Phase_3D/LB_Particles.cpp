@@ -3400,7 +3400,7 @@ void output_Geometry_compact()
 	
 
 	
-	out.write((char *)(&Solid3[0]), sizeof(bool)*((NX+1)*(NY+1)*(NZ+1)));
+	out.write((char *)(&Solid3[0][0][0]), sizeof(bool)*((NX+1)*(NY+1)*(NZ+1)));
 	out.close();
 
 	}
@@ -3443,6 +3443,7 @@ void Geometry(int*** Solid)
 				out<<0<<" ";
 			else
 				out<<1<<" ";
+			//out<<Solid3[i][j][k]<<" ";
 
 
 	out.close();
