@@ -51,7 +51,9 @@ sn2=new int[max_cluster];
 int phase_ind;
 int exp_vtk;
 double* xres;
-
+double* xind;
+int local_res=50;
+double loc_res=double(9.0/local_res);
 
 
 int lnx,rnx,lny,rny,lnz,rnz;
@@ -74,9 +76,10 @@ ifstream fins(argv[1]);
 fins.close();	
 
 
-xres = new double[phase_ind*10];
-for (int i=0;i<phase_ind*10;i++)
-        xres[i]=0.0;
+xres = new double[phase_ind*local_res];
+xind = new double[phase_ind*local_res];
+for (int i=0;i<phase_ind*local_res;i++)
+        xres[i]=0.0,xind[i]=0.0;
 
 
 double*** Solid;
@@ -183,8 +186,13 @@ double vmax=0.0;
 
 	sum3=0;
 
-	
-
+	for (int ls=0;ls>-phase_ind;ls--)
+	for (int lsi=local_res-1;lsi>=0;lsi--)
+		{
+		xind[sum3]=(1+lsi*loc_res)*pow(10.0,double(ls));
+		sum3++;
+		}
+	sum3=0;
 	
 	double interval;
 	double cal_max=vave*5;
@@ -196,16 +204,19 @@ double vmax=0.0;
 		for (int j=lny;j<rny;j++)
 			for (int k=lnz;k<rnz;k++)
 			if (Solid[i][j][k]>crival)
-				{
-				  for (int ls=-1;ls<-phase_ind;ls--)
-						for (int lsi=1;lsi<=9;lsi++)
-				          	if ((Solid[i][j][k]>(lsi*pow(10,ls)) and (Solid[i][j][k]<=(lsi+1)*pow(10,ls)))
-				          	{xres[ls]+=1.0;sum3++;}
+				{sum2=0;
+				  for (int ls=0;ls>-phase_ind;ls--)
+						for (int lsi=local_res-1;lsi>=0;lsi--)
+						{
+				          	if ((Solid[i][j][k]>(vave*(1+lsi*loc_res)*pow(10.0,double(ls)))) and (Solid[i][j][k]<=vave*(1+(lsi+1)*loc_res)*pow(10.0,double(ls))))
+				          	{xres[sum2]+=1.0;sum3++;}
+						sum2++;
 						}
 				}
+				
 			
 	//	cout<<"@@@@@@@@@@@@@@@"<<endl;		
-	for (int ls=1;ls<phase_ind;ls++)
+	for (int ls=0;ls<phase_ind*local_res;ls++)
 	        xres[ls]=xres[ls]/(double)sum;
 	
 	
@@ -220,10 +231,11 @@ double vmax=0.0;
 		out3.open(name3.str().c_str());
 		//cout<<"@@@@@@@@@    "<<phase_ind<<endl;
 		//cout<<xres[0]<<"                @@@@@@@@@@@@@@@@"<<endl;
-		for (int ls=0;ls<phase_ind;ls++)
-		   //     cout<<xres[ls]<<"    @@@@@@@    "<<ls<<endl;
-		        out3<<(interval*ls)/vave<<"        "<<xres[ls]<<endl;
-		//cout<<"@@@@@@@@@@"<<endl;
+		sum2=0;
+		for (int ls=0;ls>-phase_ind;ls--)
+			for (int lsi=local_res-1;lsi>=0;lsi--)   
+		        out3<<xind[sum2]<<"        "<<xres[sum2]<<endl,sum2++;
+	
 		out3.close();
 
 
