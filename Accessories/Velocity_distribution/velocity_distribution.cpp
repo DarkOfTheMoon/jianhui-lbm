@@ -76,9 +76,12 @@ ifstream fins(argv[1]);
 fins.close();	
 
 
-xres = new double[phase_ind*local_res];
-xind = new double[phase_ind*local_res];
-for (int i=0;i<phase_ind*local_res;i++)
+//cout<<phase_ind<<endl;
+
+
+xres = new double[phase_ind];
+xind = new double[phase_ind];
+for (int i=0;i<phase_ind;i++)
         xres[i]=0.0,xind[i]=0.0;
 
 
@@ -186,12 +189,11 @@ double vmax=0.0;
 
 	sum3=0;
 
-	for (int ls=0;ls>-phase_ind;ls--)
-	for (int lsi=local_res-1;lsi>=0;lsi--)
-		{
-		xind[sum3]=(1+lsi*loc_res)*pow(10.0,double(ls));
-		sum3++;
-		}
+	
+	
+	for (int lsi=0;lsi<phase_ind;lsi++)
+		xind[lsi]=10.0/double(phase_ind)*(lsi);
+		
 	sum3=0;
 	
 	double interval;
@@ -204,19 +206,17 @@ double vmax=0.0;
 		for (int j=lny;j<rny;j++)
 			for (int k=lnz;k<rnz;k++)
 			if (Solid[i][j][k]>crival)
-				{sum2=0;
-				  for (int ls=0;ls>-phase_ind;ls--)
-						for (int lsi=local_res-1;lsi>=0;lsi--)
-						{
-				          	if ((Solid[i][j][k]>(vave*(1+lsi*loc_res)*pow(10.0,double(ls)))) and (Solid[i][j][k]<=vave*(1+(lsi+1)*loc_res)*pow(10.0,double(ls))))
-				          	{xres[sum2]+=1.0;sum3++;}
-						sum2++;
-						}
-				}
+						for (int lsi=0;lsi<phase_ind-1;lsi++)
+				          	if ((Solid[i][j][k]>xind[lsi]*vave) and (Solid[i][j][k]<=vave*xind[lsi+1]))
+				          		{xres[lsi]+=1.0;sum3++;
+							//	cout<<i<<" "<<j<<" "<<k<<endl;
+							}
+				
+				
 				
 			
 	//	cout<<"@@@@@@@@@@@@@@@"<<endl;		
-	for (int ls=0;ls<phase_ind*local_res;ls++)
+	for (int ls=0;ls<phase_ind;ls++)
 	        xres[ls]=xres[ls]/(double)sum;
 	
 	
@@ -232,9 +232,8 @@ double vmax=0.0;
 		//cout<<"@@@@@@@@@    "<<phase_ind<<endl;
 		//cout<<xres[0]<<"                @@@@@@@@@@@@@@@@"<<endl;
 		sum2=0;
-		for (int ls=0;ls>-phase_ind;ls--)
-			for (int lsi=local_res-1;lsi>=0;lsi--)   
-		        out3<<xind[sum2]<<"        "<<xres[sum2]<<endl,sum2++;
+			for (int lsi=0;lsi<phase_ind;lsi++)   
+		        out3<<xind[lsi]<<"        "<<xres[lsi]<<endl;
 	
 		out3.close();
 
