@@ -3,7 +3,7 @@ bp_LBM_velocity_Vector_50000.vtk			:Source Geometry file name (Geometry needed t
 256 128 128			:size of geometry nx,ny,nz
 20-3-3.st			:OUTPUT FILE NAME FOR MATLAB POSTPROCESSING 
 1				:INPUT FILE VTK format(1=YES,0=NO)
-1000000				:X resolution number of regions in log scale numbers, 
+100000				:X resolution number of regions in log scale numbers, 
 0       256                       :subdomain calculation nx_min,nx_max (MUST INDICATE)
 0       128             :subdomain calculation ny_min,ny_max (MUST INDICATE)
 0       128             :subdomain calculation nz_min,nz_max (MUST INDICATE)
