@@ -192,7 +192,7 @@ double vmax=0.0;
 	
 	
 	for (int lsi=0;lsi<phase_ind;lsi++)
-		xind[lsi]=10.0/double(phase_ind)*(lsi);
+		xind[lsi]=5.0/double(phase_ind)*(lsi);
 		
 	sum3=0;
 	

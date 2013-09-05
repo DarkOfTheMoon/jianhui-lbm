@@ -7,7 +7,7 @@ bp_LBM_velocity_Vector_50000.vtk			:Source Geometry file name (Geometry needed t
 0       256                       :subdomain calculation nx_min,nx_max (MUST INDICATE)
 0       128             :subdomain calculation ny_min,ny_max (MUST INDICATE)
 0       128             :subdomain calculation nz_min,nz_max (MUST INDICATE)
-1.0e-12			:crival
+1.0e-10			:crival
 
 
 

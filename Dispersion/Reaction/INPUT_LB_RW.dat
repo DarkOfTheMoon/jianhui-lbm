@@ -1,0 +1,105 @@
+=================SINGLE PHASE LATTICE BOLTZMANN CODE INPUT FILE================================================
+bc_f.dat        :Geometry filename
+30 50 3                 :nx ny nz
+300000	                 :Maxmum time step
+7.0	                :x=1 (um) Resolution (for Permeability calculation, resolution/dx)
+0	        	       :Pressure/Velocity Boundary (1=Yes, 0=No)   Convergence accelerator (1=yes, 0=no)
+3.0e-6 0.0e-6 0.0          :body force for x,y,z
+0 1.0 0 1.003 	:Pressure Boundary in X direction (Format detials can be found within this file)p=c_s^2*/rho
+0 1.0 0 1.0	:Pressure Boundary in Y direction (Format detials can be found within this file)
+0 1.0 0 1.0	:Pressure Boundary in Z direction (Format detials can be found within this file)
+0 0.0 0 0.07	:Velocity Boundary in X direction (Format detials can be found within this file)
+0 0.0 0 0.07	:Velocity Boundary in Y direction (Format detials can be found within this file)
+0 0.0 0 0.07	:Velocity Boundary in Z direction (Format detials can be found within this file)
+0.16667            	:Viscosity
+0.0e-3 0.0 0.0	:initial velocity for x,y,z
+=========OUTPUT==CONTROL===================
+1		:Permeability writing (1=yes, 0=no)
+1               :Direction of Permeability Calculation (1=X, 2=Y, 3=Z)
+50		:Frequency of results writing (interval in time steps)
+1               :Export Mesh Decomposition VTK (1=Yes, 0=No)
+1000		:Frequency of velocity field writing (in vtk format, -1=no velocity writing)
+1000		:Fre of density field writing (vtk, -1=no density writing,0=only geometry)
+==============ADVANCE==PARAMETER==========
+0 1.0 2.0	:Self define lattice velocity: 0=DEFAULT, dx, dt ((u_x+u_y+u_z)*dt/dx<=1 Courant Number)
+./		:OUTPUT PATH,DEFAULT: ./ (REMEMBER TO INCLUDE "/" AT THE END OF PATH)
+2              :PRESSURE AND VELOCITY BOUNDARY CONDITION OPTIONS: 0,1,2,3: EBC_S,NEBC_D,TOLKE_BC
+1				:AUTOMATIC STOP
+0 0 0				:Pemeability calculation Partially  
+130 20				:Permeability calculation partially Starting point and Ending point in X
+0 100				:Permeability calculation partially Starting point and Ending point in Y
+0 100				:Permeability calculation partially Starting point and Ending point in Z
+======================BACKUP OPTIONS===========================
+-1		:BACKUP FREQUENCY (-1=NO BACKUP)
+0               :USE BACKUP DATA (0=OFF, 1=ON)
+-1      :Velocity output for Solute transport every x timesteps (-1=NO)
+======================GROP PERM PARAMETER =====================
+1e-4		:Stop condition permeability error
+5e-3		:Stop condition general relative error
+512 256 128 64	:FREE
+0 1 1		:FREE
+128 129 129	:FREE
+128 129 129	:FREE
+128 129 129	:FREE
+======================GEOMETRY READING=======================
+1		:Geometry Reading format, 0=decimal,1=binary(bool)
+======================Non-Newtonian Module======================
+0               :0=OFF, 1=ON
+0.001 0.25        :mu,n: apparent viscosity=mu*gama_dot^(n-1)
+
+
+USE LB_Particles.cpp
+
+
+1		:1=USE GEOMETRY EASIER SUBROUTAINS 0=NO
+3		:Add Solid boundaries beside the flow direction,0=X,1=Y,2=Z,3=NO Solie
+0 0		:Add buffet areas for the geometry,size in lattices, X, N,P 0=no buffet
+0 0		:Add buffet areas for the geometry,size in lattices, Y, N,P 0=no buffet
+0 0		:Add buffet areas for the geometry,size in lattices, Z, N,P 0=no buffet
+1		:Mesh Refiner,1=1X,2=2X.......... (NO MESH REFINER 0)
+
+int dir=2;
+int sym_x=0;
+int sym_y=0;
+int sym_z=1;
+int add_buf_x_n=0;
+int add_buf_y_n=0;
+int add_buf_z_n=0;
+
+int add_buf_x_p=0;
+int add_buf_y_p=0;
+int add_buf_z_p=0;
+
+
+To use the checkpoint data to restart the simulation,
+You might need to specify the path of the checkpoint data
+The path sould be put after the name and the path of the data file.
+such as: mpirun -np 3 INPUT.dat /work/jy810/test/
+If not given, the default value is ./
+
+INSTRUCTIONS OF PARAMETER INPUT
+IF VELOCITY IS OUTPUT FOR SOLUTE SIMULATION, 
+NO PREFIX IS TO BE USED FOR THE OUTPUT PATH/NAME
+
+Grop perm parameter in the code:Example
+	int loop[4]={1,1,2,4};
+	int loop_size[4]={512,256,128,64};
+	int loop_s[4][3]={{0,1,1},{128,129,129},{128,129,129},{128,129,129}};
+
+
+============
+About VTK outputs
+If Frequency of velocity field writing (in vtk format, -1=no velocity writing)
+or Frequency of Density field writing (in vtk format, -1=no velocity writing)
+=0 (any one of them)
+Geometry vtk file will be generated, but no velocity or desity
+only positve value like 200 will active velocity or density vtk writting
+if both -1 no vtk files will be made
+
+
+
+
+
+
+
+
