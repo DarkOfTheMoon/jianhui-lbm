@@ -28,7 +28,7 @@ int ny=ny_r-ny_l;
 int nz=nz_r-nz_l;
 
 //=====source data option======
-int source_data_opt=1;	//1=OWN,2=Keehm
+int source_data_opt=1;	//1=OWN MULTIPHASE 1 ONLY
 double bodyf=1e-6;
 double vis=0.166667;
 //=============================
@@ -57,9 +57,15 @@ int pgDir=3;
 	
 char poreFileName[128]="R1_3_LBM_velocity_Vector_150000.vtk";	//velocity
 char poreFileName_geo[128]="R1_3_LBM_Geometry.vtk";		//geometry
-
+char poreFileName_psi[128]="R1_3_LBM_Geometry.vtk";		//phase
 
 char ouput_prefix[128]="R1_3_";
+
+
+
+//----------------MULTI PHASE PARAMETERS----------------
+double critical_value_psi=0.9;
+double SP_perm=1000;	//single phase permeability in mD
 
 
 //======================================================
@@ -98,6 +104,7 @@ for (int i=0;i<sub_n;i++)
 
 
 double**** vel;
+double*** psicolour;
 bool*** Solid;
 
 
@@ -127,21 +134,24 @@ double pore;
 int st_i,st_j,st_k;
 int sum=0;
 double vx,vy,vz;
+double vx2,vy2,vz2;
 double permX,permY,permZ;
+double permX2,permY2,permZ2;
 double factor;	
 	
 	
-	Solid = new bool**[nx];
+	Solid = new bool**[nx];psicolour = new double**[nx];
+	
 	
 		
 	for (i=0; i<nx;i++)
 	{
-	       Solid[i] = new bool*[ny];
+	       Solid[i] = new bool*[ny],psicolour[i] = new double*[ny];
 	       for (j=0;j<ny;j++)
 	       {
-	               Solid[i][j] = new bool[nz];
+	               Solid[i][j] = new bool[nz],psicolour[i][j] = new double[nz];
 	               for (k=0;k<nz;k++)
-	                       Solid[i][j][k] = 0;
+	                       Solid[i][j][k] = 0,psicolour[i][j][k] = 0;
 	       }
 	}
 
@@ -207,6 +217,65 @@ double factor;
 			//fin >> ci >> cj>> ck>>pore;
 			fin >> pore;
 			if ((i<nx_r) and (j<ny_r) and (k<nz_r) and (i>=nx_l) and (j>=ny_l) and (k>=nz_l))
+			//if (pore==1.0)
+			//	{Solid[i-nx_l][j-ny_l][k-nz_l]=1;}
+			//else
+			//	{Solid[i-nx_l][j-ny_l][k-nz_l]=0;sum++;}
+			psicolour[i][j][k] = pore;
+			
+			
+		}
+		
+	fin.close();
+
+	cout<<endl;	
+	cout<<"psi File Reading Complete"<<endl;
+	//cout<<"General porosity = "<<(double)sum/(nx*ny*nz);
+	cout<<endl;
+
+
+	ftest = fopen(poreFileName_psi, "r");
+
+	if(ftest == NULL)
+	{
+		cout << "\n The pore geometry file (" << poreFileName_psi <<
+			") does not exist!!!!\n";
+		cout << " Please check the file\n\n";
+
+		exit(0);
+	}
+	fclose(ftest);
+
+	fin.open(poreFileName_psi);
+	
+	cout<<"Start Reading psi File"<<endl;
+
+	if (input_vtk==1)
+	{
+	fin.getline(dummy, NCHAR);
+	fin.getline(dummy, NCHAR);
+	fin.getline(dummy, NCHAR);
+	fin.getline(dummy, NCHAR);
+	fin.getline(dummy, NCHAR);
+	fin.getline(dummy, NCHAR);
+	fin.getline(dummy, NCHAR);
+	fin.getline(dummy, NCHAR);
+	fin.getline(dummy, NCHAR);
+	fin.getline(dummy, NCHAR);
+	}
+
+
+	sum=0;
+	for(k=0 ; k<nz_read ; k++)				///*********
+	for(j=0 ; j<ny_read ; j++)
+	for(i=0 ; i<nx_read ; i++)				///*********
+
+	 
+	//while (!fin.eof())                                        //**********
+		{	
+			//fin >> ci >> cj>> ck>>pore;
+			fin >> pore;
+			if ((i<nx_r) and (j<ny_r) and (k<nz_r) and (i>=nx_l) and (j>=ny_l) and (k>=nz_l))
 			if (pore==1.0)
 				{Solid[i-nx_l][j-ny_l][k-nz_l]=1;}
 			else
@@ -222,8 +291,6 @@ double factor;
 	cout<<"Geometry File Reading Complete"<<endl;
 	cout<<"General porosity = "<<(double)sum/(nx*ny*nz);
 	cout<<endl;
-
-
 
 
 	ftest = fopen(poreFileName, "r");
@@ -259,6 +326,7 @@ double factor;
 
 
 	vx=0.0;vy=0.0;vz=0.0;
+	vx2=0.0;vy2=0.0;vz2=0.0;
 	for(k=0 ; k<nz_read ; k++)				///*********
 	for(j=0 ; j<ny_read ; j++)
 	for(i=0 ; i<nx_read ; i++)				///*********
@@ -340,9 +408,19 @@ inter_sub
 						if (Solid[i][j][k]==0)
 							sum++;
 						//permX = 1e9*(Q[0]/(nx*ny*nz)+factor*pgBB[0])*nu*dx*dx/pgMag
-						vx+=vel[i][j][k][0];
-						vy+=vel[i][j][k][1];
-						vz+=vel[i][j][k][2];
+						if (psicolour[i][j][k]>critical_value_psi)
+							{
+							vx+=vel[i][j][k][0];
+							vy+=vel[i][j][k][1];
+							vz+=vel[i][j][k][2];
+							}
+						else
+							if (psicolour[i][j][k]<-critical_value_psi)
+								{
+								vx2+=vel[i][j][k][0];
+								vy2+=vel[i][j][k][1];
+								vz2+=vel[i][j][k][2];
+								}
 
 
 						}
@@ -353,18 +431,28 @@ inter_sub
 		permX = 1e9*(vx/(sub_size[pri_ind]*sub_size2[pri_ind]*sub_size3[pri_ind])+factor*pgBB[0])*nu*dx*dx/pgMag;
 		permY = 1e9*(vy/(sub_size[pri_ind]*sub_size2[pri_ind]*sub_size3[pri_ind])+factor*pgBB[1])*nu*dx*dx/pgMag;  
 		permZ = 1e9*(vz/(sub_size[pri_ind]*sub_size2[pri_ind]*sub_size3[pri_ind])+factor*pgBB[2])*nu*dx*dx/pgMag;
+
+		permX2 = 1e9*(vx2/(sub_size[pri_ind]*sub_size2[pri_ind]*sub_size3[pri_ind])+factor*pgBB[0])*nu*dx*dx/pgMag;
+		permY2 = 1e9*(vy2/(sub_size[pri_ind]*sub_size2[pri_ind]*sub_size3[pri_ind])+factor*pgBB[1])*nu*dx*dx/pgMag;  
+		permZ2 = 1e9*(vz2/(sub_size[pri_ind]*sub_size2[pri_ind]*sub_size3[pri_ind])+factor*pgBB[2])*nu*dx*dx/pgMag;
 		}
 		else
 		{
 		permX=vx/(sub_size[pri_ind]*sub_size2[pri_ind]*sub_size3[pri_ind])*vis/bodyf*dx*dx*1e9;
 		permY=vy/(sub_size[pri_ind]*sub_size2[pri_ind]*sub_size3[pri_ind])*vis/bodyf*dx*dx*1e9;
 		permZ=vz/(sub_size[pri_ind]*sub_size2[pri_ind]*sub_size3[pri_ind])*vis/bodyf*dx*dx*1e9;
+
+
+		permX2=vx2/(sub_size[pri_ind]*sub_size2[pri_ind]*sub_size3[pri_ind])*vis/bodyf*dx*dx*1e9;
+		permY2=vy2/(sub_size[pri_ind]*sub_size2[pri_ind]*sub_size3[pri_ind])*vis/bodyf*dx*dx*1e9;
+		permZ2=vz2/(sub_size[pri_ind]*sub_size2[pri_ind]*sub_size3[pri_ind])*vis/bodyf*dx*dx*1e9;
+
 		}
 				
 				
-				if     (pgDir == 3) out<<factor<<" "<<permZ<<endl;
-				else if(pgDir == 2) out<<factor<<" "<<permY<<endl;
-				else                out<<factor<<" "<<permX<<endl;
+				if     (pgDir == 3) out<<factor<<" "<<permZ<<" "<<permZ2<<endl;
+				else if(pgDir == 2) out<<factor<<" "<<permY<<" "<<permY2<<endl;
+				else                out<<factor<<" "<<permX<<" "<<permX2<<endl;
 							//out<<factor<<" "<<permX<<" "<<permY<<" "<<permZ<<endl;
 				}
 			out.close();
