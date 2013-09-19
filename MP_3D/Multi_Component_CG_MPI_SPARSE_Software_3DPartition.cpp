@@ -1066,11 +1066,11 @@ MPI_Barrier(MPI_COMM_WORLD);
 			cout<<endl;
 			}
 			
-			if ((freDe>0) and (n%freDe==0))
+			if ((freDe>0) and (n%freDe==0) and (n>0))
 					output_density(n,rho,mirX,mirY,mirZ,mir,Solid);
 			
 
-			if ((freVe>0) and (n%freVe==0))
+			if ((freVe>0) and (n%freVe==0) and (n>0))
 					output_velocity(n,rho,u,mirX,mirY,mirZ,mir,Solid);
 				
 			

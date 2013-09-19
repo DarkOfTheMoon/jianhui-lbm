@@ -11,16 +11,16 @@ using namespace std;
 int main (int argc , char * argv [])
 {
 
-int nx_read=400;
-int ny_read=300;
-int nz_read=430;
+int nx_read=460;
+int ny_read=230;
+int nz_read=230;
 
 int nx_l=0;
-int nx_r=400;
+int nx_r=460;
 int ny_l=0;
-int ny_r=300;
+int ny_r=230;
 int nz_l=0;
-int nz_r=215;
+int nz_r=230;
 
 
 int nx=nx_r-nx_l;
@@ -29,15 +29,18 @@ int nz=nz_r-nz_l;
 
 //=====source data option======
 int source_data_opt=1;	//1=OWN MULTIPHASE 1 ONLY
-double bodyf=1e-6;
-double vis=0.166667;
+double bodyf=7e-6;
+double vis=0.05;
 //=============================
 
-double dx=0.001733;	//resolution mm
+double dx=0.0049;	//resolution mm
 const int sub_n=6;
 
 int sub_num[sub_n]={5,4,3,2,2,2};
-int sub_size[sub_n]={90,120,160,200,260,320};
+int sub_size[sub_n]={120,160,220,290,350,400};
+
+
+
 int sub_size2[sub_n]={80,120,160,180,200,230};
 int sub_size3[sub_n]={80,120,160,180,200,230};
 
@@ -53,19 +56,19 @@ int sub_size3[sub_n]={80,120,160,180,200,230};
 
 
 int input_vtk=1;	//0=NO,1=YES
-int pgDir=3;
+int pgDir=1;
 	
-char poreFileName[128]="R1_3_LBM_velocity_Vector_150000.vtk";	//velocity
-char poreFileName_geo[128]="R1_3_LBM_Geometry.vtk";		//geometry
-char poreFileName_psi[128]="R1_3_LBM_Geometry.vtk";		//phase
+char poreFileName[128]="1_LBM_velocity_Vector_100000.vtk";	//velocity
+char poreFileName_geo[128]="1_LBM_Geometry.vtk";		//geometry
+char poreFileName_psi[128]="1_LBM_psi_100000.vtk";		//phase
 
-char ouput_prefix[128]="R1_3_";
+char ouput_prefix[128]="1r_";
 
 
 
 //----------------MULTI PHASE PARAMETERS----------------
 double critical_value_psi=0.9;
-double SP_perm=1000;	//single phase permeability in mD
+double SP_perm=4140.18;	//single phase permeability in mD
 
 
 //======================================================
@@ -133,6 +136,7 @@ double pore1,pore2,pore3;
 double pore;
 int st_i,st_j,st_k;
 int sum=0;
+int sum2=0;
 double vx,vy,vz;
 double vx2,vy2,vz2;
 double permX,permY,permZ;
@@ -179,7 +183,7 @@ double factor;
 
 	if(ftest == NULL)
 	{
-		cout << "\n The pore geometry file (" << poreFileName <<
+		cout << "\n The pore geometry file (" << poreFileName_geo <<
 			") does not exist!!!!\n";
 		cout << " Please check the file\n\n";
 
@@ -217,11 +221,11 @@ double factor;
 			//fin >> ci >> cj>> ck>>pore;
 			fin >> pore;
 			if ((i<nx_r) and (j<ny_r) and (k<nz_r) and (i>=nx_l) and (j>=ny_l) and (k>=nz_l))
-			//if (pore==1.0)
-			//	{Solid[i-nx_l][j-ny_l][k-nz_l]=1;}
-			//else
-			//	{Solid[i-nx_l][j-ny_l][k-nz_l]=0;sum++;}
-			psicolour[i][j][k] = pore;
+			if (pore==1.0)
+				{Solid[i-nx_l][j-ny_l][k-nz_l]=1;}
+			else
+				{Solid[i-nx_l][j-ny_l][k-nz_l]=0;sum++;}
+			//psicolour[i][j][k] = pore;
 			
 			
 		}
@@ -229,8 +233,8 @@ double factor;
 	fin.close();
 
 	cout<<endl;	
-	cout<<"psi File Reading Complete"<<endl;
-	//cout<<"General porosity = "<<(double)sum/(nx*ny*nz);
+	cout<<"Geometry File Reading Complete"<<endl;
+	cout<<"General porosity = "<<(double)sum/(nx*ny*nz);
 	cout<<endl;
 
 
@@ -247,6 +251,8 @@ double factor;
 	fclose(ftest);
 
 	fin.open(poreFileName_psi);
+	
+
 	
 	cout<<"Start Reading psi File"<<endl;
 
@@ -265,7 +271,7 @@ double factor;
 	}
 
 
-	sum=0;
+	sum2=0;
 	for(k=0 ; k<nz_read ; k++)				///*********
 	for(j=0 ; j<ny_read ; j++)
 	for(i=0 ; i<nx_read ; i++)				///*********
@@ -276,20 +282,23 @@ double factor;
 			//fin >> ci >> cj>> ck>>pore;
 			fin >> pore;
 			if ((i<nx_r) and (j<ny_r) and (k<nz_r) and (i>=nx_l) and (j>=ny_l) and (k>=nz_l))
-			if (pore==1.0)
-				{Solid[i-nx_l][j-ny_l][k-nz_l]=1;}
-			else
-				{Solid[i-nx_l][j-ny_l][k-nz_l]=0;sum++;}
-			
-			
+			//if (pore==1.0)
+			//	{Solid[i-nx_l][j-ny_l][k-nz_l]=1;}
+			//else
+			//	{Solid[i-nx_l][j-ny_l][k-nz_l]=0;sum++;}
+			{
+			psicolour[i-nx_l][j-ny_l][k-nz_l] = pore;
+				if ((pore>critical_value_psi) and (Solid[i-nx_l][j-ny_l][k-nz_l]==0))
+					sum2++;
+			}
 			
 		}
 		
 	fin.close();
 
 	cout<<endl;	
-	cout<<"Geometry File Reading Complete"<<endl;
-	cout<<"General porosity = "<<(double)sum/(nx*ny*nz);
+	cout<<"psi File Reading Complete"<<endl;
+	cout<<"General saturation = "<<(double)sum2/(double)sum;
 	cout<<endl;
 
 
@@ -339,9 +348,26 @@ double factor;
 			if ((i<nx_r) and (j<ny_r) and (k<nz_r) and (i>=nx_l) and (j>=ny_l) and (k>=nz_l))
 			if (Solid[i-nx_l][j-ny_l][k-nz_l]==0) 
 			{
-			vel[i-nx_l][j-ny_l][k-nz_l][0]=pore1;vx+=pore1;
-			vel[i-nx_l][j-ny_l][k-nz_l][1]=pore2;vy+=pore2;
-			vel[i-nx_l][j-ny_l][k-nz_l][2]=pore3;vz+=pore3;
+			vel[i-nx_l][j-ny_l][k-nz_l][0]=pore1;
+			if (psicolour[i-nx_l][j-ny_l][k-nz_l]>critical_value_psi) 
+				vx+=pore1;
+			else
+			if (psicolour[i-nx_l][j-ny_l][k-nz_l]<-critical_value_psi)
+				vx2+=pore1;
+
+			vel[i-nx_l][j-ny_l][k-nz_l][1]=pore2;
+			if (psicolour[i-nx_l][j-ny_l][k-nz_l]>critical_value_psi) 
+				vy+=pore2;
+			else
+			if (psicolour[i-nx_l][j-ny_l][k-nz_l]<-critical_value_psi)
+				vy2+=pore2;
+
+			vel[i-nx_l][j-ny_l][k-nz_l][2]=pore3;
+			if (psicolour[i-nx_l][j-ny_l][k-nz_l]>critical_value_psi) 
+				vz+=pore3;
+			else
+			if (psicolour[i-nx_l][j-ny_l][k-nz_l]<-critical_value_psi)
+				vz2+=pore3;
 			}
 			
 			
@@ -362,11 +388,16 @@ double factor;
 		permX=vx/(nx*ny*nz)*vis/bodyf*dx*dx*1e9;
 		permY=vy/(nx*ny*nz)*vis/bodyf*dx*dx*1e9;
 		permZ=vz/(nx*ny*nz)*vis/bodyf*dx*dx*1e9;
+
+		permX2=vx2/(nx*ny*nz)*vis/bodyf*dx*dx*1e9;
+		permY2=vy2/(nx*ny*nz)*vis/bodyf*dx*dx*1e9;
+		permZ2=vz2/(nx*ny*nz)*vis/bodyf*dx*dx*1e9;
 		}
 
 	cout<<endl;	
 	cout<<"Velocity File Reading Complete"<<endl;
-	cout<<"General Perm = "<<permX<<"	"<<permY<<"	"<<permZ<<endl;
+	cout<<"General Perm = "<<permX/SP_perm<<"	"<<permY/SP_perm<<"	"<<permZ/SP_perm<<endl;
+	cout<<"General Perm2 = "<<permX2/SP_perm<<"	"<<permY2/SP_perm<<"	"<<permZ2/SP_perm<<endl;
 	cout<<endl;
 
 
@@ -395,6 +426,7 @@ inter_sub
 				for (int lk=0;lk<sub_num[pri_ind];lk++)
 				{
 				sum=0;vx=0.0;vy=0.0;vz=0.0;
+				vx2=0.0;vy2=0.0;vz2=0.0;
 				st_i=li*inter_sub[pri_ind];
 				st_j=lj*inter_sub2[pri_ind];
 				st_k=lk*inter_sub3[pri_ind];
@@ -450,9 +482,9 @@ inter_sub
 		}
 				
 				
-				if     (pgDir == 3) out<<factor<<" "<<permZ<<" "<<permZ2<<endl;
-				else if(pgDir == 2) out<<factor<<" "<<permY<<" "<<permY2<<endl;
-				else                out<<factor<<" "<<permX<<" "<<permX2<<endl;
+				if     (pgDir == 3) out<<factor<<" "<<permZ/SP_perm<<" "<<permZ2/SP_perm<<endl;
+				else if(pgDir == 2) out<<factor<<" "<<permY/SP_perm<<" "<<permY2/SP_perm<<endl;
+				else                out<<factor<<" "<<permX/SP_perm<<" "<<permX2/SP_perm<<endl;
 							//out<<factor<<" "<<permX<<" "<<permY<<" "<<permZ<<endl;
 				}
 			out.close();
