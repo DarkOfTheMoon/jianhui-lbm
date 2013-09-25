@@ -109,7 +109,7 @@ if (rotation>0)
 
 
 int*** Solid;
-bool*** Solidbool;
+bool* Solidbool;
 double pore;
 
 
@@ -151,6 +151,8 @@ double pore;
 
 	if (bindat==2)
 	{
+
+	/*
 		Solidbool = new bool**[nx];	///*********
 	
 	for (int i=0;i<nx;i++)				///*********
@@ -168,6 +170,10 @@ double pore;
                for (int j=1;j<ny;j++)
                        Solidbool[i][j]=Solidbool[i][j-1]+nz;
        }
+	*/
+
+	Solidbool = new bool[nx*ny*nz];
+
 	}
 
 	
@@ -659,8 +665,8 @@ if (expdat==1)
 	for (int k=0;k<nz;k++)
 	for (int j=0;j<ny;j++)
 	for (int i=0;i<nx;i++)
-		Solidbool[i][j][k]=Solid[i][j][k];
-	out2.write((char *)(&Solidbool[0][0][0]), sizeof(bool)*nx*ny*nz); 
+		Solidbool[k*ny*nx+j*nx+i]=Solid[i][j][k];
+	out2.write((char *)(&Solidbool[0]), sizeof(bool)*nx*ny*nz); 
 	}
 	else
 	if (bindat==1)

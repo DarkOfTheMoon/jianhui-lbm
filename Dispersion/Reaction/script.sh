@@ -11,14 +11,15 @@
 rm *.bin
 rm -rf output
 rm -rf input
+rm -rf working
+
 
 mpic++ LB_RW.cpp -o lb
 g++ Reaction.cpp -lpthread -o reaction
 
 mkdir input
-
-
 mkdir output
+mkdir working
 
 mpirun -np 6 lb INPUT_LB_RW.dat
 
@@ -33,6 +34,7 @@ mv vel.bin ./input
 
 mv ./input/geo.bin ./
 mv ./input/vel.bin ./
+cp ./working/GeometryUpdate.txt ./
 mpirun -np 6 lb INPUT_LB_RW.dat 1
 
 }

@@ -33,22 +33,22 @@ double DiffusionCoefficient = 0.00001;		//Diffusion coefficient for random walk 
 double SimulationTimestep = 0;				//Timestep for the simulation. Set to 0 for automatic (optimum) value
 double SimulationTimeScale = 1000000;		//Value of dt corresponding physically to 1 second
 
-double OutputTimeInterval = 1000;		//Time interval for writing output data
+double OutputTimeInterval = 100000;		//Time interval for writing output data
 double SimulationTimeMax =  0;			//End time of simulation. Set to 0 for no limit
 
 //Input folder
-char InputFilesFolder[1024]		= "./input/";
+char InputFilesFolder[1024]		= "./input";
 
 bool SolidsFileBin = true;			//Is solids file binary format
 bool VelocitiesFileBin = true;		//Is velocities file binary format
 bool VelocitiesFileSparse = true;	//Sparse velocity files
 
-//Input files   Initial
+//Input files
 char SolidsFileName[1024]		= "geo.bin";			//File specifying solid voxels
 char VelocitiesFileName[1024]	= "vel.bin";			//File containing vector field
 
 //Output folder
-char OutputFilesFolder[1024]	= "./output/";
+char OutputFilesFolder[1024]	= "./output";
 
 //Output files
 char GeometryOutputFile[1024]	= "Geometry t=%ST.vtk";
@@ -56,7 +56,7 @@ char DataOutputFile[1024]		= "Data.txt";
 char AdvectionDebugFile[1024]	= "Advection Debug.txt";		//Advection debug output. Use %ID for thread ID
 
 //LB-Disp Working Directory
-char WorkingFolder[1024]		= "./";
+char WorkingFolder[1024]		= "./working";
 
 //Working Directory Files
 char SimulationOutputFile[1024]	= "SimulationOutput.dat";	//Output simulation variables and particles
@@ -2785,10 +2785,12 @@ void* ThreadMain(void* data){
 
 		RunTimeStep(dt, ParticlesIndex0, ParticlesIndex1, ThreadID);		//Simulate thread's particles
 
+		/*
 		if(ThreadID==0){
 			cout << "Porosity = " << LatticeInfo.Porosity*100 << "%" << endl;
 			cout << "NNonSolids = " << LatticeInfo.NNonSolids << endl;
 		}
+		*/
 
 		TimeSteps++;
 		t+=dt;
@@ -2934,11 +2936,15 @@ int MainThreading(int argc, char *argv[]){
 
 		ReadSimulationState(&SimulationState);	//Read in simulation variables and particles
 
+		cout << "t = " << SimulationState.SimulationTime << endl;
+
 		Random.TimeSeed();			//Seed random number generator based on local time
 
 		WriteOutParameters();		//Write out diffusion coefficient and average velocities to console
 
 	}
+
+	
 
 
 	//Simulation	////////////////////////////////////////////

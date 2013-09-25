@@ -71,8 +71,9 @@ for (int i=0;i<19;i++)
         for (int j=0;j<19;j++)
         {
     
-                sprintf(str[i][j],"%A",MI[i][j]);
-               
+                sprintf(str[i][j],"%A",MI[i][j]); //HEX
+		
+               //sprintf(str[i][j],"%.*f",20,MI[i][j]);	//DECIMAL
                 
         }
 /*

@@ -5,8 +5,8 @@ ftb_test.roc		:Source Geometry file name (Geometry needed to be filtered)
 20-3-3.vtk		:Processed VTK file name 
 bc_f.dat			:Processed Data file name (used for claculation)
 1			:Export VTK 1=YES,0=NO
-0			:Export DAT 1=YES, 0=NO
-1			:Binary for DAT 1=YES int,2=yes bool 0=NO ONLY valid if GEOMETRY MODIFICATION IS ON
+1			:Export DAT 1=YES, 0=NO
+2			:Binary for DAT 1=YES int,2=yes bool 0=NO ONLY valid if GEOMETRY MODIFICATION IS ON
 ================FILTER========================================================================
 0				:Filter (1=ON,0=0FF)
 ================GEOMETRY MODIFICATION==========================================================
@@ -19,7 +19,7 @@ bc_f.dat			:Processed Data file name (used for claculation)
 -1			:porous plate:-1=defualt position,end of the geometry, or give a positive value
 1			:ZOOM 1,2,3,4
 =================MESH  PARTITION INTIALIZATION=================================================
-12			:EXPORT Partition FILE(0=OFF,1 for METIS, >1 for SELF decomposition domian numbers)
+0			:EXPORT Partition FILE(0=OFF,1 for METIS, >1 for SELF decomposition domian numbers)
 ftb.graph		:FILE NAME for METIS (for SELF default output name source_name_number.dat) 
 1			:Export partitions VTK
 =========================METIS PARAMETER============================================
