@@ -25,7 +25,7 @@ initial run
 mpirun -np 3 paratest INPUT_LB_RW.dat 1
 1 is the mark denoting that it is the update simulation
 
-you need to have geo.bin and vel.bin at the current directory
+you need to have geo.bin && vel.bin at the current directory
 
 */
 
@@ -286,13 +286,18 @@ double nnf_m,nnf_n;
 int main(int argc , char *argv [])
 {	
 
-MPI :: Init (argc , argv );
+MPI_Init(&argc,&argv);
 MPI_Status status ;
 
 double start , finish,remain,elaps;
 
-int rank = MPI :: COMM_WORLD . Get_rank ();
-int para_size=MPI :: COMM_WORLD . Get_size ();
+int rank;
+int para_size;
+
+MPI_Comm_size(MPI_COMM_WORLD, &para_size);
+MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+
 //**********************
 int mpi_size=para_size;
 //***********************
@@ -554,7 +559,7 @@ if (mirZ==1)
 	if (Out_Mode==1)
 		Geometry_Par(Solid);
 
-	if ((freVe>=0) or (freDe>=0))
+	if ((freVe>=0) || (freDe>=0))
 	{
 	
 	
@@ -695,9 +700,9 @@ if (wr_per==1)
 			cout<<endl;
 			}
 			
-			//if ((Out_Mode==1) and (abs((u_ave2-u_ave)/(u_ave2))<1e-7))
+			//if ((Out_Mode==1) && (abs((u_ave2-u_ave)/(u_ave2))<1e-7))
 			//cout<<st1<<"	"<<st2<<"	"<<loc_perm<<" "<<error<<" "<<abs((pre_u_ave-u_ave)/(pre_u_ave))<<endl; 		
-			if ((loc_perm==1) and (error<st2) and (abs((pre_u_ave-u_ave)/(pre_u_ave))<st1))
+			if ((loc_perm==1) && (error<st2) && (abs((pre_u_ave-u_ave)/(pre_u_ave))<st1))
 				{
 				//cout<<"@@@@@@@@@@@@@@@@@@@@@"<<endl;
 				output_velocity_compact(n,rho,u,mirX,mirY,mirZ,mir,Solid);
@@ -708,11 +713,11 @@ if (wr_per==1)
 				}
 
 			
-			if ((freDe>0) and (n%freDe==0))
+			if ((freDe>0) && (n%freDe==0))
 					output_density(n,rho,mirX,mirY,mirZ,mir,Solid);
 				
 			
-			if ((freVe>0) and (n%freVe==0))
+			if ((freVe>0) && (n%freVe==0))
 					output_velocity(n,rho,u,mirX,mirY,mirZ,mir,Solid);
 				
 				
@@ -781,8 +786,7 @@ if (wr_per==1)
 	//==============================================
 
 	delete [] Permia;
-	MPI :: Finalize ();
-
+	MPI_Finalize();
 	
 }
 
@@ -855,8 +859,13 @@ mat a;
 void Parallelize_Geometry()
 {
         
-    int rank = MPI :: COMM_WORLD . Get_rank ();
-    int mpi_size=MPI :: COMM_WORLD . Get_size ();
+    int rank;
+	int mpi_size;
+
+	MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+
     int nx=NX+1;
     int ny=NY+1;
     int nz=NZ+1;
@@ -871,8 +880,14 @@ void Parallelize_Geometry()
 	if (par_per_z==0)
 		{per_zn=0;per_zp=NZ;}
                                 
-    int procind=MPI :: COMM_WORLD . Get_rank ()+1;                               //currentprocessor index, start from 1
-    int procn=MPI :: COMM_WORLD . Get_size ();                                  //total processor number
+    int procind;                               //currentprocessor index, start from 1
+    int procn;                                  //total processor number
+
+	MPI_Comm_size(MPI_COMM_WORLD, &procn);
+	MPI_Comm_rank(MPI_COMM_WORLD, &procind);
+
+	procind++;
+
     int neib=0;
    
             bufinfo=new int[procn+1];
@@ -882,7 +897,7 @@ void Parallelize_Geometry()
             
     com_n=0;                                                                    //mpi commu numbers     number of neighbour partitions which need communication
     int tmpint;
-    int proc_com[procn+1];                                              //index convert proc index---->commu index in current processor
+    int* proc_com = new int[procn+1];                                              //index convert proc index---->commu index in current processor
     for (int i=0;i<=procn;i++)
         proc_com[i]=0;
         
@@ -1033,7 +1048,7 @@ void Parallelize_Geometry()
                 
 			{
 	                
-			if ((Solid[i][j][k]==0) and (i>=per_xn) and (i<=per_xp) and (j>=per_yn) and (j<=per_yp) and (k>=per_zn) and (k<=per_zp))
+			if ((Solid[i][j][k]==0) && (i>=per_xn) && (i<=per_xp) && (j>=per_yn) && (j<=per_yp) && (k>=per_zn) && (k<=per_zp))
 			        porosity+=1.0;
 			}
 	        sumss=new int [procn+1];
@@ -1084,7 +1099,7 @@ void Parallelize_Geometry()
 	                                        if (kk>=nz)
 	                                        kk=0; 
 	                        
-	                                if ((Solid[ii][jj][kk]>0) and (Solid[ii][jj][kk]!=procind))
+	                                if ((Solid[ii][jj][kk]>0) && (Solid[ii][jj][kk]!=procind))
 	                                        {
 	                                                bufinfo[Solid[ii][jj][kk]]++;
 	                                        //cout<<procind<<"        "<<Solid[ii][jj][kk]<<endl;
@@ -1189,8 +1204,8 @@ void Parallelize_Geometry()
 	                
 	     
 	                                               
-	       MPI_Status status[com_n*2] ;
-	       MPI_Request request[com_n*2];         
+	       MPI_Status* status = new MPI_Status[com_n*2] ;
+	       MPI_Request* request = new MPI_Request[com_n*2];         
 	       int mpi_test=procn;
 	       
 	       for (int i=0;i<com_n;i++)
@@ -1317,7 +1332,7 @@ void Parallelize_Geometry()
 		}
 
 
-	int tmpsum[mpi_size];
+	int* tmpsum = new int[mpi_size];
 	for (int i=0;i<mpi_size;i++)
 		tmpsum[i]=3;	
 
@@ -1331,10 +1346,8 @@ void Parallelize_Geometry()
 
 	double* rbuf_v;
 
-
-
-	int nx_g[mpi_size];
-	int disp[mpi_size];
+	int* nx_g = new int[mpi_size];
+	int* disp = new int[mpi_size];
 	
 	for (int i=0;i<mpi_size;i++)
 		nx_g[i]=(sumss[i+1]+1)*3;
@@ -1403,7 +1416,11 @@ void Parallelize_Geometry()
 
 	delete [] rbuf_v;
 
-	cout<<pre_sum*3<<"        "<<tmpint<<"        previous sum velocity and reading velocity numbers"<<endl;
+	cout<<pre_sum*3<<"        "<<tmpint<<"        previous sum velocity && reading velocity numbers"<<endl;
+
+	delete[] tmpsum;
+	delete[] nx_g;
+	delete[] disp;
 	}
 	
 
@@ -1428,7 +1445,7 @@ void Parallelize_Geometry()
 	while (!fin.eof())
 	{
 	fin >> tmpint >> upx >> upy >> upz >> updoux >> updouy >> updouz;fin.getline(dummy, NCHAR);
-	if ((Solid[upx][upy][upz]==rank+1) and (tmpint==0))
+	if ((Solid[upx][upy][upz]==rank+1) && (tmpint==0))
 		{
 			u[Solid2[upx][upy][upz]][0]=updoux;
 			u[Solid2[upx][upy][upz]][1]=updouy;
@@ -1474,8 +1491,9 @@ void Parallelize_Geometry()
 		}
 	   
 
-	
-	
+	delete[] proc_com;
+	delete[] status;
+	delete[] request;
 }
 
 
@@ -1495,7 +1513,7 @@ void init(double* rho, double** u, double** f,int*** Solid)
 		{dx=dx_input;dt=dt_input;}
 
 	lat_c=dx/dt;
-	c_s=lat_c/sqrt(3);
+	c_s=lat_c/sqrt((double)3.0);
 	c_s2=lat_c*lat_c/3;
 	
  	
@@ -1568,7 +1586,7 @@ void init(double* rho, double** u, double** f,int*** Solid)
 			//***********************************************************************
 
 
-			//INITIALIZATION OF m and f
+			//INITIALIZATION OF m && f
 
 			for (int lm=0;lm<19;lm++)
 				//if (Solid[(int)(SupInv[i]/((NY+1)*(NZ+1)))][(int)((SupInv[i]%((NY+1)*(NZ+1)))/(NZ+1))][SupInv[i]%(NZ+1)]<0)
@@ -1606,17 +1624,21 @@ inline double feq(int k,double rho, double u[3])
 void collision(double* rho,double** u,double** f,double** F,int* SupInv,int*** Solid, int* Sl, int* Sr)
 {
 
-	MPI_Status status[com_n*2] ;
-	MPI_Request request[com_n*2];
+	MPI_Status* status = new MPI_Status[com_n*2] ;
+	MPI_Request* request = new MPI_Request[com_n*2];
 	int mpi_test;
 	
-	int rank = MPI :: COMM_WORLD . Get_rank ();
-	int mpi_size=MPI :: COMM_WORLD . Get_size ();
+	int rank;
+	int mpi_size;
+
+	MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
 	int procn=mpi_size; 
 	int procind=rank+1;
 	
 	int testl1,testl2;
-	int sumtmp[com_n];
+	int* sumtmp = new int[com_n];
 	for (int i=0;i<com_n;i++)
 	        sumtmp[i]=0;
 	
@@ -2021,7 +2043,7 @@ m_inv_l[18] = (double)0.05263157894736843 * m_l[0] + (double)0.00334168755221387
 
 
 
-			// ==================   f=M_-1m matrix calculation and streaming =============================
+			// ==================   f=M_-1m matrix calculation && streaming =============================
 		for (int mi=0; mi<19; mi++)
 			{
 			
@@ -2075,8 +2097,9 @@ m_inv_l[18] = (double)0.05263157894736843 * m_l[0] + (double)0.00334168755221387
 	
 
 
-
-
+	delete[] status;
+	delete[] request;
+	delete[] sumtmp;
 }
 
 
@@ -2088,14 +2111,18 @@ void collision_nnf(double* rho,double** u,double** f,double** F,int* SupInv,int*
 	MPI_Request request[4];
 	int mpi_test;
 	
-	int rank = MPI :: COMM_WORLD . Get_rank ();
-	int mpi_size=MPI :: COMM_WORLD . Get_size ();
+	int rank;
+	int mpi_size;
+
+	MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
 	int procn=mpi_size; 
 	int procind=rank+1;
 
 
 	int testl1,testl2;
-	int sumtmp[com_n];
+	int* sumtmp = new int[com_n];
 	for (int i=0;i<com_n;i++)
 	        sumtmp[i]=0;
 
@@ -2637,7 +2664,7 @@ m_inv_l[17] = (double)0.05263157894736843 * m_l[0] + (double)0.00334168755221387
 m_inv_l[18] = (double)0.05263157894736843 * m_l[0] + (double)0.00334168755221387 * m_l[1] + (double)0.00396825396825397 * m_l[2] + (double)-0.10000000000000001 * m_l[3] + (double)-0.02500000000000000 * m_l[4] + (double)0.00000000000000000 * m_l[5] + (double)0.00000000000000000 * m_l[6] + (double)-0.10000000000000001 * m_l[7] + (double)-0.02500000000000000 * m_l[8] + (double)0.02777777777777778 * m_l[9] + (double)0.01388888888888889 * m_l[10] + (double)-0.08333333333333333 * m_l[11] + (double)-0.04166666666666666 * m_l[12] + (double)-0.00000000000000000 * m_l[13] + (double)0.00000000000000000 * m_l[14] + (double)0.25000000000000000 * m_l[15] + (double)0.12500000000000000 * m_l[16] + (double)0.00000000000000000 * m_l[17] + (double)-0.12500000000000000 * m_l[18];
 
 
-			// ==================   f=M_-1m matrix calculation and streaming =============================
+			// ==================   f=M_-1m matrix calculation && streaming =============================
 		for (int mi=0; mi<19; mi++)
 		{
 			
@@ -2694,7 +2721,7 @@ m_inv_l[18] = (double)0.05263157894736843 * m_l[0] + (double)0.00334168755221387
 	                       }
 
                         
-
+	delete[] sumtmp;
 
 }
 
@@ -2702,9 +2729,11 @@ m_inv_l[18] = (double)0.05263157894736843 * m_l[0] + (double)0.00334168755221387
 void comput_macro_variables( double* rho,double** u,double** u0,double** f,double** F,int* SupInv,int*** Solid)
 {
 	
-	int rank = MPI :: COMM_WORLD . Get_rank ();
-	int mpi_size=MPI :: COMM_WORLD . Get_size ();
+	int rank;
+	int mpi_size;
 
+	MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
 
 
@@ -2763,12 +2792,15 @@ double u_zp[3]={0,0,v_zp};
 double u_zn[3]={0,0,v_zn};
 
 
-int rank = MPI :: COMM_WORLD . Get_rank ();
-int mpi_size=MPI :: COMM_WORLD . Get_size ();
+int rank;
+int mpi_size;
+
+MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
+MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
 
 //Equilibrium boundary condition (Use equilibrium distribution to update the distributions of particles on the boundaries)
-if ((Sub_BC==0) or (Sub_BC==1))
+if ((Sub_BC==0) || (Sub_BC==1))
 {
 
 if ((yp-1)*(yn-1)==0)
@@ -2961,8 +2993,13 @@ void boundary_pressure(int xp,double rho_xp,int xn, double rho_xn,int yp,double 
 
 int Q=19;
 double u_ls[3]={0,0,0};
-int rank = MPI :: COMM_WORLD . Get_rank ();
-int mpi_size=MPI :: COMM_WORLD . Get_size ();
+
+int rank;
+int mpi_size;
+
+MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
+MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
 double m_l[19];
 
 //Equilibriun boundary condition. velocities of boundary particles are set as 0.0
@@ -3418,8 +3455,12 @@ for (int i=0;i<bclzn;i++)
 
 double Error(double** u,double** u0,double *v_max,double* u_average)
 {	
-	int rank = MPI :: COMM_WORLD . Get_rank ();
-	int mpi_size=MPI :: COMM_WORLD . Get_size ();
+	int rank;
+	int mpi_size;
+
+	MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
 	double *rbuf,*um,*uave,u_compt;
 	double temp1,temp2,temp3;
 	temp1=0;
@@ -3501,12 +3542,14 @@ for(int i=1; i<Count; i++)
 
 
 //OUTPUT SUBROUTAINS:
-//ALL THE OUTPUTS ARE TRANSFERED TO PROCESSOR 0, AND EXPORT TO DAT FILE BY PROCESSOR 0
+//ALL THE OUTPUTS ARE TRANSFERED TO PROCESSOR 0, && EXPORT TO DAT FILE BY PROCESSOR 0
 
 void output_Geometry_compact()	
 {	
 	
-	int rank = MPI :: COMM_WORLD . Get_rank ();
+	int rank;
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
 	ostringstream name;
 	name<<outputfile<<"geo.bin";
 	//ostringstream name2;
@@ -3548,7 +3591,10 @@ void output_Geometry_compact()
 void Geometry(int*** Solid)	
 {	
 	
-	int rank = MPI :: COMM_WORLD . Get_rank ();
+	int rank;
+
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
 	ostringstream name;
 	name<<outputfile<<"LBM_Geometry"<<".vtk";
 	if (rank==0)
@@ -3592,7 +3638,10 @@ void Geometry(int*** Solid)
 
 void Geometry_Par(int*** Solid)	
 {	
-	int rank = MPI :: COMM_WORLD . Get_rank ();
+	int rank;
+
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
 	ostringstream name;
 	name<<outputfile<<"LBM_Geometry_Mesh"<<".vtk";
 	if (rank==0)
@@ -3630,12 +3679,16 @@ void Geometry_Par(int*** Solid)
 void output_velocity(int m,double* rho,double** u,int MirX,int MirY,int MirZ,int mir,int*** Solid)	
 {
 	
-	int rank = MPI :: COMM_WORLD . Get_rank ();
-	const int mpi_size=MPI :: COMM_WORLD . Get_size ();
+	int rank;
+	int mpi_size;
+
+	MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
 	int procind=rank+1;
 	int procn=mpi_size;
 
-	int tmpsum[mpi_size];
+	int* tmpsum = new int[mpi_size];
 	for (int i=0;i<mpi_size;i++)
 		tmpsum[i]=3;	
 
@@ -3650,9 +3703,8 @@ void output_velocity(int m,double* rho,double** u,int MirX,int MirY,int MirZ,int
 	double* rbuf_v;
 
 
-
-	int nx_g[mpi_size];
-	int disp[mpi_size];
+	int* nx_g = new int[mpi_size];
+	int* disp = new int[mpi_size];
 	
 	for (int i=0;i<mpi_size;i++)
 		nx_g[i]=(sumss[i+1]+1)*3;
@@ -3716,18 +3768,26 @@ void output_velocity(int m,double* rho,double** u,int MirX,int MirY,int MirZ,int
 	
 	if (rank==root_rank)
 	delete [] rbuf_v;
+
+	delete[] tmpsum;
+	delete[] nx_g;
+	delete[] disp;
 		
 }
 
 void output_velocity_compact(int m,double* rho,double** u,int MirX,int MirY,int MirZ,int mir,int*** Solid)	
 {
 	
-	int rank = MPI :: COMM_WORLD . Get_rank ();
-	const int mpi_size=MPI :: COMM_WORLD . Get_size ();
+	int rank;
+	int mpi_size;
+
+	MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
 	int procind=rank+1;
 	int procn=mpi_size;
 
-	int tmpsum[mpi_size];
+	int* tmpsum = new int[mpi_size];
 	for (int i=0;i<mpi_size;i++)
 		tmpsum[i]=3;	
 
@@ -3744,8 +3804,8 @@ void output_velocity_compact(int m,double* rho,double** u,int MirX,int MirY,int 
 
 
 
-	int nx_g[mpi_size];
-	int disp[mpi_size];
+	int* nx_g = new int[mpi_size];
+	int* disp = new int[mpi_size];
 	
 	for (int i=0;i<mpi_size;i++)
 		nx_g[i]=(sumss[i+1]+1)*3;
@@ -3818,21 +3878,26 @@ void output_velocity_compact(int m,double* rho,double** u,int MirX,int MirY,int 
 		delete [] rbuf_v;
 		delete [] rbuf_v2;
 		}
+
+	delete[] tmpsum;
+	delete[] nx_g;
+	delete[] disp;
 		
 }
-
-
-
 
 void output_density(int m,double* rho,int MirX,int MirY,int MirZ,int mir,int*** Solid)	
 {
     
-	int rank = MPI :: COMM_WORLD . Get_rank ();
-	int mpi_size=MPI :: COMM_WORLD . Get_size ();
+	int rank;
+	int mpi_size;
+
+	MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
 	int procind=rank+1;
 	int procn=mpi_size;
 
-	int tmpsum[mpi_size];
+	int* tmpsum = new int[mpi_size];
 	for (int i=0;i<mpi_size;i++)
 		tmpsum[i]=1;	
 
@@ -3848,8 +3913,8 @@ void output_density(int m,double* rho,int MirX,int MirY,int MirZ,int mir,int*** 
 
 
 
-	int nx_g[mpi_size];
-	int disp[mpi_size];
+	int* nx_g = new int[mpi_size];
+	int* disp = new int[mpi_size];
 	
 	for (int i=0;i<mpi_size;i++)
 		nx_g[i]=sumss[i+1]+1;
@@ -3912,15 +3977,21 @@ void output_density(int m,double* rho,int MirX,int MirY,int MirZ,int mir,int*** 
 	
 	if (rank==root_rank)
 	delete [] rbuf_v;
-
+	
+	delete[] tmpsum;
+	delete[] nx_g;
+	delete[] disp;
 }
 
 
 void Backup(int m,double* rho,double** u, double** f)
 {
 
-        int rank = MPI :: COMM_WORLD . Get_rank ();
-	int mpi_size=MPI :: COMM_WORLD . Get_size ();
+   int rank;
+	int mpi_size;
+
+	MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	
 	ostringstream name;
 	name<<outputfile<<"LBM_checkpoint_velocity_"<<m<<"."<<rank<<".bin_input";
@@ -3968,8 +4039,13 @@ void Backup(int m,double* rho,double** u, double** f)
 double Comput_Perm(double** u,double* Permia,int PerDIr,int* SupInv)
 {
 
-	int rank = MPI :: COMM_WORLD . Get_rank ();
-	int mpi_size=MPI :: COMM_WORLD . Get_size ();
+	
+	int rank;
+	int mpi_size;
+
+	MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
 
 	//int ls_int=0;
 	
@@ -4018,7 +4094,7 @@ double Comput_Perm(double** u,double* Permia,int PerDIr,int* SupInv)
 		//cout<<si<<"  "<<sj<<"  "<<sm<<endl;
 		//cout<<rank<<"        "<<per_yp<<"        "<<per_yn<<endl;
 		//ls_int++;
-		if ((si>=per_xn) and (si<=per_xp) and (sj>=per_yn) and (sj<=per_yp) and (sm>=per_zn) and (sm<=per_zp))
+		if ((si>=per_xn) && (si<=per_xp) && (sj>=per_yn) && (sj<=per_yp) && (sm>=per_zn) && (sm<=per_zp))
 		{
 		  //ls_int++;     
 	        Q[0]+=u[i][0];
@@ -4102,11 +4178,12 @@ double Comput_Perm(double** u,double* Permia,int PerDIr,int* SupInv)
 void Backup_init(double* rho, double** u, double** f, char backup_rho[128], char backup_velocity[128], char backup_f[128])
 {	
       
-        int rank = MPI :: COMM_WORLD . Get_rank ();
-	int mpi_size=MPI :: COMM_WORLD . Get_size ();
-	
-	
-	
+    int rank;
+	int mpi_size;
+
+	MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
 	double usqr,vsqr,ls_rho,ls_v0,ls_v1,ls_v2;
 
 	
@@ -4117,7 +4194,7 @@ void Backup_init(double* rho, double** u, double** f, char backup_rho[128], char
 		{dx=dx_input;dt=dt_input;}
 
 	lat_c=dx/dt;
-	c_s=lat_c/sqrt(3);
+	c_s=lat_c/sqrt((double)3.0);
 	c_s2=lat_c*lat_c/3;
 
 	niu=in_vis;
@@ -4218,9 +4295,13 @@ void Backup_init(double* rho, double** u, double** f, char backup_rho[128], char
 
 void output_velocity_for_solute(int m,double* rho,double** u,int MirX,int MirY,int MirZ,int mir,int*** Solid)	
 {
-  	int rank = MPI :: COMM_WORLD . Get_rank ();
-	int mpi_size=MPI :: COMM_WORLD . Get_size ();
-	
+  	
+	int rank;
+	int mpi_size;
+
+	MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
 
 	double* lsu= new double[Count*3];
 		for (int i=1;i<=Count;i++)
@@ -4329,7 +4410,7 @@ int para_size=MPI :: COMM_WORLD . Get_size ();
 	for(int j=0 ; j<ny ; j++)
 	for(int i=0 ; i<nx ; i++)	
 	{
-	        if ((Solid[i][j][k]>=vtxdist[rank]) and (Solid[i][j][k]<vtxdist[rank+1]))
+	        if ((Solid[i][j][k]>=vtxdist[rank]) && (Solid[i][j][k]<vtxdist[rank+1]))
 	                for (int ls=1;ls<19;ls++)
 		{
 		ii=i+e[ls][0];
@@ -4339,7 +4420,7 @@ int para_size=MPI :: COMM_WORLD . Get_size ();
 		
 	
 		
-		if ((ii>=0) and (ii<nx) and (jj>=0) and (jj<ny) and (kk>=0) and (kk<nz) and (Solid[ii][jj][kk]>=0))
+		if ((ii>=0) && (ii<nx) && (jj>=0) && (jj<ny) && (kk>=0) && (kk<nz) && (Solid[ii][jj][kk]>=0))
 			sum++;
 		}
 		
@@ -4353,7 +4434,7 @@ int para_size=MPI :: COMM_WORLD . Get_size ();
 	for(int j=0 ; j<ny ; j++)
 	for(int i=0 ; i<nx ; i++)	
 	{
-	        if ((Solid[i][j][k]>=vtxdist[rank]) and (Solid[i][j][k]<vtxdist[rank+1]))
+	        if ((Solid[i][j][k]>=vtxdist[rank]) && (Solid[i][j][k]<vtxdist[rank+1]))
 	        {
 	                for (int ls=1;ls<19;ls++)
 	                {
@@ -4363,7 +4444,7 @@ int para_size=MPI :: COMM_WORLD . Get_size ();
 		
 	
 		
-		if ((ii>=0) and (ii<nx) and (jj>=0) and (jj<ny) and (kk>=0) and (kk<nz) and (Solid[ii][jj][kk]>=0))
+		if ((ii>=0) && (ii<nx) && (jj>=0) && (jj<ny) && (kk>=0) && (kk<nz) && (Solid[ii][jj][kk]>=0))
 		        {adjncy[sum]=Solid[ii][jj][kk];sum++;}
 		        }
 		        
@@ -4500,7 +4581,10 @@ void Partition_Solid_SELF(int*** Solid)
 	cout<<"MESH PARTITION INITIALIZATION START"<<endl;
 
 int sum=0;
-int mesh_par=MPI :: COMM_WORLD . Get_size ();
+int mesh_par;
+
+MPI_Comm_size(MPI_COMM_WORLD, &mesh_par);
+
 for(int k=0 ; k<nz ; k++)			
 	for(int j=0 ; j<ny ; j++)	
 	for(int i=0 ; i<nx ; i++)
@@ -4572,12 +4656,12 @@ cout<<evennum<<"         "<<oddval<<endl;
 	                        {
 	                                sumin=0;
 	                                dint=0;
-	                                while ((sumin<oddpor*sn) and (dint<nx))
+	                                while ((sumin<oddpor*sn) && (dint<nx))
 	                                {
 	                                for (int j=0;j<ny;j++)
 	                                        for (int k=0;k<nz;k++)
 	                                        {
-	                                                if ((Solid[dint][j][k]<sn) and (Solid[dint][j][k]>=0))
+	                                                if ((Solid[dint][j][k]<sn) && (Solid[dint][j][k]>=0))
 	                                                        {
 	                                                                sumin++;
 	                                                                if (Solid[dint][j][k]==0)
@@ -4599,12 +4683,12 @@ cout<<evennum<<"         "<<oddval<<endl;
 	                        {
 	                                sumin=0;
 	                                dint=0;
-	                                while ((sumin<oddpor*sn) and (dint<ny))
+	                                while ((sumin<oddpor*sn) && (dint<ny))
 	                                {
 	                                for (int i=0;i<nx;i++)
 	                                        for (int k=0;k<nz;k++)
 	                                        {
-	                                                if ((Solid[i][dint][k]<sn) and (Solid[i][dint][k]>=0))
+	                                                if ((Solid[i][dint][k]<sn) && (Solid[i][dint][k]>=0))
 	                                                        {
 	                                                                sumin++;
 	                                                                if (Solid[i][dint][k]==0)
@@ -4625,12 +4709,12 @@ cout<<evennum<<"         "<<oddval<<endl;
 	                        {
 	                                sumin=0;
 	                                dint=0;
-	                                while ((sumin<oddpor*sn) and (dint<nz))
+	                                while ((sumin<oddpor*sn) && (dint<nz))
 	                                {
 	                                for (int i=0;i<nx;i++)
 	                                        for (int j=0;j<ny;j++)
 	                                        {
-	                                                if ((Solid[i][j][dint]<sn) and (Solid[i][j][dint]>=0))
+	                                                if ((Solid[i][j][dint]<sn) && (Solid[i][j][dint]>=0))
 	                                                        {
 	                                                                sumin++;
 	                                                                if (Solid[i][j][dint]==0)

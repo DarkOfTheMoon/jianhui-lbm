@@ -42,7 +42,7 @@ geo.bin        :Geometry filename
 128 129 129	:FREE
 128 129 129	:FREE
 ======================GEOMETRY READING=======================
-1		:Geometry Reading format, 0=decimal,1=binary(bool)
+1		:Geometry Reading format, 0=decimal,1=binary(bool,zyx)
 ======================Non-Newtonian Module======================
 0               :0=OFF, 1=ON
 0.001 0.25        :mu,n: apparent viscosity=mu*gama_dot^(n-1)
