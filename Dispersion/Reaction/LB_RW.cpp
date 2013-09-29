@@ -143,6 +143,8 @@ void boundary_pressure(int ,double ,int , double ,int ,double ,int ,double ,int 
 
 void output_velocity(int ,double* ,double** ,int ,int ,int ,int ,int*** );
 
+void output_velocity_bin(int ,double* ,double** ,int ,int ,int ,int ,int*** );	
+
 void output_velocity_compact(int m,double* rho,double** u,int MirX,int MirY,int MirZ,int mir,int*** Solid);	
 
 void output_density(int ,double* ,int ,int ,int ,int ,int*** );	
@@ -702,15 +704,17 @@ if (wr_per==1)
 			
 			//if ((Out_Mode==1) && (abs((u_ave2-u_ave)/(u_ave2))<1e-7))
 			//cout<<st1<<"	"<<st2<<"	"<<loc_perm<<" "<<error<<" "<<abs((pre_u_ave-u_ave)/(pre_u_ave))<<endl; 		
-			if ((loc_perm==1) && (error<st2) && (abs((pre_u_ave-u_ave)/(pre_u_ave))<st1))
-				{
-				//cout<<"@@@@@@@@@@@@@@@@@@@@@"<<endl;
-				output_velocity_compact(n,rho,u,mirX,mirY,mirZ,mir,Solid);
+			if ((loc_perm==1) && (error<st2) && (abs((pre_u_ave-u_ave)/(pre_u_ave))<st1)){
+
+				//output_velocity_compact(n,rho,u,mirX,mirY,mirZ,mir,Solid);
+				output_velocity_bin(n,rho,u,mirX,mirY,mirZ,mir,Solid);
 				output_Geometry_compact();
+
 				if (freVe>=0)
 					output_velocity(n,rho,u,mirX,mirY,mirZ,mir,Solid);
+
 				n=n_max+1;				
-				}
+			}
 
 			
 			if ((freDe>0) && (n%freDe==0))
@@ -3575,8 +3579,8 @@ void output_Geometry_compact()
 //	out.write((char *)(&solid4[0]), sizeof(bool)*((NX+1)*(NY+1)*(NZ+1)));
 //	out.close();
 
-	out.open(name.str().c_str());
-	out.write((char *)(&Solid3), sizeof(bool)*((NX+1)*(NY+1)*(NZ+1)));
+	//out.open(name.str().c_str());
+	out.write((char *)(Solid3), sizeof(bool)*((NX+1)*(NY+1)*(NZ+1)));
 	out.close();
 
 	}
@@ -3768,6 +3772,100 @@ void output_velocity(int m,double* rho,double** u,int MirX,int MirY,int MirZ,int
 	
 	if (rank==root_rank)
 	delete [] rbuf_v;
+
+	delete[] tmpsum;
+	delete[] nx_g;
+	delete[] disp;
+		
+}
+
+void output_velocity_bin(int m,double* rho,double** u,int MirX,int MirY,int MirZ,int mir,int*** Solid)	
+{
+	
+	int rank;
+	int mpi_size;
+
+	MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+	int procind=rank+1;
+	int procn=mpi_size;
+
+	int* tmpsum = new int[mpi_size];
+	for (int i=0;i<mpi_size;i++)
+		tmpsum[i]=3;	
+
+	const int root_rank=0;
+	
+	double rho_0=1.0;
+	
+	
+	MPI_Status status;
+	MPI_Request request;
+
+	double* rbuf_v;
+
+
+	int* nx_g = new int[mpi_size];
+	int* disp = new int[mpi_size];
+	
+	for (int i=0;i<mpi_size;i++)
+		nx_g[i]=(sumss[i+1]+1)*3;
+
+
+	disp[0]=0;
+	
+	for (int i=1;i<mpi_size;i++)
+		disp[i]=disp[i-1]+nx_g[i-1];
+		
+	
+	if (rank==root_rank)
+		rbuf_v = new double[disp[mpi_size-1]+nx_g[mpi_size-1]];
+
+	
+	int NX0=NX+1;
+	int NY0=NY+1;
+	int NZ0=NZ+1;
+	MPI_Gatherv(u[0],nx_g[rank],MPI_DOUBLE,rbuf_v,nx_g,disp,MPI_DOUBLE,root_rank,MPI_COMM_WORLD);
+
+
+	ostringstream name;
+	name << outputfile << "vel.bin";
+
+	if (rank==root_rank){		//Write to outputfile
+
+		FILE* OutFile = fopen(name.str().c_str(), "wb");
+
+		double v[3];	//Output vector
+
+		for(int k=0 ; k<NZ0 ; k++){			
+		for(int j=0 ; j<NY0 ; j++){
+		for(int i=0 ; i<NX0 ; i++){
+
+			if(Solid[i][j][k]!=0){		//Non-Solid
+				
+				v[0] = rbuf_v[disp[Solid[i][j][k]-1] + tmpsum[Solid[i][j][k]-1]];
+				v[1] = rbuf_v[disp[Solid[i][j][k]-1] + tmpsum[Solid[i][j][k]-1]+1];
+				v[2] = rbuf_v[disp[Solid[i][j][k]-1] + tmpsum[Solid[i][j][k]-1]+2];
+			
+				tmpsum[Solid[i][j][k]-1]+=3;
+
+				fwrite(v, sizeof(double), 3, OutFile);
+
+			}
+
+		}
+		}
+		}
+	
+		fclose(OutFile);
+
+	}
+    
+	MPI_Barrier(MPI_COMM_WORLD);
+	
+	if (rank==root_rank)
+		delete [] rbuf_v;
 
 	delete[] tmpsum;
 	delete[] nx_g;

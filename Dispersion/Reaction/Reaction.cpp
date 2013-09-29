@@ -15,9 +15,9 @@
 int MultiThreadingSharedMem_TNum = 1;		//Number of threads to run in shared memory mode
 
 //Lattice
-short NLattice_x = 30;						//Lattice of NLattice_x x NLattice_y x NLattice_z
+short NLattice_x = 50;						//Lattice of NLattice_x x NLattice_y x NLattice_z
 short NLattice_y = 50;
-short NLattice_z = 3;
+short NLattice_z = 50;
 
 int BoundaryConditionX = 0;					//Boundary conditions in X,Y,Z. Loop boundary = 0, Solid boundary = 1
 int BoundaryConditionY = 0;
@@ -33,30 +33,31 @@ double DiffusionCoefficient = 0.00001;		//Diffusion coefficient for random walk 
 double SimulationTimestep = 0;				//Timestep for the simulation. Set to 0 for automatic (optimum) value
 double SimulationTimeScale = 1000000;		//Value of dt corresponding physically to 1 second
 
-double OutputTimeInterval = 100000;		//Time interval for writing output data
+double OutputTimeInterval = 10000;		//Time interval for writing output data
 double SimulationTimeMax =  0;			//End time of simulation. Set to 0 for no limit
 
 //Input folder
-char InputFilesFolder[1024]		= "./input";
+char InputFilesFolder[1024]		= "E:\\Reaction\\Input\\";
 
-bool SolidsFileBin = true;			//Is solids file binary format
-bool VelocitiesFileBin = true;		//Is velocities file binary format
-bool VelocitiesFileSparse = true;	//Sparse velocity files
+bool InputSolidsFileBin = true;			//Is solids file binary format
+bool InputVelocitiesFileBin = true;		//Is velocities file binary format
+bool InputVelocitiesFileSparse = true;	//Sparse velocity files
 
 //Input files
 char SolidsFileName[1024]		= "geo.bin";			//File specifying solid voxels
 char VelocitiesFileName[1024]	= "vel.bin";			//File containing vector field
 
 //Output folder
-char OutputFilesFolder[1024]	= "./output";
+char OutputFilesFolder[1024]	= "E:\\Reaction\\Output\\";
 
 //Output files
-char GeometryOutputFile[1024]	= "Geometry t=%ST.vtk";
+char GeometryOutputFile[1024]	= "Geometry n=%ST.vtk";
+char VelocityOutputFile[1024]	= "Velocity field n=%ST.vtk";
 char DataOutputFile[1024]		= "Data.txt";
 char AdvectionDebugFile[1024]	= "Advection Debug.txt";		//Advection debug output. Use %ID for thread ID
 
 //LB-Disp Working Directory
-char WorkingFolder[1024]		= "./working";
+char WorkingFolder[1024]		= "E:\\Reaction\\Working\\";
 
 //Working Directory Files
 char SimulationOutputFile[1024]	= "SimulationOutput.dat";	//Output simulation variables and particles
@@ -64,7 +65,11 @@ char GeometryUpdateFile[1024]	= "GeometryUpdate.txt";
 char WorkingGeometry[1024]		= "geo.bin";
 char WorkingVelocities[1024]	= "vel.bin";
 
-int NAlterationsEnd = 10;			//Number of voxels changed before stopping for velocity update step
+bool WorkingSolidsFileBin = true;			//Is solids file binary format
+bool WorkingVelocitiesFileBin = true;		//Is velocities file binary format
+bool WorkingVelocitiesFileSparse = true;	//Sparse velocity files
+
+int NAlterationsEnd = 80;			//Number of voxels changed before stopping for velocity update step
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -145,6 +150,7 @@ double w1;					//Voxel face velocity z1
 double w2;					//Voxel face velocity z2 
 double DissolutionFraction;	//0 = whole, 1 = completely dissolved
 unsigned char Solid;		//bits correspond to neighbouring solid voxels |0|NegativeZSolid|PositiveZSolid|NegativeYSolid|PositiveYSolid|NegativeXSolid|PositiveXSolid|VoxelSolid|
+unsigned char SolidType;	//
 };
 
 //Bits of Solid byte eg if(Solid&VoxelSolid).. or if(Solid&PositiveYSolid).. etc
@@ -491,6 +497,7 @@ void GetCoordinates(short x, short y, short z, Coords* C);
 void GetCoordinates(int i, Coords* C);
 void CycleCoordinates(double* Px, double* Py, double* Pz);
 void OutputGeometry(int n);												//Output geometry file
+void OutputVelocities(int n);											//Output velocity field file
 void InitialiseParticles();												//Called from main to set initial particle positions
 void InitialiseParticlesUniform();										//Disitrbutes particles evenly throughout the lattice
 void SetLatticeInfo();													//Calculates average velocities, porosity etc in LatticeInfo struct
@@ -1637,20 +1644,20 @@ void CreateWorkingLattice(){
 
 	unsigned int n;
 
-	if(SolidsFileBin){
+	if(WorkingSolidsFileBin){
 		ReadSolidsBin(&n, WorkingFilePath(WorkingGeometry));
 	}else{
 		ReadSolids(&n, WorkingFilePath(WorkingGeometry));
 	}
 	
-	if(VelocitiesFileBin){
-		if(VelocitiesFileSparse){
+	if(WorkingVelocitiesFileBin){
+		if(WorkingVelocitiesFileSparse){
 			ReadVelocitiesBinSparse(WorkingFilePath(WorkingVelocities));
 		}else{
 			ReadVelocitiesBin(WorkingFilePath(WorkingVelocities));
 		}
 	}else{
-		if(VelocitiesFileSparse){
+		if(WorkingVelocitiesFileSparse){
 			ReadVelocitiesSparse(WorkingFilePath(WorkingVelocities));
 		}else{
 			ReadVelocities(WorkingFilePath(WorkingVelocities));
@@ -1701,20 +1708,20 @@ void CreateLattice(){		//Allocate lattice and read in solids and velocities
 
 	unsigned int n;
 
-	if(SolidsFileBin){
+	if(InputSolidsFileBin){
 		ReadSolidsBin(&n);
 	}else{
 		ReadSolids(&n);
 	}
 	
-	if(VelocitiesFileBin){
-		if(VelocitiesFileSparse){
+	if(InputVelocitiesFileBin){
+		if(InputVelocitiesFileSparse){
 			ReadVelocitiesBinSparse();
 		}else{
 			ReadVelocitiesBin();
 		}
 	}else{
-		if(VelocitiesFileSparse){
+		if(InputVelocitiesFileSparse){
 			ReadVelocitiesSparse();
 		}else{
 			ReadVelocities();
@@ -1893,6 +1900,59 @@ bool OutputGeometryBin(){
 	delete[] Geometry;
 	
 	return true;
+}
+
+void OutputVelocities(int n){
+
+	FILE* OutFile = fopen(OutputFilePath(VelocityOutputFile, (double)n), "wb");
+
+	//Output VTK header
+
+	char Header[2048];
+	int Ind = 0;
+
+	Ind += _snprintf(&Header[Ind], sizeof(Header)-Ind, "# vtk DataFile Version 2.0\n");
+	Ind += _snprintf(&Header[Ind], sizeof(Header)-Ind, "Geometry Output\n");
+	Ind += _snprintf(&Header[Ind], sizeof(Header)-Ind, "ASCII\n");
+	Ind += _snprintf(&Header[Ind], sizeof(Header)-Ind, "DATASET STRUCTURED_POINTS\n");
+	Ind += _snprintf(&Header[Ind], sizeof(Header)-Ind, "DIMENSIONS %i %i %i\n", NLattice_x, NLattice_y, NLattice_z);
+	Ind += _snprintf(&Header[Ind], sizeof(Header)-Ind, "ORIGIN 0 0 0\n");
+	Ind += _snprintf(&Header[Ind], sizeof(Header)-Ind, "SPACING 1 1 1\n");
+	Ind += _snprintf(&Header[Ind], sizeof(Header)-Ind, "POINT_DATA %i\n", ((int)NLattice_x)*((int)NLattice_y)*((int)NLattice_z));
+	Ind += _snprintf(&Header[Ind], sizeof(Header)-Ind, "VECTORS sample_scalars float\n");
+
+	fwrite(Header, sizeof(char), Ind, OutFile);
+
+	//Output data
+
+	for(int z=0; z!=NLattice_z; z++){
+	for(int y=0; y!=NLattice_y; y++){
+	for(int x=0; x!=NLattice_x; x++){
+
+		Voxel* Element = GetLattice(x,y,z);
+
+		double V[3];
+		V[0] = Element->Vx;
+		V[1] = Element->Vy;
+		V[2] = Element->Vz;
+
+		char Str[128];
+		int l;
+
+		if(V[0]==0 && V[1]==0 && V[2]==0){
+			l = _snprintf(Str, sizeof(Str), "0 0 0\n");
+		}else{
+			l = _snprintf(Str, sizeof(Str), "%e %e %e\n", V[0], V[1], V[2]);
+		}
+
+		fwrite(Str, sizeof(char), l, OutFile);
+
+	}
+	}
+	}
+
+	fclose(OutFile);
+
 }
 
 void OutputGeometry(int n){
@@ -2481,7 +2541,7 @@ void RandomWalkParticle(int i, double dt, double RandomWalkLength, int ThreadID)
 
 	}
 
-	if(VSolid && P->Type!=0){		//Reaction
+	if(VSolid && P->Type!=0 && SolidY!=0 && SolidY!=NLattice_y-1 && SolidZ!=0 && SolidZ!=NLattice_z-1){		//Reaction
 
 		bool ParticleRemoved;
 
@@ -2758,13 +2818,6 @@ void* ThreadMain(void* data){
 
 	if(ThreadID == 0){
 
-		outfile.open(OutputFilePath(DataOutputFile));
-		outfile << "Index\tTime\tPorosity\tNo. Solids" << endl;
-		outfile << "0\t" << t << "\t" << LatticeInfo.Porosity << '\t' << LatticeInfo.NSolids << endl;
-		outfile.close();
-
-		OutputGeometry(0);
-
 		int i=1;
 		while(i!=ThreadNum){
 			Threads[i].Status = 0;		//Allow threads to start
@@ -2795,32 +2848,6 @@ void* ThreadMain(void* data){
 		TimeSteps++;
 		t+=dt;
 
-		if(!SimulationContinue){
-
-			Thread->Status = 1;
-
-			if(ThreadID==0){
-				SyncThreads(Threads, ThreadNum);	//Wait for other threads to complete
-
-				AlterationLog->OutputAlterations();
-
-				SimulationStateStruct State;		//Record simulation state
-				State.GeometryOutputIndex = GeometryOutputIndex;
-				State.LogInterval = LogInterval;
-				State.NParticles = NParticles;
-				State.SimulationTime = t;
-				State.SimulationTimeMax = tmax;
-				State.SimulationTimeStep = dt;
-				State.ThreadNum = ThreadNum;
-				State.TimeSteps = TimeSteps;
-
-				OutputSimulationState(&State);
-
-				cout << "Run velocity update..." << endl;
-			}
-			return 0;
-		}
-
 		if(TimeSteps == LogInterval){
 
 			double dt_remainder = (double)OutputTimeInterval - (double)TimeSteps*dt;		//Carry out any remaining time
@@ -2835,8 +2862,10 @@ void* ThreadMain(void* data){
 
 				//Write outputs
 
-				cout << "Output to file... " << endl;
+				cout << "Output geometry... at time = " << t << endl;
+
 				OutputGeometry(GeometryOutputIndex);
+				OutputVelocities(GeometryOutputIndex);
 
 				outfile.open(OutputFilePath(DataOutputFile),ios::app);
 				outfile << GeometryOutputIndex << "\t" << t << "\t" << LatticeInfo.Porosity << '\t' << LatticeInfo.NSolids << endl;
@@ -2883,6 +2912,32 @@ void* ThreadMain(void* data){
 
 		}
 
+		if(!SimulationContinue){	//Reached requisite number of voxel removals to stop for velocity update
+
+			Thread->Status = 1;
+
+			if(ThreadID==0){
+				SyncThreads(Threads, ThreadNum);	//Wait for other threads to complete
+
+				AlterationLog->OutputAlterations();
+
+				SimulationStateStruct State;		//Record simulation state
+				State.GeometryOutputIndex = GeometryOutputIndex;
+				State.LogInterval = LogInterval;
+				State.NParticles = NParticles;
+				State.SimulationTime = t;
+				State.SimulationTimeMax = tmax;
+				State.SimulationTimeStep = dt;
+				State.ThreadNum = ThreadNum;
+				State.TimeSteps = TimeSteps;
+
+				OutputSimulationState(&State);
+
+				cout << "Run velocity update..." << endl;
+			}
+			return 0;
+		}
+
 	}
 
 	return 0;
@@ -2906,8 +2961,8 @@ int MainThreading(int argc, char *argv[]){
 	SimulationStateStruct SimulationState;
 	bool ContinuingSimulation = false;
 
-	ifstream WorkingGeometryOpen(WorkingFilePath(WorkingGeometry));
-	if(!WorkingGeometryOpen){
+	ifstream WorkingSimulation(WorkingFilePath(SimulationOutputFile));
+	if(!WorkingSimulation){
 
 		//Start from the beginning
 
@@ -2925,18 +2980,17 @@ int MainThreading(int argc, char *argv[]){
 
 		WriteOutParameters();		//Write out diffusion coefficient and average velocities to console
 
-		OutputGeometry(0);			//Output geometry
+		OutputGeometry(0);			//Output initial geometry
+		OutputVelocities(0);		//Output initial velocity field
 
 	}else{
-		WorkingGeometryOpen.close();
+		WorkingSimulation.close();
 		ContinuingSimulation = true;
 		cout << "Continuing simulation" << endl;
 
 		//Continue from mid-simulation
 
 		ReadSimulationState(&SimulationState);	//Read in simulation variables and particles
-
-		cout << "t = " << SimulationState.SimulationTime << endl;
 
 		Random.TimeSeed();			//Seed random number generator based on local time
 
@@ -2979,6 +3033,10 @@ int MainThreading(int argc, char *argv[]){
 		TimeSteps = SimulationState.TimeSteps;
 		GeometryOutputIndex = SimulationState.GeometryOutputIndex;
 		LogInterval = SimulationState.LogInterval;
+
+		cout << "t = " << SimulationState.SimulationTime << endl;
+		cout << "LogInterval = " << SimulationState.LogInterval << endl;
+		cout << "TimeSteps = " << SimulationState.TimeSteps << endl;
 
 	}
 
