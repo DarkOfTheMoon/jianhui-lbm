@@ -1,0 +1,55 @@
+========================== Run Settings =================================
+
+NumberOfThreads = 8
+
+========================== Lattice Settings =============================
+
+NLatticeX = 100			//Lattice dimensions (voxels)
+NLatticeY = 100
+NLatticeZ = 100
+
+ResolutionMicron = 1.0		//Voxel physical size (micrometres)
+
+BoundaryConditionX = 0		//0 = Loop Boundary Condition
+BoundaryConditionY = 0		//1 = Solid Boundary Condition
+BoundaryConditionZ = 0
+
+InitialVx = 0.0			//Initial velocity on lattice
+InitialVy = 0.0
+InitialVz = 0.0
+
+========================== Fluid Settings ===============================
+
+Viscosity = 0.16667		//Fluid viscosity
+
+BodyForceX = 3.0e-6		//Body force on fluid (lattice units)
+BodyForceY = 0.0
+BodyForceZ = 0.0
+
+========================== Simulation Settings ==========================
+
+TimeStepsMax = 1000		//End simulation after so many timesteps
+WriteInterval = 50		//Write to the console after so many
+
+========================== File Paths ===================================
+//Input files//
+
+InputGeometryFile = "C:\Users\Farrel\Desktop\LB\Sphere.txt"
+
+GeometryFileBin = false			//File is binary format
+GeometryFileVTKHeader = false		//File has a VTK header
+NLinesGeometryVTKHeader = 10		//Number of lines of VTK header
+
+//Output files//
+
+OutputGeometryFile = "E:\LBTest\GOut.vtk"
+
+OutputGeometryFileBin = false		//Output in binary format
+OutputGeometryFileVTKHeader = true	//Output with VTK header
+
+
+OutputVelocityFile = "E:\LBTest\VOut.vtk"
+
+OutputVelocityFileBin = false		//Output in binary format
+OutputVelocityFileSparse = false	//Output in sparse format
+OutputVelocityFileVTKHeader = true	//Output with VTK header
