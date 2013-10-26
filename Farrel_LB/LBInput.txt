@@ -34,7 +34,7 @@ WriteInterval = 50		//Write to the console after so many
 ========================== File Paths ===================================
 //Input files//
 
-InputGeometryFile = "C:\Users\Farrel\Desktop\LB\Sphere.txt"
+InputGeometryFile = "./Sphere.txt"
 
 GeometryFileBin = false			//File is binary format
 GeometryFileVTKHeader = false		//File has a VTK header
@@ -42,13 +42,13 @@ NLinesGeometryVTKHeader = 10		//Number of lines of VTK header
 
 //Output files//
 
-OutputGeometryFile = "E:\LBTest\GOut.vtk"
+OutputGeometryFile = "./GOut.vtk"
 
 OutputGeometryFileBin = false		//Output in binary format
 OutputGeometryFileVTKHeader = true	//Output with VTK header
 
 
-OutputVelocityFile = "E:\LBTest\VOut.vtk"
+OutputVelocityFile = "./VOut.vtk"
 
 OutputVelocityFileBin = false		//Output in binary format
 OutputVelocityFileSparse = false	//Output in sparse format

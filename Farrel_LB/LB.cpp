@@ -15,11 +15,11 @@ using namespace std;
 
 ////Input Variables/////////////////////////////////////////////////////////////////////////////////////////////
 
-char InputFileDefault[1024] = "Input.txt";			//Default input file if not specified in command line
+char InputFileDefault[1024] = "./Input.txt";			//Default input file if not specified in command line
 
 int LocalThreadNum = 1;								//Number of threads to run
 
-char GeometryFile[1024] = "C:\\Users\\Farrel\\Desktop\\LB\\Sphere.txt";
+char GeometryFile[1024] = "./Sphere.txt";
 
 bool GeometryFileBin = false;						//Is solids file binary format
 bool GeometryFileVTKHeader = false;					//Input file has a VTK header
@@ -49,15 +49,15 @@ int TimeStepsMax = 100;								//End simulation after this many timesteps (0 = n
 int WriteInterval = 50;								//Write simulation information to console after so many timesteps
 int OutputInterval = 1000;							//Output velocity field after so many timesteps
 
-char OutputFilesFolder[1024] = "E:/LBTest/";
+char OutputFilesFolder[1024] = "./";
 
-char OutputVelocityFile[1024] = "E:/LBTest/VOut.vtk";
+char OutputVelocityFile[1024] = "./VOut.vtk";
 
 bool OutputVelocityFileBin = false;					//Is velocities file binary format
 bool OutputVelocityFileSparse = false;				//Sparse velocity files
 bool OutputVelocityFileVTKHeader = true;			//Output file has a VTK header (9 lines)
 
-char OutputGeometryFile[1024] = "E:/LBTest/GOut.vtk";
+char OutputGeometryFile[1024] = "./GOut.vtk";
 
 bool OutputGeometryFileVTKHeader = true;
 bool OutputGeometryFileBin = false;
@@ -449,6 +449,8 @@ int main(int argc, char *argv[]){
 		return 0;
 	}
 
+	int ThreadVxN;
+
 
 	//Initialisation
 
@@ -465,13 +467,13 @@ int main(int argc, char *argv[]){
 
 	Threads = new ThreadStruct[LocalThreadNum];
 
-	int ThreadVxN = (int)floor((double)nNonSolid / (double)LocalThreadNum);
+	ThreadVxN = (int)floor((double)nNonSolid / (double)LocalThreadNum);
 
 	for(int i=0; i!=LocalThreadNum; i++){
 		Threads[i].ThreadID = i;
 		Threads[i].Status = 0;
 		Threads[i].HoldStatus = 0;
-		Threads[i].Index0 = i * ThreadVxN + min( nNonSolid%ThreadVxN, i) + 1;							//Thread's first index in node array (starts from 1)
+		Threads[i].Index0 = i * ThreadVxN + min( nNonSolid%ThreadVxN, (long long)i) + 1;							//Thread's first index in node array (starts from 1)
 		Threads[i].Index1 = Threads[i].Index0 + ThreadVxN + ( (i < nNonSolid%ThreadVxN) ? 1 : 0 ) - 1;	//Index of final node in thread's array (ends at, including, nNonSolid)
 		
 		if(i!=0){
