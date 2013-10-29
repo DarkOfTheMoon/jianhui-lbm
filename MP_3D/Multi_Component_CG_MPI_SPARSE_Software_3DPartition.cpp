@@ -2742,7 +2742,7 @@ double cb[19]={-1.0/3.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.0/18.0,1.
 
 
 //==========================
-if (((bodyforce_apply==1) and (psi[ci]<rel_perm_psi)) or ((bodyforce_apply==-1) and (psi[ci]>-rel_perm_psi2)))
+if (((bodyforce_apply==1) and (psi[ci]<rel_perm_psi)) or ((bodyforce_apply==-1) and (psi[ci]>-rel_perm_psi)))
 {
 GuoF[0]=0.0;GuoF[1]=0.0;GuoF[2]=0.0;GuoF[3]=0.0;GuoF[4]=0.0;GuoF[5]=0.0;GuoF[6]=0.0;GuoF[7]=0.0;
 GuoF[8]=0.0;GuoF[9]=0.0;GuoF[10]=0.0;GuoF[11]=0.0;GuoF[12]=0.0;GuoF[13]=0.0;GuoF[14]=0.0;GuoF[15]=0.0;
@@ -5155,6 +5155,7 @@ double Comput_Perm(double* psi,double** u,double* Per_l,double* Per_g,int PerDIr
 		
 	if ((par_per_x-1)*(par_per_y-1)*(par_per_z-1)==0)	
 	for (int i=1;i<=Count;i++)
+	if (sqrt(u[i][0]*u[i][0]+u[i][1]*u[i][1]+u[i][2]*u[i][2])<rel_perm_psi2)
 	{
 		si=(int)(coor[i]/((NY+1)*(NZ+1)));
 		sj=(int)((coor[i]%((NY+1)*(NZ+1)))/(NZ+1));
@@ -5173,7 +5174,7 @@ double Comput_Perm(double* psi,double** u,double* Per_l,double* Per_g,int PerDIr
 		                Q_l[1]+=u[i][1];
 		                Q_l[2]+=u[i][2];
 		        }
-		if (psi[i]<=-rel_perm_psi2)
+		if (psi[i]<=-rel_perm_psi)
 		        {
                                 Q_g[0]+=u[i][0];
                                 Q_g[1]+=u[i][1];
@@ -5187,6 +5188,7 @@ double Comput_Perm(double* psi,double** u,double* Per_l,double* Per_g,int PerDIr
 	}
 	else
 	for (int i=1;i<=Count;i++)
+		if (sqrt(u[i][0]*u[i][0]+u[i][1]*u[i][1]+u[i][2]*u[i][2])<rel_perm_psi2)
 		{
 	        if (psi[i]>=rel_perm_psi)
 		        {
@@ -5194,7 +5196,7 @@ double Comput_Perm(double* psi,double** u,double* Per_l,double* Per_g,int PerDIr
 		                Q_l[1]+=u[i][1];
 		                Q_l[2]+=u[i][2];
 		        }
-		if (psi[i]<=-rel_perm_psi2)
+		if (psi[i]<=-rel_perm_psi)
 		        {
                                 Q_g[0]+=u[i][0];
                                 Q_g[1]+=u[i][1];

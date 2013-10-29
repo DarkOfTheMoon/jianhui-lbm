@@ -37,7 +37,7 @@ phase.dat       	    	          :Initial components distribution
 0  500				:MULTI-COMPONENT STABALIZER: (a,b) a=0=OFF, a=1=ON, BODY FORCE APPLIED AFTER b steps
 -1                              :PRESET SATUATION, 0--1 initial component distri not needed, -1=OFF(for Component A,1)
 0				:PRESET VALUE FOR BUFFET AREA, 0=NO,1=COMP A,-1=COMP B (valid when preset satuation)
-0.99 0.92			:#Relative permeability calcualtion 0..1 (psi>=value, cal the flux for Comp1)
+0.99 0.01			:#Relative permeability calcualtion 0..1 (psi>=value, vel<value2 cal the flux for Comp1)
 1 0 0				:Pemeability calculation Partially  (1=ON, 0=OFF)
 70 10				:Permeability calculation partially Starting point and Ending point in X   N,P
 0 100				:Permeability calculation partially Starting point and Ending point in Y
