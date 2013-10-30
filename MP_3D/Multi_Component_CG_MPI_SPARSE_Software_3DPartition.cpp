@@ -5153,10 +5153,11 @@ double Comput_Perm(double* psi,double** u,double* Per_l,double* Per_g,int PerDIr
 		}
 		
 		
-	if ((par_per_x-1)*(par_per_y-1)*(par_per_z-1)==0)	
+	if ((par_per_x-1)*(par_per_y-1)*(par_per_z-1)==0)
+	{	
 	for (int i=1;i<=Count;i++)
-	if (sqrt(u[i][0]*u[i][0]+u[i][1]*u[i][1]+u[i][2]*u[i][2])<rel_perm_psi2)
-	{
+		if (sqrt(u[i][0]*u[i][0]+u[i][1]*u[i][1]+u[i][2]*u[i][2])<rel_perm_psi2)
+		{
 		si=(int)(coor[i]/((NY+1)*(NZ+1)));
 		sj=(int)((coor[i]%((NY+1)*(NZ+1)))/(NZ+1));
 		sm=(int)(coor[i]%(NZ+1)); 
@@ -5166,25 +5167,26 @@ double Comput_Perm(double* psi,double** u,double* Per_l,double* Per_g,int PerDIr
 		//if (rank==1)
 		//cout<<rank<<"  "<<si<<" "<<sj<<" "<<sm<<endl;
 		//cout<<si<<"  "<<per_xn<<"  "<<per_xp<<endl;
-		if ((si>=per_xn) and (si<=per_xp) and (sj>=per_yn) and (sj<=per_yp) and (sm>=per_zn) and (sm<=per_zp))
-		{
-	        if (psi[i]>=rel_perm_psi)
-		        {
+			if ((si>=per_xn) and (si<=per_xp) and (sj>=per_yn) and (sj<=per_yp) and (sm>=per_zn) and (sm<=per_zp))
+			{
+	        		if (psi[i]>=rel_perm_psi)
+		        	{
 		                Q_l[0]+=u[i][0];
 		                Q_l[1]+=u[i][1];
 		                Q_l[2]+=u[i][2];
-		        }
-		if (psi[i]<=-rel_perm_psi)
-		        {
+		        	}
+				if (psi[i]<=-rel_perm_psi)
+		        	{
                                 Q_g[0]+=u[i][0];
                                 Q_g[1]+=u[i][1];
                                 Q_g[2]+=u[i][2];
 		        
 		        
-		        }
+		        	}
+			}
+
+
 		}
-
-
 	}
 	else
 	for (int i=1;i<=Count;i++)
