@@ -1,0 +1,69 @@
+========================== Lattice Settings =====================================
+
+NLatticeX = 100			//Lattice dimensions (voxels)
+NLatticeY = 100
+NLatticeZ = 100
+
+ResolutionMicron = 1.0		//Voxel physical size (micrometres)
+
+BoundaryConditionX = 0		//0 = Loop Boundary Condition
+BoundaryConditionY = 0		//1 = Solid Boundary Condition
+BoundaryConditionZ = 0
+
+InitialVx = 0.0e-6		//Initial velocity on lattice
+InitialVy = 0.0e-6
+InitialVz = 0.0e-6
+
+========================== Fluid Settings =======================================
+
+Viscosity  = 0.16667		//Fluid viscosity
+
+BodyForceX = 1.0e-6		//Body force on fluid (lattice units)
+BodyForceY = 0.0e-6
+BodyForceZ = 0.0e-6
+
+========================== Simulation Settings ==================================
+
+TimeStepsMax 	   = 0		//End simulation after so many timesteps (0 = no limit)
+WriteInterval 	   = 50		//Write to the console after so many
+FileOutputInterval = 0		//Output velocity field after so many (0 = at end of simulation only)
+
+----- Stop Condition -----
+
+UseStopCondition = off	//Ends simulation if percentage change in quantity over time-step smaller:
+
+RelChangeAvVel  = 0.01	//Percentage change in average velocity per time-step; stop if smaller
+RelChangeVarVel = 0.01	//Percentage change in variance of velocity field per time-step
+
+TimeStepsCheck  = 0	//Timesteps interval between checking stop condition. 0 = WriteInterval
+
+========================== File Paths ===========================================
+----- Input files -----
+
+InputGeometryFile = "Sphere.txt"
+
+GeometryFileBin 	= false		//File is binary format
+GeometryFileVTKHeader   = false		//File has a VTK header
+NLinesGeometryVTKHeader = 10		//Number of lines of VTK header
+
+
+----- Output files -----
+
+OutputFilesFolder = "D:\Lattice Boltzmann\Output\"		//Output folder
+
+OutputGeometryFile = "GOut.vtk"
+
+OutputGeometryFileBin 	    = false	//Output in binary format
+OutputGeometryFileVTKHeader = true	//Output with VTK header
+
+
+OutputVelocityFile = "Velocity n=%N.vtk"	//Use %N to print number of timesteps
+
+OutputVelocityFileBin 	    = false	//Output in binary format
+OutputVelocityFileSparse    = false	//Output in sparse format
+OutputVelocityFileVTKHeader = true	//Output with VTK header
+
+DecompositionLogFile  = "Decomposition.txt"	//Lattice decomposition info
+DecompositionGeometry = "DecompGeo.vtk"		//VTK format geometry of decomposition
+
+OutputDecompGeometry = true		//Whether to output decomposition geometry
